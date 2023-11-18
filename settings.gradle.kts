@@ -1,1 +1,1 @@
-rootProject.name = "tiltakspenger-XXX"
+rootProject.name = "tiltakspenger-meldekort-api"
