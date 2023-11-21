@@ -1,6 +1,9 @@
 package no.nav.tiltakspenger.meldekort
 
 import mu.KotlinLogging
+import io.ktor.server.routing.routing
+import no.nav.tiltakspenger.meldekort.routes.meldekort
+import no.nav.tiltakspenger.meldekort.service.MeldekortServiceImpl
 
 fun main() {
     System.setProperty("logback.configurationFile", "egenLogback.xml")
@@ -14,4 +17,13 @@ fun main() {
     }
 
     log.info { "starting server" }
+}
+
+fun io.ktor.server.application.Application.module() {
+    val meldekortService = MeldekortServiceImpl()
+
+    routing {
+        //healthRoutes()
+        meldekort()
+    }
 }
