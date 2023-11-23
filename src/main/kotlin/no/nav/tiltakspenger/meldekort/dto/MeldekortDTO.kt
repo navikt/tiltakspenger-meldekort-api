@@ -29,5 +29,5 @@ data class MeldekortDTO (
     val tiltak: Tiltak,
     val meldekortUke1: List<MeldekortDag>,
     val meldekortUke2: List<MeldekortDag>,
-    val meldekortMotattDato: LocalDate,
+    val sendtInnDato: LocalDate,
 )

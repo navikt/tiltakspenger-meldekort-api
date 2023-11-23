@@ -12,6 +12,7 @@ object DataSource {
     const val DB_DATABASE_KEY = "DB_DATABASE"
     const val DB_HOST_KEY = "DB_HOST"
     const val DB_PORT_KEY = "DB_PORT"
+    const val FAIL_TIMEOUT = 5000
 
     private fun getProperty(key: String) = System.getenv(key) ?: System.getProperty(key)
 
@@ -28,7 +29,7 @@ object DataSource {
             addDataSourceProperty("databaseName", getProperty(DB_DATABASE_KEY))
             addDataSourceProperty("user", getProperty(DB_USERNAME_KEY))
             addDataSourceProperty("password", getProperty(DB_PASSWORD_KEY))
-            initializationFailTimeout = 5000
+            initializationFailTimeout = FAIL_TIMEOUT.toLong()
             maximumPoolSize = MAX_POOLS
         }
     }

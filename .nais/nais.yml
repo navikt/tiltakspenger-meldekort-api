@@ -1,7 +1,7 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ name }}
+  name: tiltakspenger-meldekort-api
   namespace: tpts
   labels:
     team: tpts
@@ -14,6 +14,15 @@ spec:
   azure:
     application:
       enabled: true
+  gcp:
+    sqlInstances:
+      - name: tiltakspenger-meldekort
+        type: POSTGRES_14
+        diskAutoresize: { { sqlInstances.diskAutoresize } }
+        pointInTimeRecovery: { { sqlInstances.pointInTimeRecovery } }
+        databases:
+          - name: meldekort
+            envVarPrefix: DB
   liveness:
     path: /isalive
   readiness:
@@ -28,3 +37,5 @@ spec:
     pool: {{ kafka.pool }}
   secureLogs:
     enabled: true
+
+
