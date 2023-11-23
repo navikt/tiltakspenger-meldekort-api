@@ -31,3 +31,7 @@ data class MeldekortDTO (
     val meldekortUke2: List<MeldekortDag>,
     val sendtInnDato: LocalDate,
 )
+
+data class MeldekortDTOTest (
+    val id: String
+)

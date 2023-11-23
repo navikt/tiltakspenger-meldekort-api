@@ -1,9 +1,11 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.db.DataSource
 import no.nav.tiltakspenger.meldekort.dto.MeldekortDTO
+import no.nav.tiltakspenger.meldekort.dto.MeldekortDTOTest
 import org.intellij.lang.annotations.Language
 import java.util.*
 import java.util.UUID
@@ -11,7 +13,7 @@ import java.util.UUID
 class MeldekortRepoImpl : MeldekortRepo {
     override fun lagre(meldekortDto: MeldekortDTO) {
         sessionOf(DataSource.hikariDataSource).use {
-            it.transaction { txSession ->
+            it.transaction {
                 it.run(
                     queryOf(
                         sqlLagreMeldekort,
@@ -24,8 +26,27 @@ class MeldekortRepoImpl : MeldekortRepo {
         }
     }
 
-    override fun hent(id: String): MeldekortDTO {
-        TODO("Not yet implemented")
+    override fun hent(id: String): MeldekortDTOTest? {
+        return sessionOf(DataSource.hikariDataSource).use {
+            it.transaction {
+                it.run(
+                    queryOf(
+                        sqlHentMeldekort,
+                        mapOf(
+                            "id" to id
+                        ),
+                    ).map { row ->
+                        row.toMeldekortDto()
+                    }.asSingle
+                )
+            }
+        }
+    }
+
+    private fun Row.toMeldekortDto(): MeldekortDTOTest {
+        return MeldekortDTOTest(
+            id = string("id")
+        )
     }
 
     override fun hentAlle(id: String): List<MeldekortDTO> {
@@ -34,11 +55,14 @@ class MeldekortRepoImpl : MeldekortRepo {
 
     @Language("SQL")
     private val sqlLagreMeldekort = """
-    insert into meldekort (
-        id,
-    ) values (
-        :id,
-    )
-    """.trimIndent();
+        insert into meldekort (
+            id,
+        ) values (
+            :id,                
+        )
+    """.trimIndent()
 
+    private val sqlHentMeldekort = """
+        select * from meldekort where id = :id
+    """.trimIndent()
 }
