@@ -1,0 +1,40 @@
+package no.nav.tiltakspenger.meldekort.db
+
+import no.nav.tiltakspenger.meldekort.Configuration
+import no.nav.tiltakspenger.meldekort.Profile
+import org.flywaydb.core.Flyway
+
+private fun flyway(): Flyway =
+    when(Configuration.applicationProfile()) {
+        Profile.LOCAL -> localFlyway()
+        else -> gcpFlyway()
+    }
+
+private fun localFlyway() = Flyway
+    .configure()
+    .loggers("slf4j")
+    .encoding("UTF-8")
+    .locations("db/migration", "db/local-migration")
+    .dataSource(DataSource.hikariDataSource)
+    .cleanDisabled(false)
+    .cleanOnValidationError(true)
+    .load()
+
+private fun gcpFlyway() = Flyway
+    .configure()
+    .loggers("slf4j")
+    .encoding("UTF-8")
+    .dataSource(DataSource.hikariDataSource)
+    .cleanDisabled(false)
+    .cleanOnValidationError(true)
+    .load()
+
+fun flywayMigrate() {
+    flyway().migrate()
+}
+
+fun flywayCleanAndMigrate() {
+    val flyway = flyway()
+    flyway.clean()
+    flyway.migrate()
+}
