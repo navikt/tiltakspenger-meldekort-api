@@ -5,21 +5,23 @@ import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.db.DataSource
 import no.nav.tiltakspenger.meldekort.dto.MeldekortDTO
 import org.intellij.lang.annotations.Language
+import java.util.*
+import java.util.UUID
 
-internal class MeldekortRepoImpl() : MeldekortRepo {
-    override fun lagre(id: String, meldekortDto: MeldekortDTO) {
-            sessionOf(DataSource.hikariDataSource).use {
+class MeldekortRepoImpl : MeldekortRepo {
+    override fun lagre(meldekortDto: MeldekortDTO) {
+        sessionOf(DataSource.hikariDataSource).use {
+            it.transaction { txSession ->
                 it.run(
-                    queryOf(sqlLagreMeldekort,
+                    queryOf(
+                        sqlLagreMeldekort,
                         mapOf(
-                            "id" to id,
-                            "fom" to meldekortDto.fom,
-                            "tom" to meldekortDto.tom,
-                            "sendtInnDato" to meldekortDto.sendtInnDato
+                            "id" to UUID.randomUUID(),
                         ),
                     ).asUpdate
                 )
             }
+        }
     }
 
     override fun hent(id: String): MeldekortDTO {

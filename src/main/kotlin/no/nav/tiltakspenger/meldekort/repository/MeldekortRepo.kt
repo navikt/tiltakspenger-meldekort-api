@@ -3,7 +3,7 @@ package no.nav.tiltakspenger.meldekort.repository
 import no.nav.tiltakspenger.meldekort.dto.MeldekortDTO
 
 interface MeldekortRepo {
-    fun lagre(id: String, meldekortDto: MeldekortDTO)
+    fun lagre(meldekortDto: MeldekortDTO)
 
     fun hent(id: String): MeldekortDTO
 
