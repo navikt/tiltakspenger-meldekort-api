@@ -5,7 +5,7 @@ import no.nav.tiltakspenger.meldekort.Profile
 import org.flywaydb.core.Flyway
 
 private fun flyway(): Flyway =
-    when(Configuration.applicationProfile()) {
+    when (Configuration.applicationProfile()) {
         Profile.LOCAL -> localFlyway()
         else -> gcpFlyway()
     }

@@ -19,7 +19,7 @@ object DataSource {
     private fun init(): HikariDataSource {
         LOG.info {
             "Kobler til postgress '${getProperty(DB_USERNAME_KEY)}:XXX@" +
-            "${getProperty(DB_HOST_KEY)}:${getProperty(DB_PORT_KEY)}/${getProperty(DB_DATABASE_KEY)}"
+                "${getProperty(DB_HOST_KEY)}:${getProperty(DB_PORT_KEY)}/${getProperty(DB_DATABASE_KEY)}"
         }
 
         return HikariDataSource().apply {

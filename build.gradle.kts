@@ -22,11 +22,11 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
-    implementation("org.jetbrains:annotations:24.0.1")
+    implementation("org.jetbrains:annotations:24.1.0")
     // implementation("com.github.navikt:rapids-and-rivers:2022112407251669271100.df879df951cf")
     implementation("com.natpryce:konfig:1.6.10.0")
 
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation(platform("org.junit:junit-bom:5.10.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.mockk:mockk-dsl-jvm:$mockkVersion")

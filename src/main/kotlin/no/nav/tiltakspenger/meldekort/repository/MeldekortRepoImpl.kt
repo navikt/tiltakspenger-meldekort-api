@@ -8,7 +8,6 @@ import no.nav.tiltakspenger.meldekort.dto.MeldekortDTO
 import no.nav.tiltakspenger.meldekort.dto.MeldekortDTOTest
 import org.intellij.lang.annotations.Language
 import java.util.*
-import java.util.UUID
 
 class MeldekortRepoImpl : MeldekortRepo {
     override fun lagre(meldekortDto: MeldekortDTO) {
@@ -20,7 +19,7 @@ class MeldekortRepoImpl : MeldekortRepo {
                         mapOf(
                             "id" to UUID.randomUUID(),
                         ),
-                    ).asUpdate
+                    ).asUpdate,
                 )
             }
         }
@@ -33,11 +32,11 @@ class MeldekortRepoImpl : MeldekortRepo {
                     queryOf(
                         sqlHentMeldekort,
                         mapOf(
-                            "id" to id
+                            "id" to id,
                         ),
                     ).map { row ->
                         row.toMeldekortDto()
-                    }.asSingle
+                    }.asSingle,
                 )
             }
         }
@@ -45,7 +44,7 @@ class MeldekortRepoImpl : MeldekortRepo {
 
     private fun Row.toMeldekortDto(): MeldekortDTOTest {
         return MeldekortDTOTest(
-            id = string("id")
+            id = string("id"),
         )
     }
 

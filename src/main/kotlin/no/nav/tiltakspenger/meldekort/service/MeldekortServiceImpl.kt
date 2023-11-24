@@ -7,7 +7,7 @@ import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 private val LOG = KotlinLogging.logger {}
 
 class MeldekortServiceImpl(
-    val meldekortRepo: MeldekortRepo
+    val meldekortRepo: MeldekortRepo,
 ) : MeldekortService {
     override suspend fun opprettMeldekort(meldekortDTO: MeldekortDTO) {
         LOG.info { "Start opprett meldekort" }
@@ -15,7 +15,7 @@ class MeldekortServiceImpl(
     }
 
     override suspend fun hentMeldekort(meldekortIdent: String) {
-        LOG.info{ "hent meldekort med meldekortIdent $meldekortIdent" }
+        LOG.info { "hent meldekort med meldekortIdent $meldekortIdent" }
         meldekortRepo.hent(meldekortIdent)
     }
 
