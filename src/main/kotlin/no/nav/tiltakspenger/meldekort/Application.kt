@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort
 
-import mu.KotlinLogging
 import io.ktor.server.routing.routing
+import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort
 

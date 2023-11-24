@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class Tiltak(
     val tiltakType: String,
-    val antallDagerPåTiltaket: Number
+    val antallDagerPåTiltaket: Number,
 )
 
 enum class MeldekortStatus(status: String) {
@@ -22,7 +22,7 @@ data class MeldekortDag(
     val status: MeldekortStatus,
 )
 
-data class MeldekortDTO (
+data class MeldekortDTO(
     val id: String,
     val fom: LocalDate,
     val tom: LocalDate,
@@ -32,6 +32,6 @@ data class MeldekortDTO (
     val sendtInnDato: LocalDate,
 )
 
-data class MeldekortDTOTest (
-    val id: String
+data class MeldekortDTOTest(
+    val id: String,
 )
