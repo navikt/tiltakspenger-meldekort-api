@@ -1,2 +1,7 @@
 kafka:
   pool: nav-dev
+sqlInstances:
+  diskAutoresize: false
+  pointInTimeRecovery: false
+cluster: dev-gcp
+tenant: trygdeetaten.no

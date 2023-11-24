@@ -1,5 +1,8 @@
 package no.nav.tiltakspenger.meldekort
 
+import io.ktor.server.application.Application
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.routes.healthRoutes
@@ -17,9 +20,11 @@ fun main() {
     }
 
     log.info { "starting server" }
+
+    embeddedServer(Netty, port = 8080, module = Application::applicationModule).start(wait = true)
 }
 
-fun io.ktor.server.application.Application.module() {
+fun Application.applicationModule() {
     routing {
         healthRoutes()
         meldekort()

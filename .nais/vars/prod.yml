@@ -1,2 +1,7 @@
 kafka:
   pool: nav-prod
+sqlInstances:
+  diskAutoresize: true
+  pointInTimeRecovery: true
+cluster: prod-gcp
+tenant: nav.no
