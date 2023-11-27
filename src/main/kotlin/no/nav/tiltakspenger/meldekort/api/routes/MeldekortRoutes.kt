@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.routes
+package no.nav.tiltakspenger.meldekort.api.routes
 
 import io.ktor.server.application.call
 import io.ktor.server.plugins.NotFoundException
@@ -7,9 +7,9 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import mu.KotlinLogging
-import no.nav.tiltakspenger.meldekort.dto.MeldekortDTO
-import no.nav.tiltakspenger.meldekort.repository.MeldekortRepoImpl
-import no.nav.tiltakspenger.meldekort.service.MeldekortServiceImpl
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
+import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepoImpl
+import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
 
 private val LOG = KotlinLogging.logger {}
 

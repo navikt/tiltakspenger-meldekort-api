@@ -1,6 +1,6 @@
-package no.nav.tiltakspenger.meldekort.service
+package no.nav.tiltakspenger.meldekort.api.service
 
-import no.nav.tiltakspenger.meldekort.dto.MeldekortDTO
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
 
 interface MeldekortService {
     suspend fun opprettMeldekort(meldekortDTO: MeldekortDTO)

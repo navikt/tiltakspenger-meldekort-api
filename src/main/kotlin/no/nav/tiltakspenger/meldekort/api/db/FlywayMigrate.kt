@@ -1,7 +1,7 @@
-package no.nav.tiltakspenger.meldekort.db
+package no.nav.tiltakspenger.meldekort.api.db
 
-import no.nav.tiltakspenger.meldekort.Configuration
-import no.nav.tiltakspenger.meldekort.Profile
+import no.nav.tiltakspenger.meldekort.api.Configuration
+import no.nav.tiltakspenger.meldekort.api.Profile
 import org.flywaydb.core.Flyway
 
 private fun flyway(): Flyway =

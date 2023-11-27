@@ -1,11 +1,11 @@
-package no.nav.tiltakspenger.meldekort.repository
+package no.nav.tiltakspenger.meldekort.api.repository
 
 import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.tiltakspenger.meldekort.db.DataSource
-import no.nav.tiltakspenger.meldekort.dto.MeldekortDTO
-import no.nav.tiltakspenger.meldekort.dto.MeldekortDTOTest
+import no.nav.tiltakspenger.meldekort.api.db.DataSource
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTOTest
 import org.intellij.lang.annotations.Language
 import java.util.*
 

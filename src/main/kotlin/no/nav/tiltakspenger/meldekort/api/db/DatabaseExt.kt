@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.db
+package no.nav.tiltakspenger.meldekort.api.db
 
 import kotliquery.Row
 import kotliquery.Session

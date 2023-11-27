@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.dto
+package no.nav.tiltakspenger.meldekort.api.dto
 
 import java.time.LocalDate
 

@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort
+package no.nav.tiltakspenger.meldekort.api
 
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties

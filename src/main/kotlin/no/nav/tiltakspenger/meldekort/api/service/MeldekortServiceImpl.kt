@@ -1,8 +1,8 @@
-package no.nav.tiltakspenger.meldekort.service
+package no.nav.tiltakspenger.meldekort.api.service
 
 import mu.KotlinLogging
-import no.nav.tiltakspenger.meldekort.dto.MeldekortDTO
-import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
+import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepo
 
 private val LOG = KotlinLogging.logger {}
 
