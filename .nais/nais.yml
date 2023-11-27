@@ -23,7 +23,7 @@ spec:
     enabled: true
     path: /metrics
   kafka:
-    pool: { { kafka.pool } }
+    pool: {{ kafka.pool }}
   secureLogs:
     enabled: true
   tokenx:
