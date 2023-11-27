@@ -11,7 +11,6 @@ spec:
   azure:
     application:
       enabled: true
-      tenant: {{ tenant }}
   replicas:
     min: 1
     max: 1
@@ -22,8 +21,6 @@ spec:
   prometheus:
     enabled: true
     path: /metrics
-  kafka:
-    pool: {{ kafka.pool }}
   secureLogs:
     enabled: true
   tokenx:
