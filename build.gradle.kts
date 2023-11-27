@@ -63,7 +63,7 @@ configurations.all {
 }
 
 application {
-    mainClass.set("no.nav.tiltakspenger.meldekort.ApplicationKt")
+    mainClass.set("no.nav.tiltakspenger.meldekort.api.ApplicationKt")
 }
 
 java {
