@@ -5,6 +5,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import mu.KotlinLogging
+import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
 import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.api.routes.meldekort
 
@@ -25,6 +26,7 @@ fun main() {
 }
 
 fun Application.applicationModule() {
+    flywayMigrate()
     routing {
         healthRoutes()
         meldekort()
