@@ -20,9 +20,9 @@ fun main() {
         securelog.error(e) { e.message }
     }
 
-    log.info { "starting server" }
+    log.info { "starter serveren" }
 
-    embeddedServer(Netty, port = 8080, module = Application::applicationModule).start(wait = true)
+    embeddedServer(Netty, port = 8081, module = Application::applicationModule).start(wait = true)
 }
 
 fun Application.applicationModule() {
