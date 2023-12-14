@@ -10,6 +10,8 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepoImpl
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
+import java.time.DayOfWeek
+import java.time.LocalDate
 
 private val LOG = KotlinLogging.logger {}
 
@@ -34,4 +36,15 @@ fun Route.meldekort() {
     get("$MELDEKORT_PATH/hentAlle/{behandlingsId/sakId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hentAlle/{behandlingsId/sakId}")
     }
+
+    post("$MELDEKORT_PATH/nyDag") {
+        LOG.info("Det er en ny dag")
+        val nyDag = call.receive<DayHasBegunDTO>().date
+        LOG.info("Den ny dagen er: $nyDag")
+        if (nyDag.dayOfWeek == DayOfWeek.FRIDAY) {
+            LOG.info { "Det er fredag!!! Kanskje vi skal generere meldekort her??" }
+        }
+    }
 }
+
+data class DayHasBegunDTO(val date: LocalDate)
