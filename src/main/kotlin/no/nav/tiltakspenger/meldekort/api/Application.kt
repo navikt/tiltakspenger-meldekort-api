@@ -5,6 +5,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import mu.KotlinLogging
+import no.nav.tiltakspenger.meldekort.api.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
 import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.api.routes.meldekort
@@ -22,7 +23,7 @@ fun main() {
 
     log.info { "starter serveren" }
 
-    embeddedServer(Netty, port = 8081, module = Application::applicationModule).start(wait = true)
+    embeddedServer(Netty, port = httpPort(), module = Application::applicationModule).start(wait = true)
 }
 
 fun Application.applicationModule() {

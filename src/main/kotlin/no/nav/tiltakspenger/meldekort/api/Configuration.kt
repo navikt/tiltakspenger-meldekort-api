@@ -4,6 +4,7 @@ import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
+import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 
@@ -31,6 +32,7 @@ object Configuration {
 
     private val localProperties = ConfigurationMap(
         mapOf(
+            "application.httpPort" to 8081.toString(),
             "application.profile" to Profile.LOCAL.toString(),
             "logback.configurationFile" to "logback.local.xml",
         ),
@@ -59,4 +61,7 @@ object Configuration {
     }
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
+
+    fun httpPort() = config()[Key("application.httpPort", intType)]
+
 }
