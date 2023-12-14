@@ -63,5 +63,4 @@ object Configuration {
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 
     fun httpPort() = config()[Key("application.httpPort", intType)]
-
 }
