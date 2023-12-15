@@ -29,5 +29,4 @@ class MeldekortServiceImpl(
     override fun mottaGrunnlag(meldekortGrunnlagDTO: MeldekortGrunnlagDTO) {
         grunnlagRepo.lagre(meldekortGrunnlagDTO)
     }
-
 }

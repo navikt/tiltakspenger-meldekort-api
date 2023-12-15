@@ -1,11 +1,8 @@
 package no.nav.tiltakspenger.meldekort.api.repository
 
-import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTOTest
 import no.nav.tiltakspenger.meldekort.api.routes.MeldekortGrunnlagDTO
 import org.intellij.lang.annotations.Language
 import java.util.*
@@ -31,7 +28,7 @@ class GrunnlagRepoImpl(
                     ).asUpdate,
                 )
             }.also {
-                dto.tiltak.forEach {tiltak ->
+                dto.tiltak.forEach { tiltak ->
                     tiltakRepo.lagre(id.toString(), tiltak)
                 }
             }

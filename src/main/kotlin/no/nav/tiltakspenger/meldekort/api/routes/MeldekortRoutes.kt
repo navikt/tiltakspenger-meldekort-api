@@ -10,9 +10,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
-import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepoImpl
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
-import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -67,7 +65,7 @@ data class MeldekortGrunnlagDTO(
     val tiltak: List<TiltakDTO>,
 )
 
-enum class StatusDTO{
+enum class StatusDTO {
     INNVILGET,
     AVSLAG,
     STANS,
