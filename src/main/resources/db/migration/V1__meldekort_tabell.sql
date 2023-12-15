@@ -17,7 +17,28 @@ $$
     END
 $$;
 
-CREATE TABLE MELDEKORT
+create table meldekort
 (
-    id VARCHAR PRIMARY KEY
-)
+    id varchar primary key
+);
+
+create table grunnlag
+(
+    id                  varchar primary key,
+    behandling_id       varchar not null,
+    vedtak_id           varchar not null,
+    status              varchar not null,
+    fom                 date    not null,
+    tom                 date    not null
+);
+
+create table grunnlag_tiltak
+(
+    id                  varchar primary key,
+    grunnlag_id         varchar references grunnlag(id),
+    fom                 date    not null,
+    tom                 date    not null,
+    typekode            varchar not null,
+    typebeskrivelse     varchar not null,
+    antall_dager_pr_uke float   not null
+);

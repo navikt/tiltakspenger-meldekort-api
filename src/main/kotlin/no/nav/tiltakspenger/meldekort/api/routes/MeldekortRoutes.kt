@@ -11,6 +11,7 @@ import io.ktor.server.routing.post
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepoImpl
+import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -18,9 +19,9 @@ import java.time.LocalDate
 private val LOG = KotlinLogging.logger {}
 
 private const val MELDEKORT_PATH = "/meldekort"
-fun Route.meldekort() {
-    val meldekortService = MeldekortServiceImpl(MeldekortRepoImpl())
-
+fun Route.meldekort(
+    meldekortService: MeldekortService,
+) {
     post("$MELDEKORT_PATH/opprett") {
         LOG.info("Motatt request på $MELDEKORT_PATH")
         val meldekortDTO = call.receive<MeldekortDTO>()
@@ -48,6 +49,40 @@ fun Route.meldekort() {
         }
         call.respond(message = "OK", status = HttpStatusCode.OK)
     }
+
+    post("$MELDEKORT_PATH/grunnlag") {
+        val dto = call.receive<MeldekortGrunnlagDTO>()
+
+        LOG.info { "Vi fikk nytt grunnlag : $dto" }
+        meldekortService.mottaGrunnlag(dto)
+        call.respond(message = "OK", status = HttpStatusCode.OK)
+    }
 }
+
+data class MeldekortGrunnlagDTO(
+    val vedtakId: String,
+    val behandlingId: String,
+    val status: StatusDTO,
+    val vurderingsperiode: PeriodeDTO,
+    val tiltak: List<TiltakDTO>,
+)
+
+enum class StatusDTO{
+    INNVILGET,
+    AVSLAG,
+    STANS,
+    FORLENGELSE,
+}
+
+data class TiltakDTO(
+    val periodeDTO: PeriodeDTO,
+    val typeBeskrivelse: String,
+    val typeKode: String,
+    val antDagerIUken: Float,
+)
+data class PeriodeDTO(
+    val fra: LocalDate,
+    val til: LocalDate,
+)
 
 data class DayHasBegunDTO(val date: LocalDate)

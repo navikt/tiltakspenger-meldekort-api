@@ -12,8 +12,12 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.routing
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
+import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepoImpl
+import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagTiltakRepo
+import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepoImpl
 import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.api.routes.meldekort
+import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
 
 fun main() {
     System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
@@ -32,11 +36,16 @@ fun main() {
 }
 
 fun Application.applicationModule() {
+    val meldekortRepo = MeldekortRepoImpl()
+    val grunnlagTiltakRepo = GrunnlagTiltakRepo()
+    val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo)
+    val meldekortService = MeldekortServiceImpl(meldekortRepo, grunnlagRepo)
+
     installJacksonFeature()
     flywayMigrate()
     routing {
         healthRoutes()
-        meldekort()
+        meldekort(meldekortService)
     }
 }
 
