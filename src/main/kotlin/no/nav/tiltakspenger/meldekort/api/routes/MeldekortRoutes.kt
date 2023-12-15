@@ -1,8 +1,10 @@
 package no.nav.tiltakspenger.meldekort.api.routes
 
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.plugins.NotFoundException
 import io.ktor.server.request.receive
+import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
@@ -44,6 +46,7 @@ fun Route.meldekort() {
         if (nyDag.dayOfWeek == DayOfWeek.FRIDAY) {
             LOG.info { "Det er fredag!!! Kanskje vi skal generere meldekort her??" }
         }
+        call.respond(message = "OK", status = HttpStatusCode.OK)
     }
 }
 
