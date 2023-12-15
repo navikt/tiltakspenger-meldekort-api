@@ -1,6 +1,7 @@
 val javaVersion = JavaVersion.VERSION_21
 val mockkVersion = "1.13.8"
 val ktorVersion = "2.3.7"
+val jacksonVersion = "2.16.0"
 
 plugins {
     application
@@ -51,6 +52,12 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-utils:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
+
+    // Jackson
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+
 
     // DB
     implementation("org.flywaydb:flyway-core:10.2.0")
