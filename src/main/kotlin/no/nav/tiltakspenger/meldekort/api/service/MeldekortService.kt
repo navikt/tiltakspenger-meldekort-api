@@ -1,14 +1,15 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
+import no.nav.tiltakspenger.meldekort.api.dto.Meldekort
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
 import no.nav.tiltakspenger.meldekort.api.routes.MeldekortGrunnlagDTO
 
 interface MeldekortService {
-    suspend fun opprettMeldekort(meldekortDTO: MeldekortDTO)
+    fun opprettMeldekort(meldekort: Meldekort.Registrert)
 
-    suspend fun hentMeldekort(meldekortIdent: String)
+    fun hentMeldekort(id: String): MeldekortMedTiltak?
 
-    suspend fun hentAlleMeldekortene(sakId: String)
+    fun hentAlleMeldekortene(behandlingId: String): List<MeldekortMedTiltak>
 
     fun mottaGrunnlag(meldekortGrunnlagDTO: MeldekortGrunnlagDTO)
 }

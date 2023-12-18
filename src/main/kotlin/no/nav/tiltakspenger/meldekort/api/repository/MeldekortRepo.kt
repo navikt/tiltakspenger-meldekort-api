@@ -1,12 +1,12 @@
 package no.nav.tiltakspenger.meldekort.api.repository
 
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTOTest
+import no.nav.tiltakspenger.meldekort.api.dto.Meldekort
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
 
 interface MeldekortRepo {
-    fun lagre(meldekortDto: MeldekortDTO)
+    fun lagre(meldekort: Meldekort.Registrert)
 
-    fun hent(id: String): MeldekortDTOTest?
+    fun hent(id: String): MeldekortMedTiltak?
 
-    fun hentAlle(id: String): List<MeldekortDTO>
+    fun hentAlle(ident: String): List<MeldekortMedTiltak>
 }

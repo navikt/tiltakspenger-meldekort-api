@@ -9,7 +9,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import mu.KotlinLogging
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
+import no.nav.tiltakspenger.meldekort.api.dto.Meldekort
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -22,14 +22,14 @@ fun Route.meldekort(
 ) {
     post("$MELDEKORT_PATH/opprett") {
         LOG.info("Motatt request på $MELDEKORT_PATH")
-        val meldekortDTO = call.receive<MeldekortDTO>()
+        val meldekortDTO = call.receive<Meldekort.Registrert>()
         meldekortService.opprettMeldekort(meldekortDTO)
     }
     get("$MELDEKORT_PATH/hent/{meldekortId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hent/{meldekortId}")
         val meldekortIdent = call.parameters["meldekortId"]
         if (meldekortIdent != null) {
-            return@get meldekortService.hentMeldekort(meldekortIdent)
+            call.respond(status = HttpStatusCode.OK, message = meldekortService.hentMeldekort(meldekortIdent))
         } else {
             throw NotFoundException("Meldekort med ident:$meldekortIdent eksisterer ikke i databasen")
         }

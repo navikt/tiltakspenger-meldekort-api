@@ -3,8 +3,11 @@ package no.nav.tiltakspenger.meldekort.api.dto
 import java.time.LocalDate
 
 data class Tiltak(
-    val tiltakType: String,
+    val tiltakTypekode: String,
+    val tiltakTypeBeskrivelse: String,
     val antallDagerPåTiltaket: Number,
+    val fom: LocalDate,
+    val tom: LocalDate,
 )
 
 enum class MeldekortStatus(status: String) {
@@ -22,14 +25,41 @@ data class MeldekortDag(
     val status: MeldekortStatus,
 )
 
-data class MeldekortDTO(
+sealed interface Meldekort {
+    data class Registrert(
+        val id: String,
+        val fom: LocalDate,
+        val tom: LocalDate,
+        val meldekortUke1: List<MeldekortDag>,
+        val meldekortUke2: List<MeldekortDag>,
+    )
+    data class Innsendt(
+        val id: String,
+        val fom: LocalDate,
+        val tom: LocalDate,
+        val meldekortUke1: List<MeldekortDag>,
+        val meldekortUke2: List<MeldekortDag>,
+        val sendtInnDato: LocalDate,
+    )
+}
+
+// data class MeldekortDTO(
+//    val id: String,
+//    val fom: LocalDate,
+//    val tom: LocalDate,
+//    val tiltak: Tiltak,
+//    val meldekortUke1: List<MeldekortDag>,
+//    val meldekortUke2: List<MeldekortDag>,
+//    val sendtInnDato: LocalDate?,
+// )
+
+data class MeldekortMedTiltak(
     val id: String,
     val fom: LocalDate,
     val tom: LocalDate,
-    val tiltak: Tiltak,
+    val tiltak: List<Tiltak>,
     val meldekortUke1: List<MeldekortDag>,
     val meldekortUke2: List<MeldekortDag>,
-    val sendtInnDato: LocalDate,
 )
 
 data class MeldekortDTOTest(
