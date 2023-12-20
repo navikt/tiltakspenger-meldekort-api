@@ -14,6 +14,7 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepoImpl
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagTiltakRepo
+import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepoImpl
 import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.api.routes.meldekort
@@ -36,8 +37,9 @@ fun main() {
 }
 
 fun Application.applicationModule() {
-    val meldekortRepo = MeldekortRepoImpl()
     val grunnlagTiltakRepo = GrunnlagTiltakRepo()
+    val meldekortDagRepo = MeldekortDagRepo(grunnlagTiltakRepo)
+    val meldekortRepo = MeldekortRepoImpl(meldekortDagRepo)
     val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo)
     val meldekortService = MeldekortServiceImpl(meldekortRepo, grunnlagRepo)
 

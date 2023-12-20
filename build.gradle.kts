@@ -1,6 +1,7 @@
 val javaVersion = JavaVersion.VERSION_21
 val mockkVersion = "1.13.8"
 val ktorVersion = "2.3.7"
+val kotestVersion = "5.8.0"
 val jacksonVersion = "2.16.0"
 
 plugins {
@@ -28,11 +29,15 @@ dependencies {
     implementation("org.jetbrains:annotations:24.1.0")
     // implementation("com.github.navikt:rapids-and-rivers:2022112407251669271100.df879df951cf")
     implementation("com.natpryce:konfig:1.6.10.0")
+    implementation("com.google.guava:guava:32.1.3-jre")
 
     testImplementation(platform("org.junit:junit-bom:5.10.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.mockk:mockk-dsl-jvm:$mockkVersion")
+    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-json:$kotestVersion")
+    testImplementation("io.kotest:kotest-extensions:$kotestVersion")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
 
     implementation("io.ktor:ktor-server-netty:$ktorVersion")

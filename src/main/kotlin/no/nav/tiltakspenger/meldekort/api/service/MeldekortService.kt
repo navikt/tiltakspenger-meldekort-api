@@ -1,15 +1,15 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
-import no.nav.tiltakspenger.meldekort.api.dto.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
-import no.nav.tiltakspenger.meldekort.api.routes.MeldekortGrunnlagDTO
+import java.time.LocalDate
 
 interface MeldekortService {
-    fun opprettMeldekort(meldekort: Meldekort.Registrert)
+    fun genererMeldekort(fraDato: LocalDate)
 
     fun hentMeldekort(id: String): MeldekortMedTiltak?
 
     fun hentAlleMeldekortene(behandlingId: String): List<MeldekortMedTiltak>
 
-    fun mottaGrunnlag(meldekortGrunnlagDTO: MeldekortGrunnlagDTO)
+    fun mottaGrunnlag(meldekortGrunnlag: MeldekortGrunnlag)
 }
