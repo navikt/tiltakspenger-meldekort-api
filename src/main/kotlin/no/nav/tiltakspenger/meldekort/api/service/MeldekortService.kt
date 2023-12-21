@@ -5,7 +5,7 @@ import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
 import java.time.LocalDate
 
 interface MeldekortService {
-    fun genererMeldekort(fraDato: LocalDate)
+    fun genererMeldekort(nyDag: LocalDate)
 
     fun hentMeldekort(id: String): MeldekortMedTiltak?
 

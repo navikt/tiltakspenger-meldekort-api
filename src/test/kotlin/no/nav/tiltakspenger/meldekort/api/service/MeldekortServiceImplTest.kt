@@ -48,4 +48,26 @@ class MeldekortServiceImplTest {
                 MeldekortDag(mandag.plusDays(13), null, MeldekortStatus.IKKE_UTFYLT),
             )
     }
+
+    @Test
+    fun `test finnSisteDag`() {
+        val til = LocalDate.of(2023, 1, 31) // onsdag
+        val fra = LocalDate.of(2023, 1, 4) // onsdag
+        val sisteDag = finnSisteDag(finnMandag(fra), til)
+        sisteDag shouldBe LocalDate.of(2023, 2, 12)
+        val fra2 = LocalDate.of(2023, 1, 11) // onsdag
+        val sisteDag2 = finnSisteDag(finnMandag(fra2), til)
+        sisteDag2 shouldBe LocalDate.of(2023, 2, 5)
+    }
+
+    @Test
+    fun `test finnSisteDagMatte`() {
+        val til = LocalDate.of(2023, 1, 31) // onsdag
+        val fra = LocalDate.of(2023, 1, 5) // onsdag
+        val sisteDag = finnSisteDagMatte(finnMandag(fra), til)
+        sisteDag shouldBe LocalDate.of(2023, 2, 12)
+        val fra2 = LocalDate.of(2023, 1, 11) // onsdag
+        val sisteDag2 = finnSisteDagMatte(finnMandag(fra2), til)
+        sisteDag2 shouldBe LocalDate.of(2023, 2, 5)
+    }
 }
