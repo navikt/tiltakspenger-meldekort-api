@@ -1,8 +1,8 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
 import io.kotest.matchers.shouldBe
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDag
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek

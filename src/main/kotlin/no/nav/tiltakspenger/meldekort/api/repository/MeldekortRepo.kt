@@ -1,8 +1,8 @@
 package no.nav.tiltakspenger.meldekort.api.repository
 
-import no.nav.tiltakspenger.meldekort.api.dto.Meldekort
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
+import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortMedTiltakDTO
 import java.util.UUID
 
 interface MeldekortRepo {
@@ -12,7 +12,7 @@ interface MeldekortRepo {
 
     fun hentPerioderForMeldekortForGrunnlag(grunnlagId: UUID): List<Periode>
 
-    fun hent(id: String): MeldekortMedTiltak?
+    fun hent(id: String): MeldekortMedTiltakDTO?
 
-    fun hentAlleForIdent(ident: String): List<MeldekortMedTiltak>
+    fun hentAlleForIdent(ident: String): List<MeldekortMedTiltakDTO>
 }

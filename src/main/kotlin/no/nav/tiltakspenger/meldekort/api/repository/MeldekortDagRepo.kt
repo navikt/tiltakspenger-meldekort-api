@@ -5,9 +5,10 @@ import kotliquery.TransactionalSession
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDag
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import org.intellij.lang.annotations.Language
+import java.time.LocalDate
 import java.util.*
 
 class MeldekortDagRepo(
@@ -25,6 +26,24 @@ class MeldekortDagRepo(
                             "tiltakId" to if (dto.tiltak == null) null else dto.tiltak.id.toString(),
                             "dato" to dto.dato,
                             "status" to dto.status.name,
+                        ),
+                    ).asUpdate,
+                )
+            }
+        }
+    }
+
+    fun oppdater(meldekortId: UUID, tiltakId: UUID?, dato: LocalDate, status: String) {
+        sessionOf(DataSource.hikariDataSource).use {
+            it.transaction {
+                it.run(
+                    queryOf(
+                        sqlOppdaterMeldekortDag,
+                        mapOf(
+                            "meldekortId" to meldekortId.toString(),
+                            "tiltakId" to tiltakId?.toString(),
+                            "dato" to dato,
+                            "status" to status,
                         ),
                     ).asUpdate,
                 )
@@ -73,5 +92,14 @@ class MeldekortDagRepo(
             :dato,
             :status
         )
+    """.trimIndent()
+
+    @Language("SQL")
+    private val sqlOppdaterMeldekortDag = """
+        update meldekortdag set 
+            status = :status,
+            tiltak_id = :tiltakId
+        where meldekort_id = :meldekortId
+          and dato = :dato
     """.trimIndent()
 }

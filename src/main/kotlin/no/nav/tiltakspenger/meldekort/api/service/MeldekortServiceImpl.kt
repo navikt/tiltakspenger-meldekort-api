@@ -1,14 +1,16 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
 import mu.KotlinLogging
+import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Status
-import no.nav.tiltakspenger.meldekort.api.dto.Meldekort
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDag
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepo
+import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepo
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortMedTiltakDTO
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
@@ -17,6 +19,7 @@ private val LOG = KotlinLogging.logger {}
 
 class MeldekortServiceImpl(
     private val meldekortRepo: MeldekortRepo,
+    private val meldekortDagRepo: MeldekortDagRepo,
     private val grunnlagRepo: GrunnlagRepo,
 ) : MeldekortService {
     override fun genererMeldekort(nyDag: LocalDate) {
@@ -81,7 +84,7 @@ class MeldekortServiceImpl(
 //                            )
 //                    }
 //                    meldekortRepo.lagre(meldekort)
-    override fun hentMeldekort(id: String): MeldekortMedTiltak? {
+    override fun hentMeldekort(id: String): MeldekortMedTiltakDTO? {
         LOG.info { "hent meldekort med meldekortIdent $id" }
         return meldekortRepo.hent(id)
     }
@@ -98,6 +101,15 @@ class MeldekortServiceImpl(
 
     override fun hentGrunnlagForBehandling(behandlingId: String): MeldekortGrunnlag? {
         return grunnlagRepo.hentForBehandling(behandlingId)
+    }
+
+    override fun oppdaterMeldekortDag(meldekortId: UUID, tiltakId: UUID, dato: LocalDate, status: MeldekortDagStatus) {
+        meldekortDagRepo.oppdater(
+            meldekortId = meldekortId,
+            tiltakId = tiltakId,
+            dato = dato,
+            status = status.name,
+        )
     }
 }
 

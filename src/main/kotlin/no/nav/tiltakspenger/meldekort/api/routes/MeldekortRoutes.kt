@@ -8,14 +8,21 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import mu.KotlinLogging
+import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.domene.Tiltak
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
+import no.nav.tiltakspenger.meldekort.api.routes.dto.DayHasBegunDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortGrunnlagDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortMedTiltakDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.PeriodeDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.StatusDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.TiltakDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import java.time.DayOfWeek
-import java.time.LocalDate
 import java.util.UUID
 
 private val LOG = KotlinLogging.logger {}
@@ -29,6 +36,7 @@ fun Route.meldekort(
 //        val meldekortDTO = call.receive<Meldekort.Åpent>()
 //        meldekortService.opprettMeldekort(meldekortDTO)
 //    }
+
     get("$MELDEKORT_PATH/hent/{meldekortId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hent/{meldekortId}")
         val meldekortIdent = call.parameters["meldekortId"]
@@ -38,6 +46,24 @@ fun Route.meldekort(
 //            throw NotFoundException("Meldekort med ident:$meldekortIdent eksisterer ikke i databasen")
 //        }
     }
+
+    post("$MELDEKORT_PATH/oppdaterDag") {
+        val dto = call.receive<MeldekortDagDTO>()
+
+        // TODO() validering av felter og tilgangsstyring av hvem som får oppdatere
+        // kan alle saksbehandlere oppdatere?
+        // hvis denne skal kunne kalles fra en bruker må vi validere at meldekortet er denne brukeren sitt eller en egen rute
+        // validere at man ikke setter en tiltakId som ikke tilhører meldekortet?
+        meldekortService.oppdaterMeldekortDag(
+            meldekortId = UUID.fromString(dto.meldekortId),
+            tiltakId = UUID.fromString(dto.tiltakId),
+            dato = dto.dato,
+            status = MeldekortDagStatus.valueOf(dto.status),
+        )
+
+        call.respond(message = "{}", status = HttpStatusCode.OK)
+    }
+
     get("$MELDEKORT_PATH/hentAlleForBehandling/{behandlingId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hentAlleForBehandling/behandlingId")
         val behandlingId = call.parameters["behandlingId"]
@@ -49,20 +75,24 @@ fun Route.meldekort(
         val meldekort = meldekortService.hentAlleMeldekortene(grunnlag.id)
         LOG.info(meldekort.toString())
         val dto = meldekort.map {
-            MeldekortMedTiltak(
+            MeldekortMedTiltakDTO(
                 id = it.id.toString(),
                 fom = it.fom,
                 tom = it.tom,
+                status = when (it) {
+                    is Meldekort.Innsendt -> "INNSENDT"
+                    is Meldekort.Åpent -> "ÅPENT"
+                },
                 meldekortdager = it.meldekortDager,
-                tiltak = grunnlag.tiltak.map {
+                tiltak = grunnlag.tiltak.map { tiltak ->
                     TiltakDTO(
                         periodeDTO = PeriodeDTO(
-                            fra = it.periode.fra,
-                            til = it.periode.til,
+                            fra = tiltak.periode.fra,
+                            til = tiltak.periode.til,
                         ),
-                        typeBeskrivelse = it.typeBeskrivelse,
-                        typeKode = it.typeKode,
-                        antDagerIUken = it.antDagerIUken,
+                        typeBeskrivelse = tiltak.typeBeskrivelse,
+                        typeKode = tiltak.typeKode,
+                        antDagerIUken = tiltak.antDagerIUken,
                     )
                 },
             )
@@ -118,29 +148,3 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
         },
     )
 }
-
-data class MeldekortGrunnlagDTO(
-    val vedtakId: String,
-    val behandlingId: String,
-    val status: StatusDTO,
-    val vurderingsperiode: PeriodeDTO,
-    val tiltak: List<TiltakDTO>,
-)
-
-enum class StatusDTO {
-    AKTIV,
-    IKKE_AKTIV,
-}
-
-data class TiltakDTO(
-    val periodeDTO: PeriodeDTO,
-    val typeBeskrivelse: String,
-    val typeKode: String,
-    val antDagerIUken: Float,
-)
-data class PeriodeDTO(
-    val fra: LocalDate,
-    val til: LocalDate,
-)
-
-data class DayHasBegunDTO(val date: LocalDate)

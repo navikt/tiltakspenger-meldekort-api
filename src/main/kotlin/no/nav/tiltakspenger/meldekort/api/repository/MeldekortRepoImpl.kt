@@ -5,9 +5,9 @@ import kotliquery.TransactionalSession
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
-import no.nav.tiltakspenger.meldekort.api.dto.Meldekort
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
+import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortMedTiltakDTO
 import org.intellij.lang.annotations.Language
 import java.util.*
 
@@ -75,7 +75,7 @@ class MeldekortRepoImpl(
         }
     }
 
-    override fun hent(id: String): MeldekortMedTiltak? {
+    override fun hent(id: String): MeldekortMedTiltakDTO? {
         return sessionOf(DataSource.hikariDataSource).use {
             it.transaction {
                 it.run(
@@ -118,11 +118,11 @@ class MeldekortRepoImpl(
         }
     }
 
-    private fun Row.toMeldekortMedTiltak(): MeldekortMedTiltak {
+    private fun Row.toMeldekortMedTiltak(): MeldekortMedTiltakDTO {
         TODO()
     }
 
-    override fun hentAlleForIdent(ident: String): List<MeldekortMedTiltak> {
+    override fun hentAlleForIdent(ident: String): List<MeldekortMedTiltakDTO> {
         TODO("Not yet implemented")
     }
 
