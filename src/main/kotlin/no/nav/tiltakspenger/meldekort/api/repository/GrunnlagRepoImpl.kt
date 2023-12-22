@@ -92,12 +92,35 @@ class GrunnlagRepoImpl(
 //        TODO("Not yet implemented")
 //    }
 
+    override fun hentForBehandling(behandlingId: String): MeldekortGrunnlag? {
+        return sessionOf(DataSource.hikariDataSource).use {
+            it.transaction {
+                it.run(
+                    queryOf(
+                        sqlHentForBehandling,
+                        mapOf(
+                            "behandling_id" to behandlingId,
+                        ),
+                    ).map { row ->
+                        row.toGrunnlag(it)
+                    }.asSingle,
+                )
+            }
+        }
+    }
+
     @Language("SQL")
     private val sqlhentAktiveInneværendePeriodeGrunnlag = """
         select * from grunnlag
         where status = 'AKTIV'
          and fom <= now()
          and tom >= now()
+    """.trimIndent()
+
+    @Language("SQL")
+    private val sqlHentForBehandling = """
+        select * from grunnlag
+        where behandling_id = :behandling_id
     """.trimIndent()
 
     @Language("SQL")

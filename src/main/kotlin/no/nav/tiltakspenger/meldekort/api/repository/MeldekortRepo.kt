@@ -14,5 +14,5 @@ interface MeldekortRepo {
 
     fun hent(id: String): MeldekortMedTiltak?
 
-    fun hentAlle(ident: String): List<MeldekortMedTiltak>
+    fun hentAlleForIdent(ident: String): List<MeldekortMedTiltak>
 }

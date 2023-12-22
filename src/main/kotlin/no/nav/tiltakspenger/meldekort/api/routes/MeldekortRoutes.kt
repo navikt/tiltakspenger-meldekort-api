@@ -11,6 +11,7 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.domene.Tiltak
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortMedTiltak
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import java.time.DayOfWeek
@@ -37,8 +38,36 @@ fun Route.meldekort(
 //            throw NotFoundException("Meldekort med ident:$meldekortIdent eksisterer ikke i databasen")
 //        }
     }
-    get("$MELDEKORT_PATH/hentAlle/{behandlingsId/sakId}") {
-        LOG.info("Motatt request på $MELDEKORT_PATH/hentAlle/{behandlingsId/sakId}")
+    get("$MELDEKORT_PATH/hentAlleForBehandling/{behandlingId}") {
+        LOG.info("Motatt request på $MELDEKORT_PATH/hentAlleForBehandling/behandlingId")
+        val behandlingId = call.parameters["behandlingId"]
+            ?: return@get call.respond(message = "behandlingId mangler", status = HttpStatusCode.NotFound)
+        val grunnlag = meldekortService.hentGrunnlagForBehandling(behandlingId) ?: return@get call.respond(
+            message = "Fant ikke grunnlag for behandlingId: $behandlingId",
+            status = HttpStatusCode.NotFound,
+        )
+        val meldekort = meldekortService.hentAlleMeldekortene(grunnlag.id)
+        LOG.info(meldekort.toString())
+        val dto = meldekort.map {
+            MeldekortMedTiltak(
+                id = it.id.toString(),
+                fom = it.fom,
+                tom = it.tom,
+                meldekortdager = it.meldekortDager,
+                tiltak = grunnlag.tiltak.map {
+                    TiltakDTO(
+                        periodeDTO = PeriodeDTO(
+                            fra = it.periode.fra,
+                            til = it.periode.til,
+                        ),
+                        typeBeskrivelse = it.typeBeskrivelse,
+                        typeKode = it.typeKode,
+                        antDagerIUken = it.antDagerIUken,
+                    )
+                },
+            )
+        }
+        call.respond(status = HttpStatusCode.OK, dto)
     }
 
     post("$MELDEKORT_PATH/nyDag") {

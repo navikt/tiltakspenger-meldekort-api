@@ -6,7 +6,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDag
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDagStatus
 import org.intellij.lang.annotations.Language
 import java.util.*
 
@@ -48,8 +48,8 @@ class MeldekortDagRepo(
     private fun Row.toMeldekortDag(txSession: TransactionalSession): MeldekortDag {
         return MeldekortDag(
             dato = localDate("dato"),
-            tiltak = grunnlagTiltakRepo.hentTiltak(string("tiltak_id"), txSession),
-            status = MeldekortStatus.valueOf(string("status")),
+            tiltak = stringOrNull("tiltak_id")?.let { grunnlagTiltakRepo.hentTiltak(it, txSession) },
+            status = MeldekortDagStatus.valueOf(string("status")),
         )
     }
 

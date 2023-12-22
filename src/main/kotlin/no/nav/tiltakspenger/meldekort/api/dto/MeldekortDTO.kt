@@ -14,7 +14,7 @@ import java.util.UUID
 //    val tom: LocalDate,
 // )
 
-enum class MeldekortStatus(status: String) {
+enum class MeldekortDagStatus(status: String) {
     IKKE_UTFYLT("Ikke utfylt"),
     DELTATT("Deltatt"),
     IKKE_DELTATT("Ikke deltatt"),
@@ -24,13 +24,18 @@ enum class MeldekortStatus(status: String) {
     LØNN_FOR_TID_I_ARBEID("Lønn for tid i arbeid"),
 }
 
+enum class MeldekortStatus(status: String) {
+    ÅPENT("Åpent"),
+    INNSENDT("Innsendt"),
+}
+
 data class MeldekortDag(
     val dato: LocalDate,
     val tiltak: Tiltak?,
-    val status: MeldekortStatus,
+    val status: MeldekortDagStatus,
 ) {
     init {
-        check(status != MeldekortStatus.IKKE_UTFYLT || tiltak == null) {
+        check(status != MeldekortDagStatus.IKKE_UTFYLT || tiltak == null) {
             "Må ha tiltak hvis status ikke er IKKE_UTFYLT"
         }
     }
@@ -41,7 +46,7 @@ data class MeldekortDag(
                 MeldekortDag(
                     dato = it,
                     tiltak = null,
-                    status = MeldekortStatus.IKKE_UTFYLT,
+                    status = MeldekortDagStatus.IKKE_UTFYLT,
                 )
             }
         }
@@ -98,8 +103,16 @@ data class MeldekortMedTiltak(
     val fom: LocalDate,
     val tom: LocalDate,
     val tiltak: List<TiltakDTO>,
-    val meldekortUke1: List<MeldekortDag>,
-    val meldekortUke2: List<MeldekortDag>,
+    val meldekortdager: List<MeldekortDag>,
+)
+
+data class MeldekortMedTiltakOgStatus(
+    val id: String,
+    val fom: LocalDate,
+    val tom: LocalDate,
+    val tiltak: List<TiltakDTO>,
+    val meldekortdager: List<MeldekortDag>,
+    val status: MeldekortStatus,
 )
 
 data class MeldekortDTOTest(

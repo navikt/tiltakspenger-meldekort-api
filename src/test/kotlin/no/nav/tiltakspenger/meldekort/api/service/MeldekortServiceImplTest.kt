@@ -2,12 +2,11 @@ package no.nav.tiltakspenger.meldekort.api.service
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDag
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.util.*
 
 class MeldekortServiceImplTest {
     @Test
@@ -31,21 +30,21 @@ class MeldekortServiceImplTest {
 
         MeldekortDag.lagIkkeUtfyltPeriode(mandag, mandag.plusDays(13)) shouldBe
             listOf(
-                MeldekortDag(mandag, null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(1), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(2), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(3), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(4), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(5), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(6), null, MeldekortStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag, null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(1), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(2), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(3), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(4), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(5), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(6), null, MeldekortDagStatus.IKKE_UTFYLT),
 
-                MeldekortDag(mandag.plusDays(7), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(8), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(9), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(10), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(11), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(12), null, MeldekortStatus.IKKE_UTFYLT),
-                MeldekortDag(mandag.plusDays(13), null, MeldekortStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(7), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(8), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(9), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(10), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(11), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(12), null, MeldekortDagStatus.IKKE_UTFYLT),
+                MeldekortDag(mandag.plusDays(13), null, MeldekortDagStatus.IKKE_UTFYLT),
             )
     }
 

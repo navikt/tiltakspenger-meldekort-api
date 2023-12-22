@@ -65,7 +65,7 @@ class MeldekortRepoImpl(
                     queryOf(
                         sqlHentMeldekortForGrunnlag,
                         mapOf(
-                            "grunnlagId" to grunnlagId,
+                            "grunnlagId" to grunnlagId.toString(),
                         ),
                     ).map { row ->
                         row.toMeldekort(txSession)
@@ -105,13 +105,13 @@ class MeldekortRepoImpl(
                 id = UUID.fromString(string("id")),
                 fom = localDate("fom"),
                 tom = localDate("tom"),
-                meldekortDager = emptyList(), // her må vi hente meldekortdager
+                meldekortDager = meldekortDagRepo.hentMeldekortDager(string("id"), txSession),
             )
             "INNSENDT" -> Meldekort.Innsendt(
                 id = UUID.fromString(string("id")),
                 fom = localDate("fom"),
                 tom = localDate("tom"),
-                meldekortDager = emptyList(), // her må vi hente meldekortdager
+                meldekortDager = meldekortDagRepo.hentMeldekortDager(string("id"), txSession),
                 sendtInnDato = localDate("sendt_inn_dato"),
             )
             else -> throw IllegalArgumentException("Ukjent meldekort type $type")
@@ -122,7 +122,7 @@ class MeldekortRepoImpl(
         TODO()
     }
 
-    override fun hentAlle(id: String): List<MeldekortMedTiltak> {
+    override fun hentAlleForIdent(ident: String): List<MeldekortMedTiltak> {
         TODO("Not yet implemented")
     }
 

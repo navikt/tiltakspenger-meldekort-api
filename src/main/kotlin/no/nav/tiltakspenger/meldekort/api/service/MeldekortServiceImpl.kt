@@ -86,13 +86,18 @@ class MeldekortServiceImpl(
         return meldekortRepo.hent(id)
     }
 
-    override fun hentAlleMeldekortene(behandlingId: String): List<MeldekortMedTiltak> {
-        TODO("Not yet implemented")
+    override fun hentAlleMeldekortene(grunnlagId: UUID): List<Meldekort> {
+        LOG.info { "hent meldekort med grunnlagId $grunnlagId" }
+        return meldekortRepo.hentMeldekortForGrunnlag(grunnlagId)
     }
 
     override fun mottaGrunnlag(meldekortGrunnlag: MeldekortGrunnlag) {
         grunnlagRepo.lagre(meldekortGrunnlag)
         opprettMeldekortForGrunnlag(meldekortGrunnlag)
+    }
+
+    override fun hentGrunnlagForBehandling(behandlingId: String): MeldekortGrunnlag? {
+        return grunnlagRepo.hentForBehandling(behandlingId)
     }
 }
 
