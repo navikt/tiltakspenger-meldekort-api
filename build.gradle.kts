@@ -2,10 +2,11 @@ val javaVersion = JavaVersion.VERSION_21
 val mockkVersion = "1.13.8"
 val ktorVersion = "2.3.7"
 val tokenSupportVersion = "3.1.5"
+val jacksonVersion = "2.16.1"
 
 plugins {
     application
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
     // id("ca.cutterslade.analyze") version "1.9.1"
     id("com.diffplug.spotless") version "6.23.3"
 }
@@ -57,9 +58,15 @@ dependencies {
     implementation("io.ktor:ktor-utils:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
 
+    // Jackson
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+
+
     // DB
-    implementation("org.flywaydb:flyway-core:10.2.0")
-    implementation("org.flywaydb:flyway-database-postgresql:10.3.0")
+    implementation("org.flywaydb:flyway-core:10.4.1")
+    implementation("org.flywaydb:flyway-database-postgresql:10.4.1")
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("org.postgresql:postgresql:42.7.1")
     implementation("com.github.seratch:kotliquery:1.9.0")
@@ -109,4 +116,12 @@ tasks {
         warnUnusedDeclared = true
     }
      */
+}
+
+task("addPreCommitGitHookOnBuild") {
+    println("⚈ ⚈ ⚈ Running Add Pre Commit Git Hook Script on Build ⚈ ⚈ ⚈")
+    exec {
+        commandLine("cp", "./.scripts/pre-commit", "./.git/hooks")
+    }
+    println("✅ Added Pre Commit Git Hook Script.")
 }
