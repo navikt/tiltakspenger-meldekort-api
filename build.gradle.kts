@@ -1,6 +1,7 @@
 val javaVersion = JavaVersion.VERSION_21
 val mockkVersion = "1.13.8"
 val ktorVersion = "2.3.7"
+val tokenSupportVersion = "3.1.5"
 val jacksonVersion = "2.16.1"
 
 plugins {
@@ -28,6 +29,10 @@ dependencies {
     implementation("org.jetbrains:annotations:24.1.0")
     // implementation("com.github.navikt:rapids-and-rivers:2022112407251669271100.df879df951cf")
     implementation("com.natpryce:konfig:1.6.10.0")
+
+    // TokenX
+    implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
+    implementation("no.nav.security:token-client-core:$tokenSupportVersion")
 
     testImplementation(platform("org.junit:junit-bom:5.10.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
