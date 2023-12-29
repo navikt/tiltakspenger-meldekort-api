@@ -1,7 +1,7 @@
 val javaVersion = JavaVersion.VERSION_21
 val mockkVersion = "1.13.8"
 val ktorVersion = "2.3.7"
-val tokenSupportVersion = "3.1.5"
+val tokenSupportVersion = "3.2.0"
 val jacksonVersion = "2.16.1"
 
 plugins {
