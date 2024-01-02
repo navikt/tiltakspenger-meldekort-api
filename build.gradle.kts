@@ -2,11 +2,12 @@ val javaVersion = JavaVersion.VERSION_21
 val mockkVersion = "1.13.8"
 val ktorVersion = "2.3.7"
 val kotestVersion = "5.8.0"
-val jacksonVersion = "2.16.0"
+val tokenSupportVersion = "3.2.0"
+val jacksonVersion = "2.16.1"
 
 plugins {
     application
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
     // id("ca.cutterslade.analyze") version "1.9.1"
     id("com.diffplug.spotless") version "6.23.3"
 }
@@ -30,6 +31,10 @@ dependencies {
     // implementation("com.github.navikt:rapids-and-rivers:2022112407251669271100.df879df951cf")
     implementation("com.natpryce:konfig:1.6.10.0")
     implementation("com.google.guava:guava:32.1.3-jre")
+
+    // TokenX
+    implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
+    implementation("no.nav.security:token-client-core:$tokenSupportVersion")
 
     testImplementation(platform("org.junit:junit-bom:5.10.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -65,8 +70,8 @@ dependencies {
 
 
     // DB
-    implementation("org.flywaydb:flyway-core:10.3.0")
-    implementation("org.flywaydb:flyway-database-postgresql:10.3.0")
+    implementation("org.flywaydb:flyway-core:10.4.1")
+    implementation("org.flywaydb:flyway-database-postgresql:10.4.1")
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("org.postgresql:postgresql:42.7.1")
     implementation("com.github.seratch:kotliquery:1.9.0")
