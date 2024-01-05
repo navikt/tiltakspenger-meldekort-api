@@ -10,7 +10,6 @@ import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepo
-import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortMedTiltakDTO
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
@@ -84,11 +83,6 @@ class MeldekortServiceImpl(
 //                            )
 //                    }
 //                    meldekortRepo.lagre(meldekort)
-    override fun hentMeldekort(id: String): MeldekortMedTiltakDTO? {
-        LOG.info { "hent meldekort med meldekortIdent $id" }
-        return meldekortRepo.hent(id)
-    }
-
     override fun hentAlleMeldekortene(grunnlagId: UUID): List<Meldekort> {
         LOG.info { "hent meldekort med grunnlagId $grunnlagId" }
         return meldekortRepo.hentMeldekortForGrunnlag(grunnlagId)
