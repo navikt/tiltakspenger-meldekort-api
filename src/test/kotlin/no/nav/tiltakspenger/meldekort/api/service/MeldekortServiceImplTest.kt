@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 class MeldekortServiceImplTest {
     @Test
-    fun `test lagPerioder`() {
+    fun `test at lagPerioder lager riktige meldekortperioder gitt til- og fra-dato`() {
         val fom = LocalDate.of(2021, 11, 1)
         val tom = LocalDate.of(2021, 12, 19)
 
@@ -24,7 +24,7 @@ class MeldekortServiceImplTest {
     }
 
     @Test
-    fun `test finnMandag funksjon og lagIkkeUtfyltPeriode`() {
+    fun `test at finnMandag finner mandag og at lagIkkeUtfyltPeriode populerer `() {
         val mandag = finnMandag(LocalDate.of(2021, 11, 1))
         mandag.dayOfWeek shouldBe DayOfWeek.MONDAY
 
@@ -49,7 +49,7 @@ class MeldekortServiceImplTest {
     }
 
     @Test
-    fun `test finnSisteDag`() {
+    fun `test at finnSisteDag finner riktige toukersperioder fram til til-dato (med rekursjon)`() {
         val til = LocalDate.of(2023, 1, 31) // onsdag
         val fra = LocalDate.of(2023, 1, 4) // onsdag
         val sisteDag = finnSisteDag(finnMandag(fra), til)
@@ -60,7 +60,7 @@ class MeldekortServiceImplTest {
     }
 
     @Test
-    fun `test finnSisteDagMatte`() {
+    fun `test at finnSisteDagMatte finner riktige toukersperioder fram til til-dato (med modulus)`() {
         val til = LocalDate.of(2023, 1, 31) // onsdag
         val fra = LocalDate.of(2023, 1, 5) // onsdag
         val sisteDag = finnSisteDagMatte(finnMandag(fra), til)

@@ -66,32 +66,6 @@ class GrunnlagRepoImpl(
         )
     }
 
-//    override fun hent(id: String): MeldekortGrunnlagDTO? {
-//        return sessionOf(DataSource.hikariDataSource).use {
-//            it.transaction {
-//                it.run(
-//                    queryOf(
-//                        sqlHentGrunnlag,
-//                        mapOf(
-//                            "id" to id,
-//                        ),
-//                    ).map { row ->
-//                        row.toGrunnlagDto()
-//                    }.asSingle,
-//                )
-//            }
-//        }
-//    }
-//
-//    private fun Row.toGrunnlagDto(): MeldekortGrunnlagDTO {
-//        return MeldekortGrunnlagDTO(
-//        )
-//    }
-
-//    override fun hentAlleForBehandling(id: String): List<MeldekortGrunnlagDTO> {
-//        TODO("Not yet implemented")
-//    }
-
     override fun hentForBehandling(behandlingId: String): MeldekortGrunnlag? {
         return sessionOf(DataSource.hikariDataSource).use {
             it.transaction {

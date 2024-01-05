@@ -7,7 +7,6 @@ import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
-import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortMedTiltakDTO
 import org.intellij.lang.annotations.Language
 import java.util.*
 
@@ -75,23 +74,6 @@ class MeldekortRepoImpl(
         }
     }
 
-    override fun hent(id: String): MeldekortMedTiltakDTO? {
-        return sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                it.run(
-                    queryOf(
-                        sqlHentMeldekort,
-                        mapOf(
-                            "id" to id,
-                        ),
-                    ).map { row ->
-                        row.toMeldekortMedTiltak()
-                    }.asSingle,
-                )
-            }
-        }
-    }
-
     private fun Row.toPeriode(): Periode {
         return Periode(
             fra = localDate("fom"),
@@ -116,14 +98,6 @@ class MeldekortRepoImpl(
             )
             else -> throw IllegalArgumentException("Ukjent meldekort type $type")
         }
-    }
-
-    private fun Row.toMeldekortMedTiltak(): MeldekortMedTiltakDTO {
-        TODO()
-    }
-
-    override fun hentAlleForIdent(ident: String): List<MeldekortMedTiltakDTO> {
-        TODO("Not yet implemented")
     }
 
     @Language("SQL")
