@@ -1,14 +1,19 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
-import no.nav.tiltakspenger.meldekort.api.dto.MeldekortDTO
-import no.nav.tiltakspenger.meldekort.api.routes.MeldekortGrunnlagDTO
+import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
+import java.time.LocalDate
+import java.util.*
 
 interface MeldekortService {
-    suspend fun opprettMeldekort(meldekortDTO: MeldekortDTO)
+    fun genererMeldekort(nyDag: LocalDate)
 
-    suspend fun hentMeldekort(meldekortIdent: String)
+    fun hentAlleMeldekortene(grunnlagId: UUID): List<Meldekort>
 
-    suspend fun hentAlleMeldekortene(sakId: String)
+    fun mottaGrunnlag(meldekortGrunnlag: MeldekortGrunnlag)
 
-    fun mottaGrunnlag(meldekortGrunnlagDTO: MeldekortGrunnlagDTO)
+    fun hentGrunnlagForBehandling(behandlingId: String): MeldekortGrunnlag?
+
+    fun oppdaterMeldekortDag(meldekortId: UUID, tiltakId: UUID, dato: LocalDate, status: MeldekortDagStatus)
 }
