@@ -69,7 +69,7 @@ class MeldekortRepoImpl(
                             "meldekortId" to meldekortId.toString(),
                         ),
                     ).map { row ->
-                        row.toMeldekortMedTiltak(txSession)
+                        row.toMeldekort(txSession)
                     }.asSingle,
                 )
             }
@@ -100,7 +100,7 @@ class MeldekortRepoImpl(
         )
     }
 
-    private fun Row.toMeldekortMedTiltak(txSession: TransactionalSession): Meldekort {
+    private fun Row.toMeldekort(txSession: TransactionalSession): Meldekort {
         return when (val type = string("type")) {
             "ÅPENT" -> Meldekort.Åpent(
                 id = UUID.fromString(string("id")),

@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.api.routes
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
-import io.ktor.server.plugins.NotFoundException
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -32,12 +31,10 @@ fun Route.meldekort(
     get("$MELDEKORT_PATH/hentMeldekort/{meldekortId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hentMeldekort/{meldekortId}")
         val meldekortId = call.parameters["meldekortId"]
+            ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
         val dto = meldekortService.hentMeldekort(UUID.fromString(meldekortId))
-        if (dto != null) {
-            call.respond(status = HttpStatusCode.OK, message = dto)
-        } else {
-            throw NotFoundException("Meldekort med ident:$meldekortId eksisterer ikke i databasen")
-        }
+        checkNotNull(dto) { "Meldekort med ident:$meldekortId eksisterer ikke i databasen" }
+        call.respond(status = HttpStatusCode.OK, message = dto)
     }
 
     post("$MELDEKORT_PATH/oppdaterDag") {
