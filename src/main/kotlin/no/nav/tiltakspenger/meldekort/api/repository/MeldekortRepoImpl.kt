@@ -6,9 +6,9 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
-import no.nav.tiltakspenger.meldekort.api.routes.dto.StatusDTO
 import org.intellij.lang.annotations.Language
 import java.util.*
 
@@ -125,13 +125,13 @@ class MeldekortRepoImpl(
                 id = UUID.fromString(string("id")),
                 fom = localDate("fom"),
                 tom = localDate("tom"),
-                status = StatusDTO.valueOf("ÅPENT"),
+                status = MeldekortStatus.valueOf("ÅPENT"),
             )
             "INNSENDT" -> MeldekortUtenDager(
                 id = UUID.fromString(string("id")),
                 fom = localDate("fom"),
                 tom = localDate("tom"),
-                status = StatusDTO.valueOf("INNSENDT"),
+                status = MeldekortStatus.valueOf("INNSENDT"),
             )
             else -> throw IllegalArgumentException("Ukjent meldekort type $type")
         }
