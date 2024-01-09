@@ -119,6 +119,15 @@ fun Route.meldekort(
         meldekortService.mottaGrunnlag(mapGrunnlag(dto))
         call.respond(message = "OK", status = HttpStatusCode.OK)
     }
+
+    post("$MELDEKORT_PATH/godkjenn/{meldekortId}") {
+        val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
+            ?: return@post call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
+
+        meldekortService.godkjennMeldekort(meldekortId)
+
+        call.respond(message = "OK", status = HttpStatusCode.OK)
+    }
 }
 
 private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {

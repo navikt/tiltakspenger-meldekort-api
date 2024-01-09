@@ -105,6 +105,24 @@ class MeldekortServiceImpl(
             status = status.name,
         )
     }
+
+    override fun hentMeldekort(meldekortId: UUID): Meldekort? {
+        return meldekortRepo.hentMeldekort(meldekortId)
+    }
+
+    override fun godkjennMeldekort(meldekortId: UUID) {
+        val meldekort = meldekortRepo.hentMeldekort(meldekortId)
+
+        checkNotNull(meldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
+        // Sjekk at det ikke finnes tidligere meldekort som ikke er innsendt
+        // Flere valideringer?
+
+        meldekortRepo.oppdaterTilInnsendt(meldekort, "Beslutter")
+
+        // utbetaling må allerede ha fått beskjed om rammevedtak av vedtak
+        // utbetaling må allerede ha fått meldekort og utbetalingvedtak om tidligere meldekort
+        // send til utbetaling(meldekort + ekstra info)
+    }
 }
 
 fun lagMeldekortPerioder(fom: LocalDate, tom: LocalDate): List<Periode> {

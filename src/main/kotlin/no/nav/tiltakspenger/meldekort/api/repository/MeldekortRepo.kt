@@ -9,5 +9,9 @@ interface MeldekortRepo {
 
     fun hentMeldekortForGrunnlag(grunnlagId: UUID): List<Meldekort>
 
+    fun hentMeldekort(meldekortId: UUID): Meldekort?
+
     fun hentPerioderForMeldekortForGrunnlag(grunnlagId: UUID): List<Periode>
+
+    fun oppdaterTilInnsendt(meldekortId: UUID, beslutter: String)
 }

@@ -19,7 +19,7 @@ class MeldekortRepoImpl(
             it.transaction {
                 it.run(
                     queryOf(
-                        sqlLagreMeldekort,
+                        sqlLagreÅpentMeldekort,
                         mapOf(
                             "id" to id,
                             "grunnlagId" to grunnlagId,
@@ -36,6 +36,45 @@ class MeldekortRepoImpl(
                 meldekort.meldekortDager.forEach { dag ->
                     meldekortDagRepo.lagre(id, dag)
                 }
+            }
+        }
+    }
+
+    override fun hentMeldekort(meldekortId: UUID): Meldekort? {
+        return sessionOf(DataSource.hikariDataSource).use {
+            it.transaction { txSession ->
+                txSession.run(
+                    queryOf(
+                        sqlHentMeldekort,
+                        mapOf(
+                            "id" to meldekortId.toString(),
+                        ),
+                    ).map { row ->
+                        row.toMeldekort(txSession)
+                    }.asSingle,
+                )
+            }
+        }
+    }
+
+    override fun oppdaterKunMeldekort(meldekort: Meldekort) {
+
+    }
+
+    private fun oppdaterÅpent(meldekort: Meldekort.Åpent) {
+        sessionOf(DataSource.hikariDataSource).use {
+            it.transaction {
+                it.run(
+                    queryOf(
+                        sqlLagreÅpentMeldekort,
+                        mapOf(
+                            "id" to meldekort.id.toString(),
+                            "beslutter" to if (meldekort is Meldekort.Innsendt) meldekort.beslutter else null,
+                            "beslutter" to if (meldekort is Meldekort.Innsendt) meldekort.beslutter else null,
+                            "type" to "INNSENDT",
+                        ),
+                    ).asUpdate,
+                )
             }
         }
     }
@@ -95,13 +134,14 @@ class MeldekortRepoImpl(
                 tom = localDate("tom"),
                 meldekortDager = meldekortDagRepo.hentMeldekortDager(string("id"), txSession),
                 sendtInnDato = localDate("sendt_inn_dato"),
+                beslutter = string("beslutter"),
             )
             else -> throw IllegalArgumentException("Ukjent meldekort type $type")
         }
     }
 
     @Language("SQL")
-    private val sqlLagreMeldekort = """
+    private val sqlLagreÅpentMeldekort = """
         insert into meldekort (
             id,
             fom,

@@ -21,5 +21,6 @@ sealed interface Meldekort {
         override val tom: LocalDate,
         override val meldekortDager: List<MeldekortDag>,
         val sendtInnDato: LocalDate,
+        val beslutter: String,
     ) : Meldekort
 }
