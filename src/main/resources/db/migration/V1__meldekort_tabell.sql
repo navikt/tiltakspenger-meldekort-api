@@ -44,7 +44,10 @@ create table meldekort
     grunnlag_id         varchar references grunnlag(id),
     fom                 date    not null,
     tom                 date    not null,
-    type                varchar not null
+    type                varchar not null,
+    beslutter           varchar null,
+    sendtInn            timestamp null,
+    opprettet           timestamp not null
 );
 
 create table meldekortdag

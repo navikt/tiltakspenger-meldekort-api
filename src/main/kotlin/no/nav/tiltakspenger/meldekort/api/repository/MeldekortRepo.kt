@@ -5,7 +5,7 @@ import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import java.util.UUID
 
 interface MeldekortRepo {
-    fun lagre(grunnlagId: UUID, meldekort: Meldekort)
+    fun opprett(grunnlagId: UUID, meldekort: Meldekort.Åpent)
 
     fun hentMeldekortForGrunnlag(grunnlagId: UUID): List<Meldekort>
 
@@ -13,5 +13,5 @@ interface MeldekortRepo {
 
     fun hentPerioderForMeldekortForGrunnlag(grunnlagId: UUID): List<Periode>
 
-    fun oppdaterTilInnsendt(meldekortId: UUID, beslutter: String)
+    fun settMeldekortTilInnsendt(meldekort: Meldekort.Innsendt)
 }

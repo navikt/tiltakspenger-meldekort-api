@@ -39,7 +39,7 @@ fun Route.meldekort(
 
     get("$MELDEKORT_PATH/hent/{meldekortId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hent/{meldekortId}")
-        val meldekortIdent = call.parameters["meldekortId"]
+//        val meldekortIdent = call.parameters["meldekortId"]
 //        if (meldekortIdent != null) {
 //            call.respond(status = HttpStatusCode.OK, message = meldekortService.hentMeldekort(meldekortIdent))
 //        } else {

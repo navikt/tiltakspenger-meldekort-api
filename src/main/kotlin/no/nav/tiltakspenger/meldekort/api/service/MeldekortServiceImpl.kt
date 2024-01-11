@@ -6,6 +6,8 @@ import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Status
+import no.nav.tiltakspenger.meldekort.api.domene.godkjennMeldekort
+import no.nav.tiltakspenger.meldekort.api.domene.valider
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
@@ -60,7 +62,7 @@ class MeldekortServiceImpl(
                                     it.til,
                                 ),
                             )
-                            meldekortRepo.lagre(meldekortGrunnlag.id, meldekort)
+                            meldekortRepo.opprett(meldekortGrunnlag.id, meldekort)
                         }
                     }
                 }
@@ -111,13 +113,17 @@ class MeldekortServiceImpl(
     }
 
     override fun godkjennMeldekort(meldekortId: UUID) {
-        val meldekort = meldekortRepo.hentMeldekort(meldekortId)
+        val åpentMeldekort = meldekortRepo.hentMeldekort(meldekortId)
 
-        checkNotNull(meldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
-        // Sjekk at det ikke finnes tidligere meldekort som ikke er innsendt
-        // Flere valideringer?
+        checkNotNull(åpentMeldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
 
-        meldekortRepo.oppdaterTilInnsendt(meldekort, "Beslutter")
+        if (åpentMeldekort is Meldekort.Åpent) {
+            check(åpentMeldekort.valider()) { "Meldekortet er ikke gyldig" }
+            val meldekort = åpentMeldekort.godkjennMeldekort("beslutter")
+            meldekortRepo.settMeldekortTilInnsendt(meldekort)
+        } else {
+            throw IllegalStateException("Meldekortet er ikke åpent")
+        }
 
         // utbetaling må allerede ha fått beskjed om rammevedtak av vedtak
         // utbetaling må allerede ha fått meldekort og utbetalingvedtak om tidligere meldekort
