@@ -155,7 +155,7 @@ class MeldekortRepoImpl(
     """.trimIndent()
 
     private val sqlHentMeldekortForGrunnlag = """
-        select * from meldekort where grunnlag_id = :grunnlagId
+        select * from meldekort where grunnlag_id = :grunnlagId ORDER BY tom DESC
     """.trimIndent()
 
     private val sqlHentMeldekort = """

@@ -22,5 +22,5 @@ data class Tiltak(
     val periode: Periode,
     val typeBeskrivelse: String,
     val typeKode: String,
-    val antDagerIUken: Float,
+    val antallDagerIUken: Float,
 )

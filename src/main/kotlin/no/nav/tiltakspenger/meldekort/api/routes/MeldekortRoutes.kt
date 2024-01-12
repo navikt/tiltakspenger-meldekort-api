@@ -118,7 +118,7 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
                 ),
                 typeBeskrivelse = it.typeBeskrivelse,
                 typeKode = it.typeKode,
-                antDagerIUken = it.antDagerIUken,
+                antallDagerIUken = it.antallDagerIUken,
             )
         },
     )
