@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
 import mu.KotlinLogging
+import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
@@ -22,6 +23,7 @@ class MeldekortServiceImpl(
     private val meldekortRepo: MeldekortRepo,
     private val meldekortDagRepo: MeldekortDagRepo,
     private val grunnlagRepo: GrunnlagRepo,
+    private val utbetalingClient: UtbetalingClient,
 ) : MeldekortService {
     override fun genererMeldekort(nyDag: LocalDate) {
         LOG.info { "Generer Meldekort" }
@@ -44,22 +46,24 @@ class MeldekortServiceImpl(
         }
         when (meldekortGrunnlag.status) {
             Status.AKTIV -> {
+                // Skal dette være mindre enn, eller mindre lik ?
                 if (meldekortGrunnlag.vurderingsperiode.fra < LocalDate.now()) {
                     val eksisterendeMeldekortPerioder = meldekortRepo.hentPerioderForMeldekortForGrunnlag(meldekortGrunnlag.id)
                     val mandag = finnMandag(genererFraDato)
                     val sisteDagIperioden = finnSisteDagMatte(mandag, minOf(tilDag, meldekortGrunnlag.vurderingsperiode.til))
-                    lagMeldekortPerioder(mandag, sisteDagIperioden).map {
-                        if (eksisterendeMeldekortPerioder.any { eksisterendePeriode -> eksisterendePeriode.overlapperMed(it) }) {
+                    lagMeldekortPerioder(mandag, sisteDagIperioden).mapIndexed { ind, periode ->
+                        if (eksisterendeMeldekortPerioder.any { eksisterendePeriode -> eksisterendePeriode.overlapperMed(periode) }) {
                             LOG.info { "Meldekortet overlapper med eksisterende meldekort. Lager ikke nytt" }
                         } else {
                             LOG.info { "Lager nytt meldekort" }
                             val meldekort = Meldekort.Åpent(
                                 id = UUID.randomUUID(),
-                                fom = it.fra,
-                                tom = it.til,
+                                løpenr = ind + 1,
+                                fom = periode.fra,
+                                tom = periode.til,
                                 meldekortDager = MeldekortDag.lagIkkeUtfyltPeriode(
-                                    it.fra,
-                                    it.til,
+                                    periode.fra,
+                                    periode.til,
                                 ),
                             )
                             meldekortRepo.opprett(meldekortGrunnlag.id, meldekort)
@@ -71,20 +75,6 @@ class MeldekortServiceImpl(
         }
     }
 
-    //                        { meldekort ->
-//                            // hvis vi har det, så skal vi ikke lage et nytt
-//                            Meldekort.Åpent(
-//                                id = UUID.randomUUID(),
-//                                fom = it.fra,
-//                                tom = it.til,
-//                                meldekortDager = MeldekortDag.lagIkkeUtfyltPeriode(
-//                                    it.fra,
-//                                    it.til,
-//                                    meldekortGrunnlagDTO.tiltak.first()
-//                                ),
-//                            )
-//                    }
-//                    meldekortRepo.lagre(meldekort)
     override fun hentAlleMeldekortene(grunnlagId: UUID): List<Meldekort> {
         LOG.info { "hent meldekort med grunnlagId $grunnlagId" }
         return meldekortRepo.hentMeldekortForGrunnlag(grunnlagId)
@@ -112,22 +102,19 @@ class MeldekortServiceImpl(
         return meldekortRepo.hentMeldekort(meldekortId)
     }
 
-    override fun godkjennMeldekort(meldekortId: UUID) {
+    override suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String) {
         val åpentMeldekort = meldekortRepo.hentMeldekort(meldekortId)
 
         checkNotNull(åpentMeldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
 
-        if (åpentMeldekort is Meldekort.Åpent) {
-            check(åpentMeldekort.valider()) { "Meldekortet er ikke gyldig" }
-            val meldekort = åpentMeldekort.godkjennMeldekort("beslutter")
-            meldekortRepo.settMeldekortTilInnsendt(meldekort)
-        } else {
+        if (åpentMeldekort !is Meldekort.Åpent) {
             throw IllegalStateException("Meldekortet er ikke åpent")
         }
 
-        // utbetaling må allerede ha fått beskjed om rammevedtak av vedtak
-        // utbetaling må allerede ha fått meldekort og utbetalingvedtak om tidligere meldekort
-        // send til utbetaling(meldekort + ekstra info)
+        check(åpentMeldekort.valider()) { "Meldekortet er ikke gyldig" }
+        val meldekort = åpentMeldekort.godkjennMeldekort(saksbehandler)
+        meldekortRepo.lagreInnsendtMeldekort(meldekort)
+        utbetalingClient.sendTilUtbetaling(meldekort)
     }
 }
 

@@ -13,5 +13,5 @@ interface MeldekortRepo {
 
     fun hentPerioderForMeldekortForGrunnlag(grunnlagId: UUID): List<Periode>
 
-    fun settMeldekortTilInnsendt(meldekort: Meldekort.Innsendt)
+    fun lagreInnsendtMeldekort(meldekort: Meldekort.Innsendt)
 }

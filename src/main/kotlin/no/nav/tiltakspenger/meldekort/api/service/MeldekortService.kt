@@ -19,5 +19,5 @@ interface MeldekortService {
 
     fun hentMeldekort(meldekortId: UUID): Meldekort?
 
-    fun godkjennMeldekort(meldekortId: UUID)
+    suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String)
 }

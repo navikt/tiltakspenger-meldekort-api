@@ -15,6 +15,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.domene.Tiltak
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.routes.dto.DayHasBegunDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.GodkjennDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortGrunnlagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortMedTiltakDTO
@@ -124,7 +125,10 @@ fun Route.meldekort(
         val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
             ?: return@post call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
 
-        meldekortService.godkjennMeldekort(meldekortId)
+        // Denne kan vi kanskje hente fra token på sikt?
+        val saksbehandler = call.receive<GodkjennDTO>().saksbehandler
+
+        meldekortService.godkjennMeldekort(meldekortId, saksbehandler)
 
         call.respond(message = "OK", status = HttpStatusCode.OK)
     }
