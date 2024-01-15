@@ -8,7 +8,6 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import mu.KotlinLogging
-import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Status
@@ -17,10 +16,8 @@ import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.routes.dto.DayHasBegunDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortGrunnlagDTO
-import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortMedTiltakDTO
-import no.nav.tiltakspenger.meldekort.api.routes.dto.PeriodeDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortUtenDagerDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.StatusDTO
-import no.nav.tiltakspenger.meldekort.api.routes.dto.TiltakDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import java.time.DayOfWeek
 import java.util.UUID
@@ -31,20 +28,13 @@ private const val MELDEKORT_PATH = "/meldekort"
 fun Route.meldekort(
     meldekortService: MeldekortService,
 ) {
-//    post("$MELDEKORT_PATH/opprett") {
-//        LOG.info("Motatt request på $MELDEKORT_PATH")
-//        val meldekortDTO = call.receive<Meldekort.Åpent>()
-//        meldekortService.opprettMeldekort(meldekortDTO)
-//    }
-
-    get("$MELDEKORT_PATH/hent/{meldekortId}") {
-        LOG.info("Motatt request på $MELDEKORT_PATH/hent/{meldekortId}")
-        val meldekortIdent = call.parameters["meldekortId"]
-//        if (meldekortIdent != null) {
-//            call.respond(status = HttpStatusCode.OK, message = meldekortService.hentMeldekort(meldekortIdent))
-//        } else {
-//            throw NotFoundException("Meldekort med ident:$meldekortIdent eksisterer ikke i databasen")
-//        }
+    get("$MELDEKORT_PATH/hentMeldekort/{meldekortId}") {
+        LOG.info("Motatt request på $MELDEKORT_PATH/hentMeldekort/{meldekortId}")
+        val meldekortId = call.parameters["meldekortId"]
+            ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
+        val dto = meldekortService.hentMeldekort(UUID.fromString(meldekortId))
+        checkNotNull(dto) { "Meldekort med ident:$meldekortId eksisterer ikke i databasen" }
+        call.respond(status = HttpStatusCode.OK, message = dto)
     }
 
     post("$MELDEKORT_PATH/oppdaterDag") {
@@ -75,26 +65,11 @@ fun Route.meldekort(
         val meldekort = meldekortService.hentAlleMeldekortene(grunnlag.id)
         LOG.info(meldekort.toString())
         val dto = meldekort.map {
-            MeldekortMedTiltakDTO(
+            MeldekortUtenDagerDTO(
                 id = it.id.toString(),
                 fom = it.fom,
                 tom = it.tom,
-                status = when (it) {
-                    is Meldekort.Innsendt -> "INNSENDT"
-                    is Meldekort.Åpent -> "ÅPENT"
-                },
-                meldekortdager = it.meldekortDager,
-                tiltak = grunnlag.tiltak.map { tiltak ->
-                    TiltakDTO(
-                        periodeDTO = PeriodeDTO(
-                            fra = tiltak.periode.fra,
-                            til = tiltak.periode.til,
-                        ),
-                        typeBeskrivelse = tiltak.typeBeskrivelse,
-                        typeKode = tiltak.typeKode,
-                        antDagerIUken = tiltak.antDagerIUken,
-                    )
-                },
+                status = it.status.toString(),
             )
         }
         call.respond(status = HttpStatusCode.OK, dto)
@@ -143,7 +118,7 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
                 ),
                 typeBeskrivelse = it.typeBeskrivelse,
                 typeKode = it.typeKode,
-                antDagerIUken = it.antDagerIUken,
+                antallDagerIUken = it.antallDagerIUken,
             )
         },
     )

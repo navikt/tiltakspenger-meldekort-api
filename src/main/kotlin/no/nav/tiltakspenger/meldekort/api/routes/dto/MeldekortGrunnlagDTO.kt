@@ -19,7 +19,7 @@ data class TiltakDTO(
     val periodeDTO: PeriodeDTO,
     val typeBeskrivelse: String,
     val typeKode: String,
-    val antDagerIUken: Float,
+    val antallDagerIUken: Float,
 )
 data class PeriodeDTO(
     val fra: LocalDate,

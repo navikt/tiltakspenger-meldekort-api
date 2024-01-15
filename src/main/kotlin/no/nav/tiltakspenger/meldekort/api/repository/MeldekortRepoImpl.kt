@@ -6,6 +6,8 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import org.intellij.lang.annotations.Language
 import java.util.*
@@ -57,7 +59,24 @@ class MeldekortRepoImpl(
         }
     }
 
-    override fun hentMeldekortForGrunnlag(grunnlagId: UUID): List<Meldekort> {
+    override fun hentMeldekortMedId(meldekortId: UUID): Meldekort? {
+        return sessionOf(DataSource.hikariDataSource).use {
+            it.transaction { txSession ->
+                txSession.run(
+                    queryOf(
+                        sqlHentMeldekort,
+                        mapOf(
+                            "meldekortId" to meldekortId.toString(),
+                        ),
+                    ).map { row ->
+                        row.toMeldekort(txSession)
+                    }.asSingle,
+                )
+            }
+        }
+    }
+
+    override fun hentMeldekortForGrunnlag(grunnlagId: UUID): List<MeldekortUtenDager> {
         return sessionOf(DataSource.hikariDataSource).use {
             it.transaction { txSession ->
                 txSession.run(
@@ -67,7 +86,7 @@ class MeldekortRepoImpl(
                             "grunnlagId" to grunnlagId.toString(),
                         ),
                     ).map { row ->
-                        row.toMeldekort(txSession)
+                        row.toMeldekortUtenDager()
                     }.asList,
                 )
             }
@@ -100,6 +119,24 @@ class MeldekortRepoImpl(
         }
     }
 
+    private fun Row.toMeldekortUtenDager(): MeldekortUtenDager {
+        return when (val type = string("type")) {
+            "ÅPENT" -> MeldekortUtenDager(
+                id = UUID.fromString(string("id")),
+                fom = localDate("fom"),
+                tom = localDate("tom"),
+                status = MeldekortStatus.valueOf("ÅPENT"),
+            )
+            "INNSENDT" -> MeldekortUtenDager(
+                id = UUID.fromString(string("id")),
+                fom = localDate("fom"),
+                tom = localDate("tom"),
+                status = MeldekortStatus.valueOf("INNSENDT"),
+            )
+            else -> throw IllegalArgumentException("Ukjent meldekort type $type")
+        }
+    }
+
     @Language("SQL")
     private val sqlLagreMeldekort = """
         insert into meldekort (
@@ -118,10 +155,10 @@ class MeldekortRepoImpl(
     """.trimIndent()
 
     private val sqlHentMeldekortForGrunnlag = """
-        select * from meldekort where grunnlag_id = :grunnlagId
+        select * from meldekort where grunnlag_id = :grunnlagId ORDER BY tom DESC
     """.trimIndent()
 
     private val sqlHentMeldekort = """
-        select * from meldekort where id = :id
+        select * from meldekort where id = :meldekortId
     """.trimIndent()
 }

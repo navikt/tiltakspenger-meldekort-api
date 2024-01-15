@@ -5,6 +5,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepo
@@ -28,6 +29,11 @@ class MeldekortServiceImpl(
         grunnlag.map {
             opprettMeldekort(it, nyDag, true)
         }
+    }
+
+    override fun hentMeldekort(meldekortId: UUID): Meldekort? {
+        LOG.info { "henter meldekort med meldekortId $meldekortId" }
+        return meldekortRepo.hentMeldekortMedId(meldekortId)
     }
 
     private fun opprettMeldekortForGrunnlag(meldekortGrunnlag: MeldekortGrunnlag) {
@@ -83,7 +89,7 @@ class MeldekortServiceImpl(
 //                            )
 //                    }
 //                    meldekortRepo.lagre(meldekort)
-    override fun hentAlleMeldekortene(grunnlagId: UUID): List<Meldekort> {
+    override fun hentAlleMeldekortene(grunnlagId: UUID): List<MeldekortUtenDager> {
         LOG.info { "hent meldekort med grunnlagId $grunnlagId" }
         return meldekortRepo.hentMeldekortForGrunnlag(grunnlagId)
     }
