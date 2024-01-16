@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.domene.godkjennMeldekort
 import no.nav.tiltakspenger.meldekort.api.domene.valider
@@ -33,6 +34,11 @@ class MeldekortServiceImpl(
         grunnlag.map {
             opprettMeldekort(it, nyDag, true)
         }
+    }
+
+    override fun hentMeldekort(meldekortId: UUID): Meldekort? {
+        LOG.info { "henter meldekort med meldekortId $meldekortId" }
+        return meldekortRepo.hentMeldekortMedId(meldekortId)
     }
 
     private fun opprettMeldekortForGrunnlag(meldekortGrunnlag: MeldekortGrunnlag) {
@@ -76,7 +82,7 @@ class MeldekortServiceImpl(
         }
     }
 
-    override fun hentAlleMeldekortene(grunnlagId: UUID): List<Meldekort> {
+    override fun hentAlleMeldekortene(grunnlagId: UUID): List<MeldekortUtenDager> {
         LOG.info { "hent meldekort med grunnlagId $grunnlagId" }
         return meldekortRepo.hentMeldekortForGrunnlag(grunnlagId)
     }
@@ -99,12 +105,8 @@ class MeldekortServiceImpl(
         )
     }
 
-    override fun hentMeldekort(meldekortId: UUID): Meldekort? {
-        return meldekortRepo.hentMeldekort(meldekortId)
-    }
-
     override suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String) {
-        val åpentMeldekort = meldekortRepo.hentMeldekort(meldekortId)
+        val åpentMeldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
 
         checkNotNull(åpentMeldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
 
