@@ -1,0 +1,15 @@
+name: Post slack notification on main push
+
+on: push
+
+jobs:
+  notify:
+    name: Notify tiltakspenger-pull-requests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Post message
+        run: |
+          curl -X POST --data "{\"text\": \"Push til main: GITHUB_ACTOR på $GITHUB_REPOSITORY - $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA\"}" $WEBHOOK_URL
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
