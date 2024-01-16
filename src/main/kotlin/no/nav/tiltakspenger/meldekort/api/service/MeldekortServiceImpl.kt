@@ -15,6 +15,7 @@ import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepo
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 private val LOG = KotlinLogging.logger {}
@@ -58,7 +59,7 @@ class MeldekortServiceImpl(
                             LOG.info { "Lager nytt meldekort" }
                             val meldekort = Meldekort.Åpent(
                                 id = UUID.randomUUID(),
-                                løpenr = ind + 1,
+                                løpenr = eksisterendeMeldekortPerioder.size + ind + 1,
                                 fom = periode.fra,
                                 tom = periode.til,
                                 meldekortDager = MeldekortDag.lagIkkeUtfyltPeriode(
@@ -113,8 +114,8 @@ class MeldekortServiceImpl(
 
         check(åpentMeldekort.valider()) { "Meldekortet er ikke gyldig" }
         val meldekort = åpentMeldekort.godkjennMeldekort(saksbehandler)
-        meldekortRepo.lagreInnsendtMeldekort(meldekort)
         utbetalingClient.sendTilUtbetaling(meldekort)
+        meldekortRepo.lagreInnsendtMeldekort(meldekort)
     }
 }
 
@@ -130,8 +131,8 @@ fun finnMandag(fra: LocalDate): LocalDate {
 }
 
 fun finnSisteDagMatte(mandag: LocalDate, sisteDag: LocalDate): LocalDate {
-    val erIgjenAvPerioden = mandag.until(sisteDag).days.toLong() % 14
-    val sisteDagIperioden = sisteDag.plusDays(14L - erIgjenAvPerioden - 1)
+    val erIgjenAvPerioden = 14 - mandag.until(sisteDag, ChronoUnit.DAYS) % 14 - 1
+    val sisteDagIperioden = sisteDag.plusDays(erIgjenAvPerioden)
     return sisteDagIperioden
 }
 

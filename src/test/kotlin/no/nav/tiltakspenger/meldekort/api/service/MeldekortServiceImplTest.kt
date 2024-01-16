@@ -57,16 +57,24 @@ class MeldekortServiceImplTest {
         val fra2 = LocalDate.of(2023, 1, 11) // onsdag
         val sisteDag2 = finnSisteDag(finnMandag(fra2), til)
         sisteDag2 shouldBe LocalDate.of(2023, 2, 5)
+        val til3 = LocalDate.of(2024, 1, 16) // onsdag
+        val fra3 = LocalDate.of(2023, 12, 1) // onsdag
+        val sisteDag3 = finnSisteDag(finnMandag(fra3), til3)
+        sisteDag3 shouldBe LocalDate.of(2024, 1, 21)
     }
 
     @Test
     fun `test at finnSisteDagMatte finner riktige toukersperioder fram til til-dato (med modulus)`() {
         val til = LocalDate.of(2023, 1, 31) // onsdag
-        val fra = LocalDate.of(2023, 1, 5) // onsdag
+        val fra = LocalDate.of(2023, 1, 4) // onsdag
         val sisteDag = finnSisteDagMatte(finnMandag(fra), til)
         sisteDag shouldBe LocalDate.of(2023, 2, 12)
         val fra2 = LocalDate.of(2023, 1, 11) // onsdag
         val sisteDag2 = finnSisteDagMatte(finnMandag(fra2), til)
         sisteDag2 shouldBe LocalDate.of(2023, 2, 5)
+        val til3 = LocalDate.of(2024, 1, 16) // onsdag
+        val fra3 = LocalDate.of(2023, 12, 1) // onsdag
+        val sisteDag3 = finnSisteDagMatte(finnMandag(fra3), til3)
+        sisteDag3 shouldBe LocalDate.of(2024, 1, 21)
     }
 }

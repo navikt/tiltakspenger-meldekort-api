@@ -48,7 +48,8 @@ create table meldekort
     type                varchar not null,
     saksbehandler       varchar null,
     sendtInn            timestamp null,
-    opprettet           timestamp not null
+    opprettet           timestamp not null,
+    sistEndret          timestamp not null
 );
 
 create table meldekortdag

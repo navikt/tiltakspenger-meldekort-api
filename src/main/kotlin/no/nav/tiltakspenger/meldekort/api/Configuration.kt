@@ -41,7 +41,7 @@ object Configuration {
 
     private val localProperties = ConfigurationMap(
         mapOf(
-            "application.httpPort" to 8082.toString(),
+            "application.httpPort" to 8086.toString(),
             "application.profile" to Profile.LOCAL.toString(),
             "DB_DATABASE" to "meldekort",
             "DB_HOST" to "localhost",
@@ -55,7 +55,7 @@ object Configuration {
             "AZURE_OPENID_CONFIG_ISSUER" to "http://host.docker.internal:6969/azure",
             "AZURE_OPENID_CONFIG_JWKS_URI" to "http://host.docker.internal:6969/azure/jwks",
             "SCOPE_UTBETALING" to "localhost",
-            "UTBETALING_URL" to "http://localhost:8087",
+            "UTBETALING_URL" to "http://localhost:8089",
         ),
     )
 

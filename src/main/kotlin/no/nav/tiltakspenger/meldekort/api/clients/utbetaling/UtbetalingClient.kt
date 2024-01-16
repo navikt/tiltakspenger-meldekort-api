@@ -48,7 +48,7 @@ class UtbetalingClient(
 
         return when (httpResponse.status) {
             HttpStatusCode.OK -> httpResponse.call.response.body()
-            else -> throw RuntimeException("error (responseCode=${httpResponse.status.value}) fra Komet")
+            else -> throw RuntimeException("error (responseCode=${httpResponse.status.value}) fra Utbetaling")
         }
     }
 }

@@ -163,7 +163,7 @@ class MeldekortRepoImpl(
                 forrigeMeldekort = forrigeMeldekort,
                 sistEndret = sistEndret,
                 opprettet = opprettet,
-                sendtInn = localDateTime("sendt_inn_dato"),
+                sendtInn = localDateTime("sendtInn"),
                 saksbehandler = string("saksbehandler"),
             )
             else -> throw IllegalArgumentException("Ukjent meldekort type $type")
