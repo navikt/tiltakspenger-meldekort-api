@@ -6,15 +6,14 @@ jobs:
   notify:
     name: Notify tiltakspenger-pull-requests
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' && !(github.event_name == 'pull_request') }}
+    if: ${{ github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message, 'Merge') }}
     steps:
       - name: Post message
         env:
           EVENT_JSON: ${{ toJson(github.event) }}
-          PR_INFO: ${{ github.event.pull_request.base.ref }}
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         shell: bash
         run: |
-          echo $PR_INFO
+          echo $EVENT_JSON
         #run: |
         #  curl -X POST --data "{\"text\": \"Push til main: $GITHUB_ACTOR på $GITHUB_REPOSITORY - $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA - ${{ github.event.head_commit.message }}\"}" $WEBHOOK_URL
