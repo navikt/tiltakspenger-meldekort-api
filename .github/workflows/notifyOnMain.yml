@@ -11,9 +11,11 @@ jobs:
       - name: Post message
         env:
           EVENT_JSON: ${{ toJson(github.event) }}
+          EVENT_NAME: ${{ github.event_name }}
           WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         shell: bash
         run: |
           echo $EVENT_JSON
+          echo $EVENT_NAME
         #run: |
         #  curl -X POST --data "{\"text\": \"Push til main: $GITHUB_ACTOR på $GITHUB_REPOSITORY - $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA - ${{ github.event.head_commit.message }}\"}" $WEBHOOK_URL
