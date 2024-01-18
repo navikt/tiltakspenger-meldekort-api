@@ -42,9 +42,14 @@ create table meldekort
 (
     id                  varchar primary key,
     grunnlag_id         varchar references grunnlag(id),
+    løpenr              int     not null,
     fom                 date    not null,
     tom                 date    not null,
-    type                varchar not null
+    type                varchar not null,
+    saksbehandler       varchar null,
+    sendtInn            timestamp null,
+    opprettet           timestamp not null,
+    sistEndret          timestamp not null
 );
 
 create table meldekortdag

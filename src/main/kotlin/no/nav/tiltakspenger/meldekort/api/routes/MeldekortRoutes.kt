@@ -14,6 +14,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.domene.Tiltak
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.routes.dto.DayHasBegunDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.GodkjennDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortGrunnlagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortUtenDagerDTO
@@ -94,6 +95,18 @@ fun Route.meldekort(
         meldekortService.mottaGrunnlag(mapGrunnlag(dto))
         call.respond(message = "OK", status = HttpStatusCode.OK)
     }
+
+    post("$MELDEKORT_PATH/godkjenn/{meldekortId}") {
+        val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
+            ?: return@post call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
+
+        // Denne kan vi kanskje hente fra token på sikt?
+        val saksbehandler = call.receive<GodkjennDTO>().saksbehandler
+
+        meldekortService.godkjennMeldekort(meldekortId, saksbehandler)
+
+        call.respond(message = "OK", status = HttpStatusCode.OK)
+    }
 }
 
 private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
@@ -118,7 +131,7 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
                 ),
                 typeBeskrivelse = it.typeBeskrivelse,
                 typeKode = it.typeKode,
-                antallDagerIUken = it.antallDagerIUken,
+                antDagerIUken = it.antDagerIUken,
             )
         },
     )

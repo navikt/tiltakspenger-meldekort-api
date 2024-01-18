@@ -10,27 +10,28 @@ import no.nav.tiltakspenger.meldekort.api.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import org.intellij.lang.annotations.Language
+import java.time.LocalDateTime
 import java.util.*
 
 class MeldekortRepoImpl(
     private val meldekortDagRepo: MeldekortDagRepo,
 ) : MeldekortRepo {
-    override fun lagre(grunnlagId: UUID, meldekort: Meldekort) {
+    override fun opprett(grunnlagId: UUID, meldekort: Meldekort.Åpent) {
         sessionOf(DataSource.hikariDataSource).use {
             val id = UUID.randomUUID()
             it.transaction {
                 it.run(
                     queryOf(
-                        sqlLagreMeldekort,
+                        sqlLagreInnsendtMeldekort,
                         mapOf(
                             "id" to id,
+                            "lopenr" to meldekort.løpenr,
                             "grunnlagId" to grunnlagId,
                             "fom" to meldekort.fom,
                             "tom" to meldekort.tom,
-                            "type" to when (meldekort) {
-                                is Meldekort.Åpent -> "ÅPENT"
-                                is Meldekort.Innsendt -> "INNSENDT"
-                            },
+                            "type" to "ÅPENT",
+                            "sistEndret" to meldekort.sistEndret,
+                            "opprettet" to meldekort.opprettet,
                         ),
                     ).asUpdate,
                 )
@@ -38,6 +39,25 @@ class MeldekortRepoImpl(
                 meldekort.meldekortDager.forEach { dag ->
                     meldekortDagRepo.lagre(id, dag)
                 }
+            }
+        }
+    }
+
+    override fun lagreInnsendtMeldekort(meldekort: Meldekort.Innsendt) {
+        sessionOf(DataSource.hikariDataSource).use {
+            it.transaction {
+                it.run(
+                    queryOf(
+                        sqlOppdaterMeldekort,
+                        mapOf(
+                            "id" to meldekort.id.toString(),
+                            "saksbehandler" to meldekort.saksbehandler,
+                            "sendtInn" to meldekort.sendtInn,
+                            "type" to "INNSENDT",
+                            "sistEndret" to LocalDateTime.now(),
+                        ),
+                    ).asUpdate,
+                )
             }
         }
     }
@@ -93,6 +113,21 @@ class MeldekortRepoImpl(
         }
     }
 
+    private fun hentForrigeMeldekort(grunnlagId: UUID, løpenr: Int, txSession: TransactionalSession): Meldekort? {
+        val forrigeLøpenr = løpenr - 1
+        return txSession.run(
+            queryOf(
+                sqlHentMeldekortForPeriode,
+                mapOf(
+                    "grunnlagId" to grunnlagId.toString(),
+                    "lopenr" to forrigeLøpenr,
+                ),
+            ).map { row ->
+                row.toMeldekort(txSession)
+            }.asSingle,
+        )
+    }
+
     private fun Row.toPeriode(): Periode {
         return Periode(
             fra = localDate("fom"),
@@ -101,19 +136,37 @@ class MeldekortRepoImpl(
     }
 
     private fun Row.toMeldekort(txSession: TransactionalSession): Meldekort {
+        val id = UUID.fromString(string("id"))
+        val grunnlagId = UUID.fromString(string("grunnlag_id"))
+        val løpenr = int("løpenr")
+        val fom = localDate("fom")
+        val tom = localDate("tom")
+        val sistEndret = localDateTime("sistEndret")
+        val opprettet = localDateTime("opprettet")
+        val forrigeMeldekort = if (løpenr > 1) hentForrigeMeldekort(grunnlagId, løpenr, txSession) else null
+        val dager = meldekortDagRepo.hentMeldekortDager(id.toString(), txSession)
         return when (val type = string("type")) {
             "ÅPENT" -> Meldekort.Åpent(
-                id = UUID.fromString(string("id")),
-                fom = localDate("fom"),
-                tom = localDate("tom"),
-                meldekortDager = meldekortDagRepo.hentMeldekortDager(string("id"), txSession),
+                id = id,
+                løpenr = løpenr,
+                fom = fom,
+                tom = tom,
+                meldekortDager = dager,
+                forrigeMeldekort = forrigeMeldekort,
+                sistEndret = sistEndret,
+                opprettet = opprettet,
             )
             "INNSENDT" -> Meldekort.Innsendt(
-                id = UUID.fromString(string("id")),
-                fom = localDate("fom"),
-                tom = localDate("tom"),
-                meldekortDager = meldekortDagRepo.hentMeldekortDager(string("id"), txSession),
-                sendtInnDato = localDate("sendt_inn_dato"),
+                id = id,
+                løpenr = løpenr,
+                fom = fom,
+                tom = tom,
+                meldekortDager = dager,
+                forrigeMeldekort = forrigeMeldekort,
+                sistEndret = sistEndret,
+                opprettet = opprettet,
+                sendtInn = localDateTime("sendtInn"),
+                saksbehandler = string("saksbehandler"),
             )
             else -> throw IllegalArgumentException("Ukjent meldekort type $type")
         }
@@ -138,20 +191,46 @@ class MeldekortRepoImpl(
     }
 
     @Language("SQL")
-    private val sqlLagreMeldekort = """
+    private val sqlLagreInnsendtMeldekort = """
         insert into meldekort (
             id,
+            løpenr,
             fom,
             tom,
             type,
-            grunnlag_id
+            grunnlag_id,
+            sistEndret,
+            opprettet
         ) values (
             :id,
+            :lopenr,
             :fom,
             :tom,
             :type,
-            :grunnlagId
+            :grunnlagId,
+            :sistEndret,
+            :opprettet
         )
+    """.trimIndent()
+
+    @Language("SQL")
+    private val sqlOppdaterMeldekort = """
+        update meldekort set
+            saksbehandler = :saksbehandler,
+            sendtInn = :sendtInn,
+            type = :type,
+            sistEndret = :sistEndret
+        where id = :id
+    """.trimIndent()
+
+    @Language("SQL")
+    private val sqlHentMeldekortForPeriode = """
+        select * 
+          from meldekort 
+         where grunnlag_id = :grunnlagId 
+           and løpenr = :lopenr
+           order by opprettet desc
+           limit 1
     """.trimIndent()
 
     private val sqlHentMeldekortForGrunnlag = """

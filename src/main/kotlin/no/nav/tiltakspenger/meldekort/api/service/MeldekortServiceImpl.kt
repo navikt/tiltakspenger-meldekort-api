@@ -1,18 +1,22 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
 import mu.KotlinLogging
+import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.domene.Status
+import no.nav.tiltakspenger.meldekort.api.domene.godkjennMeldekort
+import no.nav.tiltakspenger.meldekort.api.domene.valider
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepo
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 private val LOG = KotlinLogging.logger {}
@@ -21,6 +25,7 @@ class MeldekortServiceImpl(
     private val meldekortRepo: MeldekortRepo,
     private val meldekortDagRepo: MeldekortDagRepo,
     private val grunnlagRepo: GrunnlagRepo,
+    private val utbetalingClient: UtbetalingClient,
 ) : MeldekortService {
     override fun genererMeldekort(nyDag: LocalDate) {
         LOG.info { "Generer Meldekort" }
@@ -48,25 +53,27 @@ class MeldekortServiceImpl(
         }
         when (meldekortGrunnlag.status) {
             Status.AKTIV -> {
+                // Skal dette være mindre enn, eller mindre lik ?
                 if (meldekortGrunnlag.vurderingsperiode.fra < LocalDate.now()) {
                     val eksisterendeMeldekortPerioder = meldekortRepo.hentPerioderForMeldekortForGrunnlag(meldekortGrunnlag.id)
                     val mandag = finnMandag(genererFraDato)
                     val sisteDagIperioden = finnSisteDagMatte(mandag, minOf(tilDag, meldekortGrunnlag.vurderingsperiode.til))
-                    lagMeldekortPerioder(mandag, sisteDagIperioden).map {
-                        if (eksisterendeMeldekortPerioder.any { eksisterendePeriode -> eksisterendePeriode.overlapperMed(it) }) {
+                    lagMeldekortPerioder(mandag, sisteDagIperioden).mapIndexed { ind, periode ->
+                        if (eksisterendeMeldekortPerioder.any { eksisterendePeriode -> eksisterendePeriode.overlapperMed(periode) }) {
                             LOG.info { "Meldekortet overlapper med eksisterende meldekort. Lager ikke nytt" }
                         } else {
                             LOG.info { "Lager nytt meldekort" }
                             val meldekort = Meldekort.Åpent(
                                 id = UUID.randomUUID(),
-                                fom = it.fra,
-                                tom = it.til,
+                                løpenr = eksisterendeMeldekortPerioder.size + ind + 1,
+                                fom = periode.fra,
+                                tom = periode.til,
                                 meldekortDager = MeldekortDag.lagIkkeUtfyltPeriode(
-                                    it.fra,
-                                    it.til,
+                                    periode.fra,
+                                    periode.til,
                                 ),
                             )
-                            meldekortRepo.lagre(meldekortGrunnlag.id, meldekort)
+                            meldekortRepo.opprett(meldekortGrunnlag.id, meldekort)
                         }
                     }
                 }
@@ -75,20 +82,6 @@ class MeldekortServiceImpl(
         }
     }
 
-    //                        { meldekort ->
-//                            // hvis vi har det, så skal vi ikke lage et nytt
-//                            Meldekort.Åpent(
-//                                id = UUID.randomUUID(),
-//                                fom = it.fra,
-//                                tom = it.til,
-//                                meldekortDager = MeldekortDag.lagIkkeUtfyltPeriode(
-//                                    it.fra,
-//                                    it.til,
-//                                    meldekortGrunnlagDTO.tiltak.first()
-//                                ),
-//                            )
-//                    }
-//                    meldekortRepo.lagre(meldekort)
     override fun hentAlleMeldekortene(grunnlagId: UUID): List<MeldekortUtenDager> {
         LOG.info { "hent meldekort med grunnlagId $grunnlagId" }
         return meldekortRepo.hentMeldekortForGrunnlag(grunnlagId)
@@ -111,6 +104,21 @@ class MeldekortServiceImpl(
             status = status.name,
         )
     }
+
+    override suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String) {
+        val åpentMeldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
+
+        checkNotNull(åpentMeldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
+
+        if (åpentMeldekort !is Meldekort.Åpent) {
+            throw IllegalStateException("Meldekortet er ikke åpent")
+        }
+
+        check(åpentMeldekort.valider()) { "Meldekortet er ikke gyldig" }
+        val meldekort = åpentMeldekort.godkjennMeldekort(saksbehandler)
+        utbetalingClient.sendTilUtbetaling(meldekort)
+        meldekortRepo.lagreInnsendtMeldekort(meldekort)
+    }
 }
 
 fun lagMeldekortPerioder(fom: LocalDate, tom: LocalDate): List<Periode> {
@@ -125,8 +133,8 @@ fun finnMandag(fra: LocalDate): LocalDate {
 }
 
 fun finnSisteDagMatte(mandag: LocalDate, sisteDag: LocalDate): LocalDate {
-    val erIgjenAvPerioden = mandag.until(sisteDag).days.toLong() % 14
-    val sisteDagIperioden = sisteDag.plusDays(14L - erIgjenAvPerioden - 1)
+    val erIgjenAvPerioden = 14 - mandag.until(sisteDag, ChronoUnit.DAYS) % 14 - 1
+    val sisteDagIperioden = sisteDag.plusDays(erIgjenAvPerioden)
     return sisteDagIperioden
 }
 

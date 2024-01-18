@@ -19,4 +19,6 @@ interface MeldekortService {
     fun hentGrunnlagForBehandling(behandlingId: String): MeldekortGrunnlag?
 
     fun oppdaterMeldekortDag(meldekortId: UUID, tiltakId: UUID, dato: LocalDate, status: MeldekortDagStatus)
+
+    suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String)
 }

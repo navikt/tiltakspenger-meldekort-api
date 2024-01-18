@@ -24,7 +24,7 @@ class GrunnlagTiltakRepo {
                             "tom" to dto.periode.til,
                             "typeKode" to dto.typeKode,
                             "typeBeskrivelse" to dto.typeBeskrivelse,
-                            "antallDagerPrUke" to dto.antallDagerIUken,
+                            "antallDagerPrUke" to dto.antDagerIUken,
                         ),
                     ).asUpdate,
                 )
@@ -67,7 +67,7 @@ class GrunnlagTiltakRepo {
             ),
             typeKode = string("typekode"),
             typeBeskrivelse = string("typebeskrivelse"),
-            antallDagerIUken = float("antall_dager_pr_uke"),
+            antDagerIUken = float("antall_dager_pr_uke"),
         )
     }
 
