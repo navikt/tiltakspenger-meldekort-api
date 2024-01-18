@@ -15,7 +15,6 @@ sealed interface Meldekort {
     val opprettet: LocalDateTime
 
     fun erÅpen() = false
-//    fun valider(): Boolean
 
     fun leggTilForrigeMeldekort(meldekort: Meldekort): Meldekort
 
