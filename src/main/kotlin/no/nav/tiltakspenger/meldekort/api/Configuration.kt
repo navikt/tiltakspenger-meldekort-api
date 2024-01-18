@@ -31,7 +31,7 @@ object Configuration {
             "AZURE_OPENID_CONFIG_ISSUER" to System.getenv("AZURE_OPENID_CONFIG_ISSUER"),
             "AZURE_OPENID_CONFIG_JWKS_URI" to System.getenv("AZURE_OPENID_CONFIG_JWKS_URI"),
             "DB_DATABASE" to System.getenv("DB_DATABASE"),
-            "DB_HOST" to System.getenv("DB_HOSTS"),
+            "DB_HOST" to System.getenv("DB_HOST"),
             "DB_PASSWORD" to System.getenv("DB_PASSWORD"),
             "DB_PORT" to System.getenv("DB_PORT"),
             "DB_USERNAME" to System.getenv("DB_USERNAME"),
