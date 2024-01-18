@@ -41,7 +41,7 @@ object Configuration {
 
     private val localProperties = ConfigurationMap(
         mapOf(
-            "application.httpPort" to 8086.toString(),
+            "application.httpPort" to 8081.toString(),
             "application.profile" to Profile.LOCAL.toString(),
             "DB_DATABASE" to "meldekort",
             "DB_HOST" to "localhost",
@@ -81,6 +81,9 @@ object Configuration {
 
         "prod-gcp" ->
             ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding prodProperties overriding defaultProperties
+
+        "compose" ->
+            ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding defaultProperties
 
         else -> {
             ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding localProperties overriding defaultProperties
