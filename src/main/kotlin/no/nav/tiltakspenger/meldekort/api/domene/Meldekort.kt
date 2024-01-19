@@ -56,10 +56,15 @@ sealed interface Meldekort {
 fun Meldekort.valider(): Boolean = when (this) {
     is Meldekort.Åpent -> {
         this.validerDager()
+        this.validerLøpenummer()
         this.validerForrigemeldekort()
         true
     }
     is Meldekort.Innsendt -> throw IllegalStateException("Kan ikke validere et innsendt meldekort")
+}
+
+private fun Meldekort.validerLøpenummer() {
+    check(løpenr > 0) { "Løpenummer må være større enn 0" }
 }
 
 private fun Meldekort.validerForrigemeldekort() {
