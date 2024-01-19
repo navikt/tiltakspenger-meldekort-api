@@ -1,0 +1,2 @@
+INSERT INTO public.grunnlag_tiltak (id, grunnlag_id, fom, tom, typekode, typebeskrivelse, antall_dager_pr_uke) VALUES ('80cf0d70-cfa0-49f9-8b6c-1674f51577da', '494112cb-4b63-4409-a8d1-c0239fbef6a1', '2023-12-01', '2024-06-05', 'GRUPPEAMO', 'Gruppe AMO', 5);
+INSERT INTO public.grunnlag_tiltak (id, grunnlag_id, fom, tom, typekode, typebeskrivelse, antall_dager_pr_uke) VALUES ('a2d9b202-3f1f-4cb6-83bb-be41c651aa7f', 'dda8ec3e-0a64-43cf-9a4e-d56934707fa2', '2023-10-01', '2025-03-28', 'ARBTREN', 'Arbeidstrening', 5);
