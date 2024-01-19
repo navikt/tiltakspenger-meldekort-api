@@ -1,0 +1,2 @@
+INSERT INTO public.grunnlag (id, behandling_id, vedtak_id, status, fom, tom) VALUES ('494112cb-4b63-4409-a8d1-c0239fbef6a1', 'beh_01HGD8E4RYT11M0P0AX99F05X8', 'vedtak_01HMG8QAKAJ9RB0TTVBKJ70SMF', 'AKTIV', '2023-12-01', '2024-06-05');
+INSERT INTO public.grunnlag (id, behandling_id, vedtak_id, status, fom, tom) VALUES ('dda8ec3e-0a64-43cf-9a4e-d56934707fa2', 'beh_01HGFY8FZHTPSH0KDRNJSM19N1', 'vedtak_01HMG9426YG33N16J76XXW0RCF', 'AKTIV', '2023-10-01', '2025-03-28');
