@@ -2,16 +2,20 @@ package no.nav.tiltakspenger.meldekort.api.domene
 
 import java.time.LocalDate
 
+const val dagerFullYtelse = 3
+const val dagerDelvisYtelse = 13
+const val dagerKarantene = 16L - 1
+
 data class MeldekortBehandling(
     private val meldekort: List<Meldekort>,
     private var utbetalingDager: List<UtbetalingDag> = mutableListOf(),
 ) {
     private var sykTilstand: SykTilstand = SykTilstand.FullUtbetaling
-    private var kvoteSyk: Int = 3
+    private var kvoteSyk: Int = dagerFullYtelse
     private var sykKaranteneDag: LocalDate? = null
 
     private var sykBarnTilstand: SykTilstand = SykTilstand.FullUtbetaling
-    private var kvoteSykBarn: Int = 3
+    private var kvoteSykBarn: Int = dagerFullYtelse
     private var sykBarnKaranteneDag: LocalDate? = null
 
     fun lagUtbetalingsdager(): List<UtbetalingDag> {
@@ -20,13 +24,13 @@ data class MeldekortBehandling(
 
         for (meldekortdag in meldekortdager) {
             when (meldekortdag.status) {
-                MeldekortDagStatus.IKKE_UTFYLT -> TODO()
+                MeldekortDagStatus.IKKE_UTFYLT -> {}
                 MeldekortDagStatus.DELTATT -> deltatt(meldekortdag.dato)
                 MeldekortDagStatus.IKKE_DELTATT -> ikkeDeltatt(meldekortdag.dato)
                 MeldekortDagStatus.FRAVÆR_SYK -> fraværSyk(meldekortdag.dato)
-                MeldekortDagStatus.FRAVÆR_SYKT_BARN -> TODO()
-                MeldekortDagStatus.FRAVÆR_VELFERD -> TODO()
-                MeldekortDagStatus.LØNN_FOR_TID_I_ARBEID -> TODO()
+                MeldekortDagStatus.FRAVÆR_SYKT_BARN -> fraværSykBarn(meldekortdag.dato)
+                MeldekortDagStatus.FRAVÆR_VELFERD -> gyldigFravær(meldekortdag.dato)
+                MeldekortDagStatus.LØNN_FOR_TID_I_ARBEID -> gyldigFravær(meldekortdag.dato)
             }
         }
         return utbetalingDager
@@ -39,6 +43,14 @@ data class MeldekortBehandling(
         leggTilUtbetalingDag(
             dag = dag,
             deltagerStatus = DeltagerStatus.Deltatt,
+            status = UtbetalingStatus.FullUtbetaling,
+        )
+    }
+
+    private fun gyldigFravær(dag: LocalDate) {
+        leggTilUtbetalingDag(
+            dag = dag,
+            deltagerStatus = DeltagerStatus.GyldigFravær,
             status = UtbetalingStatus.FullUtbetaling,
         )
     }
@@ -62,7 +74,8 @@ data class MeldekortBehandling(
                         status = UtbetalingStatus.FullUtbetaling,
                     )
                 } else {
-                    kvoteSyk = 13
+                    kvoteSyk = dagerDelvisYtelse
+                    kvoteSyk--
                     sykTilstand = SykTilstand.DelvisUtbetaling
                     leggTilUtbetalingDag(
                         dag = dag,
@@ -80,7 +93,6 @@ data class MeldekortBehandling(
                         status = UtbetalingStatus.DelvisUtbetaling,
                     )
                 } else {
-                    kvoteSyk = 13
                     sykTilstand = SykTilstand.Karantene
                     leggTilUtbetalingDag(
                         dag = dag,
@@ -90,9 +102,63 @@ data class MeldekortBehandling(
                 }
             }
             SykTilstand.Karantene -> {
+                if (sykKaranteneDag != null) {
+                    sykKaranteneDag = dag.plusDays(dagerKarantene)
+                }
                 leggTilUtbetalingDag(
                     dag = dag,
                     deltagerStatus = DeltagerStatus.Syk,
+                    status = UtbetalingStatus.IngenUtbetaling,
+                )
+            }
+        }
+    }
+
+    private fun fraværSykBarn(dag: LocalDate) {
+        when (sykBarnTilstand) {
+            SykTilstand.FullUtbetaling -> {
+                if (kvoteSykBarn > 0) {
+                    kvoteSykBarn--
+                    leggTilUtbetalingDag(
+                        dag = dag,
+                        deltagerStatus = DeltagerStatus.SyktBarn,
+                        status = UtbetalingStatus.FullUtbetaling,
+                    )
+                } else {
+                    kvoteSykBarn = dagerDelvisYtelse
+                    kvoteSykBarn--
+                    sykBarnTilstand = SykTilstand.DelvisUtbetaling
+                    leggTilUtbetalingDag(
+                        dag = dag,
+                        deltagerStatus = DeltagerStatus.SyktBarn,
+                        status = UtbetalingStatus.DelvisUtbetaling,
+                    )
+                }
+            }
+            SykTilstand.DelvisUtbetaling -> {
+                if (kvoteSykBarn > 0) {
+                    kvoteSykBarn--
+                    leggTilUtbetalingDag(
+                        dag = dag,
+                        deltagerStatus = DeltagerStatus.SyktBarn,
+                        status = UtbetalingStatus.DelvisUtbetaling,
+                    )
+                } else {
+                    sykBarnTilstand = SykTilstand.Karantene
+                    leggTilUtbetalingDag(
+                        dag = dag,
+                        deltagerStatus = DeltagerStatus.SyktBarn,
+                        status = UtbetalingStatus.IngenUtbetaling,
+                    )
+                }
+            }
+            SykTilstand.Karantene -> {
+                if (sykBarnKaranteneDag != null) {
+                    sykBarnKaranteneDag = dag.plusDays(dagerKarantene)
+                }
+                leggTilUtbetalingDag(
+                    dag = dag,
+                    deltagerStatus = DeltagerStatus.SyktBarn,
                     status = UtbetalingStatus.IngenUtbetaling,
                 )
             }
@@ -118,7 +184,7 @@ data class MeldekortBehandling(
     private fun sjekkSykKarantene(dag: LocalDate) {
         if (sykTilstand == SykTilstand.Karantene) {
             if (sykKaranteneDag == null) {
-                sykKaranteneDag = dag.plusDays(15)
+                sykKaranteneDag = dag.plusDays(dagerKarantene)
             } else {
                 if (dag.isAfter(sykKaranteneDag)) {
                     sykKaranteneDag = null
@@ -132,7 +198,7 @@ data class MeldekortBehandling(
     private fun sjekkSykBarnKarantene(dag: LocalDate) {
         if (sykBarnTilstand == SykTilstand.Karantene) {
             if (sykBarnKaranteneDag == null) {
-                sykBarnKaranteneDag = dag.plusDays(15)
+                sykBarnKaranteneDag = dag.plusDays(dagerKarantene)
             } else {
                 if (dag.isAfter(sykBarnKaranteneDag)) {
                     sykBarnKaranteneDag = null
