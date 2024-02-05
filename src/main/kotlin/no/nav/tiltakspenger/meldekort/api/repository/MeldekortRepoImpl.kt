@@ -144,7 +144,7 @@ class MeldekortRepoImpl(
         val sistEndret = localDateTime("sistEndret")
         val opprettet = localDateTime("opprettet")
         val forrigeMeldekort = if (løpenr > 1) hentForrigeMeldekort(grunnlagId, løpenr, txSession) else null
-        val dager = meldekortDagRepo.hentMeldekortDager(id.toString(), txSession)
+        val dager = meldekortDagRepo.hentMeldekortDager(id.toString(), txSession).sortedBy { it.dato }
         return when (val type = string("type")) {
             "ÅPENT" -> Meldekort.Åpent(
                 id = id,

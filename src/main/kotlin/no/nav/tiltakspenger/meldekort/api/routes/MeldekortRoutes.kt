@@ -40,6 +40,7 @@ fun Route.meldekort(
 
     post("$MELDEKORT_PATH/oppdaterDag") {
         val dto = call.receive<MeldekortDagDTO>()
+        LOG.info("Motatt request på $MELDEKORT_PATH/hentAlleForBehandling/behandlingId")
 
         // TODO() validering av felter og tilgangsstyring av hvem som får oppdatere
         // kan alle saksbehandlere oppdatere?
