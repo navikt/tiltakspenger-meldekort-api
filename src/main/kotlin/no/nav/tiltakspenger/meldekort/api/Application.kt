@@ -46,7 +46,7 @@ fun Application.applicationModule() {
     val meldekortRepo = MeldekortRepoImpl(meldekortDagRepo)
     val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo)
     val utbetalingClient = UtbetalingClient(getToken = tokenProvider::getToken)
-    val meldekortService = MeldekortServiceImpl(meldekortRepo, meldekortDagRepo, grunnlagRepo, utbetalingClient)
+    val meldekortService = MeldekortServiceImpl(meldekortRepo, meldekortDagRepo, grunnlagRepo, grunnlagTiltakRepo, utbetalingClient)
 
     installJacksonFeature()
     flywayMigrate()

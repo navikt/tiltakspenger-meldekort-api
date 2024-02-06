@@ -12,6 +12,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.godkjennMeldekort
 import no.nav.tiltakspenger.meldekort.api.domene.valider
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepo
+import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagTiltakRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepo
 import java.time.DayOfWeek
@@ -25,6 +26,7 @@ class MeldekortServiceImpl(
     private val meldekortRepo: MeldekortRepo,
     private val meldekortDagRepo: MeldekortDagRepo,
     private val grunnlagRepo: GrunnlagRepo,
+    private val grunnlagTiltakRepo: GrunnlagTiltakRepo,
     private val utbetalingClient: UtbetalingClient,
 ) : MeldekortService {
     override fun genererMeldekort(nyDag: LocalDate) {
@@ -96,10 +98,14 @@ class MeldekortServiceImpl(
         return grunnlagRepo.hentForBehandling(behandlingId)
     }
 
-    override fun oppdaterMeldekortDag(meldekortId: UUID, tiltakId: UUID, dato: LocalDate, status: MeldekortDagStatus) {
+    override fun oppdaterMeldekortDag(meldekortId: UUID, dato: LocalDate, status: MeldekortDagStatus) {
+        val grunnlagId = meldekortRepo.hentGrunnlagIdForMeldekort(meldekortId)
+        checkNotNull(grunnlagId) { "Fant ikke grunnlag for meldekort med id $meldekortId" }
+        val tiltak = grunnlagTiltakRepo.hentFørsteTiltakForGrunnlag(grunnlagId.toString())
+        checkNotNull(tiltak) { "Fant ikke tiltak for grunnlag med id $grunnlagId" }
         meldekortDagRepo.oppdater(
             meldekortId = meldekortId,
-            tiltakId = tiltakId,
+            tiltakId = tiltak.id,
             dato = dato,
             status = status.name,
         )

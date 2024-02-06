@@ -40,6 +40,7 @@ fun Route.meldekort(
 
     post("$MELDEKORT_PATH/oppdaterDag") {
         val dto = call.receive<MeldekortDagDTO>()
+        LOG.info("Motatt request på $MELDEKORT_PATH/hentAlleForBehandling/behandlingId")
 
         // TODO() validering av felter og tilgangsstyring av hvem som får oppdatere
         // kan alle saksbehandlere oppdatere?
@@ -47,7 +48,6 @@ fun Route.meldekort(
         // validere at man ikke setter en tiltakId som ikke tilhører meldekortet?
         meldekortService.oppdaterMeldekortDag(
             meldekortId = UUID.fromString(dto.meldekortId),
-            tiltakId = UUID.fromString(dto.tiltakId),
             dato = dto.dato,
             status = MeldekortDagStatus.valueOf(dto.status),
         )

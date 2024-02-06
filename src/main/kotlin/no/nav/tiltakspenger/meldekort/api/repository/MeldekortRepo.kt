@@ -14,5 +14,7 @@ interface MeldekortRepo {
 
     fun hentMeldekortMedId(meldekortId: UUID): Meldekort?
 
+    fun hentGrunnlagIdForMeldekort(meldekortId: UUID): UUID?
+
     fun lagreInnsendtMeldekort(meldekort: Meldekort.Innsendt)
 }
