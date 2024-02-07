@@ -13,7 +13,7 @@ data class UtbetalingDTO(
 
 data class UtbetalingDagDTO(
     val dato: LocalDate,
-    val tiltaktype: String?,
+    val tiltaktype: String,
     val status: UtbetalingDagStatusDTO,
 )
 
