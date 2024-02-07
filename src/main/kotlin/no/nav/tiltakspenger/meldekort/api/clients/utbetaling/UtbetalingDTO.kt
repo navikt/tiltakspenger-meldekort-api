@@ -5,7 +5,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.UtbetalingStatus
 import java.time.LocalDate
 import java.util.UUID
 
-data class UtbetalingReqDTO(
+data class UtbetalingDTO(
     val behandlingId: UUID,
     val utbetalingDager: List<UtbetalingDagDTO>,
     val saksbehandler: String,
@@ -24,7 +24,7 @@ enum class UtbetalingDagStatusDTO {
 }
 
 fun mapUtbetalingMeldekort(behandling: MeldekortBeregning) =
-    UtbetalingReqDTO(
+    UtbetalingDTO(
         behandlingId = behandling.meldekortId,
         utbetalingDager = behandling.utbetalingDager.map {
             UtbetalingDagDTO(
