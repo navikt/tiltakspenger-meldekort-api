@@ -1,68 +1,41 @@
 package no.nav.tiltakspenger.meldekort.api.clients.utbetaling
 
-import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBehandling
+import no.nav.tiltakspenger.meldekort.api.domene.UtbetalingStatus
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 data class UtbetalingReqDTO(
-    val meldekortId: UUID,
-    val fom: LocalDate,
-    val tom: LocalDate,
-    val meldekortDager: List<MeldekortDagDTO>, // Egen DTO?
+    val behandlingId: UUID,
+    val utbetalingDager: List<UtbetalingDagDTO>,
     val saksbehandler: String,
 )
 
-data class MeldekortDagDTO(
+data class UtbetalingDagDTO(
     val dato: LocalDate,
-    val tiltak: TiltakDTO?,
-    val status: MeldekortDagStatusDTO,
+    val tiltaktype: String?,
+    val status: UtbetalingDagStatusDTO,
 )
 
-data class TiltakDTO(
-    val id: UUID,
-    val periode: PeriodeDTO,
-    val typeBeskrivelse: String,
-    val typeKode: String,
-    val antDagerIUken: Float,
-)
-
-data class PeriodeDTO(
-    val fra: LocalDate,
-    val til: LocalDate,
-)
-
-enum class MeldekortDagStatusDTO(status: String) {
-    IKKE_UTFYLT("Ikke utfylt"),
-    DELTATT("Deltatt"),
-    IKKE_DELTATT("Ikke deltatt"),
-    FRAVÆR_SYK("Fravær syk"),
-    FRAVÆR_SYKT_BARN("Fravær sykt barn"),
-    FRAVÆR_VELFERD("Fravær velferd"),
-    LØNN_FOR_TID_I_ARBEID("Lønn for tid i arbeid"),
+enum class UtbetalingDagStatusDTO {
+    IngenUtbetaling,
+    FullUtbetaling,
+    DelvisUtbetaling,
 }
 
-fun mapUtbetalingMeldekort(meldekort: Meldekort.Innsendt) =
+fun mapUtbetalingMeldekort(behandling: MeldekortBehandling) =
     UtbetalingReqDTO(
-        meldekortId = meldekort.id,
-        fom = meldekort.fom,
-        tom = meldekort.tom,
-        meldekortDager = meldekort.meldekortDager.map {
-            MeldekortDagDTO(
-                dato = it.dato,
-                tiltak = it.tiltak?.let { tiltak ->
-                    TiltakDTO(
-                        id = tiltak.id,
-                        periode = PeriodeDTO(
-                            fra = tiltak.periode.fra,
-                            til = tiltak.periode.til,
-                        ),
-                        typeBeskrivelse = tiltak.typeBeskrivelse,
-                        typeKode = tiltak.typeKode,
-                        antDagerIUken = tiltak.antDagerIUken,
-                    )
+        behandlingId = behandling.id,
+        utbetalingDager = behandling.utbetalingDager.map {
+            UtbetalingDagDTO(
+                dato = it.dag,
+                tiltaktype = it.tiltakType,
+                status = when (it.status) {
+                    UtbetalingStatus.FullUtbetaling -> UtbetalingDagStatusDTO.FullUtbetaling
+                    UtbetalingStatus.DelvisUtbetaling -> UtbetalingDagStatusDTO.DelvisUtbetaling
+                    UtbetalingStatus.IngenUtbetaling -> UtbetalingDagStatusDTO.IngenUtbetaling
                 },
-                status = MeldekortDagStatusDTO.valueOf(it.status.name),
             )
         },
-        saksbehandler = meldekort.saksbehandler,
+        saksbehandler = behandling.saksbehandler,
     )

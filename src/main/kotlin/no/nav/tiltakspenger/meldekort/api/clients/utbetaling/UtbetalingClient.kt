@@ -16,7 +16,7 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.Configuration
 import no.nav.tiltakspenger.meldekort.api.clients.defaultHttpClient
 import no.nav.tiltakspenger.meldekort.api.clients.defaultObjectMapper
-import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBehandling
 
 val securelog = KotlinLogging.logger("tjenestekall")
 
@@ -34,7 +34,9 @@ class UtbetalingClient(
         const val navCallIdHeader = "Nav-Call-Id"
     }
 
-    override suspend fun sendTilUtbetaling(meldekort: Meldekort.Innsendt): String {
+    override suspend fun sendTilUtbetaling(
+        behandling: MeldekortBehandling,
+    ): String {
         val httpResponse =
             httpClient.post("${config.baseUrl}/utbetaling/mottaMeldekort") {
                 header(navCallIdHeader, "tiltakspenger-meldekort-api")
@@ -42,7 +44,7 @@ class UtbetalingClient(
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
                 setBody(
-                    mapUtbetalingMeldekort(meldekort),
+                    mapUtbetalingMeldekort(behandling),
                 )
             }
 

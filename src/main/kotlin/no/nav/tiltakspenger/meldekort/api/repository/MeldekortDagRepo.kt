@@ -51,6 +51,10 @@ class MeldekortDagRepo(
         }
     }
 
+    fun hentMeldekortDagerForGrunnlag(grunnlagId: UUID): List<MeldekortDag> {
+        return emptyList()
+    }
+
     fun hentMeldekortDager(meldekortId: String, txSession: TransactionalSession): List<MeldekortDag> {
         return txSession.run(
             queryOf(

@@ -2,7 +2,9 @@ package no.nav.tiltakspenger.meldekort.api.service
 
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
+import no.nav.tiltakspenger.meldekort.api.db.withTransaction
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBehandling
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
@@ -57,11 +59,18 @@ class MeldekortServiceImpl(
             Status.AKTIV -> {
                 // Skal dette være mindre enn, eller mindre lik ?
                 if (meldekortGrunnlag.vurderingsperiode.fra < LocalDate.now()) {
-                    val eksisterendeMeldekortPerioder = meldekortRepo.hentPerioderForMeldekortForGrunnlag(meldekortGrunnlag.id)
+                    val eksisterendeMeldekortPerioder =
+                        meldekortRepo.hentPerioderForMeldekortForGrunnlag(meldekortGrunnlag.id)
                     val mandag = finnMandag(genererFraDato)
-                    val sisteDagIperioden = finnSisteDagMatte(mandag, minOf(tilDag, meldekortGrunnlag.vurderingsperiode.til))
+                    val sisteDagIperioden =
+                        finnSisteDagMatte(mandag, minOf(tilDag, meldekortGrunnlag.vurderingsperiode.til))
                     lagMeldekortPerioder(mandag, sisteDagIperioden).mapIndexed { ind, periode ->
-                        if (eksisterendeMeldekortPerioder.any { eksisterendePeriode -> eksisterendePeriode.overlapperMed(periode) }) {
+                        if (eksisterendeMeldekortPerioder.any { eksisterendePeriode ->
+                                eksisterendePeriode.overlapperMed(
+                                    periode,
+                                )
+                            }
+                        ) {
                             LOG.info { "Meldekortet overlapper med eksisterende meldekort. Lager ikke nytt" }
                         } else {
                             LOG.info { "Lager nytt meldekort" }
@@ -80,6 +89,7 @@ class MeldekortServiceImpl(
                     }
                 }
             }
+
             Status.IKKE_AKTIV -> LOG.info { "Fikk et grunnlag som ikke er aktiv. Lager ikke meldekort" }
         }
     }
@@ -112,6 +122,35 @@ class MeldekortServiceImpl(
     }
 
     override suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String) {
+        val meldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
+        checkNotNull(meldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
+
+        if (meldekort !is Meldekort.Åpent) {
+            throw IllegalStateException("Meldekortet er ikke åpent")
+        }
+
+        val grunnlagId = meldekortRepo.hentGrunnlagIdForMeldekort(meldekortId)
+        checkNotNull(grunnlagId) { "Fant ikke grunnlag for meldekort med id $meldekortId" }
+
+        check(meldekort.valider()) { "Meldekortet er ikke gyldig" }
+
+        val behandling = MeldekortBehandling.lagBehandling(
+            meldekortDager = meldekortDagRepo.hentMeldekortDagerForGrunnlag(grunnlagId),
+            saksbehandler = saksbehandler,
+        )
+
+        withTransaction { tx ->
+            with(meldekort.godkjennMeldekort(saksbehandler)) {
+                meldekortRepo.lagreInnsendtMeldekort(this)
+            }
+            meldekortRepo.hentMeldekortMedId(UUID.randomUUID())
+            //        meldekortBehandlingRepo.lagre(behandling)
+        }
+
+        utbetalingClient.sendTilUtbetaling(behandling)
+    }
+
+    suspend fun godkjennMeldekortNerfa(meldekortId: UUID, saksbehandler: String) {
         val åpentMeldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
 
         checkNotNull(åpentMeldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
@@ -122,7 +161,15 @@ class MeldekortServiceImpl(
 
         check(åpentMeldekort.valider()) { "Meldekortet er ikke gyldig" }
         val meldekort = åpentMeldekort.godkjennMeldekort(saksbehandler)
-        utbetalingClient.sendTilUtbetaling(meldekort)
+
+        val behandling = MeldekortBehandling.lagBehandling(
+            meldekortDager = meldekort.meldekortDager,
+            saksbehandler = saksbehandler,
+        )
+
+//        meldekortBehandlingRepo.lagre(behandling)
+
+        utbetalingClient.sendTilUtbetaling(behandling)
         meldekortRepo.lagreInnsendtMeldekort(meldekort)
     }
 }

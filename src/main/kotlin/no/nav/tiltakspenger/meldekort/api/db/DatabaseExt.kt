@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.api.db
 import kotliquery.Row
 import kotliquery.Session
 import kotliquery.queryOf
+import kotliquery.sessionOf
 
 internal fun <T> String.hent(
     params: Map<String, Any> = emptyMap(),
@@ -21,3 +22,11 @@ internal fun <T> String.hentListe(
 }
 
 internal fun Row.booleanOrNull(name: String): Boolean? = this.anyOrNull(name)?.let { this.boolean(name) }
+
+fun <T> withTransaction(block: (Session) -> T): T {
+    sessionOf(DataSource.hikariDataSource).use {
+        it.transaction {
+            return block(it)
+        }
+    }
+}

@@ -6,6 +6,7 @@ data class UtbetalingDag(
     val deltagerStatus: DeltagerStatus,
     val dag: LocalDate,
     val status: UtbetalingStatus,
+    val tiltakType: String,
     val kvote: Int,
     val kvoteBarn: Int,
     val sykKaranteneDag: LocalDate?,
@@ -14,7 +15,11 @@ data class UtbetalingDag(
     val tilstandSykBarn: SykTilstand,
 ) {
     override fun toString(): String {
-        return "${deltagerStatus.toString().padEnd(15)} $dag  ${dag.dayOfWeek.toString().padEnd(12)} \t $status \t kvote=$kvote \t kvoteBarn=${kvoteBarn.toString().padEnd(12)} \t karanteneDag=$sykKaranteneDag \t karanteneBarnDag=$sykBarnKaranteneDag \t tilstandSyk=$tilstandSyk \t tilstandSykBarn=$tilstandSykBarn"
+        return "${deltagerStatus.toString().padEnd(15)} $dag  ${
+            dag.dayOfWeek.toString().padEnd(12)
+        } \t $status \t kvote=$kvote \t kvoteBarn=${
+            kvoteBarn.toString().padEnd(12)
+        } \t karanteneDag=$sykKaranteneDag \t karanteneBarnDag=$sykBarnKaranteneDag \t tilstandSyk=$tilstandSyk \t tilstandSykBarn=$tilstandSykBarn"
     }
 }
 
