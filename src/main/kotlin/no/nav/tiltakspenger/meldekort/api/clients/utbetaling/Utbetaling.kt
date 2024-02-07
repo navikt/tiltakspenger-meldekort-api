@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api.clients.utbetaling
 
-import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBehandling
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 
 interface Utbetaling {
-    suspend fun sendTilUtbetaling(behandling: MeldekortBehandling): String
+    suspend fun sendTilUtbetaling(behandling: MeldekortBeregning): String
 }

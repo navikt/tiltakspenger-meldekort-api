@@ -16,7 +16,7 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.Configuration
 import no.nav.tiltakspenger.meldekort.api.clients.defaultHttpClient
 import no.nav.tiltakspenger.meldekort.api.clients.defaultObjectMapper
-import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBehandling
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 
 val securelog = KotlinLogging.logger("tjenestekall")
 
@@ -35,7 +35,7 @@ class UtbetalingClient(
     }
 
     override suspend fun sendTilUtbetaling(
-        behandling: MeldekortBehandling,
+        behandling: MeldekortBeregning,
     ): String {
         val httpResponse =
             httpClient.post("${config.baseUrl}/utbetaling/mottaMeldekort") {

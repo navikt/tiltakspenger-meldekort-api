@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.api.clients.utbetaling
 
-import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBehandling
+import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.UtbetalingStatus
 import java.time.LocalDate
 import java.util.UUID
@@ -23,9 +23,9 @@ enum class UtbetalingDagStatusDTO {
     DelvisUtbetaling,
 }
 
-fun mapUtbetalingMeldekort(behandling: MeldekortBehandling) =
+fun mapUtbetalingMeldekort(behandling: MeldekortBeregning) =
     UtbetalingReqDTO(
-        behandlingId = behandling.id,
+        behandlingId = behandling.meldekortId,
         utbetalingDager = behandling.utbetalingDager.map {
             UtbetalingDagDTO(
                 dato = it.dag,

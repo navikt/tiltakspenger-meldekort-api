@@ -7,8 +7,8 @@ const val dagerFullYtelse = 3
 const val dagerDelvisYtelse = 13
 const val dagerKarantene = 16L - 1
 
-data class MeldekortBehandling(
-    val id: UUID = UUID.randomUUID(),
+data class MeldekortBeregning(
+    val meldekortId: UUID,
     val utbetalingDager: List<UtbetalingDag> = mutableListOf(),
     val saksbehandler: String,
 ) {
@@ -21,8 +21,8 @@ data class MeldekortBehandling(
     private var sykBarnKaranteneDag: LocalDate? = null
 
     companion object {
-        fun lagBehandling(meldekortDager: List<MeldekortDag>, saksbehandler: String) =
-            MeldekortBehandling(saksbehandler = saksbehandler).apply {
+        fun beregn(meldekortId: UUID, meldekortDager: List<MeldekortDag>, saksbehandler: String) =
+            MeldekortBeregning(meldekortId = meldekortId, saksbehandler = saksbehandler).apply {
                 lagUtbetalingsdager(meldekortDager)
             }
     }
@@ -120,9 +120,7 @@ data class MeldekortBehandling(
             }
 
             SykTilstand.Karantene -> {
-                if (sykKaranteneDag != null) {
-                    sykKaranteneDag = dag.dato.plusDays(dagerKarantene)
-                }
+                sykKaranteneDag = null
                 leggTilUtbetalingDag(
                     dag = dag.dato,
                     tiltakType = dag.tiltak.typeKode,
@@ -179,9 +177,7 @@ data class MeldekortBehandling(
             }
 
             SykTilstand.Karantene -> {
-                if (sykBarnKaranteneDag != null) {
-                    sykBarnKaranteneDag = dag.dato.plusDays(dagerKarantene)
-                }
+                sykBarnKaranteneDag = null
                 leggTilUtbetalingDag(
                     dag = dag.dato,
                     tiltakType = dag.tiltak.typeKode,
