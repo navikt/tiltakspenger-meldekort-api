@@ -45,6 +45,23 @@ class GrunnlagTiltakRepo {
         )
     }
 
+    fun hentFørsteTiltakForGrunnlag(grunnlagId: String): Tiltak? {
+        return sessionOf(DataSource.hikariDataSource).use {
+            it.transaction {
+                it.run(
+                    queryOf(
+                        sqlHentTiltakForGrunnlag,
+                        mapOf(
+                            "grunnlagId" to grunnlagId,
+                        ),
+                    ).map { row ->
+                        row.toTiltak()
+                    }.asList,
+                )
+            }
+        }.firstOrNull()
+    }
+
     fun hentTiltak(tiltakId: String, txSession: TransactionalSession): Tiltak? {
         return txSession.run(
             queryOf(

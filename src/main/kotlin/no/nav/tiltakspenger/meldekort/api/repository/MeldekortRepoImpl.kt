@@ -113,6 +113,23 @@ class MeldekortRepoImpl(
         }
     }
 
+    override fun hentGrunnlagIdForMeldekort(meldekortId: UUID): UUID? {
+        return sessionOf(DataSource.hikariDataSource).use {
+            it.transaction {
+                it.run(
+                    queryOf(
+                        sqlHentGrunnlagForMeldekort,
+                        mapOf(
+                            "meldekortId" to meldekortId.toString(),
+                        ),
+                    ).map { row ->
+                        UUID.fromString(row.string("grunnlag_id"))
+                    }.asSingle,
+                )
+            }
+        }
+    }
+
     private fun hentForrigeMeldekort(grunnlagId: UUID, løpenr: Int, txSession: TransactionalSession): Meldekort? {
         val forrigeLøpenr = løpenr - 1
         return txSession.run(
@@ -144,7 +161,7 @@ class MeldekortRepoImpl(
         val sistEndret = localDateTime("sistEndret")
         val opprettet = localDateTime("opprettet")
         val forrigeMeldekort = if (løpenr > 1) hentForrigeMeldekort(grunnlagId, løpenr, txSession) else null
-        val dager = meldekortDagRepo.hentMeldekortDager(id.toString(), txSession)
+        val dager = meldekortDagRepo.hentMeldekortDager(id.toString(), txSession).sortedBy { it.dato }
         return when (val type = string("type")) {
             "ÅPENT" -> Meldekort.Åpent(
                 id = id,
@@ -239,5 +256,9 @@ class MeldekortRepoImpl(
 
     private val sqlHentMeldekort = """
         select * from meldekort where id = :meldekortId
+    """.trimIndent()
+
+    private val sqlHentGrunnlagForMeldekort = """
+        select grunnlag_id from meldekort where id = :meldekortId
     """.trimIndent()
 }
