@@ -90,6 +90,7 @@ class MeldekortDagRepo(
             dato = localDate("dato"),
             tiltak = stringOrNull("tiltak_id")?.let { grunnlagTiltakRepo.hentTiltak(it, txSession) },
             status = MeldekortDagStatus.valueOf(string("status")),
+            løpenr = int("løpenr"),
         )
     }
 
@@ -100,9 +101,14 @@ class MeldekortDagRepo(
 
     @Language("SQL")
     private val sqlHentMeldekortDagerForGrunnlagId = """
-        select * 
-          from meldekortdag 
-        where meldekort_id in ( select id from meldekort where grunnlag_id = :grunnlagId and where status = 'INNSENDT')
+        select d.*, m.løpenr
+        from meldekortdag d
+        
+        inner join public.meldekort m
+            on m.id = d.meldekort_id
+        
+        where m.grunnlag_id = :grunnlagId
+          and m.type = 'INNSENDT'
     """.trimIndent()
 
     @Language("SQL")

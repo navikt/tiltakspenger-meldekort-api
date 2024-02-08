@@ -6,6 +6,7 @@ data class MeldekortDag(
     val dato: LocalDate,
     val tiltak: Tiltak?,
     val status: MeldekortDagStatus,
+    val løpenr: Int = -1,
 ) {
     init {
         check(status != MeldekortDagStatus.IKKE_UTFYLT || tiltak == null) {

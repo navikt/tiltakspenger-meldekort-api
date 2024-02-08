@@ -51,6 +51,7 @@ data class MeldekortBeregning(
             tiltakType = dag.tiltak.typeKode,
             deltagerStatus = DeltagerStatus.Deltatt,
             status = UtbetalingStatus.FullUtbetaling,
+            løpenr = dag.løpenr,
         )
     }
 
@@ -61,6 +62,7 @@ data class MeldekortBeregning(
             tiltakType = dag.tiltak.typeKode,
             deltagerStatus = DeltagerStatus.GyldigFravær,
             status = UtbetalingStatus.FullUtbetaling,
+            løpenr = dag.løpenr,
         )
     }
 
@@ -71,6 +73,7 @@ data class MeldekortBeregning(
             tiltakType = dag.tiltak.typeKode,
             deltagerStatus = DeltagerStatus.IkkeDeltatt,
             status = UtbetalingStatus.IngenUtbetaling,
+            løpenr = dag.løpenr,
         )
     }
 
@@ -85,6 +88,7 @@ data class MeldekortBeregning(
                         tiltakType = dag.tiltak.typeKode,
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.FullUtbetaling,
+                        løpenr = dag.løpenr,
                     )
                 } else {
                     kvoteSyk = dagerDelvisYtelse
@@ -95,6 +99,7 @@ data class MeldekortBeregning(
                         tiltakType = dag.tiltak.typeKode,
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.DelvisUtbetaling,
+                        løpenr = dag.løpenr,
                     )
                 }
             }
@@ -107,6 +112,7 @@ data class MeldekortBeregning(
                         tiltakType = dag.tiltak.typeKode,
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.DelvisUtbetaling,
+                        løpenr = dag.løpenr,
                     )
                 } else {
                     sykTilstand = SykTilstand.Karantene
@@ -115,6 +121,7 @@ data class MeldekortBeregning(
                         tiltakType = dag.tiltak.typeKode,
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.IngenUtbetaling,
+                        løpenr = dag.løpenr,
                     )
                 }
             }
@@ -126,6 +133,7 @@ data class MeldekortBeregning(
                     tiltakType = dag.tiltak.typeKode,
                     deltagerStatus = DeltagerStatus.Syk,
                     status = UtbetalingStatus.IngenUtbetaling,
+                    løpenr = dag.løpenr,
                 )
             }
         }
@@ -142,6 +150,7 @@ data class MeldekortBeregning(
                         tiltakType = dag.tiltak.typeKode,
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.FullUtbetaling,
+                        løpenr = dag.løpenr,
                     )
                 } else {
                     kvoteSykBarn = dagerDelvisYtelse
@@ -149,9 +158,10 @@ data class MeldekortBeregning(
                     sykBarnTilstand = SykTilstand.DelvisUtbetaling
                     leggTilUtbetalingDag(
                         dag = dag.dato,
-                        tiltakType = dag.tiltak.typeKode,
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.DelvisUtbetaling,
+                        tiltakType = dag.tiltak.typeKode,
+                        løpenr = dag.løpenr,
                     )
                 }
             }
@@ -164,6 +174,7 @@ data class MeldekortBeregning(
                         tiltakType = dag.tiltak.typeKode,
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.DelvisUtbetaling,
+                        løpenr = dag.løpenr,
                     )
                 } else {
                     sykBarnTilstand = SykTilstand.Karantene
@@ -172,6 +183,7 @@ data class MeldekortBeregning(
                         tiltakType = dag.tiltak.typeKode,
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.IngenUtbetaling,
+                        løpenr = dag.løpenr,
                     )
                 }
             }
@@ -183,16 +195,19 @@ data class MeldekortBeregning(
                     tiltakType = dag.tiltak.typeKode,
                     deltagerStatus = DeltagerStatus.SyktBarn,
                     status = UtbetalingStatus.IngenUtbetaling,
+                    løpenr = dag.løpenr,
                 )
             }
         }
     }
 
+    // alle debug felter som blir satt i denne skal bort. (fra kvote og ned)
     private fun leggTilUtbetalingDag(
         dag: LocalDate,
         deltagerStatus: DeltagerStatus,
         status: UtbetalingStatus,
         tiltakType: String,
+        løpenr: Int,
     ) {
         utbetalingDager.addLast(
             UtbetalingDag(
@@ -200,6 +215,7 @@ data class MeldekortBeregning(
                 dag = dag,
                 status = status,
                 tiltakType = tiltakType,
+                løpenr = løpenr,
                 kvote = kvoteSyk,
                 kvoteBarn = kvoteSykBarn,
                 sykKaranteneDag = sykKaranteneDag,
