@@ -134,9 +134,10 @@ class MeldekortServiceImpl(
 
         check(meldekort.valider()) { "Meldekortet er ikke gyldig" }
 
+        val meldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
         val meldekortBeregning = MeldekortBeregning.beregn(
             meldekortId = meldekortId,
-            meldekortDager = meldekortDagRepo.hentMeldekortDagerForGrunnlag(grunnlagId) + meldekort.meldekortDager,
+            meldekortDager = meldekortDagRepo.hentMeldekortDagerForGrunnlag(grunnlagId) + meldekortDagerMedLøpenummer,
             saksbehandler = saksbehandler,
         )
 
