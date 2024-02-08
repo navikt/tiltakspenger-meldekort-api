@@ -136,7 +136,7 @@ class MeldekortServiceImpl(
 
         val meldekortBeregning = MeldekortBeregning.beregn(
             meldekortId = meldekortId,
-            meldekortDager = meldekortDagRepo.hentMeldekortDagerForGrunnlag(grunnlagId),
+            meldekortDager = meldekortDagRepo.hentMeldekortDagerForGrunnlag(grunnlagId) + meldekort.meldekortDager,
             saksbehandler = saksbehandler,
         )
 

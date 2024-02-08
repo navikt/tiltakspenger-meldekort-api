@@ -53,8 +53,8 @@ class MeldekortDagRepo(
 
     fun hentMeldekortDagerForGrunnlag(grunnlagId: UUID): List<MeldekortDag> {
         return sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                hentMeldekortDagerForGrunnlag(grunnlagId)
+            it.transaction { tx ->
+                hentMeldekortDagerForGrunnlag(grunnlagId, tx)
             }
         }
     }
@@ -102,7 +102,7 @@ class MeldekortDagRepo(
     private val sqlHentMeldekortDagerForGrunnlagId = """
         select * 
           from meldekortdag 
-        where meldekort_id in ( select id)
+        where meldekort_id in ( select id from meldekort where grunnlag_id = :grunnlagId and where status = 'INNSENDT')
     """.trimIndent()
 
     @Language("SQL")
