@@ -96,7 +96,13 @@ class MeldekortDagRepo(
 
     @Language("SQL")
     private val sqlHentMeldekortDagerForMeldekort = """
-        select * from meldekortdag where meldekort_id = :meldekortId
+        select d.*, m.løpenr 
+          from meldekortdag d
+          
+          inner join meldekort m
+            on m.id = d.meldekort_id
+          
+        where d.meldekort_id = :meldekortId
     """.trimIndent()
 
     @Language("SQL")
@@ -104,7 +110,7 @@ class MeldekortDagRepo(
         select d.*, m.løpenr
         from meldekortdag d
         
-        inner join public.meldekort m
+        inner join meldekort m
             on m.id = d.meldekort_id
         
         where m.grunnlag_id = :grunnlagId
