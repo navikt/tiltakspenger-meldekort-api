@@ -43,21 +43,25 @@ class MeldekortRepoImpl(
         }
     }
 
+    override fun lagreInnsendtMeldekort(meldekort: Meldekort.Innsendt, tx: TransactionalSession) {
+        tx.run(
+            queryOf(
+                sqlOppdaterMeldekort,
+                mapOf(
+                    "id" to meldekort.id.toString(),
+                    "saksbehandler" to meldekort.saksbehandler,
+                    "sendtInn" to meldekort.sendtInn,
+                    "type" to "INNSENDT",
+                    "sistEndret" to LocalDateTime.now(),
+                ),
+            ).asUpdate,
+        )
+    }
+
     override fun lagreInnsendtMeldekort(meldekort: Meldekort.Innsendt) {
         sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                it.run(
-                    queryOf(
-                        sqlOppdaterMeldekort,
-                        mapOf(
-                            "id" to meldekort.id.toString(),
-                            "saksbehandler" to meldekort.saksbehandler,
-                            "sendtInn" to meldekort.sendtInn,
-                            "type" to "INNSENDT",
-                            "sistEndret" to LocalDateTime.now(),
-                        ),
-                    ).asUpdate,
-                )
+            it.transaction { tx ->
+                lagreInnsendtMeldekort(meldekort, tx)
             }
         }
     }

@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.api.repository
 
+import kotliquery.TransactionalSession
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
@@ -17,4 +18,6 @@ interface MeldekortRepo {
     fun hentGrunnlagIdForMeldekort(meldekortId: UUID): UUID?
 
     fun lagreInnsendtMeldekort(meldekort: Meldekort.Innsendt)
+
+    fun lagreInnsendtMeldekort(meldekort: Meldekort.Innsendt, tx: TransactionalSession)
 }

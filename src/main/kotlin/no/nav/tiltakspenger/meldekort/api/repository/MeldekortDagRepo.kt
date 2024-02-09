@@ -51,6 +51,27 @@ class MeldekortDagRepo(
         }
     }
 
+    fun hentInnsendteMeldekortDagerForGrunnlag(grunnlagId: UUID): List<MeldekortDag> {
+        return sessionOf(DataSource.hikariDataSource).use {
+            it.transaction { tx ->
+                hentInnsendteMeldekortDagerForGrunnlag(grunnlagId, tx)
+            }
+        }
+    }
+
+    fun hentInnsendteMeldekortDagerForGrunnlag(grunnlagId: UUID, txSession: TransactionalSession): List<MeldekortDag> {
+        return txSession.run(
+            queryOf(
+                sqlHentInnsendteMeldekortDagerForGrunnlagId,
+                mapOf(
+                    "grunnlagId" to grunnlagId,
+                ),
+            ).map { row ->
+                row.toMeldekortDag(txSession)
+            }.asList,
+        )
+    }
+
     fun hentMeldekortDager(meldekortId: String, txSession: TransactionalSession): List<MeldekortDag> {
         return txSession.run(
             queryOf(
@@ -69,12 +90,25 @@ class MeldekortDagRepo(
             dato = localDate("dato"),
             tiltak = stringOrNull("tiltak_id")?.let { grunnlagTiltakRepo.hentTiltak(it, txSession) },
             status = MeldekortDagStatus.valueOf(string("status")),
+            løpenr = int("løpenr"),
         )
     }
 
     @Language("SQL")
     private val sqlHentMeldekortDagerForMeldekort = """
         select * from meldekortdag where meldekort_id = :meldekortId
+    """.trimIndent()
+
+    @Language("SQL")
+    private val sqlHentInnsendteMeldekortDagerForGrunnlagId = """
+        select d.*, m.løpenr
+        from meldekortdag d
+        
+        inner join public.meldekort m
+            on m.id = d.meldekort_id
+        
+        where m.grunnlag_id = :grunnlagId
+          and m.type = 'INNSENDT'
     """.trimIndent()
 
     @Language("SQL")
