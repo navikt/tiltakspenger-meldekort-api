@@ -3,8 +3,8 @@ package no.nav.tiltakspenger.meldekort.api.domene
 import java.time.LocalDate
 import java.util.UUID
 
-const val dagerFullYtelse = 3
-const val dagerDelvisYtelse = 13
+const val antallEgenmeldingsdager = 3
+const val antallArbeidsgiverdager = 13
 const val dagerKarantene = 16L - 1
 
 data class MeldekortBeregning(
@@ -13,12 +13,12 @@ data class MeldekortBeregning(
     val saksbehandler: String,
 ) {
     private var sykTilstand: SykTilstand = SykTilstand.FullUtbetaling
-    private var kvoteSyk: Int = dagerFullYtelse
+    private var egenmeldingsdagerSyk: Int = antallEgenmeldingsdager
     private var sykKaranteneDag: LocalDate? = null
 
-    private var sykBarnTilstand: SykTilstand = SykTilstand.FullUtbetaling
-    private var kvoteSykBarn: Int = dagerFullYtelse
-    private var sykBarnKaranteneDag: LocalDate? = null
+    private var syktBarnTilstand: SykTilstand = SykTilstand.FullUtbetaling
+    private var egenmeldingsdagerSyktBarn: Int = antallEgenmeldingsdager
+    private var syktBarnKaranteneDag: LocalDate? = null
 
     companion object {
         fun beregn(meldekortId: UUID, meldekortDager: List<MeldekortDag>, saksbehandler: String) =
@@ -81,8 +81,8 @@ data class MeldekortBeregning(
         checkNotNull(dag.tiltak) { "Tiltak må være satt for alle dager" }
         when (sykTilstand) {
             SykTilstand.FullUtbetaling -> {
-                if (kvoteSyk > 0) {
-                    kvoteSyk--
+                if (egenmeldingsdagerSyk > 0) {
+                    egenmeldingsdagerSyk--
                     leggTilUtbetalingDag(
                         dag = dag.dato,
                         tiltakType = dag.tiltak.typeKode,
@@ -91,8 +91,8 @@ data class MeldekortBeregning(
                         løpenr = dag.løpenr,
                     )
                 } else {
-                    kvoteSyk = dagerDelvisYtelse
-                    kvoteSyk--
+                    egenmeldingsdagerSyk = antallArbeidsgiverdager
+                    egenmeldingsdagerSyk--
                     sykTilstand = SykTilstand.DelvisUtbetaling
                     leggTilUtbetalingDag(
                         dag = dag.dato,
@@ -105,8 +105,8 @@ data class MeldekortBeregning(
             }
 
             SykTilstand.DelvisUtbetaling -> {
-                if (kvoteSyk > 0) {
-                    kvoteSyk--
+                if (egenmeldingsdagerSyk > 0) {
+                    egenmeldingsdagerSyk--
                     leggTilUtbetalingDag(
                         dag = dag.dato,
                         tiltakType = dag.tiltak.typeKode,
@@ -141,10 +141,10 @@ data class MeldekortBeregning(
 
     private fun fraværSykBarn(dag: MeldekortDag) {
         checkNotNull(dag.tiltak) { "Tiltak må være satt for alle dager" }
-        when (sykBarnTilstand) {
+        when (syktBarnTilstand) {
             SykTilstand.FullUtbetaling -> {
-                if (kvoteSykBarn > 0) {
-                    kvoteSykBarn--
+                if (egenmeldingsdagerSyktBarn > 0) {
+                    egenmeldingsdagerSyktBarn--
                     leggTilUtbetalingDag(
                         dag = dag.dato,
                         tiltakType = dag.tiltak.typeKode,
@@ -153,9 +153,9 @@ data class MeldekortBeregning(
                         løpenr = dag.løpenr,
                     )
                 } else {
-                    kvoteSykBarn = dagerDelvisYtelse
-                    kvoteSykBarn--
-                    sykBarnTilstand = SykTilstand.DelvisUtbetaling
+                    egenmeldingsdagerSyktBarn = antallArbeidsgiverdager
+                    egenmeldingsdagerSyktBarn--
+                    syktBarnTilstand = SykTilstand.DelvisUtbetaling
                     leggTilUtbetalingDag(
                         dag = dag.dato,
                         deltagerStatus = DeltagerStatus.SyktBarn,
@@ -167,8 +167,8 @@ data class MeldekortBeregning(
             }
 
             SykTilstand.DelvisUtbetaling -> {
-                if (kvoteSykBarn > 0) {
-                    kvoteSykBarn--
+                if (egenmeldingsdagerSyktBarn > 0) {
+                    egenmeldingsdagerSyktBarn--
                     leggTilUtbetalingDag(
                         dag = dag.dato,
                         tiltakType = dag.tiltak.typeKode,
@@ -177,7 +177,7 @@ data class MeldekortBeregning(
                         løpenr = dag.løpenr,
                     )
                 } else {
-                    sykBarnTilstand = SykTilstand.Karantene
+                    syktBarnTilstand = SykTilstand.Karantene
                     leggTilUtbetalingDag(
                         dag = dag.dato,
                         tiltakType = dag.tiltak.typeKode,
@@ -189,7 +189,7 @@ data class MeldekortBeregning(
             }
 
             SykTilstand.Karantene -> {
-                sykBarnKaranteneDag = null
+                syktBarnKaranteneDag = null
                 leggTilUtbetalingDag(
                     dag = dag.dato,
                     tiltakType = dag.tiltak.typeKode,
@@ -216,12 +216,12 @@ data class MeldekortBeregning(
                 status = status,
                 tiltakType = tiltakType,
                 løpenr = løpenr,
-                kvote = kvoteSyk,
-                kvoteBarn = kvoteSykBarn,
+                kvote = egenmeldingsdagerSyk,
+                kvoteBarn = egenmeldingsdagerSyktBarn,
                 sykKaranteneDag = sykKaranteneDag,
-                sykBarnKaranteneDag = sykBarnKaranteneDag,
+                sykBarnKaranteneDag = syktBarnKaranteneDag,
                 tilstandSyk = sykTilstand,
-                tilstandSykBarn = sykBarnTilstand,
+                tilstandSykBarn = syktBarnTilstand,
             ),
         )
     }
@@ -233,7 +233,7 @@ data class MeldekortBeregning(
             } else {
                 if (dag.isAfter(sykKaranteneDag)) {
                     sykKaranteneDag = null
-                    kvoteSyk = 3
+                    egenmeldingsdagerSyk = 3
                     sykTilstand = SykTilstand.FullUtbetaling
                 }
             }
@@ -241,14 +241,14 @@ data class MeldekortBeregning(
     }
 
     private fun sjekkSykBarnKarantene(dag: LocalDate) {
-        if (sykBarnTilstand == SykTilstand.Karantene) {
-            if (sykBarnKaranteneDag == null) {
-                sykBarnKaranteneDag = dag.plusDays(dagerKarantene)
+        if (syktBarnTilstand == SykTilstand.Karantene) {
+            if (syktBarnKaranteneDag == null) {
+                syktBarnKaranteneDag = dag.plusDays(dagerKarantene)
             } else {
-                if (dag.isAfter(sykBarnKaranteneDag)) {
-                    sykBarnKaranteneDag = null
-                    kvoteSykBarn = 3
-                    sykBarnTilstand = SykTilstand.FullUtbetaling
+                if (dag.isAfter(syktBarnKaranteneDag)) {
+                    syktBarnKaranteneDag = null
+                    egenmeldingsdagerSyktBarn = 3
+                    syktBarnTilstand = SykTilstand.FullUtbetaling
                 }
             }
         }

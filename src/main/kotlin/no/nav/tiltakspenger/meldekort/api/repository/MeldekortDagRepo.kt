@@ -51,18 +51,18 @@ class MeldekortDagRepo(
         }
     }
 
-    fun hentMeldekortDagerForGrunnlag(grunnlagId: UUID): List<MeldekortDag> {
+    fun hentInnsendteMeldekortDagerForGrunnlag(grunnlagId: UUID): List<MeldekortDag> {
         return sessionOf(DataSource.hikariDataSource).use {
             it.transaction { tx ->
-                hentMeldekortDagerForGrunnlag(grunnlagId, tx)
+                hentInnsendteMeldekortDagerForGrunnlag(grunnlagId, tx)
             }
         }
     }
 
-    fun hentMeldekortDagerForGrunnlag(grunnlagId: UUID, txSession: TransactionalSession): List<MeldekortDag> {
+    fun hentInnsendteMeldekortDagerForGrunnlag(grunnlagId: UUID, txSession: TransactionalSession): List<MeldekortDag> {
         return txSession.run(
             queryOf(
-                sqlHentMeldekortDagerForGrunnlagId,
+                sqlHentInnsendteMeldekortDagerForGrunnlagId,
                 mapOf(
                     "grunnlagId" to grunnlagId,
                 ),
@@ -100,7 +100,7 @@ class MeldekortDagRepo(
     """.trimIndent()
 
     @Language("SQL")
-    private val sqlHentMeldekortDagerForGrunnlagId = """
+    private val sqlHentInnsendteMeldekortDagerForGrunnlagId = """
         select d.*, m.løpenr
         from meldekortdag d
         
