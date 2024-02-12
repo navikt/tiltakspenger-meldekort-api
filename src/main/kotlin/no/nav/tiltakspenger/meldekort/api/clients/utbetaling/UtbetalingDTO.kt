@@ -6,7 +6,8 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class UtbetalingDTO(
-    val behandlingId: UUID,
+    val sakId: String,
+    val utløsendeMeldekortId: UUID,
     val utbetalingDager: List<UtbetalingDagDTO>,
     val saksbehandler: String,
 )
@@ -15,6 +16,8 @@ data class UtbetalingDagDTO(
     val dato: LocalDate,
     val tiltaktype: String,
     val status: UtbetalingDagStatusDTO,
+    val meldekortId: UUID,
+    val løpenr: Int,
 )
 
 enum class UtbetalingDagStatusDTO {
@@ -25,7 +28,8 @@ enum class UtbetalingDagStatusDTO {
 
 fun mapUtbetalingMeldekort(behandling: MeldekortBeregning) =
     UtbetalingDTO(
-        behandlingId = behandling.meldekortId,
+        sakId = "sak_01HGD8E4RY7KSZ1YVVB1NK1XGH", // Denne må følge med fra vedtak og inn på grunnlaget
+        utløsendeMeldekortId = behandling.meldekortId,
         utbetalingDager = behandling.utbetalingDager.map {
             UtbetalingDagDTO(
                 dato = it.dag,
@@ -35,6 +39,8 @@ fun mapUtbetalingMeldekort(behandling: MeldekortBeregning) =
                     UtbetalingStatus.DelvisUtbetaling -> UtbetalingDagStatusDTO.DelvisUtbetaling
                     UtbetalingStatus.IngenUtbetaling -> UtbetalingDagStatusDTO.IngenUtbetaling
                 },
+                meldekortId = behandling.meldekortId, // Denne må legges på hver dag
+                løpenr = it.løpenr,
             )
         },
         saksbehandler = behandling.saksbehandler,

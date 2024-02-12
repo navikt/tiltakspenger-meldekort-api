@@ -38,7 +38,7 @@ class UtbetalingClient(
         behandling: MeldekortBeregning,
     ): String {
         val httpResponse =
-            httpClient.post("${config.baseUrl}/utbetaling/mottaMeldekort") {
+            httpClient.post("${config.baseUrl}/utbetaling/utbetalingvedtak") {
                 header(navCallIdHeader, "tiltakspenger-meldekort-api")
                 bearerAuth(getToken())
                 accept(ContentType.Application.Json)
