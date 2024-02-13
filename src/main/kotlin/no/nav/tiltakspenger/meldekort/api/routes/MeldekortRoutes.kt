@@ -10,6 +10,7 @@ import io.ktor.server.routing.post
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
+import no.nav.tiltakspenger.meldekort.api.domene.Personopplysninger
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.domene.Tiltak
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
@@ -112,6 +113,7 @@ fun Route.meldekort(
 private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
     return MeldekortGrunnlag(
         id = UUID.randomUUID(),
+        sakId = dto.sakId,
         vedtakId = dto.vedtakId,
         behandlingId = dto.behandlingId,
         status = when (dto.status) {
@@ -134,5 +136,10 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
                 antDagerIUken = it.antDagerIUken,
             )
         },
+        personopplysninger = Personopplysninger(
+            fornavn = dto.personopplysninger.fornavn,
+            etternavn = dto.personopplysninger.etternavn,
+            ident = dto.personopplysninger.ident,
+        ),
     )
 }

@@ -5,11 +5,19 @@ import java.util.*
 
 data class MeldekortGrunnlag(
     val id: UUID,
+    val sakId: String,
     val vedtakId: String,
     val behandlingId: String,
     val status: Status,
     val vurderingsperiode: Periode,
     val tiltak: List<Tiltak>,
+    val personopplysninger: Personopplysninger,
+)
+
+data class Personopplysninger(
+    val fornavn: String,
+    val etternavn: String,
+    val ident: String,
 )
 
 enum class Status {

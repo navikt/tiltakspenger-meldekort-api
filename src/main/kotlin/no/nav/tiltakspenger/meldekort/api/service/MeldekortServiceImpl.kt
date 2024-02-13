@@ -132,6 +132,9 @@ class MeldekortServiceImpl(
         val grunnlagId = meldekortRepo.hentGrunnlagIdForMeldekort(meldekortId)
         checkNotNull(grunnlagId) { "Fant ikke grunnlag for meldekort med id $meldekortId" }
 
+        val grunnlag = grunnlagRepo.hentGrunnlag(grunnlagId)
+        checkNotNull(grunnlag) { "Fant ikke grunnlag med id $grunnlagId" }
+
         check(meldekort.valider()) { "Meldekortet er ikke gyldig" }
 
         val meldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
@@ -141,7 +144,7 @@ class MeldekortServiceImpl(
             saksbehandler = saksbehandler,
         )
 
-        utbetalingClient.sendTilUtbetaling(meldekortBeregning)
+        utbetalingClient.sendTilUtbetaling(grunnlag.sakId, meldekortBeregning)
 
         withTransaction { tx ->
             with(meldekort.godkjennMeldekort(saksbehandler)) {

@@ -26,9 +26,12 @@ enum class UtbetalingDagStatusDTO {
     DelvisUtbetaling,
 }
 
-fun mapUtbetalingMeldekort(behandling: MeldekortBeregning) =
+fun mapUtbetalingMeldekort(
+    sakId: String,
+    behandling: MeldekortBeregning,
+) =
     UtbetalingDTO(
-        sakId = "sak_01HGD8E4RY7KSZ1YVVB1NK1XGH", // Denne må følge med fra vedtak og inn på grunnlaget
+        sakId = sakId,
         utløsendeMeldekortId = behandling.meldekortId,
         utbetalingDager = behandling.utbetalingDager.map {
             UtbetalingDagDTO(

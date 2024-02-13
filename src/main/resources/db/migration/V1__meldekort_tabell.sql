@@ -20,11 +20,15 @@ $$;
 create table grunnlag
 (
     id                  varchar primary key,
+    sak_id              varchar not null,
     behandling_id       varchar not null,
     vedtak_id           varchar not null,
     status              varchar not null,
     fom                 date    not null,
-    tom                 date    not null
+    tom                 date    not null,
+    fornavn             varchar not null,
+    etternavn           varchar not null,
+    ident               varchar not null
 );
 
 create table grunnlag_tiltak

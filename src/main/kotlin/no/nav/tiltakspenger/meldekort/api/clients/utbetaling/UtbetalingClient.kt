@@ -35,6 +35,7 @@ class UtbetalingClient(
     }
 
     override suspend fun sendTilUtbetaling(
+        sakId: String,
         behandling: MeldekortBeregning,
     ): String {
         val httpResponse =
@@ -44,7 +45,7 @@ class UtbetalingClient(
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
                 setBody(
-                    mapUtbetalingMeldekort(behandling),
+                    mapUtbetalingMeldekort(sakId, behandling),
                 )
             }
 

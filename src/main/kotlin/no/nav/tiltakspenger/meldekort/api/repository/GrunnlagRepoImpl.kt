@@ -6,6 +6,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
+import no.nav.tiltakspenger.meldekort.api.domene.Personopplysninger
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import org.intellij.lang.annotations.Language
@@ -22,11 +23,15 @@ class GrunnlagRepoImpl(
                         sqlLagreGrunnlag,
                         mapOf(
                             "id" to dto.id.toString(),
+                            "sakId" to dto.sakId,
                             "behandlingId" to dto.behandlingId,
                             "vedtakId" to dto.vedtakId,
                             "status" to dto.status.name,
                             "fom" to dto.vurderingsperiode.fra,
                             "tom" to dto.vurderingsperiode.til,
+                            "fornavn" to dto.personopplysninger.fornavn,
+                            "etternavn" to dto.personopplysninger.etternavn,
+                            "ident" to dto.personopplysninger.ident,
                         ),
                     ).asUpdate,
                 )
@@ -55,6 +60,7 @@ class GrunnlagRepoImpl(
     private fun Row.toGrunnlag(txSession: TransactionalSession): MeldekortGrunnlag {
         return MeldekortGrunnlag(
             id = UUID.fromString(string("id")),
+            sakId = string("sak_id"),
             behandlingId = string("behandling_id"),
             vedtakId = string("vedtak_id"),
             status = Status.valueOf(string("status")),
@@ -63,7 +69,29 @@ class GrunnlagRepoImpl(
                 til = localDate("tom"),
             ),
             tiltak = tiltakRepo.hentTiltakForGrunnlag(string("id"), txSession),
+            personopplysninger = Personopplysninger(
+                fornavn = string("fornavn"),
+                etternavn = string("etternavn"),
+                ident = string("ident"),
+            ),
         )
+    }
+
+    override fun hentGrunnlag(id: UUID): MeldekortGrunnlag? {
+        return sessionOf(DataSource.hikariDataSource).use {
+            it.transaction {
+                it.run(
+                    queryOf(
+                        sqlHentGrunnlag,
+                        mapOf(
+                            "id" to id.toString(),
+                        ),
+                    ).map { row ->
+                        row.toGrunnlag(it)
+                    }.asSingle,
+                )
+            }
+        }
     }
 
     override fun hentForBehandling(behandlingId: String): MeldekortGrunnlag? {
@@ -98,29 +126,35 @@ class GrunnlagRepoImpl(
     """.trimIndent()
 
     @Language("SQL")
+    private val sqlHentGrunnlag = """
+        select * from grunnlag
+        where id = :id
+    """.trimIndent()
+
+    @Language("SQL")
     private val sqlLagreGrunnlag = """
         insert into grunnlag (
             id,
+            sak_id,
             behandling_id,
             vedtak_id,
             status,
             fom,
-            tom
+            tom,
+            fornavn,
+            etternavn,
+            ident
         ) values (
             :id,
+            :sakId,
             :behandlingId,
             :vedtakId,
             :status,
             :fom,
-            :tom
+            :tom,
+            :fornavn,
+            :etternavn,
+            :ident
         )
     """.trimIndent()
-
-//    private val sqlHentGrunnlag = """
-//        select * from grunnlag where id = :id
-//    """.trimIndent()
-//
-//    private val sqlHentGrunnlagForBehandling = """
-//        select * from grunnlag where behandling_id = :behandlingId
-//    """.trimIndent()
 }
