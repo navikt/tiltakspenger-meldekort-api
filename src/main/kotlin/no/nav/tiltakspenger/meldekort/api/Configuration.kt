@@ -8,7 +8,6 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.nav.tiltakspenger.meldekort.api.auth.AzureTokenProvider
-import no.nav.tiltakspenger.utbetaling.auth.ClientConfig
 
 enum class Profile {
     LOCAL, DEV, PROD
@@ -35,6 +34,7 @@ object Configuration {
             "DB_PASSWORD" to System.getenv("DB_PASSWORD"),
             "DB_PORT" to System.getenv("DB_PORT"),
             "DB_USERNAME" to System.getenv("DB_USERNAME"),
+            "DOKUMENT_URL" to System.getenv("DOKUMENT_URL"),
             "logback.configurationFile" to "logback.xml",
         ),
     )
@@ -55,7 +55,8 @@ object Configuration {
             "AZURE_OPENID_CONFIG_ISSUER" to "http://host.docker.internal:6969/azure",
             "AZURE_OPENID_CONFIG_JWKS_URI" to "http://host.docker.internal:6969/azure/jwks",
             "SCOPE_UTBETALING" to "localhost",
-            "UTBETALING_URL" to "http://localhost:8089",
+            "UTBETALING_URL" to "http://localhost:8083",
+            "DOKUMENT_URL" to "http://localhost:8084",
         ),
     )
 
@@ -101,6 +102,9 @@ object Configuration {
     )
 
     fun utbetalingClientConfig(baseUrl: String = config()[Key("UTBETALING_URL", stringType)]) =
+        ClientConfig(baseUrl = baseUrl)
+
+    fun dokumentClientConfig(baseUrl: String = config()[Key("DOKUMENT_URL", stringType)]) =
         ClientConfig(baseUrl = baseUrl)
 
     fun oauthConfigUtbetaling(

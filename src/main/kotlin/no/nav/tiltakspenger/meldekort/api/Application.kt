@@ -13,6 +13,7 @@ import io.ktor.server.routing.routing
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.api.auth.AzureTokenProvider
+import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepoImpl
@@ -46,12 +47,14 @@ fun Application.applicationModule() {
     val meldekortRepo = MeldekortRepoImpl(meldekortDagRepo)
     val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo)
     val utbetalingClient = UtbetalingClient(getToken = tokenProvider::getToken)
+    val dokumentClient = DokumentClient(getToken = tokenProvider::getToken)
     val meldekortService = MeldekortServiceImpl(
         meldekortRepo = meldekortRepo,
         meldekortDagRepo = meldekortDagRepo,
         grunnlagRepo = grunnlagRepo,
         grunnlagTiltakRepo = grunnlagTiltakRepo,
         utbetalingClient = utbetalingClient,
+        dokumentClient = dokumentClient,
     )
 
     installJacksonFeature()

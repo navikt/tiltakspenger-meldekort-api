@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
 import mu.KotlinLogging
+import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
@@ -29,6 +30,7 @@ class MeldekortServiceImpl(
     private val grunnlagRepo: GrunnlagRepo,
     private val grunnlagTiltakRepo: GrunnlagTiltakRepo,
     private val utbetalingClient: UtbetalingClient,
+    private val dokumentClient: DokumentClient,
 ) : MeldekortService {
     override fun genererMeldekort(nyDag: LocalDate) {
         LOG.info { "Generer Meldekort" }
@@ -148,6 +150,17 @@ class MeldekortServiceImpl(
         with(meldekort.godkjennMeldekort(saksbehandler)) {
             meldekortRepo.lagreInnsendtMeldekort(this)
         }
+
+        val innsendtMeldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
+        checkNotNull(innsendtMeldekort) { "Vi fant ikke meldekort med id $meldekortId" }
+
+        if (innsendtMeldekort !is Meldekort.Innsendt) {
+            throw IllegalStateException("Meldekortet er ikke innsendt")
+        }
+
+        val journalpostId = dokumentClient.sendMeldekortTilDokument(innsendtMeldekort, grunnlag)
+
+        meldekortRepo.lagreJournalPostId(journalpostId, innsendtMeldekort.id)
     }
 }
 
@@ -164,8 +177,7 @@ fun finnMandag(fra: LocalDate): LocalDate {
 
 fun finnSisteDagMatte(mandag: LocalDate, sisteDag: LocalDate): LocalDate {
     val erIgjenAvPerioden = 14 - mandag.until(sisteDag, ChronoUnit.DAYS) % 14 - 1
-    val sisteDagIperioden = sisteDag.plusDays(erIgjenAvPerioden)
-    return sisteDagIperioden
+    return sisteDag.plusDays(erIgjenAvPerioden)
 }
 
 fun finnSisteDag(mandag: LocalDate, sisteDag: LocalDate): LocalDate {
