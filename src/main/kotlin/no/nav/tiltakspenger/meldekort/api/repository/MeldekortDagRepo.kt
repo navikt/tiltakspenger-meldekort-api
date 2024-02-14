@@ -64,7 +64,7 @@ class MeldekortDagRepo(
             queryOf(
                 sqlHentInnsendteMeldekortDagerForGrunnlagId,
                 mapOf(
-                    "grunnlagId" to grunnlagId,
+                    "grunnlagId" to grunnlagId.toString(),
                 ),
             ).map { row ->
                 row.toMeldekortDag(txSession)
