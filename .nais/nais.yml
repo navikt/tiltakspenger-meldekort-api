@@ -35,6 +35,9 @@ spec:
           - name: meldekort
             envVarPrefix: DB
   accessPolicy:
+    outbound:
+      rules:
+        - application: tiltakspenger-utbetaling
     inbound:
       rules:
         - application: tiltakspenger-vedtak-rivers
