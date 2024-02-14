@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.api.service
 
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
-import no.nav.tiltakspenger.meldekort.api.db.withTransaction
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
@@ -146,10 +145,8 @@ class MeldekortServiceImpl(
 
         utbetalingClient.sendTilUtbetaling(grunnlag.sakId, meldekortBeregning)
 
-        withTransaction { tx ->
-            with(meldekort.godkjennMeldekort(saksbehandler)) {
-                meldekortRepo.lagreInnsendtMeldekort(this, tx)
-            }
+        with(meldekort.godkjennMeldekort(saksbehandler)) {
+            meldekortRepo.lagreInnsendtMeldekort(this)
         }
     }
 }
