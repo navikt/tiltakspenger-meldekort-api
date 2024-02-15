@@ -17,6 +17,7 @@ import no.nav.tiltakspenger.meldekort.api.clients.defaultHttpClient
 import no.nav.tiltakspenger.meldekort.api.clients.defaultObjectMapper
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
+import java.time.LocalDateTime
 
 class DokumentClient(
     private val config: Configuration.ClientConfig = Configuration.dokumentClientConfig(),
@@ -32,8 +33,8 @@ class DokumentClient(
         const val navCallIdHeader = "Nav-Call-Id"
     }
 
-    override suspend fun sendMeldekortTilDokument(meldekort: Meldekort?, grunnlag: MeldekortGrunnlag): String {
-        val httpResponse = httpClient.post("${config.baseUrl}") {
+    override suspend fun sendMeldekortTilDokument(meldekort: Meldekort?, grunnlag: MeldekortGrunnlag): JoarkResponse {
+        val httpResponse = httpClient.post("${config.baseUrl}/arkivMeldekort") {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
             header(navCallIdHeader, "tiltakspenger-meldekort-api")
@@ -49,3 +50,8 @@ class DokumentClient(
         }
     }
 }
+
+data class JoarkResponse(
+    val journalpostId: String,
+    val innsendingTidspunkt: LocalDateTime,
+)

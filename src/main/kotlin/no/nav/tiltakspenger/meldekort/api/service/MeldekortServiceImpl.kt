@@ -1,8 +1,10 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
+import kotliquery.sessionOf
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
+import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
@@ -148,19 +150,16 @@ class MeldekortServiceImpl(
         utbetalingClient.sendTilUtbetaling(grunnlag.sakId, meldekortBeregning)
 
         with(meldekort.godkjennMeldekort(saksbehandler)) {
-            meldekortRepo.lagreInnsendtMeldekort(this)
+            sessionOf(DataSource.hikariDataSource).use { session ->
+                session.transaction { tx ->
+                    meldekortRepo.lagreInnsendtMeldekort(this, tx)
+
+                    dokumentClient.sendMeldekortTilDokument(this, grunnlag).let {
+                        meldekortRepo.lagreJournalPostId(it.journalpostId, this.id, tx)
+                    }
+                }
+            }
         }
-
-        val innsendtMeldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
-        checkNotNull(innsendtMeldekort) { "Vi fant ikke meldekort med id $meldekortId" }
-
-        if (innsendtMeldekort !is Meldekort.Innsendt) {
-            throw IllegalStateException("Meldekortet er ikke innsendt")
-        }
-
-        val journalpostId = dokumentClient.sendMeldekortTilDokument(innsendtMeldekort, grunnlag)
-
-        meldekortRepo.lagreJournalPostId(journalpostId, innsendtMeldekort.id)
     }
 }
 

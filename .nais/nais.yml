@@ -38,6 +38,7 @@ spec:
     outbound:
       rules:
         - application: tiltakspenger-utbetaling
+        - application: tiltakspenger-dokument
     inbound:
       rules:
         - application: tiltakspenger-vedtak-rivers

@@ -41,13 +41,14 @@ fun main() {
 }
 
 fun Application.applicationModule() {
-    val tokenProvider = AzureTokenProvider(config = Configuration.oauthConfigUtbetaling())
+    val utbetalingTokenProvider = AzureTokenProvider(config = Configuration.oauthConfigUtbetaling())
+    val dokumentTokenProvider = AzureTokenProvider(config = Configuration.oauthConfigDokument())
     val grunnlagTiltakRepo = GrunnlagTiltakRepo()
     val meldekortDagRepo = MeldekortDagRepo(grunnlagTiltakRepo)
     val meldekortRepo = MeldekortRepoImpl(meldekortDagRepo)
     val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo)
-    val utbetalingClient = UtbetalingClient(getToken = tokenProvider::getToken)
-    val dokumentClient = DokumentClient(getToken = tokenProvider::getToken)
+    val utbetalingClient = UtbetalingClient(getToken = utbetalingTokenProvider::getToken)
+    val dokumentClient = DokumentClient(getToken = dokumentTokenProvider::getToken)
     val meldekortService = MeldekortServiceImpl(
         meldekortRepo = meldekortRepo,
         meldekortDagRepo = meldekortDagRepo,
