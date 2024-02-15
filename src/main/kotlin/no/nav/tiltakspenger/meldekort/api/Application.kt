@@ -13,6 +13,7 @@ import io.ktor.server.routing.routing
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.api.auth.AzureTokenProvider
+import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepoImpl
@@ -40,18 +41,21 @@ fun main() {
 }
 
 fun Application.applicationModule() {
-    val tokenProvider = AzureTokenProvider(config = Configuration.oauthConfigUtbetaling())
+    val utbetalingTokenProvider = AzureTokenProvider(config = Configuration.oauthConfigUtbetaling())
+    val dokumentTokenProvider = AzureTokenProvider(config = Configuration.oauthConfigDokument())
     val grunnlagTiltakRepo = GrunnlagTiltakRepo()
     val meldekortDagRepo = MeldekortDagRepo(grunnlagTiltakRepo)
     val meldekortRepo = MeldekortRepoImpl(meldekortDagRepo)
     val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo)
-    val utbetalingClient = UtbetalingClient(getToken = tokenProvider::getToken)
+    val utbetalingClient = UtbetalingClient(getToken = utbetalingTokenProvider::getToken)
+    val dokumentClient = DokumentClient(getToken = dokumentTokenProvider::getToken)
     val meldekortService = MeldekortServiceImpl(
         meldekortRepo = meldekortRepo,
         meldekortDagRepo = meldekortDagRepo,
         grunnlagRepo = grunnlagRepo,
         grunnlagTiltakRepo = grunnlagTiltakRepo,
         utbetalingClient = utbetalingClient,
+        dokumentClient = dokumentClient,
     )
 
     installJacksonFeature()

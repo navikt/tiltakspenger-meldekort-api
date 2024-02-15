@@ -8,7 +8,6 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.nav.tiltakspenger.meldekort.api.auth.AzureTokenProvider
-import no.nav.tiltakspenger.utbetaling.auth.ClientConfig
 
 enum class Profile {
     LOCAL, DEV, PROD
@@ -55,7 +54,9 @@ object Configuration {
             "AZURE_OPENID_CONFIG_ISSUER" to "http://host.docker.internal:6969/azure",
             "AZURE_OPENID_CONFIG_JWKS_URI" to "http://host.docker.internal:6969/azure/jwks",
             "SCOPE_UTBETALING" to "localhost",
-            "UTBETALING_URL" to "http://localhost:8089",
+            "SCOPE_DOKUMENT" to "localhost",
+            "UTBETALING_URL" to "http://localhost:8083",
+            "DOKUMENT_URL" to "http://localhost:8084",
         ),
     )
 
@@ -63,7 +64,9 @@ object Configuration {
         mapOf(
             "application.profile" to Profile.DEV.toString(),
             "SCOPE_UTBETALING" to "api://dev-gcp.tpts.tiltakspenger-utbetaling/.default",
+            "SCOPE_DOKUMENT" to "api://dev-gcp.tpts.tiltakspenger-dokument/.default",
             "UTBETALING_URL" to "https://tiltakspenger-utbetaling.intern.dev.nav.no",
+            "DOKUMENT_URL" to "https://tiltakspenger-dokument.intern.dev.nav.no",
         ),
     )
 
@@ -71,13 +74,16 @@ object Configuration {
         mapOf(
             "application.profile" to Profile.PROD.toString(),
             "SCOPE_UTBETALING" to "api://prod-gcp.tpts.tiltakspenger-utbetaling/.default",
+            "SCOPE_DOKUMENT" to "api://prod-gcp.tpts.tiltakspenger-dokument/.default",
             "UTBETALING_URL" to "https://tiltakspenger-utbetaling.intern.nav.no",
+            "DOKUMENT_URL" to "https://tiltakspenger-dokument.intern.nav.no",
         ),
     )
 
     private val composeProperties = ConfigurationMap(
         mapOf(
             "logback.configurationFile" to "logback.local.xml",
+            "DOKUMENT_URL" to System.getenv("DOKUMENT_URL"),
         ),
     )
 
@@ -103,8 +109,23 @@ object Configuration {
     fun utbetalingClientConfig(baseUrl: String = config()[Key("UTBETALING_URL", stringType)]) =
         ClientConfig(baseUrl = baseUrl)
 
+    fun dokumentClientConfig(baseUrl: String = config()[Key("DOKUMENT_URL", stringType)]) =
+        ClientConfig(baseUrl = baseUrl)
+
     fun oauthConfigUtbetaling(
         scope: String = config()[Key("SCOPE_UTBETALING", stringType)],
+        clientId: String = config()[Key("AZURE_APP_CLIENT_ID", stringType)],
+        clientSecret: String = config()[Key("AZURE_APP_CLIENT_SECRET", stringType)],
+        wellknownUrl: String = config()[Key("AZURE_APP_WELL_KNOWN_URL", stringType)],
+    ) = AzureTokenProvider.OauthConfig(
+        scope = scope,
+        clientId = clientId,
+        clientSecret = clientSecret,
+        wellknownUrl = wellknownUrl,
+    )
+
+    fun oauthConfigDokument(
+        scope: String = config()[Key("SCOPE_DOKUMENT", stringType)],
         clientId: String = config()[Key("AZURE_APP_CLIENT_ID", stringType)],
         clientSecret: String = config()[Key("AZURE_APP_CLIENT_SECRET", stringType)],
         wellknownUrl: String = config()[Key("AZURE_APP_WELL_KNOWN_URL", stringType)],

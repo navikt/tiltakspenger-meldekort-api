@@ -53,7 +53,8 @@ create table meldekort
     saksbehandler       varchar null,
     sendtInn            timestamp null,
     opprettet           timestamp not null,
-    sistEndret          timestamp not null
+    sistEndret          timestamp not null,
+    journalpostId       varchar null,
 );
 
 create table meldekortdag

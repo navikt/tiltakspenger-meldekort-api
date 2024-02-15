@@ -1,7 +1,10 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
+import kotliquery.sessionOf
 import mu.KotlinLogging
+import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
+import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
@@ -29,6 +32,7 @@ class MeldekortServiceImpl(
     private val grunnlagRepo: GrunnlagRepo,
     private val grunnlagTiltakRepo: GrunnlagTiltakRepo,
     private val utbetalingClient: UtbetalingClient,
+    private val dokumentClient: DokumentClient,
 ) : MeldekortService {
     override fun genererMeldekort(nyDag: LocalDate) {
         LOG.info { "Generer Meldekort" }
@@ -147,7 +151,15 @@ class MeldekortServiceImpl(
         utbetalingClient.sendTilUtbetaling(grunnlag.sakId, meldekortBeregning)
 
         with(meldekort.godkjennMeldekort(saksbehandler)) {
-            meldekortRepo.lagreInnsendtMeldekort(this)
+            sessionOf(DataSource.hikariDataSource).use { session ->
+                session.transaction { tx ->
+                    meldekortRepo.lagreInnsendtMeldekort(this, tx)
+
+                    dokumentClient.sendMeldekortTilDokument(this, grunnlag).let {
+                        meldekortRepo.lagreJournalPostId(it.journalpostId, this.id, tx)
+                    }
+                }
+            }
         }
     }
 }
@@ -165,8 +177,7 @@ fun finnMandag(fra: LocalDate): LocalDate {
 
 fun finnSisteDagMatte(mandag: LocalDate, sisteDag: LocalDate): LocalDate {
     val erIgjenAvPerioden = 14 - mandag.until(sisteDag, ChronoUnit.DAYS) % 14 - 1
-    val sisteDagIperioden = sisteDag.plusDays(erIgjenAvPerioden)
-    return sisteDagIperioden
+    return sisteDag.plusDays(erIgjenAvPerioden)
 }
 
 fun finnSisteDag(mandag: LocalDate, sisteDag: LocalDate): LocalDate {
