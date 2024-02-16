@@ -3,7 +3,6 @@ package no.nav.tiltakspenger.meldekort.api.clients.dokument
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
-import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -16,10 +15,10 @@ data class DokumentMeldekortDTO(
     val meldekortDager: List<MeldekortDagDTO>,
     val tiltak: List<TiltakDTO>,
     val innsendingTidspunkt: LocalDateTime,
-    val personopplysninger: Personopplysninger,
+    val personopplysninger: PersonopplysningerDTO,
 )
 
-data class Personopplysninger(
+data class PersonopplysningerDTO(
     val fornavn: String,
     val etternavn: String,
     val ident: String,
@@ -32,7 +31,7 @@ data class PeriodeDTO(
 
 data class TiltakDTO(
     val id: UUID,
-    val periode: Periode,
+    val periode: PeriodeDTO,
     val typeBeskrivelse: String,
     val typeKode: String,
     val antDagerIUken: Float,
@@ -41,15 +40,25 @@ data class TiltakDTO(
 data class MeldekortDagDTO(
     val dato: LocalDate,
     val tiltakType: String?,
-    val status: MeldekortDagStatus,
+    val status: MeldekortDagStatusDTO,
 )
 
-fun mapMeldekortDTOTilDokumentDTO(meldekort: Meldekort?, grunnlag: MeldekortGrunnlag) {
+enum class MeldekortDagStatusDTO(status: String) {
+    IKKE_UTFYLT("Ikke utfylt"),
+    DELTATT("Deltatt"),
+    IKKE_DELTATT("Ikke deltatt"),
+    FRAVÆR_SYK("Fravær syk"),
+    FRAVÆR_SYKT_BARN("Fravær sykt barn"),
+    FRAVÆR_VELFERD("Fravær velferd"),
+    LØNN_FOR_TID_I_ARBEID("Lønn for tid i arbeid"),
+}
+
+fun mapMeldekortDTOTilDokumentDTO(meldekort: Meldekort?, grunnlag: MeldekortGrunnlag): DokumentMeldekortDTO {
     if (meldekort !is Meldekort.Innsendt) {
         throw IllegalStateException("Meldekortet eksisterer ikke")
     }
 
-    DokumentMeldekortDTO(
+    return DokumentMeldekortDTO(
         meldekortId = meldekort.id,
         meldekortPeriode = PeriodeDTO(
             fom = meldekort.fom,
@@ -60,7 +69,7 @@ fun mapMeldekortDTOTilDokumentDTO(meldekort: Meldekort?, grunnlag: MeldekortGrun
         tiltak = grunnlag.tiltak.map {
             TiltakDTO(
                 id = it.id,
-                periode = it.periode,
+                periode = PeriodeDTO(it.periode.fra, it.periode.til),
                 typeKode = it.typeKode,
                 typeBeskrivelse = it.typeBeskrivelse,
                 antDagerIUken = it.antDagerIUken,
@@ -71,18 +80,18 @@ fun mapMeldekortDTOTilDokumentDTO(meldekort: Meldekort?, grunnlag: MeldekortGrun
                 dato = it.dato,
                 tiltakType = it.tiltak?.typeKode,
                 status = when (it.status) {
-                    MeldekortDagStatus.DELTATT -> MeldekortDagStatus.DELTATT
-                    MeldekortDagStatus.IKKE_DELTATT -> MeldekortDagStatus.IKKE_DELTATT
-                    MeldekortDagStatus.FRAVÆR_SYK -> MeldekortDagStatus.FRAVÆR_SYK
-                    MeldekortDagStatus.FRAVÆR_SYKT_BARN -> MeldekortDagStatus.FRAVÆR_SYKT_BARN
-                    MeldekortDagStatus.IKKE_UTFYLT -> MeldekortDagStatus.IKKE_UTFYLT
-                    MeldekortDagStatus.FRAVÆR_VELFERD -> MeldekortDagStatus.FRAVÆR_VELFERD
-                    MeldekortDagStatus.LØNN_FOR_TID_I_ARBEID -> MeldekortDagStatus.LØNN_FOR_TID_I_ARBEID
+                    MeldekortDagStatus.DELTATT -> MeldekortDagStatusDTO.DELTATT
+                    MeldekortDagStatus.IKKE_DELTATT -> MeldekortDagStatusDTO.IKKE_DELTATT
+                    MeldekortDagStatus.FRAVÆR_SYK -> MeldekortDagStatusDTO.FRAVÆR_SYK
+                    MeldekortDagStatus.FRAVÆR_SYKT_BARN -> MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN
+                    MeldekortDagStatus.IKKE_UTFYLT -> MeldekortDagStatusDTO.IKKE_UTFYLT
+                    MeldekortDagStatus.FRAVÆR_VELFERD -> MeldekortDagStatusDTO.FRAVÆR_VELFERD
+                    MeldekortDagStatus.LØNN_FOR_TID_I_ARBEID -> MeldekortDagStatusDTO.LØNN_FOR_TID_I_ARBEID
                 },
             )
         },
         innsendingTidspunkt = meldekort.sendtInn,
-        personopplysninger = Personopplysninger(
+        personopplysninger = PersonopplysningerDTO(
             ident = grunnlag.personopplysninger.ident,
             fornavn = grunnlag.personopplysninger.fornavn,
             etternavn = grunnlag.personopplysninger.etternavn,

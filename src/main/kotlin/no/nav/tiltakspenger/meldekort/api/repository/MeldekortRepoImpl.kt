@@ -66,6 +66,14 @@ class MeldekortRepoImpl(
         }
     }
 
+    override fun lagreJournalPostId(jornalpostId: String, meldekortId: UUID) {
+        sessionOf(DataSource.hikariDataSource).use {
+            it.transaction { tx ->
+                lagreJournalPostId(jornalpostId, meldekortId, tx)
+            }
+        }
+    }
+
     override fun lagreJournalPostId(jornalpostId: String, meldekortId: UUID, tx: TransactionalSession) {
         tx.run(
             queryOf(

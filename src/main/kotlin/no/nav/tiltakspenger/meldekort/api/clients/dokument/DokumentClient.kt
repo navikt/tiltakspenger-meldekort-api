@@ -39,10 +39,10 @@ class DokumentClient(
         LOG.info { "Request motatt for å sende meldekort til tiltakspenger-dokument på /arkivMeldekort" }
 
         val httpResponse = httpClient.post("${config.baseUrl}/arkivMeldekort") {
-            accept(ContentType.Application.Json)
-            contentType(ContentType.Application.Json)
             header(navCallIdHeader, "tiltakspenger-meldekort-api")
             bearerAuth(getToken())
+            accept(ContentType.Application.Json)
+            contentType(ContentType.Application.Json)
             setBody(
                 mapMeldekortDTOTilDokumentDTO(meldekort, grunnlag),
             )

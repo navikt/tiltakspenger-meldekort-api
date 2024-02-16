@@ -1,10 +1,8 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
-import kotliquery.sessionOf
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
-import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
@@ -148,17 +146,19 @@ class MeldekortServiceImpl(
             saksbehandler = saksbehandler,
         )
 
+        LOG.info { "vi skal sende til utbetaling" }
         utbetalingClient.sendTilUtbetaling(grunnlag.sakId, meldekortBeregning)
 
-        with(meldekort.godkjennMeldekort(saksbehandler)) {
-            sessionOf(DataSource.hikariDataSource).use { session ->
-                session.transaction { tx ->
-                    meldekortRepo.lagreInnsendtMeldekort(this, tx)
-                    dokumentClient.sendMeldekortTilDokument(this, grunnlag).let {
-                        meldekortRepo.lagreJournalPostId(it.journalpostId, this.id, tx)
-                    }
-                }
-            }
+        val innsendtMeldekort = with(meldekort.godkjennMeldekort(saksbehandler)) {
+            LOG.info { "Nå skal vi lagre meldekort" }
+            meldekortRepo.lagreInnsendtMeldekort(this)
+            LOG.info { "Nå skal vi sende meldekort til dokument" }
+            this
+        }
+
+        dokumentClient.sendMeldekortTilDokument(innsendtMeldekort, grunnlag).let {
+            LOG.info { "Vi fikk : ${it.journalpostId}" }
+            meldekortRepo.lagreJournalPostId(it.journalpostId, innsendtMeldekort.id)
         }
     }
 }
