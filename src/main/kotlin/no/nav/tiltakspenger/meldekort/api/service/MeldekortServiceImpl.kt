@@ -140,10 +140,11 @@ class MeldekortServiceImpl(
 
         check(meldekort.valider()) { "Meldekortet er ikke gyldig" }
 
-        val meldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
+        val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
+        val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId) + inneværendeMeldekortDagerMedLøpenummer
         val meldekortBeregning = MeldekortBeregning.beregn(
             meldekortId = meldekortId,
-            meldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId) + meldekortDagerMedLøpenummer,
+            meldekortDager = alleMeldekortDager.sortedBy { it.dato },
             saksbehandler = saksbehandler,
         )
 
@@ -153,7 +154,6 @@ class MeldekortServiceImpl(
             sessionOf(DataSource.hikariDataSource).use { session ->
                 session.transaction { tx ->
                     meldekortRepo.lagreInnsendtMeldekort(this, tx)
-
                     dokumentClient.sendMeldekortTilDokument(this, grunnlag).let {
                         meldekortRepo.lagreJournalPostId(it.journalpostId, this.id, tx)
                     }

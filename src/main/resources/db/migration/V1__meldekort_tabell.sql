@@ -54,7 +54,7 @@ create table meldekort
     sendtInn            timestamp null,
     opprettet           timestamp not null,
     sistEndret          timestamp not null,
-    journalpostId       varchar null,
+    journalpostId       varchar null
 );
 
 create table meldekortdag

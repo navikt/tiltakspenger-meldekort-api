@@ -98,12 +98,14 @@ fun Route.meldekort(
     }
 
     post("$MELDEKORT_PATH/godkjenn/{meldekortId}") {
+        LOG.info { "Motatt request på $MELDEKORT_PATH/godkjenn/{meldekortId}" }
         val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
             ?: return@post call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
 
         // Denne kan vi kanskje hente fra token på sikt?
         val saksbehandler = call.receive<GodkjennDTO>().saksbehandler
 
+        LOG.info { "Meldekort med id $meldekortId skal godkjenns" }
         meldekortService.godkjennMeldekort(meldekortId, saksbehandler)
 
         call.respond(message = "OK", status = HttpStatusCode.OK)
