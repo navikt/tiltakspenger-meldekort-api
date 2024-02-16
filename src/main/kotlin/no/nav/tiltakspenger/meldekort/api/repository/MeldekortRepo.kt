@@ -21,7 +21,7 @@ interface MeldekortRepo {
 
     fun lagreInnsendtMeldekort(meldekort: Meldekort.Innsendt, tx: TransactionalSession)
 
-    fun lagreJournalPostId(jornalpostId: String, meldekortId: UUID)
+    fun lagreJournalPostId(journalpostId: String, meldekortId: UUID)
 
-    fun lagreJournalPostId(jornalpostId: String, meldekortId: UUID, tx: TransactionalSession)
+    fun lagreJournalPostId(journalpostId: String, meldekortId: UUID, tx: TransactionalSession)
 }

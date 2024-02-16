@@ -66,21 +66,21 @@ class MeldekortRepoImpl(
         }
     }
 
-    override fun lagreJournalPostId(jornalpostId: String, meldekortId: UUID) {
+    override fun lagreJournalPostId(journalpostId: String, meldekortId: UUID) {
         sessionOf(DataSource.hikariDataSource).use {
             it.transaction { tx ->
-                lagreJournalPostId(jornalpostId, meldekortId, tx)
+                lagreJournalPostId(journalpostId, meldekortId, tx)
             }
         }
     }
 
-    override fun lagreJournalPostId(jornalpostId: String, meldekortId: UUID, tx: TransactionalSession) {
+    override fun lagreJournalPostId(journalpostId: String, meldekortId: UUID, tx: TransactionalSession) {
         tx.run(
             queryOf(
                 sqlLagreJournalpostId,
                 mapOf(
                     "id" to meldekortId.toString(),
-                    "jornalpostId" to jornalpostId,
+                    "journalpostId" to journalpostId,
                 ),
             ).asUpdate,
         )
@@ -289,7 +289,7 @@ class MeldekortRepoImpl(
     @Language("SQL")
     private val sqlLagreJournalpostId = """
         update meldekort set
-            jornalpostId = :jornalpostId
+            journalpostId = :journalpostId
         where id = :id
     """.trimIndent()
 }
