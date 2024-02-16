@@ -154,7 +154,6 @@ class MeldekortServiceImpl(
             sessionOf(DataSource.hikariDataSource).use { session ->
                 session.transaction { tx ->
                     meldekortRepo.lagreInnsendtMeldekort(this, tx)
-
                     dokumentClient.sendMeldekortTilDokument(this, grunnlag).let {
                         meldekortRepo.lagreJournalPostId(it.journalpostId, this.id, tx)
                     }

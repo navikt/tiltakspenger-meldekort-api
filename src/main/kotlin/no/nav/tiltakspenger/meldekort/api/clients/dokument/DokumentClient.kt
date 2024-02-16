@@ -12,6 +12,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.Configuration
 import no.nav.tiltakspenger.meldekort.api.clients.defaultHttpClient
 import no.nav.tiltakspenger.meldekort.api.clients.defaultObjectMapper
@@ -19,6 +20,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import java.time.LocalDateTime
 
+private val LOG = KotlinLogging.logger {}
 class DokumentClient(
     private val config: Configuration.ClientConfig = Configuration.dokumentClientConfig(),
     private val objectMapper: ObjectMapper = defaultObjectMapper(),
@@ -34,6 +36,8 @@ class DokumentClient(
     }
 
     override suspend fun sendMeldekortTilDokument(meldekort: Meldekort?, grunnlag: MeldekortGrunnlag): JoarkResponse {
+        LOG.info { "Request motatt for å sende meldekort til tiltakspenger-dokument på /arkivMeldekort" }
+
         val httpResponse = httpClient.post("${config.baseUrl}/arkivMeldekort") {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
