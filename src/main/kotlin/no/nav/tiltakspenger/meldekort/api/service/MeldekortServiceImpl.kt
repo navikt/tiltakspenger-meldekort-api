@@ -152,13 +152,17 @@ class MeldekortServiceImpl(
         val innsendtMeldekort = with(meldekort.godkjennMeldekort(saksbehandler)) {
             LOG.info { "Nå skal vi lagre meldekort" }
             meldekortRepo.lagreInnsendtMeldekort(this)
-            LOG.info { "Nå skal vi sende meldekort til dokument" }
             this
         }
 
-        dokumentClient.sendMeldekortTilDokument(innsendtMeldekort, grunnlag).let {
-            LOG.info { "Vi fikk : ${it.journalpostId}" }
-            meldekortRepo.lagreJournalPostId(it.journalpostId, innsendtMeldekort.id)
+        try {
+            LOG.info { "Nå skal vi sende meldekort til dokument" }
+            dokumentClient.sendMeldekortTilDokument(innsendtMeldekort, grunnlag).let {
+                LOG.info { "Vi fikk : ${it.journalpostId}" }
+                meldekortRepo.lagreJournalPostId(it.journalpostId, innsendtMeldekort.id)
+            }
+        } catch (e: Exception) {
+            LOG.error(e) { "Feil ved sending av meldekort til dokument ${e.message}" }
         }
     }
 }
