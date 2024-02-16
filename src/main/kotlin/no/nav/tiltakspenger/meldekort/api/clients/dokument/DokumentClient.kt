@@ -38,7 +38,7 @@ class DokumentClient(
     override suspend fun sendMeldekortTilDokument(meldekort: Meldekort?, grunnlag: MeldekortGrunnlag): JoarkResponse {
         LOG.info { "Request motatt for å sende meldekort til tiltakspenger-dokument på ${config.baseUrl}/meldekort/arkivmeldekort" }
 
-        val httpResponse = httpClient.post("${config.baseUrl}/arkivMeldekort") {
+        val httpResponse = httpClient.post("${config.baseUrl}/meldekort/arkivmeldekort") {
             header(navCallIdHeader, "tiltakspenger-meldekort-api")
             bearerAuth(getToken())
             accept(ContentType.Application.Json)
