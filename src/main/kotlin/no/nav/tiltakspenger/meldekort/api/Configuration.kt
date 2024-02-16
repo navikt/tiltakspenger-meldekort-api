@@ -66,7 +66,7 @@ object Configuration {
             "SCOPE_UTBETALING" to "api://dev-gcp.tpts.tiltakspenger-utbetaling/.default",
             "SCOPE_DOKUMENT" to "api://dev-gcp.tpts.tiltakspenger-dokument/.default",
             "UTBETALING_URL" to "https://tiltakspenger-utbetaling.intern.dev.nav.no",
-            "DOKUMENT_URL" to "https://tiltakspenger-dokument.intern.dev.nav.no",
+            "DOKUMENT_URL" to "https://tiltakspenger-dokument",
         ),
     )
 
@@ -76,7 +76,7 @@ object Configuration {
             "SCOPE_UTBETALING" to "api://prod-gcp.tpts.tiltakspenger-utbetaling/.default",
             "SCOPE_DOKUMENT" to "api://prod-gcp.tpts.tiltakspenger-dokument/.default",
             "UTBETALING_URL" to "https://tiltakspenger-utbetaling.intern.nav.no",
-            "DOKUMENT_URL" to "https://tiltakspenger-dokument.intern.nav.no",
+            "DOKUMENT_URL" to "https://tiltakspenger-dokument",
         ),
     )
 
