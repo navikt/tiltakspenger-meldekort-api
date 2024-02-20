@@ -114,12 +114,23 @@ class MeldekortServiceImpl(
         checkNotNull(grunnlagId) { "Fant ikke grunnlag for meldekort med id $meldekortId" }
         val tiltak = grunnlagTiltakRepo.hentFørsteTiltakForGrunnlag(grunnlagId.toString())
         checkNotNull(tiltak) { "Fant ikke tiltak for grunnlag med id $grunnlagId" }
-        meldekortDagRepo.oppdater(
-            meldekortId = meldekortId,
-            tiltakId = tiltak.id,
-            dato = dato,
-            status = status.name,
-        )
+
+        // overstyrer og setter status til ikke deltatt for dager utenfor tiltaket.
+        if (dato.isBefore(tiltak.periode.fra) || dato.isAfter(tiltak.periode.til)) {
+            meldekortDagRepo.oppdater(
+                meldekortId = meldekortId,
+                tiltakId = tiltak.id,
+                dato = dato,
+                status = MeldekortDagStatus.IKKE_DELTATT.name,
+            )
+        } else {
+            meldekortDagRepo.oppdater(
+                meldekortId = meldekortId,
+                tiltakId = tiltak.id,
+                dato = dato,
+                status = status.name,
+            )
+        }
     }
 
     override suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String) {
