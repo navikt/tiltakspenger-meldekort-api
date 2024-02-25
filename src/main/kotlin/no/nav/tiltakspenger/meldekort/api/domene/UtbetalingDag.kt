@@ -1,11 +1,13 @@
 package no.nav.tiltakspenger.meldekort.api.domene
 
 import java.time.LocalDate
+import java.util.UUID
 
 data class UtbetalingDag(
     val dag: LocalDate,
     val status: UtbetalingStatus,
     val løpenr: Int,
+    val meldekortId: UUID,
     val tiltakType: String,
 
     // feltene under her er for debug og skal fjernes

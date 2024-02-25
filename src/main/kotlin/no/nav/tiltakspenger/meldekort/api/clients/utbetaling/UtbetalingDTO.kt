@@ -32,7 +32,7 @@ fun mapUtbetalingMeldekort(
 ) =
     UtbetalingDTO(
         sakId = sakId,
-        utløsendeMeldekortId = behandling.meldekortId,
+        utløsendeMeldekortId = behandling.utløsendeMeldekortId,
         utbetalingDager = behandling.utbetalingDager.map {
             UtbetalingDagDTO(
                 dato = it.dag,
@@ -42,7 +42,7 @@ fun mapUtbetalingMeldekort(
                     UtbetalingStatus.DelvisUtbetaling -> UtbetalingDagStatusDTO.DelvisUtbetaling
                     UtbetalingStatus.IngenUtbetaling -> UtbetalingDagStatusDTO.IngenUtbetaling
                 },
-                meldekortId = behandling.meldekortId, // Denne må legges på hver dag
+                meldekortId = it.meldekortId,
                 løpenr = it.løpenr,
             )
         },

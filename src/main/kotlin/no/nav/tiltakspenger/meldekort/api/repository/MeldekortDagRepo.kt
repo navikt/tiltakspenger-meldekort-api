@@ -91,6 +91,7 @@ class MeldekortDagRepo(
             tiltak = stringOrNull("tiltak_id")?.let { grunnlagTiltakRepo.hentTiltak(it, txSession) },
             status = MeldekortDagStatus.valueOf(string("status")),
             løpenr = int("løpenr"),
+            meldekortId = UUID.fromString(string("meldekort_id")),
         )
     }
 

@@ -1,11 +1,13 @@
 package no.nav.tiltakspenger.meldekort.api.domene
 
 import java.time.LocalDate
+import java.util.UUID
 
 data class MeldekortDag(
     val dato: LocalDate,
     val tiltak: Tiltak?,
     val status: MeldekortDagStatus,
+    val meldekortId: UUID,
     val løpenr: Int = -1,
 ) {
     init {
@@ -15,12 +17,13 @@ data class MeldekortDag(
     }
 
     companion object {
-        fun lagIkkeUtfyltPeriode(fom: LocalDate, tom: LocalDate): List<MeldekortDag> {
+        fun lagIkkeUtfyltPeriode(meldekortId: UUID, fom: LocalDate, tom: LocalDate): List<MeldekortDag> {
             return fom.datesUntil(tom.plusDays(1)).toList().map {
                 MeldekortDag(
                     dato = it,
                     tiltak = null,
                     status = MeldekortDagStatus.IKKE_UTFYLT,
+                    meldekortId = meldekortId,
                 )
             }
         }

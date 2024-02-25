@@ -8,7 +8,7 @@ const val antallArbeidsgiverdager = 13
 const val dagerKarantene = 16L - 1
 
 data class MeldekortBeregning(
-    val meldekortId: UUID,
+    val utløsendeMeldekortId: UUID,
     val utbetalingDager: List<UtbetalingDag> = mutableListOf(),
     val saksbehandler: String,
 ) {
@@ -22,7 +22,7 @@ data class MeldekortBeregning(
 
     companion object {
         fun beregn(meldekortId: UUID, meldekortDager: List<MeldekortDag>, saksbehandler: String) =
-            MeldekortBeregning(meldekortId = meldekortId, saksbehandler = saksbehandler).apply {
+            MeldekortBeregning(utløsendeMeldekortId = meldekortId, saksbehandler = saksbehandler).apply {
                 lagUtbetalingsdager(meldekortDager)
             }
     }
@@ -52,6 +52,7 @@ data class MeldekortBeregning(
             deltagerStatus = DeltagerStatus.Deltatt,
             status = UtbetalingStatus.FullUtbetaling,
             løpenr = dag.løpenr,
+            meldekortId = dag.meldekortId,
         )
     }
 
@@ -63,6 +64,7 @@ data class MeldekortBeregning(
             deltagerStatus = DeltagerStatus.GyldigFravær,
             status = UtbetalingStatus.FullUtbetaling,
             løpenr = dag.løpenr,
+            meldekortId = dag.meldekortId,
         )
     }
 
@@ -74,6 +76,7 @@ data class MeldekortBeregning(
             deltagerStatus = DeltagerStatus.IkkeDeltatt,
             status = UtbetalingStatus.IngenUtbetaling,
             løpenr = dag.løpenr,
+            meldekortId = dag.meldekortId,
         )
     }
 
@@ -89,6 +92,7 @@ data class MeldekortBeregning(
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.FullUtbetaling,
                         løpenr = dag.løpenr,
+                        meldekortId = dag.meldekortId,
                     )
                 } else {
                     egenmeldingsdagerSyk = antallArbeidsgiverdager
@@ -100,6 +104,7 @@ data class MeldekortBeregning(
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.DelvisUtbetaling,
                         løpenr = dag.løpenr,
+                        meldekortId = dag.meldekortId,
                     )
                 }
             }
@@ -113,6 +118,7 @@ data class MeldekortBeregning(
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.DelvisUtbetaling,
                         løpenr = dag.løpenr,
+                        meldekortId = dag.meldekortId,
                     )
                 } else {
                     sykTilstand = SykTilstand.Karantene
@@ -122,6 +128,7 @@ data class MeldekortBeregning(
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.IngenUtbetaling,
                         løpenr = dag.løpenr,
+                        meldekortId = dag.meldekortId,
                     )
                 }
             }
@@ -134,6 +141,7 @@ data class MeldekortBeregning(
                     deltagerStatus = DeltagerStatus.Syk,
                     status = UtbetalingStatus.IngenUtbetaling,
                     løpenr = dag.løpenr,
+                    meldekortId = dag.meldekortId,
                 )
             }
         }
@@ -151,6 +159,7 @@ data class MeldekortBeregning(
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.FullUtbetaling,
                         løpenr = dag.løpenr,
+                        meldekortId = dag.meldekortId,
                     )
                 } else {
                     egenmeldingsdagerSyktBarn = antallArbeidsgiverdager
@@ -162,6 +171,7 @@ data class MeldekortBeregning(
                         status = UtbetalingStatus.DelvisUtbetaling,
                         tiltakType = dag.tiltak.typeKode,
                         løpenr = dag.løpenr,
+                        meldekortId = dag.meldekortId,
                     )
                 }
             }
@@ -175,6 +185,7 @@ data class MeldekortBeregning(
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.DelvisUtbetaling,
                         løpenr = dag.løpenr,
+                        meldekortId = dag.meldekortId,
                     )
                 } else {
                     syktBarnTilstand = SykTilstand.Karantene
@@ -184,6 +195,7 @@ data class MeldekortBeregning(
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.IngenUtbetaling,
                         løpenr = dag.løpenr,
+                        meldekortId = dag.meldekortId,
                     )
                 }
             }
@@ -196,6 +208,7 @@ data class MeldekortBeregning(
                     deltagerStatus = DeltagerStatus.SyktBarn,
                     status = UtbetalingStatus.IngenUtbetaling,
                     løpenr = dag.løpenr,
+                    meldekortId = dag.meldekortId,
                 )
             }
         }
@@ -208,6 +221,7 @@ data class MeldekortBeregning(
         status: UtbetalingStatus,
         tiltakType: String,
         løpenr: Int,
+        meldekortId: UUID,
     ) {
         utbetalingDager.addLast(
             UtbetalingDag(
@@ -216,6 +230,7 @@ data class MeldekortBeregning(
                 status = status,
                 tiltakType = tiltakType,
                 løpenr = løpenr,
+                meldekortId = meldekortId,
                 kvote = egenmeldingsdagerSyk,
                 kvoteBarn = egenmeldingsdagerSyktBarn,
                 sykKaranteneDag = sykKaranteneDag,

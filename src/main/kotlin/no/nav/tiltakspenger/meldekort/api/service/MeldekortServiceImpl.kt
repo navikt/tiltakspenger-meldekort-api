@@ -75,14 +75,16 @@ class MeldekortServiceImpl(
                             LOG.info { "Meldekortet overlapper med eksisterende meldekort. Lager ikke nytt" }
                         } else {
                             LOG.info { "Lager nytt meldekort" }
+                            val meldekortId = UUID.randomUUID()
                             val meldekort = Meldekort.Åpent(
-                                id = UUID.randomUUID(),
+                                id = meldekortId,
                                 løpenr = eksisterendeMeldekortPerioder.size + ind + 1,
                                 fom = periode.fra,
                                 tom = periode.til,
                                 meldekortDager = MeldekortDag.lagIkkeUtfyltPeriode(
-                                    periode.fra,
-                                    periode.til,
+                                    meldekortId = meldekortId,
+                                    fom = periode.fra,
+                                    tom = periode.til,
                                 ),
                             )
                             meldekortRepo.opprett(meldekortGrunnlag.id, meldekort)
