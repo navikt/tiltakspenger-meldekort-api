@@ -38,6 +38,17 @@ fun Route.meldekort(
         call.respond(status = HttpStatusCode.OK, message = dto)
     }
 
+    get("$MELDEKORT_PATH/hentBeregning/{meldekortId}") {
+        val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
+            ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
+
+        LOG.info { "Motatt request på $MELDEKORT_PATH/hentBeregning/$meldekortId" }
+
+        val dto = meldekortService.hentMeldekortBeregning(meldekortId)
+
+        call.respond(status = HttpStatusCode.OK, message = dto)
+    }
+
     post("$MELDEKORT_PATH/oppdaterDag") {
         val dto = call.receive<MeldekortDagDTO>()
         LOG.info("Motatt request på $MELDEKORT_PATH/hentAlleForBehandling/behandlingId")
