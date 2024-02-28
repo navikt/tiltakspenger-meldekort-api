@@ -17,6 +17,8 @@ import no.nav.tiltakspenger.meldekort.api.Configuration
 import no.nav.tiltakspenger.meldekort.api.clients.defaultHttpClient
 import no.nav.tiltakspenger.meldekort.api.clients.defaultObjectMapper
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
+import java.time.LocalDate
+import java.util.*
 
 val securelog = KotlinLogging.logger("tjenestekall")
 
@@ -53,5 +55,28 @@ class UtbetalingClient(
             HttpStatusCode.Accepted -> httpResponse.call.response.body()
             else -> throw RuntimeException("error (responseCode=${httpResponse.status.value}) fra Utbetaling")
         }
+    }
+
+    override suspend fun hentPeriodisertUtbetalingsgrunnlag(meldekortId: UUID): List<UtbetalingGrunnlagPeriode> {
+        return listOf(
+            UtbetalingGrunnlagPeriode(
+                antallBarn = 1,
+                sats = 250,
+                satsDelvis = 200,
+                satsBarn = 50,
+                satsBarnDelvis = 10,
+                fom = LocalDate.of(2023,1,1),
+                tom = LocalDate.of(2023,12,31),
+            ),
+            UtbetalingGrunnlagPeriode(
+                antallBarn = 1,
+                sats = 260,
+                satsDelvis = 210,
+                satsBarn = 60,
+                satsBarnDelvis = 20,
+                fom = LocalDate.of(2024,1,1),
+                tom = LocalDate.of(2024,12,31),
+            ),
+        )
     }
 }

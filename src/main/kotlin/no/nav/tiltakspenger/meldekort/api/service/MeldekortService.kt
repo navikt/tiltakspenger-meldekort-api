@@ -21,7 +21,7 @@ interface MeldekortService {
 
     fun oppdaterMeldekortDag(meldekortId: UUID, dato: LocalDate, status: MeldekortDagStatus)
 
-    fun hentMeldekortBeregning(meldekortId: UUID): MeldekortBeregningDTO
+    suspend fun hentMeldekortBeregning(meldekortId: UUID): MeldekortBeregningDTO
 
     suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String)
 }

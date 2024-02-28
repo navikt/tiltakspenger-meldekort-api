@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.api.service
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
+import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.hentGrunnlagForDato
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
@@ -23,6 +24,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import kotlin.system.measureNanoTime
 
 private val LOG = KotlinLogging.logger {}
 
@@ -137,7 +139,7 @@ class MeldekortServiceImpl(
         }
     }
 
-    override fun hentMeldekortBeregning(meldekortId: UUID): MeldekortBeregningDTO {
+    override suspend fun hentMeldekortBeregning(meldekortId: UUID): MeldekortBeregningDTO {
         val meldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
         checkNotNull(meldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
 
@@ -148,28 +150,37 @@ class MeldekortServiceImpl(
         checkNotNull(grunnlag) { "Fant ikke grunnlag med id $grunnlagId" }
 
         val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
-        val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId) + inneværendeMeldekortDagerMedLøpenummer
+        val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId).filterNot { it.meldekortId == meldekortId } + inneværendeMeldekortDagerMedLøpenummer
         val beregning = MeldekortBeregning.beregn(
             meldekortId = meldekortId,
             meldekortDager = alleMeldekortDager.sortedBy { it.dato },
             saksbehandler = "saksbehandler",
-        )
-
-        val b = beregning.utbetalingDager.filter {
+        ).utbetalingDager.filter {
             it.meldekortId == meldekortId
         }
+
+        val beløpOgAntallBarn = utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(meldekortId)
+        val beløpPrStatusListe : List<Pair<UtbetalingStatus, Int>> = beregning.map {
+            val utbetalingGrunnlag = beløpOgAntallBarn.hentGrunnlagForDato(it.dag)
+            when (it.status) {
+                UtbetalingStatus.IngenUtbetaling -> UtbetalingStatus.IngenUtbetaling to 0
+                UtbetalingStatus.FullUtbetaling -> UtbetalingStatus.FullUtbetaling to utbetalingGrunnlag.sats + ( utbetalingGrunnlag.satsBarn * utbetalingGrunnlag.antallBarn )
+                UtbetalingStatus.DelvisUtbetaling -> UtbetalingStatus.DelvisUtbetaling to utbetalingGrunnlag.satsDelvis + ( utbetalingGrunnlag.satsBarnDelvis * utbetalingGrunnlag.antallBarn )
+            }
+        }
+
         return MeldekortBeregningDTO(
             antallDeltatt = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.DELTATT },
             antallIkkeDeltatt = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.IKKE_DELTATT },
             antallSykDager = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_SYK },
             antallSykBarnDager = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_SYKT_BARN },
             antallVelferd = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_VELFERD },
-            antallFullUtbetaling = b.count { it.status == UtbetalingStatus.FullUtbetaling },
-            antallDelvisUtbetaling = b.count { it.status == UtbetalingStatus.DelvisUtbetaling },
-            antallIngenUtbetaling = b.count { it.status == UtbetalingStatus.IngenUtbetaling },
-            sumDelvis = 0,
-            sumFull = 0,
-            sumTotal = 0,
+            antallFullUtbetaling = beregning.count { it.status == UtbetalingStatus.FullUtbetaling },
+            antallDelvisUtbetaling = beregning.count { it.status == UtbetalingStatus.DelvisUtbetaling },
+            antallIngenUtbetaling = beregning.count { it.status == UtbetalingStatus.IngenUtbetaling },
+            sumDelvis = beløpPrStatusListe.filter { it.first == UtbetalingStatus.DelvisUtbetaling }.sumOf { it.second },
+            sumFull = beløpPrStatusListe.filter { it.first == UtbetalingStatus.FullUtbetaling }.sumOf { it.second },
+            sumTotal = beløpPrStatusListe.sumOf { it.second },
         )
     }
 

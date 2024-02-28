@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
+import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus.DELTATT
@@ -97,6 +98,7 @@ internal class MeldekortBeregningTest {
         for (dag in meldekortBeregning.utbetalingDager) {
             println(dag)
         }
+        meldekortBeregning.utbetalingDager.first shouldBe
     }
 
     private val gruppeAmo = Tiltak(
