@@ -24,7 +24,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.UUID
-import kotlin.system.measureNanoTime
 
 private val LOG = KotlinLogging.logger {}
 
@@ -159,13 +158,17 @@ class MeldekortServiceImpl(
             it.meldekortId == meldekortId
         }
 
-        val beløpOgAntallBarn = utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(meldekortId)
-        val beløpPrStatusListe : List<Pair<UtbetalingStatus, Int>> = beregning.map {
+        val beløpOgAntallBarn = utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(
+            behandlingId = grunnlag.behandlingId,
+            fom = beregning.minByOrNull { it.dag }!!.dag,
+            tom = beregning.maxByOrNull { it.dag }!!.dag,
+        )
+        val beløpPrStatusListe: List<Pair<UtbetalingStatus, Int>> = beregning.map {
             val utbetalingGrunnlag = beløpOgAntallBarn.hentGrunnlagForDato(it.dag)
             when (it.status) {
                 UtbetalingStatus.IngenUtbetaling -> UtbetalingStatus.IngenUtbetaling to 0
-                UtbetalingStatus.FullUtbetaling -> UtbetalingStatus.FullUtbetaling to utbetalingGrunnlag.sats + ( utbetalingGrunnlag.satsBarn * utbetalingGrunnlag.antallBarn )
-                UtbetalingStatus.DelvisUtbetaling -> UtbetalingStatus.DelvisUtbetaling to utbetalingGrunnlag.satsDelvis + ( utbetalingGrunnlag.satsBarnDelvis * utbetalingGrunnlag.antallBarn )
+                UtbetalingStatus.FullUtbetaling -> UtbetalingStatus.FullUtbetaling to utbetalingGrunnlag.sats + (utbetalingGrunnlag.satsBarn * utbetalingGrunnlag.antallBarn)
+                UtbetalingStatus.DelvisUtbetaling -> UtbetalingStatus.DelvisUtbetaling to utbetalingGrunnlag.satsDelvis + (utbetalingGrunnlag.satsBarnDelvis * utbetalingGrunnlag.antallBarn)
             }
         }
 

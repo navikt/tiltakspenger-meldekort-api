@@ -1,14 +1,12 @@
 package no.nav.tiltakspenger.meldekort.api.clients.utbetaling
 
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
-import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import java.time.LocalDate
-import java.util.UUID
 
 interface Utbetaling {
     suspend fun sendTilUtbetaling(sakId: String, behandling: MeldekortBeregning): String
 
-    suspend fun hentPeriodisertUtbetalingsgrunnlag(meldekortId: UUID): List<UtbetalingGrunnlagPeriode>
+    suspend fun hentPeriodisertUtbetalingsgrunnlag(behandlingId: String, fom: LocalDate, tom: LocalDate): List<UtbetalingGrunnlagPeriode>
 }
 
 data class UtbetalingGrunnlagPeriode(
@@ -27,6 +25,12 @@ data class UtbetalingGrunnlag(
     val satsDelvis: Int,
     val satsBarn: Int,
     val satsBarnDelvis: Int,
+)
+
+data class GrunnlagDTO(
+    val behandlingId: String,
+    val fom: LocalDate,
+    val tom: LocalDate,
 )
 
 fun List<UtbetalingGrunnlagPeriode>.hentGrunnlagForDato(dato: LocalDate): UtbetalingGrunnlag {

@@ -57,26 +57,25 @@ class UtbetalingClient(
         }
     }
 
-    override suspend fun hentPeriodisertUtbetalingsgrunnlag(meldekortId: UUID): List<UtbetalingGrunnlagPeriode> {
-        return listOf(
-            UtbetalingGrunnlagPeriode(
-                antallBarn = 1,
-                sats = 250,
-                satsDelvis = 200,
-                satsBarn = 50,
-                satsBarnDelvis = 10,
-                fom = LocalDate.of(2023,1,1),
-                tom = LocalDate.of(2023,12,31),
-            ),
-            UtbetalingGrunnlagPeriode(
-                antallBarn = 1,
-                sats = 260,
-                satsDelvis = 210,
-                satsBarn = 60,
-                satsBarnDelvis = 20,
-                fom = LocalDate.of(2024,1,1),
-                tom = LocalDate.of(2024,12,31),
-            ),
-        )
+    override suspend fun hentPeriodisertUtbetalingsgrunnlag(
+        behandlingId: String,
+        fom: LocalDate,
+        tom: LocalDate,
+    ): List<UtbetalingGrunnlagPeriode> {
+        val httpResponse =
+            httpClient.post("${config.baseUrl}/utbetaling/hentGrunnlag") {
+                header(navCallIdHeader, "tiltakspenger-meldekort-api")
+                bearerAuth(getToken())
+                accept(ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
+                setBody(
+                    mapGrunnlag(behandlingId, fom, tom),
+                )
+            }
+
+        return when (httpResponse.status) {
+            HttpStatusCode.OK -> httpResponse.call.response.body()
+            else -> throw RuntimeException("error (responseCode=${httpResponse.status.value}) fra Utbetaling")
+        }
     }
 }
