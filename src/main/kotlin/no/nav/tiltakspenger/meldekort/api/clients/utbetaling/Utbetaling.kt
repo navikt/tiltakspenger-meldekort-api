@@ -35,7 +35,7 @@ data class GrunnlagDTO(
 
 fun List<UtbetalingGrunnlagPeriode>.hentGrunnlagForDato(dato: LocalDate): UtbetalingGrunnlag {
     val grunnlag = this.find { it.fom <= dato && it.tom >= dato }
-        ?: throw IllegalArgumentException("Fant ingen grunnlag for dato $dato")
+        ?: throw IllegalStateException("Fant ingen grunnlag for dato $dato")
 
     return UtbetalingGrunnlag(grunnlag.antallBarn, grunnlag.sats, grunnlag.satsDelvis, grunnlag.satsBarn, grunnlag.satsBarnDelvis)
 }

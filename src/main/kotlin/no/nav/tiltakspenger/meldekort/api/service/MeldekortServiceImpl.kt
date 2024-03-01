@@ -11,6 +11,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.domene.Status
+import no.nav.tiltakspenger.meldekort.api.domene.UtbetalingDag
 import no.nav.tiltakspenger.meldekort.api.domene.UtbetalingStatus
 import no.nav.tiltakspenger.meldekort.api.domene.godkjennMeldekort
 import no.nav.tiltakspenger.meldekort.api.domene.valider
@@ -150,7 +151,7 @@ class MeldekortServiceImpl(
 
         val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
         val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId).filterNot { it.meldekortId == meldekortId } + inneværendeMeldekortDagerMedLøpenummer
-        val beregning = MeldekortBeregning.beregn(
+        val utbetalingsDager: List<UtbetalingDag> = MeldekortBeregning.beregnUtbetalingsDager(
             meldekortId = meldekortId,
             meldekortDager = alleMeldekortDager.sortedBy { it.dato },
             saksbehandler = "saksbehandler",
@@ -158,17 +159,17 @@ class MeldekortServiceImpl(
             it.meldekortId == meldekortId
         }
 
-        val beløpOgAntallBarn = utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(
+        val periodiserteSatserOgBarn = utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(
             behandlingId = grunnlag.behandlingId,
-            fom = beregning.minByOrNull { it.dag }!!.dag,
-            tom = beregning.maxByOrNull { it.dag }!!.dag,
+            fom = utbetalingsDager.minByOrNull { it.dag }!!.dag,
+            tom = utbetalingsDager.maxByOrNull { it.dag }!!.dag,
         )
-        val beløpPrStatusListe: List<Pair<UtbetalingStatus, Int>> = beregning.map {
-            val utbetalingGrunnlag = beløpOgAntallBarn.hentGrunnlagForDato(it.dag)
+        val beløpPerDagPerStatus: List<Pair<UtbetalingStatus, Int>> = utbetalingsDager.map {
+            val satserOgBarnForDato = periodiserteSatserOgBarn.hentGrunnlagForDato(it.dag)
             when (it.status) {
                 UtbetalingStatus.IngenUtbetaling -> UtbetalingStatus.IngenUtbetaling to 0
-                UtbetalingStatus.FullUtbetaling -> UtbetalingStatus.FullUtbetaling to utbetalingGrunnlag.sats + (utbetalingGrunnlag.satsBarn * utbetalingGrunnlag.antallBarn)
-                UtbetalingStatus.DelvisUtbetaling -> UtbetalingStatus.DelvisUtbetaling to utbetalingGrunnlag.satsDelvis + (utbetalingGrunnlag.satsBarnDelvis * utbetalingGrunnlag.antallBarn)
+                UtbetalingStatus.FullUtbetaling -> UtbetalingStatus.FullUtbetaling to satserOgBarnForDato.sats + (satserOgBarnForDato.satsBarn * satserOgBarnForDato.antallBarn)
+                UtbetalingStatus.DelvisUtbetaling -> UtbetalingStatus.DelvisUtbetaling to satserOgBarnForDato.satsDelvis + (satserOgBarnForDato.satsBarnDelvis * satserOgBarnForDato.antallBarn)
             }
         }
 
@@ -178,12 +179,12 @@ class MeldekortServiceImpl(
             antallSykDager = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_SYK },
             antallSykBarnDager = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_SYKT_BARN },
             antallVelferd = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_VELFERD },
-            antallFullUtbetaling = beregning.count { it.status == UtbetalingStatus.FullUtbetaling },
-            antallDelvisUtbetaling = beregning.count { it.status == UtbetalingStatus.DelvisUtbetaling },
-            antallIngenUtbetaling = beregning.count { it.status == UtbetalingStatus.IngenUtbetaling },
-            sumDelvis = beløpPrStatusListe.filter { it.first == UtbetalingStatus.DelvisUtbetaling }.sumOf { it.second },
-            sumFull = beløpPrStatusListe.filter { it.first == UtbetalingStatus.FullUtbetaling }.sumOf { it.second },
-            sumTotal = beløpPrStatusListe.sumOf { it.second },
+            antallFullUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.FullUtbetaling },
+            antallDelvisUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.DelvisUtbetaling },
+            antallIngenUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.IngenUtbetaling },
+            sumDelvis = beløpPerDagPerStatus.filter { it.first == UtbetalingStatus.DelvisUtbetaling }.sumOf { it.second },
+            sumFull = beløpPerDagPerStatus.filter { it.first == UtbetalingStatus.FullUtbetaling }.sumOf { it.second },
+            sumTotal = beløpPerDagPerStatus.sumOf { it.second },
         )
     }
 
@@ -205,7 +206,7 @@ class MeldekortServiceImpl(
 
         val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
         val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId) + inneværendeMeldekortDagerMedLøpenummer
-        val meldekortBeregning = MeldekortBeregning.beregn(
+        val meldekortBeregning = MeldekortBeregning.beregnUtbetalingsDager(
             meldekortId = meldekortId,
             meldekortDager = alleMeldekortDager.sortedBy { it.dato },
             saksbehandler = saksbehandler,
