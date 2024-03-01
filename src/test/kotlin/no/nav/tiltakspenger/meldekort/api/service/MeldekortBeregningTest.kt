@@ -17,7 +17,7 @@ internal class MeldekortBeregningTest {
     fun eks() {
         val meldekortId = UUID.randomUUID()
         val meldekortBeregning =
-            MeldekortBeregning.beregn(
+            MeldekortBeregning.beregnUtbetalingsDager(
                 meldekortDager = listOf(
                     MeldekortDag(dato = 29.januar(), tiltak = gruppeAmo, status = IKKE_DELTATT, meldekortId),
                     MeldekortDag(dato = 30.januar(), tiltak = gruppeAmo, status = IKKE_DELTATT, meldekortId),

@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.api.service
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
+import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.hentGrunnlagForDato
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
@@ -10,6 +11,8 @@ import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortUtenDager
 import no.nav.tiltakspenger.meldekort.api.domene.Status
+import no.nav.tiltakspenger.meldekort.api.domene.UtbetalingDag
+import no.nav.tiltakspenger.meldekort.api.domene.UtbetalingStatus
 import no.nav.tiltakspenger.meldekort.api.domene.godkjennMeldekort
 import no.nav.tiltakspenger.meldekort.api.domene.valider
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
@@ -17,6 +20,7 @@ import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagTiltakRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepo
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortBeregningDTO
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -135,6 +139,55 @@ class MeldekortServiceImpl(
         }
     }
 
+    override suspend fun hentMeldekortBeregning(meldekortId: UUID): MeldekortBeregningDTO {
+        val meldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
+        checkNotNull(meldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
+
+        val grunnlagId = meldekortRepo.hentGrunnlagIdForMeldekort(meldekortId)
+        checkNotNull(grunnlagId) { "Fant ikke grunnlag for meldekort med id $meldekortId" }
+
+        val grunnlag = grunnlagRepo.hentGrunnlag(grunnlagId)
+        checkNotNull(grunnlag) { "Fant ikke grunnlag med id $grunnlagId" }
+
+        val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
+        val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId).filterNot { it.meldekortId == meldekortId } + inneværendeMeldekortDagerMedLøpenummer
+        val utbetalingsDager: List<UtbetalingDag> = MeldekortBeregning.beregnUtbetalingsDager(
+            meldekortId = meldekortId,
+            meldekortDager = alleMeldekortDager.sortedBy { it.dato },
+            saksbehandler = "saksbehandler",
+        ).utbetalingDager.filter {
+            it.meldekortId == meldekortId
+        }
+
+        val periodiserteSatserOgBarn = utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(
+            behandlingId = grunnlag.behandlingId,
+            fom = utbetalingsDager.minByOrNull { it.dag }!!.dag,
+            tom = utbetalingsDager.maxByOrNull { it.dag }!!.dag,
+        )
+        val beløpPerDagPerStatus: List<Pair<UtbetalingStatus, Int>> = utbetalingsDager.map {
+            val satserOgBarnForDato = periodiserteSatserOgBarn.hentGrunnlagForDato(it.dag)
+            when (it.status) {
+                UtbetalingStatus.IngenUtbetaling -> UtbetalingStatus.IngenUtbetaling to 0
+                UtbetalingStatus.FullUtbetaling -> UtbetalingStatus.FullUtbetaling to satserOgBarnForDato.sats + (satserOgBarnForDato.satsBarn * satserOgBarnForDato.antallBarn)
+                UtbetalingStatus.DelvisUtbetaling -> UtbetalingStatus.DelvisUtbetaling to satserOgBarnForDato.satsDelvis + (satserOgBarnForDato.satsBarnDelvis * satserOgBarnForDato.antallBarn)
+            }
+        }
+
+        return MeldekortBeregningDTO(
+            antallDeltatt = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.DELTATT },
+            antallIkkeDeltatt = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.IKKE_DELTATT },
+            antallSykDager = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_SYK },
+            antallSykBarnDager = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_SYKT_BARN },
+            antallVelferd = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_VELFERD },
+            antallFullUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.FullUtbetaling },
+            antallDelvisUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.DelvisUtbetaling },
+            antallIngenUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.IngenUtbetaling },
+            sumDelvis = beløpPerDagPerStatus.filter { it.first == UtbetalingStatus.DelvisUtbetaling }.sumOf { it.second },
+            sumFull = beløpPerDagPerStatus.filter { it.first == UtbetalingStatus.FullUtbetaling }.sumOf { it.second },
+            sumTotal = beløpPerDagPerStatus.sumOf { it.second },
+        )
+    }
+
     override suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String) {
         val meldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
         checkNotNull(meldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
@@ -153,7 +206,7 @@ class MeldekortServiceImpl(
 
         val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
         val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId) + inneværendeMeldekortDagerMedLøpenummer
-        val meldekortBeregning = MeldekortBeregning.beregn(
+        val meldekortBeregning = MeldekortBeregning.beregnUtbetalingsDager(
             meldekortId = meldekortId,
             meldekortDager = alleMeldekortDager.sortedBy { it.dato },
             saksbehandler = saksbehandler,

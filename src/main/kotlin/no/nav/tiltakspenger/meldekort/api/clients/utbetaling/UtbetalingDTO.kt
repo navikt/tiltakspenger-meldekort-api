@@ -26,6 +26,16 @@ enum class UtbetalingDagStatusDTO {
     DelvisUtbetaling,
 }
 
+fun mapGrunnlag(
+    behandlingId: String,
+    fom: LocalDate,
+    tom: LocalDate,
+) = GrunnlagDTO(
+    behandlingId = behandlingId,
+    fom = fom,
+    tom = tom,
+)
+
 fun mapUtbetalingMeldekort(
     sakId: String,
     behandling: MeldekortBeregning,

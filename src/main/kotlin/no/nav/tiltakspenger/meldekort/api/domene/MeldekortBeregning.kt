@@ -21,7 +21,7 @@ data class MeldekortBeregning(
     private var syktBarnKaranteneDag: LocalDate? = null
 
     companion object {
-        fun beregn(meldekortId: UUID, meldekortDager: List<MeldekortDag>, saksbehandler: String) =
+        fun beregnUtbetalingsDager(meldekortId: UUID, meldekortDager: List<MeldekortDag>, saksbehandler: String) =
             MeldekortBeregning(utløsendeMeldekortId = meldekortId, saksbehandler = saksbehandler).apply {
                 lagUtbetalingsdager(meldekortDager)
             }
