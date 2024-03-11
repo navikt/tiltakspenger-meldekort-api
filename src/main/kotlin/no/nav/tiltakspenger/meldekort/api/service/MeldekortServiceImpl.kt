@@ -153,7 +153,9 @@ class MeldekortServiceImpl(
         val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId).filterNot { it.meldekortId == meldekortId } + inneværendeMeldekortDagerMedLøpenummer
         val utbetalingsDager: List<UtbetalingDag> = MeldekortBeregning.beregnUtbetalingsDager(
             meldekortId = meldekortId,
-            meldekortDager = alleMeldekortDager.sortedBy { it.dato },
+            meldekortDager = alleMeldekortDager
+                .filter { it.dato >= grunnlag.vurderingsperiode.fra && it.dato <= grunnlag.vurderingsperiode.til }
+                .sortedBy { it.dato },
             saksbehandler = "saksbehandler",
         ).utbetalingDager.filter {
             it.meldekortId == meldekortId
@@ -208,7 +210,9 @@ class MeldekortServiceImpl(
         val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId) + inneværendeMeldekortDagerMedLøpenummer
         val meldekortBeregning = MeldekortBeregning.beregnUtbetalingsDager(
             meldekortId = meldekortId,
-            meldekortDager = alleMeldekortDager.sortedBy { it.dato },
+            meldekortDager = alleMeldekortDager
+                .filter { it.dato >= grunnlag.vurderingsperiode.fra && it.dato <= grunnlag.vurderingsperiode.til }
+                .sortedBy { it.dato },
             saksbehandler = saksbehandler,
         )
 

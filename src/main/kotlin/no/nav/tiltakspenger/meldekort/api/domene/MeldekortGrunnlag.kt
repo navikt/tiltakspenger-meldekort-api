@@ -12,6 +12,7 @@ data class MeldekortGrunnlag(
     val vurderingsperiode: Periode,
     val tiltak: List<Tiltak>,
     val personopplysninger: Personopplysninger,
+    val utfallsperioder: List<Utfallsperiode>,
 )
 
 data class Personopplysninger(

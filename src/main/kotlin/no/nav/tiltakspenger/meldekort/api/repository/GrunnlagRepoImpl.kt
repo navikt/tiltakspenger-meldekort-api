@@ -14,10 +14,11 @@ import java.util.*
 
 class GrunnlagRepoImpl(
     private val tiltakRepo: GrunnlagTiltakRepo,
+    private val utfallsperiodeDAO: UtfallsperiodeDAO,
 ) : GrunnlagRepo {
     override fun lagre(dto: MeldekortGrunnlag) {
         sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
+            it.transaction { tx ->
                 it.run(
                     queryOf(
                         sqlLagreGrunnlag,
@@ -34,10 +35,11 @@ class GrunnlagRepoImpl(
                             "ident" to dto.personopplysninger.ident,
                         ),
                     ).asUpdate,
-                )
-            }.also {
-                dto.tiltak.forEach { tiltak ->
-                    tiltakRepo.lagre(dto.id.toString(), tiltak)
+                ).also {
+                    dto.tiltak.forEach { tiltak ->
+                        tiltakRepo.lagre(dto.id.toString(), tiltak, tx)
+                    }
+                    utfallsperiodeDAO.lagre(dto.id, dto.utfallsperioder, tx)
                 }
             }
         }
@@ -58,8 +60,9 @@ class GrunnlagRepoImpl(
     }
 
     private fun Row.toGrunnlag(txSession: TransactionalSession): MeldekortGrunnlag {
+        val grunnlagId = UUID.fromString(string("id"))
         return MeldekortGrunnlag(
-            id = UUID.fromString(string("id")),
+            id = grunnlagId,
             sakId = string("sak_id"),
             behandlingId = string("behandling_id"),
             vedtakId = string("vedtak_id"),
@@ -74,6 +77,7 @@ class GrunnlagRepoImpl(
                 etternavn = string("etternavn"),
                 ident = string("ident"),
             ),
+            utfallsperioder = utfallsperiodeDAO.hent(grunnlagId, txSession),
         )
     }
 

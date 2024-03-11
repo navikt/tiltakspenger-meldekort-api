@@ -13,12 +13,15 @@ import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Personopplysninger
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.domene.Tiltak
+import no.nav.tiltakspenger.meldekort.api.domene.UtfallForPeriode
+import no.nav.tiltakspenger.meldekort.api.domene.Utfallsperiode
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.routes.dto.DayHasBegunDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortGrunnlagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortUtenDagerDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.StatusDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.UtfallForPeriodeDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import java.time.DayOfWeek
 import java.util.UUID
@@ -153,5 +156,18 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
             etternavn = dto.personopplysninger.etternavn,
             ident = dto.personopplysninger.ident,
         ),
+        utfallsperioder = dto.utfallsperioder.map {
+            Utfallsperiode(
+                fom = it.fom,
+                tom = it.tom,
+                antallBarn = it.antallBarn,
+                utfall = when (it.utfall) {
+                    UtfallForPeriodeDTO.GIR_RETT_TILTAKSPENGER -> UtfallForPeriode.GIR_RETT_TILTAKSPENGER
+                    UtfallForPeriodeDTO.GIR_IKKE_RETT_TILTAKSPENGER -> UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER
+                    UtfallForPeriodeDTO.KREVER_MANUELL_VURDERING -> UtfallForPeriode.KREVER_MANUELL_VURDERING
+                },
+
+            )
+        },
     )
 }

@@ -65,3 +65,13 @@ create table meldekortdag
     dato                date    not null,
     status              varchar not null
 );
+
+CREATE TABLE utfallsperiode
+(
+    id                  VARCHAR PRIMARY KEY,
+    grunnlag_id         VARCHAR                  NOT NULL REFERENCES grunnlag (id),
+    fom                 DATE                     NOT NULL,
+    tom                 DATE                     NOT NULL,
+    antall_barn         INT                      NOT NULL,
+    utfall              VARCHAR                  NOT NULL
+);

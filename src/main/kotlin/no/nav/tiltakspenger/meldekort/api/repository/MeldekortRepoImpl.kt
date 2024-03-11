@@ -34,10 +34,10 @@ class MeldekortRepoImpl(
                             "opprettet" to meldekort.opprettet,
                         ),
                     ).asUpdate,
-                )
-            }.also {
-                meldekort.meldekortDager.forEach { dag ->
-                    meldekortDagRepo.lagre(id, dag)
+                ).also {
+                    meldekort.meldekortDager.forEach { dag ->
+                        meldekortDagRepo.lagre(id, dag)
+                    }
                 }
             }
         }
