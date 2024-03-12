@@ -14,23 +14,19 @@ import java.util.*
 class MeldekortDagRepo(
     private val grunnlagTiltakRepo: GrunnlagTiltakRepo,
 ) {
-    fun lagre(meldekortId: UUID, dto: MeldekortDag) {
-        sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                it.run(
-                    queryOf(
-                        sqlLagreMeldekortDag,
-                        mapOf(
-                            "id" to UUID.randomUUID().toString(),
-                            "meldekortId" to meldekortId.toString(),
-                            "tiltakId" to if (dto.tiltak == null) null else dto.tiltak.id.toString(),
-                            "dato" to dto.dato,
-                            "status" to dto.status.name,
-                        ),
-                    ).asUpdate,
-                )
-            }
-        }
+    fun lagre(meldekortId: UUID, dto: MeldekortDag, tx: TransactionalSession) {
+        tx.run(
+            queryOf(
+                sqlLagreMeldekortDag,
+                mapOf(
+                    "id" to UUID.randomUUID().toString(),
+                    "meldekortId" to meldekortId.toString(),
+                    "tiltakId" to if (dto.tiltak == null) null else dto.tiltak.id.toString(),
+                    "dato" to dto.dato,
+                    "status" to dto.status.name,
+                ),
+            ).asUpdate,
+        )
     }
 
     fun oppdater(meldekortId: UUID, tiltakId: UUID?, dato: LocalDate, status: String) {

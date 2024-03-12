@@ -19,7 +19,7 @@ class MeldekortRepoImpl(
     override fun opprett(grunnlagId: UUID, meldekort: Meldekort.Åpent) {
         sessionOf(DataSource.hikariDataSource).use {
             val id = UUID.randomUUID()
-            it.transaction {
+            it.transaction { tx ->
                 it.run(
                     queryOf(
                         sqlLagreInnsendtMeldekort,
@@ -36,7 +36,7 @@ class MeldekortRepoImpl(
                     ).asUpdate,
                 ).also {
                     meldekort.meldekortDager.forEach { dag ->
-                        meldekortDagRepo.lagre(id, dag)
+                        meldekortDagRepo.lagre(id, dag, tx)
                     }
                 }
             }
