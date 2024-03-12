@@ -20,6 +20,7 @@ import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepoImpl
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagTiltakRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepoImpl
+import no.nav.tiltakspenger.meldekort.api.repository.UtfallsperiodeDAO
 import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.api.routes.meldekort
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
@@ -46,7 +47,8 @@ fun Application.applicationModule() {
     val grunnlagTiltakRepo = GrunnlagTiltakRepo()
     val meldekortDagRepo = MeldekortDagRepo(grunnlagTiltakRepo)
     val meldekortRepo = MeldekortRepoImpl(meldekortDagRepo)
-    val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo)
+    val utfallsperiodeDAO = UtfallsperiodeDAO()
+    val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo, utfallsperiodeDAO)
     val utbetalingClient = UtbetalingClient(getToken = utbetalingTokenProvider::getToken)
     val dokumentClient = DokumentClient(getToken = dokumentTokenProvider::getToken)
     val meldekortService = MeldekortServiceImpl(

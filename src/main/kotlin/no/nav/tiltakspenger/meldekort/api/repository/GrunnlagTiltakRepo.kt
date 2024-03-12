@@ -11,25 +11,21 @@ import org.intellij.lang.annotations.Language
 import java.util.*
 
 class GrunnlagTiltakRepo {
-    fun lagre(grunnlagId: String, dto: Tiltak) {
-        sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                it.run(
-                    queryOf(
-                        sqlLagreTiltak,
-                        mapOf(
-                            "id" to dto.id.toString(),
-                            "grunnlagId" to grunnlagId,
-                            "fom" to dto.periode.fra,
-                            "tom" to dto.periode.til,
-                            "typeKode" to dto.typeKode,
-                            "typeBeskrivelse" to dto.typeBeskrivelse,
-                            "antallDagerPrUke" to dto.antDagerIUken,
-                        ),
-                    ).asUpdate,
-                )
-            }
-        }
+    fun lagre(grunnlagId: String, dto: Tiltak, tx: TransactionalSession) {
+        tx.run(
+            queryOf(
+                sqlLagreTiltak,
+                mapOf(
+                    "id" to dto.id.toString(),
+                    "grunnlagId" to grunnlagId,
+                    "fom" to dto.periode.fra,
+                    "tom" to dto.periode.til,
+                    "typeKode" to dto.typeKode,
+                    "typeBeskrivelse" to dto.typeBeskrivelse,
+                    "antallDagerPrUke" to dto.antDagerIUken,
+                ),
+            ).asUpdate,
+        )
     }
 
     fun hentTiltakForGrunnlag(grunnlagId: String, txSession: TransactionalSession): List<Tiltak> {
