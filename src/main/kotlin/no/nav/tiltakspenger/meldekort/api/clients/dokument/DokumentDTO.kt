@@ -44,6 +44,7 @@ data class MeldekortDagDTO(
 )
 
 enum class MeldekortDagStatusDTO(status: String) {
+    SPERRET("Sperret"),
     IKKE_UTFYLT("Ikke utfylt"),
     DELTATT("Deltatt"),
     IKKE_DELTATT("Ikke deltatt"),
@@ -80,6 +81,7 @@ fun mapMeldekortDTOTilDokumentDTO(meldekort: Meldekort?, grunnlag: MeldekortGrun
                 dato = it.dato,
                 tiltakType = it.tiltak?.typeKode,
                 status = when (it.status) {
+                    MeldekortDagStatus.SPERRET -> MeldekortDagStatusDTO.IKKE_UTFYLT
                     MeldekortDagStatus.DELTATT -> MeldekortDagStatusDTO.DELTATT
                     MeldekortDagStatus.IKKE_DELTATT -> MeldekortDagStatusDTO.IKKE_DELTATT
                     MeldekortDagStatus.FRAVÆR_SYK -> MeldekortDagStatusDTO.FRAVÆR_SYK
