@@ -3,6 +3,8 @@ package no.nav.tiltakspenger.meldekort.api.service
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.api.domene.UtfallForPeriode
+import no.nav.tiltakspenger.meldekort.api.domene.Utfallsperiode
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
@@ -30,7 +32,7 @@ class MeldekortServiceImplTest {
         val mandag = finnMandag(LocalDate.of(2021, 11, 1))
         mandag.dayOfWeek shouldBe DayOfWeek.MONDAY
 
-        MeldekortDag.lagIkkeUtfyltPeriode(meldekortId, mandag, mandag.plusDays(13)) shouldBe
+        MeldekortDag.lagIkkeUtfyltPeriode(meldekortId, mandag, mandag.plusDays(13), listOf(Utfallsperiode(mandag, mandag.plusDays(14), 0, UtfallForPeriode.GIR_RETT_TILTAKSPENGER))) shouldBe
             listOf(
                 MeldekortDag(mandag, null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(1), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),

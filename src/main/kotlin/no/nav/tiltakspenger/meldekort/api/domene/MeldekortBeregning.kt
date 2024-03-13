@@ -31,6 +31,7 @@ data class MeldekortBeregning(
         for (meldekortdag in meldekortDager) {
             when (meldekortdag.status) {
                 MeldekortDagStatus.IKKE_UTFYLT -> {}
+                MeldekortDagStatus.SPERRET -> sperret(meldekortdag)
                 MeldekortDagStatus.DELTATT -> deltatt(meldekortdag)
                 MeldekortDagStatus.IKKE_DELTATT -> ikkeDeltatt(meldekortdag)
                 MeldekortDagStatus.FRAVÆR_SYK -> fraværSyk(meldekortdag)
@@ -63,6 +64,17 @@ data class MeldekortBeregning(
             tiltakType = dag.tiltak.typeKode,
             deltagerStatus = DeltagerStatus.GyldigFravær,
             status = UtbetalingStatus.FullUtbetaling,
+            løpenr = dag.løpenr,
+            meldekortId = dag.meldekortId,
+        )
+    }
+
+    private fun sperret(dag: MeldekortDag) {
+        leggTilUtbetalingDag(
+            dag = dag.dato,
+            tiltakType = "sperret",
+            deltagerStatus = DeltagerStatus.IkkeDeltatt,
+            status = UtbetalingStatus.IngenUtbetaling,
             løpenr = dag.løpenr,
             meldekortId = dag.meldekortId,
         )

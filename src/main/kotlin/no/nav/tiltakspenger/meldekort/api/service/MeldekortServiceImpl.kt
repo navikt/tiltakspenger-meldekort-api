@@ -89,6 +89,7 @@ class MeldekortServiceImpl(
                                     meldekortId = meldekortId,
                                     fom = periode.fra,
                                     tom = periode.til,
+                                    utfallsperioder = meldekortGrunnlag.utfallsperioder,
                                 ),
                             )
                             meldekortRepo.opprett(meldekortGrunnlag.id, meldekort)

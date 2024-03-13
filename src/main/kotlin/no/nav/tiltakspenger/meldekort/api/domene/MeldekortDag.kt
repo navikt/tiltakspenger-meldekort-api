@@ -17,12 +17,23 @@ data class MeldekortDag(
     }
 
     companion object {
-        fun lagIkkeUtfyltPeriode(meldekortId: UUID, fom: LocalDate, tom: LocalDate): List<MeldekortDag> {
-            return fom.datesUntil(tom.plusDays(1)).toList().map {
+        fun lagIkkeUtfyltPeriode(
+            meldekortId: UUID,
+            fom: LocalDate,
+            tom: LocalDate,
+            utfallsperioder: List<Utfallsperiode>,
+        ): List<MeldekortDag> {
+            return fom.datesUntil(tom.plusDays(1)).toList().map { idag ->
                 MeldekortDag(
-                    dato = it,
+                    dato = idag,
                     tiltak = null,
-                    status = MeldekortDagStatus.IKKE_UTFYLT,
+                    status = utfallsperioder.find { it.fom <= idag && it.tom >= idag }?.let {
+                        when (it.utfall) {
+                            UtfallForPeriode.GIR_RETT_TILTAKSPENGER -> MeldekortDagStatus.IKKE_UTFYLT
+                            UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER -> MeldekortDagStatus.SPERRET
+                            UtfallForPeriode.KREVER_MANUELL_VURDERING -> throw IllegalStateException("Skal ikke være mulig å generere meldekort som krever manuelle vurderinger")
+                        }
+                    } ?: MeldekortDagStatus.SPERRET,
                     meldekortId = meldekortId,
                 )
             }
@@ -31,6 +42,7 @@ data class MeldekortDag(
 }
 
 enum class MeldekortDagStatus(status: String) {
+    SPERRET("Ikke rett på tiltakspenger"),
     IKKE_UTFYLT("Ikke utfylt"),
     DELTATT("Deltatt"),
     IKKE_DELTATT("Ikke deltatt"),
