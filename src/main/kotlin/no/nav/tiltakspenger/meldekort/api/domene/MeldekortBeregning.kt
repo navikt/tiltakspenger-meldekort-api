@@ -72,7 +72,7 @@ data class MeldekortBeregning(
     private fun sperret(dag: MeldekortDag) {
         leggTilUtbetalingDag(
             dag = dag.dato,
-            tiltakType = "sperret",
+            tiltakType = "UTEN_TILTAK",
             deltagerStatus = DeltagerStatus.IkkeDeltatt,
             status = UtbetalingStatus.IngenUtbetaling,
             løpenr = dag.løpenr,
