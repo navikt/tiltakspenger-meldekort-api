@@ -42,7 +42,7 @@ data class MeldekortDag(
 }
 
 enum class MeldekortDagStatus(status: String) {
-    SPERRET("Ikke Aktuell"),
+    SPERRET("Ikke rett på tiltakspenger"),
     IKKE_UTFYLT("Ikke utfylt"),
     DELTATT("Deltatt"),
     IKKE_DELTATT("Ikke deltatt"),
