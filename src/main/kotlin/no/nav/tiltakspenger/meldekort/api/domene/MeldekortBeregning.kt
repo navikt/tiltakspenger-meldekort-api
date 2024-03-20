@@ -30,7 +30,7 @@ data class MeldekortBeregning(
     private fun lagUtbetalingsdager(meldekortDager: List<MeldekortDag>) {
         for (meldekortdag in meldekortDager) {
             when (meldekortdag.status) {
-                MeldekortDagStatus.IKKE_UTFYLT -> {}
+                MeldekortDagStatus.IKKE_UTFYLT -> { ikkeUtfylt(meldekortdag) }
                 MeldekortDagStatus.SPERRET -> sperret(meldekortdag)
                 MeldekortDagStatus.DELTATT -> deltatt(meldekortdag)
                 MeldekortDagStatus.IKKE_DELTATT -> ikkeDeltatt(meldekortdag)
@@ -40,6 +40,12 @@ data class MeldekortBeregning(
                 MeldekortDagStatus.LØNN_FOR_TID_I_ARBEID -> gyldigFravær(meldekortdag)
             }
         }
+    }
+
+    private fun ikkeUtfylt(dag: MeldekortDag) {
+        checkNotNull(dag.tiltak) { "Tiltak må være satt for alle dager" }
+        sjekkSykKarantene(dag.dato)
+        sjekkSykBarnKarantene(dag.dato)
     }
 
     private fun deltatt(dag: MeldekortDag) {
@@ -59,6 +65,8 @@ data class MeldekortBeregning(
 
     private fun gyldigFravær(dag: MeldekortDag) {
         checkNotNull(dag.tiltak) { "Tiltak må være satt for alle dager" }
+        sjekkSykKarantene(dag.dato)
+        sjekkSykBarnKarantene(dag.dato)
         leggTilUtbetalingDag(
             dag = dag.dato,
             tiltakType = dag.tiltak.typeKode,
@@ -70,6 +78,8 @@ data class MeldekortBeregning(
     }
 
     private fun sperret(dag: MeldekortDag) {
+        sjekkSykKarantene(dag.dato)
+        sjekkSykBarnKarantene(dag.dato)
         leggTilUtbetalingDag(
             dag = dag.dato,
             tiltakType = "UTEN_TILTAK",
@@ -82,6 +92,8 @@ data class MeldekortBeregning(
 
     private fun ikkeDeltatt(dag: MeldekortDag) {
         checkNotNull(dag.tiltak) { "Tiltak må være satt for alle dager" }
+        sjekkSykKarantene(dag.dato)
+        sjekkSykBarnKarantene(dag.dato)
         leggTilUtbetalingDag(
             dag = dag.dato,
             tiltakType = dag.tiltak.typeKode,
@@ -134,6 +146,7 @@ data class MeldekortBeregning(
                     )
                 } else {
                     sykTilstand = SykTilstand.Karantene
+                    sykKaranteneDag = dag.dato.plusDays(dagerKarantene)
                     leggTilUtbetalingDag(
                         dag = dag.dato,
                         tiltakType = dag.tiltak.typeKode,
@@ -146,7 +159,9 @@ data class MeldekortBeregning(
             }
 
             SykTilstand.Karantene -> {
-                sykKaranteneDag = null
+                sjekkSykKarantene(dag.dato)
+                sjekkSykBarnKarantene(dag.dato)
+                sykKaranteneDag = dag.dato.plusDays(dagerKarantene)
                 leggTilUtbetalingDag(
                     dag = dag.dato,
                     tiltakType = dag.tiltak.typeKode,
@@ -201,6 +216,7 @@ data class MeldekortBeregning(
                     )
                 } else {
                     syktBarnTilstand = SykTilstand.Karantene
+                    syktBarnKaranteneDag = dag.dato.plusDays(dagerKarantene)
                     leggTilUtbetalingDag(
                         dag = dag.dato,
                         tiltakType = dag.tiltak.typeKode,
@@ -213,7 +229,8 @@ data class MeldekortBeregning(
             }
 
             SykTilstand.Karantene -> {
-                syktBarnKaranteneDag = null
+                sjekkSykKarantene(dag.dato)
+                sjekkSykBarnKarantene(dag.dato)
                 leggTilUtbetalingDag(
                     dag = dag.dato,
                     tiltakType = dag.tiltak.typeKode,
@@ -255,9 +272,7 @@ data class MeldekortBeregning(
 
     private fun sjekkSykKarantene(dag: LocalDate) {
         if (sykTilstand == SykTilstand.Karantene) {
-            if (sykKaranteneDag == null) {
-                sykKaranteneDag = dag.plusDays(dagerKarantene)
-            } else {
+            if (sykKaranteneDag != null) {
                 if (dag.isAfter(sykKaranteneDag)) {
                     sykKaranteneDag = null
                     egenmeldingsdagerSyk = 3
@@ -269,9 +284,7 @@ data class MeldekortBeregning(
 
     private fun sjekkSykBarnKarantene(dag: LocalDate) {
         if (syktBarnTilstand == SykTilstand.Karantene) {
-            if (syktBarnKaranteneDag == null) {
-                syktBarnKaranteneDag = dag.plusDays(dagerKarantene)
-            } else {
+            if (syktBarnKaranteneDag != null) {
                 if (dag.isAfter(syktBarnKaranteneDag)) {
                     syktBarnKaranteneDag = null
                     egenmeldingsdagerSyktBarn = 3
