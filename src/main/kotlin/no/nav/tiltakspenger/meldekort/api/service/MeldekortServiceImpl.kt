@@ -117,6 +117,7 @@ class MeldekortServiceImpl(
     }
 
     override fun oppdaterMeldekortDag(meldekortId: UUID, dato: LocalDate, status: MeldekortDagStatus) {
+        check(status.kanSendesInnFraMeldekort()) { "Kan ikke sende inn dag med status $status" }
         val grunnlagId = meldekortRepo.hentGrunnlagIdForMeldekort(meldekortId)
         checkNotNull(grunnlagId) { "Fant ikke grunnlag for meldekort med id $meldekortId" }
         val tiltak = grunnlagTiltakRepo.hentFørsteTiltakForGrunnlag(grunnlagId.toString())

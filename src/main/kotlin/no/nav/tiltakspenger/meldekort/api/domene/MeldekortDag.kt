@@ -50,4 +50,6 @@ enum class MeldekortDagStatus(status: String) {
     FRAVÆR_SYKT_BARN("Fravær sykt barn"),
     FRAVÆR_VELFERD("Fravær velferd"),
     LØNN_FOR_TID_I_ARBEID("Lønn for tid i arbeid"),
+    ;
+    fun kanSendesInnFraMeldekort(): Boolean = this in listOf(DELTATT, IKKE_DELTATT, FRAVÆR_SYK, FRAVÆR_SYKT_BARN, FRAVÆR_VELFERD, LØNN_FOR_TID_I_ARBEID)
 }
