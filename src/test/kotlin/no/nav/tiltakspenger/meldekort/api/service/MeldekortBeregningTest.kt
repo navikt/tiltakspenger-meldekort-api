@@ -380,6 +380,156 @@ internal class MeldekortBeregningTest {
         meldekortBeregning.utbetalingDager.sortedBy { it.dag }[63].status shouldBe UtbetalingStatus.IngenUtbetaling
     }
 
+    @Test
+    fun `fravær med 15 dager i mellom gir delvisUtbetaling`() {
+        val meldekortId = UUID.randomUUID()
+        val meldekortBeregning =
+            MeldekortBeregning.beregnUtbetalingsDager(
+                meldekortDager = listOf(
+                    MeldekortDag(dato = 1.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 2.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 3.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 4.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 5.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 6.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 7.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 8.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 9.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 10.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 11.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 12.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 13.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 14.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+
+                    MeldekortDag(dato = 15.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 16.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 17.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 18.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 19.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 20.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 21.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 22.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 23.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 24.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 25.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 26.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 27.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 28.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                ),
+                saksbehandler = "saksbehandler",
+                meldekortId = UUID.randomUUID(),
+            )
+
+        for (dag in meldekortBeregning.utbetalingDager) {
+            println(dag)
+        }
+
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[0].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[1].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[2].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[3].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[4].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[5].status shouldBe UtbetalingStatus.DelvisUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[6].status shouldBe UtbetalingStatus.DelvisUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[7].status shouldBe UtbetalingStatus.DelvisUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[8].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[9].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[10].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[11].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[12].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[13].status shouldBe UtbetalingStatus.FullUtbetaling
+
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[14].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[15].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[16].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[17].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[18].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[19].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[20].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[21].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[22].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[23].status shouldBe UtbetalingStatus.DelvisUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[24].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[25].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[26].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[27].status shouldBe UtbetalingStatus.FullUtbetaling
+    }
+
+    @Test
+    fun `fravær med 16 dager i mellom gir fullUtbetaling`() {
+        val meldekortId = UUID.randomUUID()
+        val meldekortBeregning =
+            MeldekortBeregning.beregnUtbetalingsDager(
+                meldekortDager = listOf(
+                    MeldekortDag(dato = 1.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 2.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 3.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 4.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 5.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 6.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 7.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 8.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 9.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 10.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 11.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 12.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 13.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 14.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+
+                    MeldekortDag(dato = 15.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 16.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 17.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 18.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 19.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 20.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 21.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 22.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 23.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 24.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 25.oktober(), tiltak = gruppeAmo, status = FRAVÆR_SYK, meldekortId),
+                    MeldekortDag(dato = 26.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 27.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                    MeldekortDag(dato = 28.oktober(), tiltak = gruppeAmo, status = DELTATT, meldekortId),
+                ),
+                saksbehandler = "saksbehandler",
+                meldekortId = UUID.randomUUID(),
+            )
+
+        for (dag in meldekortBeregning.utbetalingDager) {
+            println(dag)
+        }
+
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[0].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[1].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[2].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[3].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[4].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[5].status shouldBe UtbetalingStatus.DelvisUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[6].status shouldBe UtbetalingStatus.DelvisUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[7].status shouldBe UtbetalingStatus.DelvisUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[8].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[9].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[10].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[11].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[12].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[13].status shouldBe UtbetalingStatus.FullUtbetaling
+
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[14].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[15].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[16].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[17].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[18].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[19].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[20].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[21].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[22].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[23].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[24].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[25].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[26].status shouldBe UtbetalingStatus.FullUtbetaling
+        meldekortBeregning.utbetalingDager.sortedBy { it.dag }[27].status shouldBe UtbetalingStatus.FullUtbetaling
+    }
+
     private val gruppeAmo = Tiltak(
         id = UUID.randomUUID(),
         periode = Periode(fra = LocalDate.of(2024, 1, 1), til = LocalDate.of(2024, 1, 4)),

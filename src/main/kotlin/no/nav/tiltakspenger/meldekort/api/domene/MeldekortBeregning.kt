@@ -15,10 +15,12 @@ data class MeldekortBeregning(
     private var sykTilstand: SykTilstand = SykTilstand.FullUtbetaling
     private var egenmeldingsdagerSyk: Int = antallEgenmeldingsdager
     private var sykKaranteneDag: LocalDate? = null
+    private var sisteSykedag: LocalDate? = null
 
     private var syktBarnTilstand: SykTilstand = SykTilstand.FullUtbetaling
     private var egenmeldingsdagerSyktBarn: Int = antallEgenmeldingsdager
     private var syktBarnKaranteneDag: LocalDate? = null
+    private var sisteSyktBarnSykedag: LocalDate? = null
 
     companion object {
         fun beregnUtbetalingsDager(meldekortId: UUID, meldekortDager: List<MeldekortDag>, saksbehandler: String) =
@@ -109,6 +111,7 @@ data class MeldekortBeregning(
 
     private fun fraværSyk(dag: MeldekortDag) {
         checkNotNull(dag.tiltak) { "Tiltak må være satt for alle dager" }
+        sisteSykedag = dag.dato
         when (sykTilstand) {
             SykTilstand.FullUtbetaling -> {
                 if (egenmeldingsdagerSyk > 0) {
@@ -183,6 +186,7 @@ data class MeldekortBeregning(
 
     private fun fraværSykBarn(dag: MeldekortDag) {
         checkNotNull(dag.tiltak) { "Tiltak må være satt for alle dager" }
+        sisteSykedag = dag.dato
         when (syktBarnTilstand) {
             SykTilstand.FullUtbetaling -> {
                 if (egenmeldingsdagerSyktBarn > 0) {
@@ -282,6 +286,13 @@ data class MeldekortBeregning(
     }
 
     private fun sjekkSykKarantene(dag: LocalDate) {
+        if (sisteSykedag != null) {
+            if (dag.isAfter(sisteSykedag!!.plusDays(dagerKarantene))) {
+                sykKaranteneDag = null
+                egenmeldingsdagerSyk = 3
+                sykTilstand = SykTilstand.FullUtbetaling
+            }
+        }
         if (sykTilstand == SykTilstand.Karantene) {
             if (sykKaranteneDag != null) {
                 if (dag.isAfter(sykKaranteneDag)) {
@@ -294,6 +305,13 @@ data class MeldekortBeregning(
     }
 
     private fun sjekkSykBarnKarantene(dag: LocalDate) {
+        if (sisteSyktBarnSykedag != null) {
+            if (dag.isAfter(sisteSyktBarnSykedag!!.plusDays(dagerKarantene))) {
+                syktBarnKaranteneDag = null
+                egenmeldingsdagerSyktBarn = 3
+                syktBarnTilstand = SykTilstand.FullUtbetaling
+            }
+        }
         if (syktBarnTilstand == SykTilstand.Karantene) {
             if (syktBarnKaranteneDag != null) {
                 if (dag.isAfter(syktBarnKaranteneDag)) {
