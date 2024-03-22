@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api.domene
 
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 const val antallEgenmeldingsdager = 3
 const val antallArbeidsgiverdager = 13
@@ -30,7 +30,10 @@ data class MeldekortBeregning(
     private fun lagUtbetalingsdager(meldekortDager: List<MeldekortDag>) {
         for (meldekortdag in meldekortDager) {
             when (meldekortdag.status) {
-                MeldekortDagStatus.IKKE_UTFYLT -> { ikkeUtfylt(meldekortdag) }
+                MeldekortDagStatus.IKKE_UTFYLT -> {
+                    ikkeUtfylt(meldekortdag)
+                }
+
                 MeldekortDagStatus.SPERRET -> sperret(meldekortdag)
                 MeldekortDagStatus.DELTATT -> deltatt(meldekortdag)
                 MeldekortDagStatus.IKKE_DELTATT -> ikkeDeltatt(meldekortdag)
@@ -144,6 +147,10 @@ data class MeldekortBeregning(
                         løpenr = dag.løpenr,
                         meldekortId = dag.meldekortId,
                     )
+                    if (egenmeldingsdagerSyk == 0) {
+                        sykTilstand = SykTilstand.Karantene
+                        sykKaranteneDag = dag.dato.plusDays(dagerKarantene)
+                    }
                 } else {
                     sykTilstand = SykTilstand.Karantene
                     sykKaranteneDag = dag.dato.plusDays(dagerKarantene)
@@ -214,6 +221,10 @@ data class MeldekortBeregning(
                         løpenr = dag.løpenr,
                         meldekortId = dag.meldekortId,
                     )
+                    if (egenmeldingsdagerSyktBarn == 0) {
+                        syktBarnTilstand = SykTilstand.Karantene
+                        syktBarnKaranteneDag = dag.dato.plusDays(dagerKarantene)
+                    }
                 } else {
                     syktBarnTilstand = SykTilstand.Karantene
                     syktBarnKaranteneDag = dag.dato.plusDays(dagerKarantene)
