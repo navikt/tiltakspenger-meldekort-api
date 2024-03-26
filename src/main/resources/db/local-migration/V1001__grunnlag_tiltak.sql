@@ -1,2 +1,4 @@
-INSERT INTO public.grunnlag_tiltak (id, grunnlag_id, fom, tom, typekode, typebeskrivelse, antall_dager_pr_uke) VALUES ('80cf0d70-cfa0-49f9-8b6c-1674f51577da', '494112cb-4b63-4409-a8d1-c0239fbef6a1', '2023-12-01', '2024-06-05', 'GRUPPEAMO', 'Gruppe AMO', 5);
-INSERT INTO public.grunnlag_tiltak (id, grunnlag_id, fom, tom, typekode, typebeskrivelse, antall_dager_pr_uke) VALUES ('a2d9b202-3f1f-4cb6-83bb-be41c651aa7f', 'dda8ec3e-0a64-43cf-9a4e-d56934707fa2', '2023-10-01', '2025-03-28', 'ARBTREN', 'Arbeidstrening', 5);
+INSERT INTO public.grunnlag_tiltak (id,grunnlag_id,fom,tom,typekode,typebeskrivelse,antall_dager_pr_uke) VALUES
+    ('9d6eadf8-4d15-413b-9c1f-d4941cbe13f1','c816490e-c031-4d7c-b529-033452930f71','2023-10-01','2024-03-01','GRUFAGYRKE','Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning',5.0),
+    ('d7009615-6bd5-4006-be2a-ff6149ba70f6','f0760786-e7ef-4843-a028-6665e8d5eaef','2024-01-01','2024-06-30','ENKFAGYRKE','Enkeltplass Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning',5.0),
+    ('ef3d2af8-ab6a-4e87-b79b-2bce8599a411','c55596cf-8373-4b01-aac6-8d0f46794808','2023-10-01','2025-03-28','ARBTREN','Arbeidstrening',2.0);
