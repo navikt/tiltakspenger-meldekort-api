@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api.domene
 
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 const val antallEgenmeldingsdager = 3
 const val antallArbeidsgiverdager = 13
@@ -9,7 +9,7 @@ const val dagerKarantene = 16L - 1
 
 data class MeldekortBeregning(
     val utløsendeMeldekortId: UUID,
-    val utbetalingDager: List<UtbetalingDag> = mutableListOf(),
+    val utbetalingDager: MutableList<UtbetalingDag> = mutableListOf(),
     val saksbehandler: String,
 ) {
     private var sykTilstand: SykTilstand = SykTilstand.FullUtbetaling
