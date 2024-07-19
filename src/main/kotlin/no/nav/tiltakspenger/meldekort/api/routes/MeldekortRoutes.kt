@@ -16,14 +16,12 @@ import no.nav.tiltakspenger.meldekort.api.domene.Tiltak
 import no.nav.tiltakspenger.meldekort.api.domene.UtfallForPeriode
 import no.nav.tiltakspenger.meldekort.api.domene.Utfallsperiode
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
-import no.nav.tiltakspenger.meldekort.api.routes.dto.DayHasBegunDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortGrunnlagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortUtenDagerDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.StatusDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.UtfallForPeriodeDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
-import java.time.DayOfWeek
 import java.util.UUID
 
 private val LOG = KotlinLogging.logger {}
@@ -90,15 +88,8 @@ fun Route.meldekort(
         call.respond(status = HttpStatusCode.OK, dto)
     }
 
+    // TODO jah: Denne skal slettes når vedtak-rivers ikke lenger kaller oss.
     post("$MELDEKORT_PATH/nyDag") {
-        // meldekortService.settGamleMeldekortTilIkkeAktiv()
-        LOG.info("Det er en ny dag")
-        val nyDag = call.receive<DayHasBegunDTO>().date
-        LOG.info("Den ny dagen er: $nyDag")
-        if (nyDag.dayOfWeek == DayOfWeek.MONDAY) {
-            LOG.info { "Det er Mandag!!! Kanskje vi skal generere meldekort her??" }
-            meldekortService.genererMeldekort(nyDag)
-        }
         call.respond(message = "OK", status = HttpStatusCode.OK)
     }
 

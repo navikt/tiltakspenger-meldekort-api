@@ -24,6 +24,9 @@ dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(kotlin("stdlib"))
+
+    implementation("com.github.navikt.tiltakspenger-libs:jobber:0.0.153")
+
     implementation("ch.qos.logback:logback-classic:1.4.14")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
@@ -31,6 +34,7 @@ dependencies {
     // implementation("com.github.navikt:rapids-and-rivers:2022112407251669271100.df879df951cf")
     implementation("com.natpryce:konfig:1.6.10.0")
     implementation("com.google.guava:guava:32.1.3-jre")
+    implementation("io.arrow-kt:arrow-core:1.2.4")
 
     // TokenX
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")

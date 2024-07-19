@@ -1,5 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api
 
+import arrow.core.Either
+import arrow.core.right
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -11,11 +13,16 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.routing
 import mu.KotlinLogging
+import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
+import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
+import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
+import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
 import no.nav.tiltakspenger.meldekort.api.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.api.auth.AzureTokenProvider
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
+import no.nav.tiltakspenger.meldekort.api.jobber.GenererMeldekortJobb
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepoImpl
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagTiltakRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
@@ -66,6 +73,29 @@ fun Application.applicationModule() {
         healthRoutes()
         meldekort(meldekortService)
     }
+
+    val runCheckFactory = if (Configuration.isNais()) {
+        RunCheckFactory(
+            leaderPodLookup = LeaderPodLookupClient(
+                electorPath = Configuration.electorPath(),
+                logger = KotlinLogging.logger { },
+            ),
+        )
+    } else {
+        RunCheckFactory(
+            leaderPodLookup = object : LeaderPodLookup {
+                override fun amITheLeader(
+                    localHostName: String,
+                ): Either<LeaderPodLookupFeil, Boolean> {
+                    return true.right()
+                }
+            },
+        )
+    }
+    GenererMeldekortJobb.startJob(
+        runCheckFactory = runCheckFactory,
+        meldekortService = meldekortService,
+    )
 }
 
 fun Application.installJacksonFeature() {

@@ -37,7 +37,7 @@ class MeldekortServiceImpl(
     private val dokumentClient: DokumentClient,
 ) : MeldekortService {
     override fun genererMeldekort(nyDag: LocalDate) {
-        LOG.info { "Generer Meldekort" }
+        LOG.info { "Generer Meldekort for dag: $nyDag" }
         val grunnlag = grunnlagRepo.hentAktiveGrunnlagForInneværendePeriode()
 
         grunnlag.map {
@@ -54,7 +54,11 @@ class MeldekortServiceImpl(
         opprettMeldekort(meldekortGrunnlag, meldekortGrunnlag.vurderingsperiode.fra, false)
     }
 
-    private fun opprettMeldekort(meldekortGrunnlag: MeldekortGrunnlag, genererFraDato: LocalDate, nyDag: Boolean) {
+    private fun opprettMeldekort(
+        meldekortGrunnlag: MeldekortGrunnlag,
+        genererFraDato: LocalDate,
+        nyDag: Boolean,
+    ) {
         val tilDag = if (nyDag) {
             genererFraDato
         } else {
