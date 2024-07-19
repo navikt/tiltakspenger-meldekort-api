@@ -21,6 +21,8 @@ object Configuration {
             else -> Profile.LOCAL
         }
 
+    fun isNais() = applicationProfile() != Profile.LOCAL
+
     private val defaultProperties = ConfigurationMap(
         mapOf(
             "application.httpPort" to 8080.toString(),
@@ -35,6 +37,7 @@ object Configuration {
             "DB_PORT" to System.getenv("DB_PORT"),
             "DB_USERNAME" to System.getenv("DB_USERNAME"),
             "logback.configurationFile" to "logback.xml",
+            "ELECTOR_PATH" to System.getenv("ELECTOR_PATH"),
         ),
     )
 
@@ -57,6 +60,8 @@ object Configuration {
             "SCOPE_DOKUMENT" to "localhost",
             "UTBETALING_URL" to "http://localhost:8083",
             "DOKUMENT_URL" to "http://localhost:8084",
+            // kommentar jah: Skal ikke trenge denne lokalt
+            "ELECTOR_PATH" to "http://localhost:8085",
         ),
     )
 
@@ -154,4 +159,6 @@ object Configuration {
         brukernavn = config()[Key("DB_USERNAME", stringType)],
         port = config()[Key("DB_PORT", intType)],
     )
+
+    fun electorPath(): String = config()[Key("ELECTOR_PATH", stringType)]
 }
