@@ -26,11 +26,15 @@
 
     <logger name="no.nav.helse.rapids_rivers" level="INFO"/>
 
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+
+    <logger name="no.nav" level="DEBUG"/>
+
     <logger name="tjenestekall" level="DEBUG" additivity="false">
         <appender-ref ref="secureLog"/>
     </logger>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT_JSON"/>
     </root>
 </configuration>
