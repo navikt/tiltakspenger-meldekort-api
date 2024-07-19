@@ -25,7 +25,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(kotlin("stdlib"))
 
-    implementation("com.github.navikt.tiltakspenger-libs:jobber:0.0.153")
+    implementation("com.github.navikt.tiltakspenger-libs:jobber:0.0.154")
 
     implementation("ch.qos.logback:logback-classic:1.4.14")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
