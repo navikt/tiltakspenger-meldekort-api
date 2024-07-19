@@ -25,6 +25,7 @@ spec:
     enabled: true
   tokenx:
     enabled: true
+  leaderElection: true
   gcp:
     sqlInstances:
       - name: tiltakspenger-meldekort
