@@ -141,6 +141,15 @@ object Configuration {
         wellknownUrl = wellknownUrl,
     )
 
+    fun tokenValidationConfigAzure(
+        wellknownUrl: String = config()[Key("AZURE_APP_WELL_KNOWN_URL", stringType)],
+        clientId: String = config()[Key("AZURE_APP_CLIENT_ID", stringType)],
+    ) = TokenValidationConfig(
+        name = "azure",
+        discoveryUrl = wellknownUrl,
+        acceptedAudience = listOf(clientId),
+    )
+
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 
     fun httpPort() = config()[Key("application.httpPort", intType)]

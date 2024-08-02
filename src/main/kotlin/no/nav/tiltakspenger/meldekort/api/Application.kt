@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -69,9 +70,12 @@ fun Application.applicationModule() {
 
     installJacksonFeature()
     flywayMigrate()
+    installTokenValidation(Configuration.tokenValidationConfigAzure())
     routing {
         healthRoutes()
-        meldekort(meldekortService)
+        authenticate("azure") {
+            meldekort(meldekortService)
+        }
     }
 
     val runCheckFactory = if (Configuration.isNais()) {

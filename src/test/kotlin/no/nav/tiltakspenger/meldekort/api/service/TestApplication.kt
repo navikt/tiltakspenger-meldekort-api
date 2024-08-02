@@ -1,0 +1,31 @@
+package no.nav.tiltakspenger.meldekort.api.service
+
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.routing
+import io.ktor.server.testing.ApplicationTestBuilder
+import io.mockk.mockk
+import no.nav.tiltakspenger.meldekort.api.Configuration.tokenValidationConfigAzure
+import no.nav.tiltakspenger.meldekort.api.installJacksonFeature
+import no.nav.tiltakspenger.meldekort.api.installTokenValidation
+import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
+import no.nav.tiltakspenger.meldekort.api.routes.meldekort
+
+fun ApplicationTestBuilder.testApplikasjon(
+    meldekortService: MeldekortService = mockk(),
+) {
+    application {
+        installJacksonFeature()
+        installTokenValidation(
+            tokenValidationConfigAzure(
+                wellknownUrl = "http://localhost:8080/azure/.well-known/openid-configuration",
+                clientId = "validAudience",
+            ),
+        )
+        routing {
+            healthRoutes()
+            authenticate("azure") {
+                meldekort(meldekortService)
+            }
+        }
+    }
+}
