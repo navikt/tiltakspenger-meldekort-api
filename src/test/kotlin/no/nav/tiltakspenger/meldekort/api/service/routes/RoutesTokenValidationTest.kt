@@ -3,7 +3,6 @@ package no.nav.tiltakspenger.meldekort.api.service.routes
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
@@ -49,14 +48,6 @@ internal class RoutesTokenValidationTest {
 
     private val tokenMedFeilAudience: SignedJWT = token(audience = "feilAudience")
 
-    private val vedtakRequestBody = """
-        {
-            "ident": "12345678910",
-            "fom": "2021-01-01",
-            "tom": "2021-01-31"
-        }
-    """.trimIndent()
-
     @Test
     fun `get med ugyldig token skal gi 401`() {
         testApplication {
@@ -64,7 +55,6 @@ internal class RoutesTokenValidationTest {
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer tulletoken")
                 header("Content-Type", "application/json")
-                setBody(vedtakRequestBody)
             }
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
@@ -77,7 +67,6 @@ internal class RoutesTokenValidationTest {
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer ${utgåttAzureToken.serialize()}")
                 header("Content-Type", "application/json")
-                setBody(vedtakRequestBody)
             }
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
@@ -90,7 +79,6 @@ internal class RoutesTokenValidationTest {
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer ${tokenMedFeilIssuer.serialize()}")
                 header("Content-Type", "application/json")
-                setBody(vedtakRequestBody)
             }
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
@@ -103,7 +91,6 @@ internal class RoutesTokenValidationTest {
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer ${tokenMedFeilAudience.serialize()}")
                 header("Content-Type", "application/json")
-                setBody(vedtakRequestBody)
             }
             assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
@@ -129,7 +116,6 @@ internal class RoutesTokenValidationTest {
             val response = client.get("/meldekort/hentMeldekort/00000000-0000-0000-0000-000000000000") {
                 header("Authorization", "Bearer ${gyldigAzureToken.serialize()}")
                 header("Content-Type", "application/json")
-                setBody(vedtakRequestBody)
             }
             assertEquals(HttpStatusCode.OK, response.status)
         }
