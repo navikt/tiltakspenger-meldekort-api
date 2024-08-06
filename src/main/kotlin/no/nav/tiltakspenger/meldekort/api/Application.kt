@@ -68,7 +68,7 @@ fun Application.applicationModule() {
         utbetalingClient = utbetalingClient,
         dokumentClient = dokumentClient,
     )
-    val innloggetSaksbehandlerProvider = InnloggetBrukerProvider()
+    val innloggetBrukerProvider = InnloggetBrukerProvider()
 
     installJacksonFeature()
     flywayMigrate()
@@ -78,7 +78,7 @@ fun Application.applicationModule() {
         authenticate("azure") {
             meldekort(
                 meldekortService,
-                innloggetSaksbehandlerProvider,
+                innloggetBrukerProvider,
             )
         }
     }

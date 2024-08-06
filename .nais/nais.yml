@@ -51,5 +51,5 @@ spec:
   env:
   {{#each azure.groups}}
      - name: {{this.name}}
-  value: {{this.id}}
+       value: {{this.id}}
   {{/each}}
