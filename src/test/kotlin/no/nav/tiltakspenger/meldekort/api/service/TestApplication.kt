@@ -9,9 +9,11 @@ import no.nav.tiltakspenger.meldekort.api.installJacksonFeature
 import no.nav.tiltakspenger.meldekort.api.installTokenValidation
 import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.api.routes.meldekort
+import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
 
 fun ApplicationTestBuilder.testApplikasjon(
     meldekortService: MeldekortService = mockk(),
+    innloggetBrukerProvider: InnloggetBrukerProvider = InnloggetBrukerProvider(),
 ) {
     application {
         installJacksonFeature()
@@ -24,7 +26,10 @@ fun ApplicationTestBuilder.testApplikasjon(
         routing {
             healthRoutes()
             authenticate("azure") {
-                meldekort(meldekortService)
+                meldekort(
+                    meldekortService,
+                    innloggetBrukerProvider,
+                )
             }
         }
     }

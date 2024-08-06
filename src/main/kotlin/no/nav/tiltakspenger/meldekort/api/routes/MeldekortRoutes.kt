@@ -22,6 +22,8 @@ import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortUtenDagerDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.StatusDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.UtfallForPeriodeDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
+import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
+import no.nav.tiltakspenger.meldekort.api.tilgang.Saksbehandler
 import java.util.UUID
 
 private val LOG = KotlinLogging.logger {}
@@ -29,9 +31,11 @@ private val LOG = KotlinLogging.logger {}
 private const val MELDEKORT_PATH = "/meldekort"
 fun Route.meldekort(
     meldekortService: MeldekortService,
+    innloggetBrukerProvider: InnloggetBrukerProvider,
 ) {
     get("$MELDEKORT_PATH/hentMeldekort/{meldekortId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hentMeldekort/{meldekortId}")
+        val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
         val meldekortId = call.parameters["meldekortId"]
             ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
         val dto = meldekortService.hentMeldekort(UUID.fromString(meldekortId))
@@ -40,10 +44,9 @@ fun Route.meldekort(
     }
 
     get("$MELDEKORT_PATH/hentBeregning/{meldekortId}") {
+        val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
         val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
             ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
-
-        LOG.info { "Motatt request på $MELDEKORT_PATH/hentBeregning/$meldekortId" }
 
         val dto = meldekortService.hentMeldekortBeregning(meldekortId)
 
@@ -51,8 +54,8 @@ fun Route.meldekort(
     }
 
     post("$MELDEKORT_PATH/oppdaterDag") {
+        val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
         val dto = call.receive<MeldekortDagDTO>()
-        LOG.info("Motatt request på $MELDEKORT_PATH/hentAlleForBehandling/behandlingId")
 
         // TODO() validering av felter og tilgangsstyring av hvem som får oppdatere
         // kan alle saksbehandlere oppdatere?
@@ -69,6 +72,7 @@ fun Route.meldekort(
 
     get("$MELDEKORT_PATH/hentAlleForBehandling/{behandlingId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hentAlleForBehandling/behandlingId")
+        val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
         val behandlingId = call.parameters["behandlingId"]
             ?: return@get call.respond(message = "behandlingId mangler", status = HttpStatusCode.NotFound)
         val grunnlag = meldekortService.hentGrunnlagForBehandling(behandlingId) ?: return@get call.respond(
@@ -94,6 +98,7 @@ fun Route.meldekort(
     }
 
     post("$MELDEKORT_PATH/grunnlag") {
+        innloggetBrukerProvider.krevSystembruker(call)
         val dto = call.receive<MeldekortGrunnlagDTO>()
         LOG.info { "Vi fikk nytt grunnlag : $dto" }
 
@@ -103,14 +108,12 @@ fun Route.meldekort(
 
     post("$MELDEKORT_PATH/godkjenn/{meldekortId}") {
         LOG.info { "Motatt request på $MELDEKORT_PATH/godkjenn/{meldekortId}" }
+        val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
         val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
             ?: return@post call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
 
-        // Denne kan vi kanskje hente fra token på sikt?
-        val saksbehandler = "Z123456" // call.receive<GodkjennDTO>().saksbehandler
-
         LOG.info { "Meldekort med id $meldekortId skal godkjenns" }
-        meldekortService.godkjennMeldekort(meldekortId, saksbehandler)
+        meldekortService.godkjennMeldekort(meldekortId, saksbehandler.navIdent)
 
         call.respond(message = "OK", status = HttpStatusCode.OK)
     }

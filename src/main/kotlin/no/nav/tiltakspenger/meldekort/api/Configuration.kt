@@ -8,10 +8,17 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.nav.tiltakspenger.meldekort.api.auth.AzureTokenProvider
+import no.nav.tiltakspenger.meldekort.api.tilgang.Rolle
+import java.util.*
 
 enum class Profile {
     LOCAL, DEV, PROD
 }
+
+data class AdRolle(
+    val name: Rolle,
+    val objectId: UUID,
+)
 
 object Configuration {
     fun applicationProfile() =
@@ -62,6 +69,13 @@ object Configuration {
             "DOKUMENT_URL" to "http://localhost:8084",
             // kommentar jah: Skal ikke trenge denne lokalt
             "ELECTOR_PATH" to "http://localhost:8085",
+            "ROLE_SAKSBEHANDLER" to "00000000-0000-0000-0000-000000000001",
+            "ROLE_BESLUTTER" to "00000000-0000-0000-0000-000000000002",
+            "ROLE_ADMINISTRATOR" to "00000000-0000-0000-0000-000000000003",
+            "ROLE_FORTROLIG" to "00000000-0000-0000-0000-000000000004",
+            "ROLE_STRENGT_FORTROLIG" to "00000000-0000-0000-0000-000000000005",
+            "ROLE_SKJERMING" to "00000000-0000-0000-0000-000000000006",
+            "ROLE_DRIFT" to "00000000-0000-0000-0000-000000000007",
         ),
     )
 
@@ -148,6 +162,19 @@ object Configuration {
         name = "azure",
         discoveryUrl = wellknownUrl,
         acceptedAudience = listOf(clientId),
+    )
+
+    fun alleAdRoller(): List<AdRolle> = listOf(
+        AdRolle(Rolle.SAKSBEHANDLER, UUID.fromString(config()[Key("ROLE_SAKSBEHANDLER", stringType)])),
+        AdRolle(Rolle.BESLUTTER, UUID.fromString(config()[Key("ROLE_BESLUTTER", stringType)])),
+        AdRolle(Rolle.ADMINISTRATOR, UUID.fromString(config()[Key("ROLE_ADMINISTRATOR", stringType)])),
+        AdRolle(Rolle.FORTROLIG_ADRESSE, UUID.fromString(config()[Key("ROLE_FORTROLIG", stringType)])),
+        AdRolle(
+            Rolle.STRENGT_FORTROLIG_ADRESSE,
+            UUID.fromString(config()[Key("ROLE_STRENGT_FORTROLIG", stringType)]),
+        ),
+        AdRolle(Rolle.SKJERMING, UUID.fromString(config()[Key("ROLE_SKJERMING", stringType)])),
+        AdRolle(Rolle.DRIFT, UUID.fromString(config()[Key("ROLE_DRIFT", stringType)])),
     )
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
