@@ -32,6 +32,7 @@ import no.nav.tiltakspenger.meldekort.api.repository.UtfallsperiodeDAO
 import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.api.routes.meldekort
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
+import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
 
 fun main() {
     System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
@@ -67,6 +68,7 @@ fun Application.applicationModule() {
         utbetalingClient = utbetalingClient,
         dokumentClient = dokumentClient,
     )
+    val innloggetSaksbehandlerProvider = InnloggetBrukerProvider()
 
     installJacksonFeature()
     flywayMigrate()
@@ -74,7 +76,10 @@ fun Application.applicationModule() {
     routing {
         healthRoutes()
         authenticate("azure") {
-            meldekort(meldekortService)
+            meldekort(
+                meldekortService,
+                innloggetSaksbehandlerProvider,
+            )
         }
     }
 

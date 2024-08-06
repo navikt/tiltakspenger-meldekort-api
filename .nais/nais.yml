@@ -48,3 +48,8 @@ spec:
         - application: tiltakspenger-saksbehandler
           namespace: tpts
           cluster: {{ cluster }}
+  env:
+  {{#each azure.groups}}
+     - name: {{this.name}}
+  value: {{this.id}}
+  {{/each}}
