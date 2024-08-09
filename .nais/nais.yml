@@ -11,6 +11,11 @@ spec:
   azure:
     application:
       enabled: true
+      claims:
+        groups:
+        {{#each azure.groups}}
+           - id: {{this.id}}
+        {{/each}}
   replicas:
     min: 1
     max: 1
