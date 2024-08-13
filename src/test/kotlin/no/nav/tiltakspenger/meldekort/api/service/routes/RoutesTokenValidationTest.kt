@@ -34,8 +34,8 @@ internal class RoutesTokenValidationTest {
     private val validOboClaims = mapOf(
         "NAVident" to "12345678910",
         "groups" to listOf(
-            "00000000-0000-0000-0000-000000000001",
-            "00000000-0000-0000-0000-000000000002",
+            "1b3a2c4d-d620-4fcf-a29b-a6cdadf29680",
+            "79985315-b2de-40b8-a740-9510796993c6",
         ),
     )
 

@@ -45,6 +45,13 @@ object Configuration {
             "DB_USERNAME" to System.getenv("DB_USERNAME"),
             "logback.configurationFile" to "logback.xml",
             "ELECTOR_PATH" to System.getenv("ELECTOR_PATH"),
+            "ROLE_SAKSBEHANDLER" to System.getenv("ROLE_SAKSBEHANDLER"),
+            "ROLE_BESLUTTER" to System.getenv("ROLE_BESLUTTER"),
+            "ROLE_ADMINISTRATOR" to System.getenv("ROLE_ADMINISTRATOR"),
+            "ROLE_FORTROLIG" to System.getenv("ROLE_FORTROLIG"),
+            "ROLE_STRENGT_FORTROLIG" to System.getenv("ROLE_STRENGT_FORTROLIG"),
+            "ROLE_SKJERMING" to System.getenv("ROLE_SKJERMING"),
+            "ROLE_DRIFT" to System.getenv("ROLE_DRIFT"),
         ),
     )
 
@@ -58,7 +65,7 @@ object Configuration {
             "DB_PORT" to "5431",
             "DB_USERNAME" to "postgres",
             "logback.configurationFile" to "logback.local.xml",
-            "AZURE_APP_CLIENT_ID" to "tiltakspenger-meldekort-api",
+            "AZURE_APP_CLIENT_ID" to "tiltakspenger-vedtak",
             "AZURE_APP_CLIENT_SECRET" to "secret",
             "AZURE_APP_WELL_KNOWN_URL" to "http://host.docker.internal:6969/azure/.well-known/openid-configuration",
             "AZURE_OPENID_CONFIG_ISSUER" to "http://host.docker.internal:6969/azure",
@@ -69,13 +76,14 @@ object Configuration {
             "DOKUMENT_URL" to "http://localhost:8084",
             // kommentar jah: Skal ikke trenge denne lokalt
             "ELECTOR_PATH" to "http://localhost:8085",
-            "ROLE_SAKSBEHANDLER" to "00000000-0000-0000-0000-000000000001",
-            "ROLE_BESLUTTER" to "00000000-0000-0000-0000-000000000002",
-            "ROLE_ADMINISTRATOR" to "00000000-0000-0000-0000-000000000003",
-            "ROLE_FORTROLIG" to "00000000-0000-0000-0000-000000000004",
-            "ROLE_STRENGT_FORTROLIG" to "00000000-0000-0000-0000-000000000005",
-            "ROLE_SKJERMING" to "00000000-0000-0000-0000-000000000006",
-            "ROLE_DRIFT" to "00000000-0000-0000-0000-000000000007",
+            "ROLE_SAKSBEHANDLER" to "1b3a2c4d-d620-4fcf-a29b-a6cdadf29680",
+            "ROLE_BESLUTTER" to "79985315-b2de-40b8-a740-9510796993c6",
+            "ROLE_ADMINISTRATOR" to "cbe715d0-6f67-46bf-86b4-688c4419b747",
+            "ROLE_FORTROLIG" to "ea930b6b-9397-44d9-b9e6-f4cf527a632a",
+            "ROLE_STRENGT_FORTROLIG" to "5ef775f2-61f8-4283-bf3d-8d03f428aa14",
+            "ROLE_SKJERMING" to "dbe4ad45-320b-4e9a-aaa1-73cca4ee124d",
+            "ROLE_DRIFT" to "c511113e-5b22-49e7-b9c4-eeb23b01f518",
+
         ),
     )
 
@@ -99,23 +107,11 @@ object Configuration {
         ),
     )
 
-    private val composeProperties = ConfigurationMap(
-        mapOf(
-            "logback.configurationFile" to "logback.local.xml",
-            "DOKUMENT_URL" to System.getenv("DOKUMENT_URL"),
-        ),
-    )
-
     private fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
         "dev-gcp" ->
             ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding devProperties overriding defaultProperties
-
         "prod-gcp" ->
             ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding prodProperties overriding defaultProperties
-
-        "compose" ->
-            ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding composeProperties overriding defaultProperties
-
         else -> {
             ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding localProperties overriding defaultProperties
         }
