@@ -4,6 +4,7 @@ val ktorVersion = "2.3.12"
 val kotestVersion = "5.9.1"
 val tokenSupportVersion = "3.2.0"
 val jacksonVersion = "2.16.1"
+val felleslibVersion = "0.0.190"
 
 plugins {
     application
@@ -25,13 +26,14 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(kotlin("stdlib"))
 
-    implementation("com.github.navikt.tiltakspenger-libs:jobber:0.0.154")
+    implementation("com.github.navikt.tiltakspenger-libs:jobber:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:meldekort:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:tiltak-dtos:$felleslibVersion")
 
     implementation("ch.qos.logback:logback-classic:1.4.14")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
     implementation("org.jetbrains:annotations:24.1.0")
-    // implementation("com.github.navikt:rapids-and-rivers:2022112407251669271100.df879df951cf")
     implementation("com.natpryce:konfig:1.6.10.0")
     implementation("com.google.guava:guava:32.1.3-jre")
     implementation("io.arrow-kt:arrow-core:1.2.4")
@@ -40,6 +42,7 @@ dependencies {
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
     implementation("no.nav.security:token-client-core:$tokenSupportVersion")
 
+    // Ktor server
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
@@ -49,6 +52,7 @@ dependencies {
     implementation("io.ktor:ktor-server-forwarded-header:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
 
+    // Ktor client
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")

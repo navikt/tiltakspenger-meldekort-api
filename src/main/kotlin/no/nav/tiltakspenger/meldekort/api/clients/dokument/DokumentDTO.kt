@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.api.clients.dokument
 
+import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
@@ -32,14 +33,14 @@ data class PeriodeDTO(
 data class TiltakDTO(
     val id: UUID,
     val periode: PeriodeDTO,
-    val typeBeskrivelse: String,
-    val typeKode: String,
-    val antDagerIUken: Float,
+    // TODO jah: Venter på å rename denne for ikke å brekke tiltakstype-dokument.
+    val typeKode: TiltakstypeSomGirRett,
+    val antDagerIUken: Int,
 )
 
 data class MeldekortDagDTO(
     val dato: LocalDate,
-    val tiltakType: String?,
+    val tiltakType: TiltakstypeSomGirRett?,
     val status: MeldekortDagStatusDTO,
 )
 
@@ -71,15 +72,14 @@ fun mapMeldekortDTOTilDokumentDTO(meldekort: Meldekort?, grunnlag: MeldekortGrun
             TiltakDTO(
                 id = it.id,
                 periode = PeriodeDTO(it.periode.fra, it.periode.til),
-                typeKode = it.typeKode,
-                typeBeskrivelse = it.typeBeskrivelse,
+                typeKode = it.tiltakstype,
                 antDagerIUken = it.antDagerIUken,
             )
         },
         meldekortDager = meldekort.meldekortDager.map {
             MeldekortDagDTO(
                 dato = it.dato,
-                tiltakType = it.tiltak?.typeKode,
+                tiltakType = it.tiltak?.tiltakstype,
                 status = when (it.status) {
                     MeldekortDagStatus.SPERRET -> MeldekortDagStatusDTO.IKKE_UTFYLT
                     MeldekortDagStatus.DELTATT -> MeldekortDagStatusDTO.DELTATT

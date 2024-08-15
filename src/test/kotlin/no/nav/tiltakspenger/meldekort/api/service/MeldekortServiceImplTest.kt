@@ -70,7 +70,7 @@ class MeldekortServiceImplTest {
         val mandag = finnMandag(LocalDate.of(2021, 11, 1))
         mandag.dayOfWeek shouldBe DayOfWeek.MONDAY
 
-        MeldekortDag.lagIkkeUtfyltPeriode(meldekortId, mandag, mandag.plusDays(13), listOf(Utfallsperiode(mandag, mandag.plusDays(14), 0, UtfallForPeriode.GIR_RETT_TILTAKSPENGER))) shouldBe
+        MeldekortDag.lagIkkeUtfyltPeriode(meldekortId, mandag, mandag.plusDays(13), listOf(Utfallsperiode(mandag, mandag.plusDays(14), UtfallForPeriode.GIR_RETT_TILTAKSPENGER))) shouldBe
             listOf(
                 MeldekortDag(mandag, null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(1), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
@@ -94,9 +94,9 @@ class MeldekortServiceImplTest {
     fun `test at dager uten rett til tiltakspenger blir sperret`() {
         val meldekortId = UUID.randomUUID()
         val utfallsperioder = listOf(
-            Utfallsperiode(LocalDate.of(2021, 10, 1), LocalDate.of(2021, 11, 2), 0, UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
-            Utfallsperiode(LocalDate.of(2021, 11, 3), LocalDate.of(2021, 11, 10), 0, UtfallForPeriode.GIR_RETT_TILTAKSPENGER),
-            Utfallsperiode(LocalDate.of(2021, 11, 11), LocalDate.of(2021, 11, 12), 0, UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
+            Utfallsperiode(LocalDate.of(2021, 10, 1), LocalDate.of(2021, 11, 2), UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
+            Utfallsperiode(LocalDate.of(2021, 11, 3), LocalDate.of(2021, 11, 10), UtfallForPeriode.GIR_RETT_TILTAKSPENGER),
+            Utfallsperiode(LocalDate.of(2021, 11, 11), LocalDate.of(2021, 11, 12), UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
         )
         val mandag = finnMandag(LocalDate.of(2021, 11, 1))
         MeldekortDag.lagIkkeUtfyltPeriode(meldekortId, mandag, mandag.plusDays(13), utfallsperioder) shouldBe

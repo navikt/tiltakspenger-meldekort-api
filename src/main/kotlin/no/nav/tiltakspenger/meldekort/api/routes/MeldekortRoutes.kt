@@ -8,6 +8,10 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import mu.KotlinLogging
+import no.nav.tiltakspenger.libs.meldekort.MeldekortGrunnlagDTO
+import no.nav.tiltakspenger.libs.meldekort.StatusDTO
+import no.nav.tiltakspenger.libs.meldekort.UtfallForPeriodeDTO
+import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Personopplysninger
@@ -17,13 +21,11 @@ import no.nav.tiltakspenger.meldekort.api.domene.UtfallForPeriode
 import no.nav.tiltakspenger.meldekort.api.domene.Utfallsperiode
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
-import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortGrunnlagDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortUtenDagerDTO
-import no.nav.tiltakspenger.meldekort.api.routes.dto.StatusDTO
-import no.nav.tiltakspenger.meldekort.api.routes.dto.UtfallForPeriodeDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
 import no.nav.tiltakspenger.meldekort.api.tilgang.Saksbehandler
+import java.time.LocalDate
 import java.util.UUID
 
 private val LOG = KotlinLogging.logger {}
@@ -92,11 +94,6 @@ fun Route.meldekort(
         call.respond(status = HttpStatusCode.OK, dto)
     }
 
-    // TODO jah: Denne skal slettes når vedtak-rivers ikke lenger kaller oss.
-    post("$MELDEKORT_PATH/nyDag") {
-        call.respond(message = "OK", status = HttpStatusCode.OK)
-    }
-
     post("$MELDEKORT_PATH/grunnlag") {
         innloggetBrukerProvider.krevSystembruker(call)
         val dto = call.receive<MeldekortGrunnlagDTO>()
@@ -140,8 +137,7 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
                     fra = it.periodeDTO.fra,
                     til = it.periodeDTO.til,
                 ),
-                typeBeskrivelse = it.typeBeskrivelse,
-                typeKode = it.typeKode,
+                tiltakstype = TiltakstypeSomGirRett.valueOf(it.typeKode),
                 antDagerIUken = it.antDagerIUken,
             )
         },
@@ -152,13 +148,11 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
         ),
         utfallsperioder = dto.utfallsperioder.map {
             Utfallsperiode(
-                fom = it.fom,
-                tom = it.tom,
-                antallBarn = it.antallBarn,
+                fom = LocalDate.parse(it.fom),
+                tom = LocalDate.parse(it.tom),
                 utfall = when (it.utfall) {
                     UtfallForPeriodeDTO.GIR_RETT_TILTAKSPENGER -> UtfallForPeriode.GIR_RETT_TILTAKSPENGER
                     UtfallForPeriodeDTO.GIR_IKKE_RETT_TILTAKSPENGER -> UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER
-                    UtfallForPeriodeDTO.KREVER_MANUELL_VURDERING -> UtfallForPeriode.KREVER_MANUELL_VURDERING
                 },
 
             )

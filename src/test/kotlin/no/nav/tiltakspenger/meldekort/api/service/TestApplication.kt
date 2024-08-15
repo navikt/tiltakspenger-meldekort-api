@@ -12,6 +12,7 @@ import no.nav.tiltakspenger.meldekort.api.routes.meldekort
 import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
 
 fun ApplicationTestBuilder.testApplikasjon(
+    port: Int = 8080,
     meldekortService: MeldekortService = mockk(),
     innloggetBrukerProvider: InnloggetBrukerProvider = InnloggetBrukerProvider(),
 ) {
@@ -19,7 +20,7 @@ fun ApplicationTestBuilder.testApplikasjon(
         installJacksonFeature()
         installTokenValidation(
             tokenValidationConfigAzure(
-                wellknownUrl = "http://localhost:8080/azure/.well-known/openid-configuration",
+                wellknownUrl = "http://localhost:$port/azure/.well-known/openid-configuration",
                 clientId = "validAudience",
             ),
         )

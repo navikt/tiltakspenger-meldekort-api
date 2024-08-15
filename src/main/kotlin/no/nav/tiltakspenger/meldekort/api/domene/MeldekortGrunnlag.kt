@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.api.domene
 
+import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import java.util.*
 
@@ -29,7 +30,6 @@ enum class Status {
 data class Tiltak(
     val id: UUID,
     val periode: Periode,
-    val typeBeskrivelse: String,
-    val typeKode: String,
-    val antDagerIUken: Float,
+    val tiltakstype: TiltakstypeSomGirRett,
+    val antDagerIUken: Int,
 )

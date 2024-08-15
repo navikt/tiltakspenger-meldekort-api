@@ -74,8 +74,6 @@ object Configuration {
             "SCOPE_DOKUMENT" to "tiltakspenger-dokument",
             "UTBETALING_URL" to "http://localhost:8083",
             "DOKUMENT_URL" to "http://localhost:8084",
-            // kommentar jah: Skal ikke trenge denne lokalt
-            "ELECTOR_PATH" to "http://localhost:8085",
             "ROLE_SAKSBEHANDLER" to "1b3a2c4d-d620-4fcf-a29b-a6cdadf29680",
             "ROLE_BESLUTTER" to "79985315-b2de-40b8-a740-9510796993c6",
             "ROLE_ADMINISTRATOR" to "cbe715d0-6f67-46bf-86b4-688c4419b747",
@@ -110,7 +108,6 @@ object Configuration {
     private val composeProperties = ConfigurationMap(
         mapOf(
             "logback.configurationFile" to "logback.local.xml",
-            "ELECTOR_PATH" to "localhost",
             "ROLE_SAKSBEHANDLER" to "1b3a2c4d-d620-4fcf-a29b-a6cdadf29680",
             "ROLE_BESLUTTER" to "79985315-b2de-40b8-a740-9510796993c6",
             "ROLE_ADMINISTRATOR" to "cbe715d0-6f67-46bf-86b4-688c4419b747",

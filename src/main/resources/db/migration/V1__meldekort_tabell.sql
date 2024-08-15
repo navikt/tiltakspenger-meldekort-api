@@ -39,7 +39,7 @@ create table grunnlag_tiltak
     tom                 date    not null,
     typekode            varchar not null,
     typebeskrivelse     varchar not null,
-    antall_dager_pr_uke float   not null
+    antall_dager_pr_uke int   not null
 );
 
 create table meldekort
@@ -72,6 +72,5 @@ CREATE TABLE utfallsperiode
     grunnlag_id         VARCHAR                  NOT NULL REFERENCES grunnlag (id),
     fom                 DATE                     NOT NULL,
     tom                 DATE                     NOT NULL,
-    antall_barn         INT                      NOT NULL,
     utfall              VARCHAR                  NOT NULL
 );

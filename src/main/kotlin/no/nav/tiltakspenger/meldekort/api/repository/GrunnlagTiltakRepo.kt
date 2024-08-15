@@ -20,8 +20,7 @@ class GrunnlagTiltakRepo {
                     "grunnlagId" to grunnlagId,
                     "fom" to dto.periode.fra,
                     "tom" to dto.periode.til,
-                    "typeKode" to dto.typeKode,
-                    "typeBeskrivelse" to dto.typeBeskrivelse,
+                    "typeKode" to dto.tiltakstype.toDb(),
                     "antallDagerPrUke" to dto.antDagerIUken,
                 ),
             ).asUpdate,
@@ -78,9 +77,8 @@ class GrunnlagTiltakRepo {
                 fra = localDate("fom"),
                 til = localDate("tom"),
             ),
-            typeKode = string("typekode"),
-            typeBeskrivelse = string("typebeskrivelse"),
-            antDagerIUken = float("antall_dager_pr_uke"),
+            tiltakstype = string("typekode").toTiltakstypeSomGirRett(),
+            antDagerIUken = int("antall_dager_pr_uke"),
         )
     }
 

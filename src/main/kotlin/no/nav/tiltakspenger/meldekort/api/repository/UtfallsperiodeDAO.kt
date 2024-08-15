@@ -37,7 +37,6 @@ class UtfallsperiodeDAO {
                     "grunnlagId" to grunnlagId.toString(),
                     "fom" to utfallsperiode.fom,
                     "tom" to utfallsperiode.tom,
-                    "antallBarn" to utfallsperiode.antallBarn,
                     "utfall" to utfallsperiode.utfall.name,
                 ),
             ).asUpdate,
@@ -48,7 +47,6 @@ class UtfallsperiodeDAO {
         return Utfallsperiode(
             fom = localDate("fom"),
             tom = localDate("tom"),
-            antallBarn = int("antall_barn"),
             utfall = UtfallForPeriode.valueOf(string("utfall")),
         )
     }

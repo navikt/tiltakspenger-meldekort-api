@@ -14,7 +14,8 @@ data class UtbetalingDTO(
 
 data class UtbetalingDagDTO(
     val dato: LocalDate,
-    val tiltaktype: String,
+    // TODO jah: Føles ikke riktig at denne ligger på dag, spesielt på de dagene det ikke er utbetaling og hva med de dagene det er mer enn 1 tiltak?
+    val tiltaktype: String?,
     val status: UtbetalingDagStatusDTO,
     val meldekortId: UUID,
     val løpenr: Int,
@@ -46,7 +47,7 @@ fun mapUtbetalingMeldekort(
         utbetalingDager = behandling.utbetalingDager.map {
             UtbetalingDagDTO(
                 dato = it.dag,
-                tiltaktype = it.tiltakType,
+                tiltaktype = it.tiltakType?.name,
                 status = when (it.status) {
                     UtbetalingStatus.FullUtbetaling -> UtbetalingDagStatusDTO.FullUtbetaling
                     UtbetalingStatus.DelvisUtbetaling -> UtbetalingDagStatusDTO.DelvisUtbetaling

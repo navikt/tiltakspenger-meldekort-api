@@ -31,7 +31,6 @@ data class MeldekortDag(
                         when (it.utfall) {
                             UtfallForPeriode.GIR_RETT_TILTAKSPENGER -> MeldekortDagStatus.IKKE_UTFYLT
                             UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER -> MeldekortDagStatus.SPERRET
-                            UtfallForPeriode.KREVER_MANUELL_VURDERING -> throw IllegalStateException("Skal ikke være mulig å generere meldekort som krever manuelle vurderinger")
                         }
                     } ?: MeldekortDagStatus.SPERRET,
                     meldekortId = meldekortId,

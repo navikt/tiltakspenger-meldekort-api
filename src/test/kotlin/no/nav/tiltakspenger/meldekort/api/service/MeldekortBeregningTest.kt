@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
 import io.kotest.matchers.shouldBe
+import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus.DELTATT
@@ -1023,9 +1024,8 @@ internal class MeldekortBeregningTest {
     private val gruppeAmo = Tiltak(
         id = UUID.randomUUID(),
         periode = Periode(fra = LocalDate.of(2024, 1, 1), til = LocalDate.of(2024, 1, 4)),
-        typeBeskrivelse = "",
-        typeKode = "GRUPPEAMO",
-        antDagerIUken = 0.0f,
+        tiltakstype = TiltakstypeSomGirRett.GRUPPE_AMO,
+        antDagerIUken = 5,
     )
 }
 

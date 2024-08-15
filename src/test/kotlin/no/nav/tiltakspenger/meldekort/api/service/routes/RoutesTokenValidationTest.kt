@@ -5,6 +5,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
@@ -18,12 +19,18 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 internal class RoutesTokenValidationTest {
     companion object {
+        private fun findFreePort(): Int {
+            java.net.ServerSocket(0).use { socket ->
+                return socket.localPort
+            }
+        }
+        private val port = findFreePort()
         private val mockOAuth2Server = MockOAuth2Server().also {
-            it.start(8080)
+            it.start(port)
         }
 
         @AfterAll
@@ -78,7 +85,7 @@ internal class RoutesTokenValidationTest {
     @Test
     fun `get med ugyldig token skal gi 401`() {
         testApplication {
-            testApplikasjon()
+            testApplikasjon(port = port)
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer tulletoken")
                 header("Content-Type", "application/json")
@@ -90,7 +97,7 @@ internal class RoutesTokenValidationTest {
     @Test
     fun `get med utgått token skal gi 401`() {
         testApplication {
-            testApplikasjon()
+            testApplikasjon(port = port)
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer ${utgåttAzureToken.serialize()}")
                 header("Content-Type", "application/json")
@@ -102,7 +109,7 @@ internal class RoutesTokenValidationTest {
     @Test
     fun `get med feil issuer token skal gi 401`() {
         testApplication {
-            testApplikasjon()
+            testApplikasjon(port = port)
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer ${azureTokenMedFeilIssuer.serialize()}")
                 header("Content-Type", "application/json")
@@ -114,7 +121,7 @@ internal class RoutesTokenValidationTest {
     @Test
     fun `get med feil audience token skal gi 401`() {
         testApplication {
-            testApplikasjon()
+            testApplikasjon(port = port)
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer ${azureTokenMedFeilAudience.serialize()}")
                 header("Content-Type", "application/json")
@@ -126,7 +133,7 @@ internal class RoutesTokenValidationTest {
     @Test
     fun `get med token uten NAVident eller idtyp skal gi 401`() {
         testApplication {
-            testApplikasjon()
+            testApplikasjon(port = port)
             val response = client.get("/meldekort/hentMeldekort/123456") {
                 header("Authorization", "Bearer ${azureTokenUtenNavidentOgIdtyp.serialize()}")
                 header("Content-Type", "application/json")
@@ -142,7 +149,7 @@ internal class RoutesTokenValidationTest {
         }
 
         testApplication {
-            testApplikasjon(meldekortService = meldekortServiceMock)
+            testApplikasjon(meldekortService = meldekortServiceMock, port = port)
             val response = client.get("/meldekort/hentMeldekort/00000000-0000-0000-0000-000000000000") {
                 header("Authorization", "Bearer ${gyldigAzureOboToken.serialize()}")
                 header("Content-Type", "application/json")
@@ -156,13 +163,13 @@ internal class RoutesTokenValidationTest {
         val meldekortServiceMock = mockk<MeldekortServiceImpl>(relaxed = true)
 
         testApplication {
-            testApplikasjon(meldekortService = meldekortServiceMock)
+            testApplikasjon(meldekortService = meldekortServiceMock, port = port)
             val response = client.post("/meldekort/grunnlag") {
                 header("Authorization", "Bearer ${gyldigAzureSystemToken.serialize()}")
                 header("Content-Type", "application/json")
                 setBody(grunnlagJson)
             }
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(HttpStatusCode.OK, response.status, "response body: ${response.bodyAsText()}")
         }
     }
 
@@ -182,8 +189,7 @@ internal class RoutesTokenValidationTest {
                     "fra": "2021-01-01",
                     "til": "2021-01-14"
                 },
-                "typeBeskrivelse": "typeBeskrivelse",
-                "typeKode": "typeKode",
+                "typeKode": "GRUPPE_AMO",
                 "antDagerIUken": 1.0
             }
         ],
@@ -196,7 +202,6 @@ internal class RoutesTokenValidationTest {
             {
                 "fom": "2021-01-01",
                 "tom": "2021-01-14",
-                "antallBarn": 1,
                 "utfall": "GIR_RETT_TILTAKSPENGER"
             }
         ]

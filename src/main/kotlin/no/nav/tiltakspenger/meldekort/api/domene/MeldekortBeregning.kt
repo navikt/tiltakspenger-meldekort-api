@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.api.domene
 
+import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
 import java.time.LocalDate
 import java.util.UUID
 
@@ -60,7 +61,7 @@ data class MeldekortBeregning(
 
         leggTilUtbetalingDag(
             dag = dag.dato,
-            tiltakType = dag.tiltak.typeKode,
+            tiltakType = dag.tiltak.tiltakstype,
             deltagerStatus = DeltagerStatus.Deltatt,
             status = UtbetalingStatus.FullUtbetaling,
             løpenr = dag.løpenr,
@@ -74,7 +75,7 @@ data class MeldekortBeregning(
         sjekkSykBarnKarantene(dag.dato)
         leggTilUtbetalingDag(
             dag = dag.dato,
-            tiltakType = dag.tiltak.typeKode,
+            tiltakType = dag.tiltak.tiltakstype,
             deltagerStatus = DeltagerStatus.GyldigFravær,
             status = UtbetalingStatus.FullUtbetaling,
             løpenr = dag.løpenr,
@@ -87,7 +88,7 @@ data class MeldekortBeregning(
         sjekkSykBarnKarantene(dag.dato)
         leggTilUtbetalingDag(
             dag = dag.dato,
-            tiltakType = "UTEN_TILTAK",
+            tiltakType = null,
             deltagerStatus = DeltagerStatus.IkkeDeltatt,
             status = UtbetalingStatus.IngenUtbetaling,
             løpenr = dag.løpenr,
@@ -101,7 +102,7 @@ data class MeldekortBeregning(
         sjekkSykBarnKarantene(dag.dato)
         leggTilUtbetalingDag(
             dag = dag.dato,
-            tiltakType = dag.tiltak.typeKode,
+            tiltakType = dag.tiltak.tiltakstype,
             deltagerStatus = DeltagerStatus.IkkeDeltatt,
             status = UtbetalingStatus.IngenUtbetaling,
             løpenr = dag.løpenr,
@@ -118,7 +119,7 @@ data class MeldekortBeregning(
                     egenmeldingsdagerSyk--
                     leggTilUtbetalingDag(
                         dag = dag.dato,
-                        tiltakType = dag.tiltak.typeKode,
+                        tiltakType = dag.tiltak.tiltakstype,
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.FullUtbetaling,
                         løpenr = dag.løpenr,
@@ -130,7 +131,7 @@ data class MeldekortBeregning(
                     sykTilstand = SykTilstand.DelvisUtbetaling
                     leggTilUtbetalingDag(
                         dag = dag.dato,
-                        tiltakType = dag.tiltak.typeKode,
+                        tiltakType = dag.tiltak.tiltakstype,
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.DelvisUtbetaling,
                         løpenr = dag.løpenr,
@@ -144,7 +145,7 @@ data class MeldekortBeregning(
                     egenmeldingsdagerSyk--
                     leggTilUtbetalingDag(
                         dag = dag.dato,
-                        tiltakType = dag.tiltak.typeKode,
+                        tiltakType = dag.tiltak.tiltakstype,
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.DelvisUtbetaling,
                         løpenr = dag.løpenr,
@@ -159,7 +160,7 @@ data class MeldekortBeregning(
                     sykKaranteneDag = dag.dato.plusDays(dagerKarantene)
                     leggTilUtbetalingDag(
                         dag = dag.dato,
-                        tiltakType = dag.tiltak.typeKode,
+                        tiltakType = dag.tiltak.tiltakstype,
                         deltagerStatus = DeltagerStatus.Syk,
                         status = UtbetalingStatus.IngenUtbetaling,
                         løpenr = dag.løpenr,
@@ -174,7 +175,7 @@ data class MeldekortBeregning(
                 sykKaranteneDag = dag.dato.plusDays(dagerKarantene)
                 leggTilUtbetalingDag(
                     dag = dag.dato,
-                    tiltakType = dag.tiltak.typeKode,
+                    tiltakType = dag.tiltak.tiltakstype,
                     deltagerStatus = DeltagerStatus.Syk,
                     status = UtbetalingStatus.IngenUtbetaling,
                     løpenr = dag.løpenr,
@@ -193,7 +194,7 @@ data class MeldekortBeregning(
                     egenmeldingsdagerSyktBarn--
                     leggTilUtbetalingDag(
                         dag = dag.dato,
-                        tiltakType = dag.tiltak.typeKode,
+                        tiltakType = dag.tiltak.tiltakstype,
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.FullUtbetaling,
                         løpenr = dag.løpenr,
@@ -207,7 +208,7 @@ data class MeldekortBeregning(
                         dag = dag.dato,
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.DelvisUtbetaling,
-                        tiltakType = dag.tiltak.typeKode,
+                        tiltakType = dag.tiltak.tiltakstype,
                         løpenr = dag.løpenr,
                         meldekortId = dag.meldekortId,
                     )
@@ -219,7 +220,7 @@ data class MeldekortBeregning(
                     egenmeldingsdagerSyktBarn--
                     leggTilUtbetalingDag(
                         dag = dag.dato,
-                        tiltakType = dag.tiltak.typeKode,
+                        tiltakType = dag.tiltak.tiltakstype,
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.DelvisUtbetaling,
                         løpenr = dag.løpenr,
@@ -234,7 +235,7 @@ data class MeldekortBeregning(
                     syktBarnKaranteneDag = dag.dato.plusDays(dagerKarantene)
                     leggTilUtbetalingDag(
                         dag = dag.dato,
-                        tiltakType = dag.tiltak.typeKode,
+                        tiltakType = dag.tiltak.tiltakstype,
                         deltagerStatus = DeltagerStatus.SyktBarn,
                         status = UtbetalingStatus.IngenUtbetaling,
                         løpenr = dag.løpenr,
@@ -248,7 +249,7 @@ data class MeldekortBeregning(
                 sjekkSykBarnKarantene(dag.dato)
                 leggTilUtbetalingDag(
                     dag = dag.dato,
-                    tiltakType = dag.tiltak.typeKode,
+                    tiltakType = dag.tiltak.tiltakstype,
                     deltagerStatus = DeltagerStatus.SyktBarn,
                     status = UtbetalingStatus.IngenUtbetaling,
                     løpenr = dag.løpenr,
@@ -263,7 +264,8 @@ data class MeldekortBeregning(
         dag: LocalDate,
         deltagerStatus: DeltagerStatus,
         status: UtbetalingStatus,
-        tiltakType: String,
+        // Settes til null dersom det er sperret (ikke rett på disse dagene)
+        tiltakType: TiltakstypeSomGirRett?,
         løpenr: Int,
         meldekortId: UUID,
     ) {
