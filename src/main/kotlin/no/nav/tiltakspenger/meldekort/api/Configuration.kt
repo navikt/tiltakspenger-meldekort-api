@@ -70,8 +70,8 @@ object Configuration {
             "AZURE_APP_WELL_KNOWN_URL" to "http://host.docker.internal:6969/azure/.well-known/openid-configuration",
             "AZURE_OPENID_CONFIG_ISSUER" to "http://host.docker.internal:6969/azure",
             "AZURE_OPENID_CONFIG_JWKS_URI" to "http://host.docker.internal:6969/azure/jwks",
-            "SCOPE_UTBETALING" to "localhost",
-            "SCOPE_DOKUMENT" to "localhost",
+            "SCOPE_UTBETALING" to "tiltakspenger-utbetaling",
+            "SCOPE_DOKUMENT" to "tiltakspenger-dokument",
             "UTBETALING_URL" to "http://localhost:8083",
             "DOKUMENT_URL" to "http://localhost:8084",
             // kommentar jah: Skal ikke trenge denne lokalt
@@ -107,11 +107,27 @@ object Configuration {
         ),
     )
 
+    private val composeProperties = ConfigurationMap(
+        mapOf(
+            "logback.configurationFile" to "logback.local.xml",
+            "ELECTOR_PATH" to "localhost",
+            "ROLE_SAKSBEHANDLER" to "1b3a2c4d-d620-4fcf-a29b-a6cdadf29680",
+            "ROLE_BESLUTTER" to "79985315-b2de-40b8-a740-9510796993c6",
+            "ROLE_ADMINISTRATOR" to "cbe715d0-6f67-46bf-86b4-688c4419b747",
+            "ROLE_FORTROLIG" to "ea930b6b-9397-44d9-b9e6-f4cf527a632a",
+            "ROLE_STRENGT_FORTROLIG" to "5ef775f2-61f8-4283-bf3d-8d03f428aa14",
+            "ROLE_SKJERMING" to "dbe4ad45-320b-4e9a-aaa1-73cca4ee124d",
+            "ROLE_DRIFT" to "c511113e-5b22-49e7-b9c4-eeb23b01f518",
+        ),
+    )
+
     private fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
         "dev-gcp" ->
             ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding devProperties overriding defaultProperties
         "prod-gcp" ->
             ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding prodProperties overriding defaultProperties
+        "compose" ->
+            ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding composeProperties overriding defaultProperties
         else -> {
             ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding localProperties overriding defaultProperties
         }

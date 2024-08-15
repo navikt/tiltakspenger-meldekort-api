@@ -13,7 +13,7 @@ object DataSource {
 
     private fun init(): HikariDataSource {
         LOG.info {
-            "Kobler til postgress '${config.brukernavn}:XXX@" +
+            "Kobler til postgres '${config.brukernavn}:XXX@" +
                 "${config.host}:${config.port}/${config.database}"
         }
 
