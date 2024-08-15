@@ -50,6 +50,9 @@ spec:
         - application: tiltakspenger-vedtak-rivers
           namespace: tpts
           cluster: {{ cluster }}
+        - application: tiltakspenger-vedtak
+          namespace: tpts
+          cluster: { { cluster } }
         - application: tiltakspenger-saksbehandler
           namespace: tpts
           cluster: {{ cluster }}
