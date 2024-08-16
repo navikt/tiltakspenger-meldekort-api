@@ -103,13 +103,13 @@ class GrunnlagRepoImpl(
             }
         }
 
-    override fun hentGrunnlagForVedtakId(vedtakId: UUID): MeldekortGrunnlag? =
+    override fun hentGrunnlagForVedtakId(vedtakId: String): MeldekortGrunnlag? =
         sessionOf(DataSource.hikariDataSource).use {
             it.run(
                 queryOf(
                     """select * from grunnlag where vedtak_id = :vedtakId""",
                     mapOf(
-                        "vedtakId" to vedtakId.toString(),
+                        "vedtakId" to vedtakId,
                     ),
                 ).map { row ->
                     row.toGrunnlag(it)

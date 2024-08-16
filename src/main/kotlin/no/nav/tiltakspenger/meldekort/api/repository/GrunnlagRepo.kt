@@ -16,7 +16,7 @@ interface GrunnlagRepo {
 
     fun hentGrunnlag(id: UUID): MeldekortGrunnlag?
 
-    fun hentGrunnlagForVedtakId(vedtakId: UUID): MeldekortGrunnlag?
+    fun hentGrunnlagForVedtakId(vedtakId: String): MeldekortGrunnlag?
 
 //    fun hent(id: String): MeldekortGrunnlagDTO?
 //    fun hentAlleForBehandling(id: String): List<MeldekortGrunnlagDTO>

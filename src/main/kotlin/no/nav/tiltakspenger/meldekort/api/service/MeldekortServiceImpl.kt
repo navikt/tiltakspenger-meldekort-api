@@ -127,7 +127,7 @@ class MeldekortServiceImpl(
     }
 
     override fun mottaGrunnlag(meldekortGrunnlag: MeldekortGrunnlag) {
-        if (grunnlagRepo.hentGrunnlagForVedtakId(meldekortGrunnlag.id) != null) {
+        if (grunnlagRepo.hentGrunnlagForVedtakId(meldekortGrunnlag.vedtakId) != null) {
             LOG.info { "Grunnlag med id ${meldekortGrunnlag.id} finnes allerede. Returnerer OK." }
             return
         }
