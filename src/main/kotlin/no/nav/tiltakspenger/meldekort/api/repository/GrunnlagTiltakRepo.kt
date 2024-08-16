@@ -11,7 +11,11 @@ import org.intellij.lang.annotations.Language
 import java.util.*
 
 class GrunnlagTiltakRepo {
-    fun lagre(grunnlagId: String, dto: Tiltak, tx: TransactionalSession) {
+    fun lagre(
+        grunnlagId: String,
+        dto: Tiltak,
+        tx: TransactionalSession,
+    ) {
         tx.run(
             queryOf(
                 sqlLagreTiltak,
@@ -27,8 +31,11 @@ class GrunnlagTiltakRepo {
         )
     }
 
-    fun hentTiltakForGrunnlag(grunnlagId: String, txSession: TransactionalSession): List<Tiltak> {
-        return txSession.run(
+    fun hentTiltakForGrunnlag(
+        grunnlagId: String,
+        txSession: TransactionalSession,
+    ): List<Tiltak> =
+        txSession.run(
             queryOf(
                 sqlHentTiltakForGrunnlag,
                 mapOf(
@@ -38,27 +45,29 @@ class GrunnlagTiltakRepo {
                 row.toTiltak()
             }.asList,
         )
-    }
 
-    fun hentFørsteTiltakForGrunnlag(grunnlagId: String): Tiltak? {
-        return sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                it.run(
-                    queryOf(
-                        sqlHentTiltakForGrunnlag,
-                        mapOf(
-                            "grunnlagId" to grunnlagId,
-                        ),
-                    ).map { row ->
-                        row.toTiltak()
-                    }.asList,
-                )
-            }
-        }.firstOrNull()
-    }
+    fun hentFørsteTiltakForGrunnlag(grunnlagId: String): Tiltak? =
+        sessionOf(DataSource.hikariDataSource)
+            .use {
+                it.transaction {
+                    it.run(
+                        queryOf(
+                            sqlHentTiltakForGrunnlag,
+                            mapOf(
+                                "grunnlagId" to grunnlagId,
+                            ),
+                        ).map { row ->
+                            row.toTiltak()
+                        }.asList,
+                    )
+                }
+            }.firstOrNull()
 
-    fun hentTiltak(tiltakId: String, txSession: TransactionalSession): Tiltak? {
-        return txSession.run(
+    fun hentTiltak(
+        tiltakId: String,
+        txSession: TransactionalSession,
+    ): Tiltak? =
+        txSession.run(
             queryOf(
                 sqlHentTiltak,
                 mapOf(
@@ -68,39 +77,40 @@ class GrunnlagTiltakRepo {
                 row.toTiltak()
             }.asSingle,
         )
-    }
 
-    private fun Row.toTiltak(): Tiltak {
-        return Tiltak(
+    private fun Row.toTiltak(): Tiltak =
+        Tiltak(
             id = UUID.fromString(string("id")),
-            periode = Periode(
+            periode =
+            Periode(
                 fra = localDate("fom"),
                 til = localDate("tom"),
             ),
             tiltakstype = string("typekode").toTiltakstypeSomGirRett(),
             antDagerIUken = int("antall_dager_pr_uke"),
         )
-    }
 
     @Language("SQL")
-    private val sqlHentTiltakForGrunnlag = """
+    private val sqlHentTiltakForGrunnlag =
+        """
         select * from grunnlag_tiltak where grunnlag_id = :grunnlagId
-    """.trimIndent()
+        """.trimIndent()
 
     @Language("SQL")
-    private val sqlHentTiltak = """
+    private val sqlHentTiltak =
+        """
         select * from grunnlag_tiltak where id = :id
-    """.trimIndent()
+        """.trimIndent()
 
     @Language("SQL")
-    private val sqlLagreTiltak = """
+    private val sqlLagreTiltak =
+        """
         insert into grunnlag_tiltak (
             id,
             grunnlag_id,
             fom,
             tom,
             typekode,
-            typebeskrivelse,
             antall_dager_pr_uke
         ) values (
             :id,
@@ -108,8 +118,7 @@ class GrunnlagTiltakRepo {
             :fom,
             :tom,
             :typeKode,
-            :typeBeskrivelse,
             :antallDagerPrUke
         )
-    """.trimIndent()
+        """.trimIndent()
 }

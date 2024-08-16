@@ -38,8 +38,7 @@ create table grunnlag_tiltak
     fom                 date    not null,
     tom                 date    not null,
     typekode            varchar not null,
-    typebeskrivelse     varchar not null,
-    antall_dager_pr_uke int   not null
+    antall_dager_pr_uke int     not null
 );
 
 create table meldekort
