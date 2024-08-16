@@ -31,6 +31,7 @@ import java.util.UUID
 private val LOG = KotlinLogging.logger {}
 
 private const val MELDEKORT_PATH = "/meldekort"
+
 fun Route.meldekort(
     meldekortService: MeldekortService,
     innloggetBrukerProvider: InnloggetBrukerProvider,
@@ -38,8 +39,9 @@ fun Route.meldekort(
     get("$MELDEKORT_PATH/hentMeldekort/{meldekortId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hentMeldekort/{meldekortId}")
         val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
-        val meldekortId = call.parameters["meldekortId"]
-            ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
+        val meldekortId =
+            call.parameters["meldekortId"]
+                ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
         val dto = meldekortService.hentMeldekort(UUID.fromString(meldekortId))
         checkNotNull(dto) { "Meldekort med ident:$meldekortId eksisterer ikke i databasen" }
         call.respond(status = HttpStatusCode.OK, message = dto)
@@ -47,8 +49,9 @@ fun Route.meldekort(
 
     get("$MELDEKORT_PATH/hentBeregning/{meldekortId}") {
         val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
-        val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
-            ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
+        val meldekortId =
+            call.parameters["meldekortId"]?.let { UUID.fromString(it) }
+                ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
 
         val dto = meldekortService.hentMeldekortBeregning(meldekortId)
 
@@ -75,22 +78,25 @@ fun Route.meldekort(
     get("$MELDEKORT_PATH/hentAlleForBehandling/{behandlingId}") {
         LOG.info("Motatt request på $MELDEKORT_PATH/hentAlleForBehandling/behandlingId")
         val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
-        val behandlingId = call.parameters["behandlingId"]
-            ?: return@get call.respond(message = "behandlingId mangler", status = HttpStatusCode.NotFound)
-        val grunnlag = meldekortService.hentGrunnlagForBehandling(behandlingId) ?: return@get call.respond(
-            message = "Fant ikke grunnlag for behandlingId: $behandlingId",
-            status = HttpStatusCode.NotFound,
-        )
+        val behandlingId =
+            call.parameters["behandlingId"]
+                ?: return@get call.respond(message = "behandlingId mangler", status = HttpStatusCode.NotFound)
+        val grunnlag =
+            meldekortService.hentGrunnlagForBehandling(behandlingId) ?: return@get call.respond(
+                message = "Fant ikke grunnlag for behandlingId: $behandlingId",
+                status = HttpStatusCode.NotFound,
+            )
         val meldekort = meldekortService.hentAlleMeldekortene(grunnlag.id)
         LOG.info(meldekort.toString())
-        val dto = meldekort.map {
-            MeldekortUtenDagerDTO(
-                id = it.id.toString(),
-                fom = it.fom,
-                tom = it.tom,
-                status = it.status.toString(),
-            )
-        }
+        val dto =
+            meldekort.map {
+                MeldekortUtenDagerDTO(
+                    id = it.id.toString(),
+                    fom = it.fom,
+                    tom = it.tom,
+                    status = it.status.toString(),
+                )
+            }
         call.respond(status = HttpStatusCode.OK, dto)
     }
 
@@ -100,14 +106,16 @@ fun Route.meldekort(
         LOG.info { "Vi fikk nytt grunnlag : $dto" }
 
         meldekortService.mottaGrunnlag(mapGrunnlag(dto))
+        LOG.info { "Persistert grunnlag for sakId ${dto.sakId}, returnerer 200 OK." }
         call.respond(message = "OK", status = HttpStatusCode.OK)
     }
 
     post("$MELDEKORT_PATH/godkjenn/{meldekortId}") {
         LOG.info { "Motatt request på $MELDEKORT_PATH/godkjenn/{meldekortId}" }
         val saksbehandler: Saksbehandler = innloggetBrukerProvider.krevInnloggetSaksbehandler(call)
-        val meldekortId = call.parameters["meldekortId"]?.let { UUID.fromString(it) }
-            ?: return@post call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
+        val meldekortId =
+            call.parameters["meldekortId"]?.let { UUID.fromString(it) }
+                ?: return@post call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
 
         LOG.info { "Meldekort med id $meldekortId skal godkjenns" }
         meldekortService.godkjennMeldekort(meldekortId, saksbehandler.navIdent)
@@ -116,24 +124,28 @@ fun Route.meldekort(
     }
 }
 
-private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
-    return MeldekortGrunnlag(
+private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag =
+    MeldekortGrunnlag(
         id = UUID.randomUUID(),
         sakId = dto.sakId,
         vedtakId = dto.vedtakId,
         behandlingId = dto.behandlingId,
-        status = when (dto.status) {
+        status =
+        when (dto.status) {
             StatusDTO.AKTIV -> Status.AKTIV
             StatusDTO.IKKE_AKTIV -> Status.IKKE_AKTIV
         },
-        vurderingsperiode = Periode(
+        vurderingsperiode =
+        Periode(
             fra = dto.vurderingsperiode.fra,
             til = dto.vurderingsperiode.til,
         ),
-        tiltak = dto.tiltak.map {
+        tiltak =
+        dto.tiltak.map {
             Tiltak(
                 id = UUID.randomUUID(),
-                periode = Periode(
+                periode =
+                Periode(
                     fra = it.periodeDTO.fra,
                     til = it.periodeDTO.til,
                 ),
@@ -141,21 +153,22 @@ private fun mapGrunnlag(dto: MeldekortGrunnlagDTO): MeldekortGrunnlag {
                 antDagerIUken = it.antDagerIUken,
             )
         },
-        personopplysninger = Personopplysninger(
+        personopplysninger =
+        Personopplysninger(
             fornavn = dto.personopplysninger.fornavn,
             etternavn = dto.personopplysninger.etternavn,
             ident = dto.personopplysninger.ident,
         ),
-        utfallsperioder = dto.utfallsperioder.map {
+        utfallsperioder =
+        dto.utfallsperioder.map {
             Utfallsperiode(
                 fom = LocalDate.parse(it.fom),
                 tom = LocalDate.parse(it.tom),
-                utfall = when (it.utfall) {
+                utfall =
+                when (it.utfall) {
                     UtfallForPeriodeDTO.GIR_RETT_TILTAKSPENGER -> UtfallForPeriode.GIR_RETT_TILTAKSPENGER
                     UtfallForPeriodeDTO.GIR_IKKE_RETT_TILTAKSPENGER -> UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER
                 },
-
             )
         },
     )
-}
