@@ -11,6 +11,7 @@ spec:
   azure:
     application:
       enabled: true
+      tenant: {{ tenant }}
       claims:
         groups:
         {{#each azure.groups}}
