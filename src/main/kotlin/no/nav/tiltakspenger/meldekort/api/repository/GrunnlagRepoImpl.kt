@@ -107,7 +107,7 @@ class GrunnlagRepoImpl(
         sessionOf(DataSource.hikariDataSource).use {
             it.run(
                 queryOf(
-                    """select * from grunnlag where vedtakId = :vedtakId""",
+                    """select * from grunnlag where vedtak_id = :vedtakId""",
                     mapOf(
                         "vedtakId" to vedtakId.toString(),
                     ),
