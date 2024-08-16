@@ -9,16 +9,21 @@ import org.intellij.lang.annotations.Language
 import java.util.UUID
 
 class UtfallsperiodeDAO {
-
-    fun hent(grunnlagId: UUID, txSession: TransactionalSession): List<Utfallsperiode> {
-        return txSession.run(
+    fun hent(
+        grunnlagId: UUID,
+        txSession: TransactionalSession,
+    ): List<Utfallsperiode> =
+        txSession.run(
             queryOf(hentUtfallsperioderForVedtak, grunnlagId.toString())
                 .map { row -> row.toUtfallsperiode() }
                 .asList,
         )
-    }
 
-    fun lagre(grunnlagId: UUID, utfallsperioder: List<Utfallsperiode>, txSession: TransactionalSession) {
+    fun lagre(
+        grunnlagId: UUID,
+        utfallsperioder: List<Utfallsperiode>,
+        txSession: TransactionalSession,
+    ) {
         utfallsperioder.forEach { utfallsperiode ->
             lagreUtfallsperiode(grunnlagId, utfallsperiode, txSession)
         }
@@ -43,32 +48,30 @@ class UtfallsperiodeDAO {
         )
     }
 
-    private fun Row.toUtfallsperiode(): Utfallsperiode {
-        return Utfallsperiode(
+    private fun Row.toUtfallsperiode(): Utfallsperiode =
+        Utfallsperiode(
             fom = localDate("fom"),
             tom = localDate("tom"),
             utfall = UtfallForPeriode.valueOf(string("utfall")),
         )
-    }
 
     @Language("SQL")
-    private val lagreUtfallsperiode = """
+    private val lagreUtfallsperiode =
+        """
         insert into utfallsperiode (
             id,
             grunnlag_id,
             fom,
             tom,
-            antall_barn,
             utfall
         ) values (
             :id,
             :grunnlagId,
             :fom,
             :tom,
-            :antallBarn,
             :utfall
         )
-    """.trimIndent()
+        """.trimIndent()
 
     @Language("SQL")
     private val hentUtfallsperioderForVedtak = "select * from utfallsperiode where grunnlag_id = ?"
