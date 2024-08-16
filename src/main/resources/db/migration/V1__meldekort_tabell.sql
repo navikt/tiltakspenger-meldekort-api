@@ -21,8 +21,8 @@ create table grunnlag
 (
     id                  varchar primary key,
     sak_id              varchar not null,
-    behandling_id       varchar not null,
-    vedtak_id           varchar not null,
+    behandling_id       varchar not null unique,
+    vedtak_id           varchar not null unique,
     status              varchar not null,
     fom                 date    not null,
     tom                 date    not null,
