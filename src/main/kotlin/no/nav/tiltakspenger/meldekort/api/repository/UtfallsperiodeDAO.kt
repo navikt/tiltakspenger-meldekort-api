@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api.repository
 
 import kotliquery.Row
+import kotliquery.Session
 import kotliquery.TransactionalSession
 import kotliquery.queryOf
 import no.nav.tiltakspenger.meldekort.api.domene.UtfallForPeriode
@@ -11,7 +12,7 @@ import java.util.UUID
 class UtfallsperiodeDAO {
     fun hent(
         grunnlagId: UUID,
-        txSession: TransactionalSession,
+        txSession: Session,
     ): List<Utfallsperiode> =
         txSession.run(
             queryOf(hentUtfallsperioderForVedtak, grunnlagId.toString())

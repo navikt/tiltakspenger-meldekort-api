@@ -59,11 +59,12 @@ class MeldekortServiceImpl(
         genererFraDato: LocalDate,
         nyDag: Boolean,
     ) {
-        val tilDag = if (nyDag) {
-            genererFraDato
-        } else {
-            LocalDate.now()
-        }
+        val tilDag =
+            if (nyDag) {
+                genererFraDato
+            } else {
+                LocalDate.now()
+            }
         when (meldekortGrunnlag.status) {
             Status.AKTIV -> {
                 // Skal dette være mindre enn, eller mindre lik ?
@@ -84,18 +85,20 @@ class MeldekortServiceImpl(
                         } else {
                             LOG.info { "Lager nytt meldekort" }
                             val meldekortId = UUID.randomUUID()
-                            val meldekort = Meldekort.Åpent(
-                                id = meldekortId,
-                                løpenr = eksisterendeMeldekortPerioder.size + ind + 1,
-                                fom = periode.fra,
-                                tom = periode.til,
-                                meldekortDager = MeldekortDag.lagIkkeUtfyltPeriode(
-                                    meldekortId = meldekortId,
+                            val meldekort =
+                                Meldekort.Åpent(
+                                    id = meldekortId,
+                                    løpenr = eksisterendeMeldekortPerioder.size + ind + 1,
                                     fom = periode.fra,
                                     tom = periode.til,
-                                    utfallsperioder = meldekortGrunnlag.utfallsperioder,
-                                ),
-                            )
+                                    meldekortDager =
+                                    MeldekortDag.lagIkkeUtfyltPeriode(
+                                        meldekortId = meldekortId,
+                                        fom = periode.fra,
+                                        tom = periode.til,
+                                        utfallsperioder = meldekortGrunnlag.utfallsperioder,
+                                    ),
+                                )
                             meldekortRepo.opprett(meldekortGrunnlag.id, meldekort)
                         }
                     }
@@ -112,15 +115,21 @@ class MeldekortServiceImpl(
     }
 
     override fun mottaGrunnlag(meldekortGrunnlag: MeldekortGrunnlag) {
+        if (grunnlagRepo.hentGrunnlagForVedtakId(meldekortGrunnlag.id) != null) {
+            LOG.info { "Grunnlag med id ${meldekortGrunnlag.id} finnes allerede. Returnerer OK." }
+            return
+        }
         grunnlagRepo.lagre(meldekortGrunnlag)
         opprettMeldekortForGrunnlag(meldekortGrunnlag)
     }
 
-    override fun hentGrunnlagForBehandling(behandlingId: String): MeldekortGrunnlag? {
-        return grunnlagRepo.hentForBehandling(behandlingId)
-    }
+    override fun hentGrunnlagForBehandling(behandlingId: String): MeldekortGrunnlag? = grunnlagRepo.hentForBehandling(behandlingId)
 
-    override fun oppdaterMeldekortDag(meldekortId: UUID, dato: LocalDate, status: MeldekortDagStatus) {
+    override fun oppdaterMeldekortDag(
+        meldekortId: UUID,
+        dato: LocalDate,
+        status: MeldekortDagStatus,
+    ) {
         check(status.kanSendesInnFraMeldekort()) { "Kan ikke sende inn dag med status $status" }
         val grunnlagId = meldekortRepo.hentGrunnlagIdForMeldekort(meldekortId)
         checkNotNull(grunnlagId) { "Fant ikke grunnlag for meldekort med id $meldekortId" }
@@ -156,30 +165,42 @@ class MeldekortServiceImpl(
         checkNotNull(grunnlag) { "Fant ikke grunnlag med id $grunnlagId" }
 
         val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
-        val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId).filterNot { it.meldekortId == meldekortId } + inneværendeMeldekortDagerMedLøpenummer
-        val utbetalingsDager: List<UtbetalingDag> = MeldekortBeregning.beregnUtbetalingsDager(
-            meldekortId = meldekortId,
-            meldekortDager = alleMeldekortDager
-                .filter { it.dato >= grunnlag.vurderingsperiode.fra && it.dato <= grunnlag.vurderingsperiode.til }
-                .sortedBy { it.dato },
-            saksbehandler = "saksbehandler",
-        ).utbetalingDager.filter {
-            it.meldekortId == meldekortId
-        }
+        val alleMeldekortDager =
+            meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId).filterNot { it.meldekortId == meldekortId } +
+                inneværendeMeldekortDagerMedLøpenummer
+        val utbetalingsDager: List<UtbetalingDag> =
+            MeldekortBeregning
+                .beregnUtbetalingsDager(
+                    meldekortId = meldekortId,
+                    meldekortDager =
+                    alleMeldekortDager
+                        .filter { it.dato >= grunnlag.vurderingsperiode.fra && it.dato <= grunnlag.vurderingsperiode.til }
+                        .sortedBy { it.dato },
+                    saksbehandler = "saksbehandler",
+                ).utbetalingDager
+                .filter {
+                    it.meldekortId == meldekortId
+                }
 
-        val periodiserteSatserOgBarn = utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(
-            behandlingId = grunnlag.behandlingId,
-            fom = utbetalingsDager.minByOrNull { it.dag }!!.dag,
-            tom = utbetalingsDager.maxByOrNull { it.dag }!!.dag,
-        )
-        val beløpPerDagPerStatus: List<Pair<UtbetalingStatus, Int>> = utbetalingsDager.map {
-            val satserOgBarnForDato = periodiserteSatserOgBarn.hentGrunnlagForDato(it.dag)
-            when (it.status) {
-                UtbetalingStatus.IngenUtbetaling -> UtbetalingStatus.IngenUtbetaling to 0
-                UtbetalingStatus.FullUtbetaling -> UtbetalingStatus.FullUtbetaling to satserOgBarnForDato.sats + (satserOgBarnForDato.satsBarn * satserOgBarnForDato.antallBarn)
-                UtbetalingStatus.DelvisUtbetaling -> UtbetalingStatus.DelvisUtbetaling to satserOgBarnForDato.satsDelvis + (satserOgBarnForDato.satsBarnDelvis * satserOgBarnForDato.antallBarn)
+        val periodiserteSatserOgBarn =
+            utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(
+                behandlingId = grunnlag.behandlingId,
+                fom = utbetalingsDager.minByOrNull { it.dag }!!.dag,
+                tom = utbetalingsDager.maxByOrNull { it.dag }!!.dag,
+            )
+        val beløpPerDagPerStatus: List<Pair<UtbetalingStatus, Int>> =
+            utbetalingsDager.map {
+                val satserOgBarnForDato = periodiserteSatserOgBarn.hentGrunnlagForDato(it.dag)
+                when (it.status) {
+                    UtbetalingStatus.IngenUtbetaling -> UtbetalingStatus.IngenUtbetaling to 0
+                    UtbetalingStatus.FullUtbetaling ->
+                        UtbetalingStatus.FullUtbetaling to
+                            satserOgBarnForDato.sats + (satserOgBarnForDato.satsBarn * satserOgBarnForDato.antallBarn)
+                    UtbetalingStatus.DelvisUtbetaling ->
+                        UtbetalingStatus.DelvisUtbetaling to
+                            satserOgBarnForDato.satsDelvis + (satserOgBarnForDato.satsBarnDelvis * satserOgBarnForDato.antallBarn)
+                }
             }
-        }
 
         return MeldekortBeregningDTO(
             antallDeltatt = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.DELTATT },
@@ -196,7 +217,10 @@ class MeldekortServiceImpl(
         )
     }
 
-    override suspend fun godkjennMeldekort(meldekortId: UUID, saksbehandler: String) {
+    override suspend fun godkjennMeldekort(
+        meldekortId: UUID,
+        saksbehandler: String,
+    ) {
         val meldekort = meldekortRepo.hentMeldekortMedId(meldekortId)
         checkNotNull(meldekort) { "Vi fant ikke noe meldekort med id $meldekortId" }
 
@@ -213,23 +237,27 @@ class MeldekortServiceImpl(
         check(meldekort.valider()) { "Meldekortet er ikke gyldig" }
 
         val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
-        val alleMeldekortDager = meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId) + inneværendeMeldekortDagerMedLøpenummer
-        val meldekortBeregning = MeldekortBeregning.beregnUtbetalingsDager(
-            meldekortId = meldekortId,
-            meldekortDager = alleMeldekortDager
-                .filter { it.dato >= grunnlag.vurderingsperiode.fra && it.dato <= grunnlag.vurderingsperiode.til }
-                .sortedBy { it.dato },
-            saksbehandler = saksbehandler,
-        )
+        val alleMeldekortDager =
+            meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId) + inneværendeMeldekortDagerMedLøpenummer
+        val meldekortBeregning =
+            MeldekortBeregning.beregnUtbetalingsDager(
+                meldekortId = meldekortId,
+                meldekortDager =
+                alleMeldekortDager
+                    .filter { it.dato >= grunnlag.vurderingsperiode.fra && it.dato <= grunnlag.vurderingsperiode.til }
+                    .sortedBy { it.dato },
+                saksbehandler = saksbehandler,
+            )
 
         LOG.info { "vi skal sende til utbetaling" }
         utbetalingClient.sendTilUtbetaling(grunnlag.sakId, meldekortBeregning)
 
-        val innsendtMeldekort = with(meldekort.godkjennMeldekort(saksbehandler)) {
-            LOG.info { "Nå skal vi lagre meldekort" }
-            meldekortRepo.lagreInnsendtMeldekort(this)
-            this
-        }
+        val innsendtMeldekort =
+            with(meldekort.godkjennMeldekort(saksbehandler)) {
+                LOG.info { "Nå skal vi lagre meldekort" }
+                meldekortRepo.lagreInnsendtMeldekort(this)
+                this
+            }
 
         try {
             LOG.info { "Nå skal vi sende meldekort til dokument" }
@@ -243,23 +271,30 @@ class MeldekortServiceImpl(
     }
 }
 
-fun lagMeldekortPerioder(fom: LocalDate, tom: LocalDate): List<Periode> {
+fun lagMeldekortPerioder(
+    fom: LocalDate,
+    tom: LocalDate,
+): List<Periode> {
     val dager = Periode(fom, tom).tilDager()
     return dager.chunked(14).map {
         Periode(it.first(), it.first().plusDays(13))
     }
 }
 
-fun finnMandag(fra: LocalDate): LocalDate {
-    return fra.minusDays(fra.dayOfWeek.value.toLong() - 1)
-}
+fun finnMandag(fra: LocalDate): LocalDate = fra.minusDays(fra.dayOfWeek.value.toLong() - 1)
 
-fun finnSisteDagMatte(mandag: LocalDate, sisteDag: LocalDate): LocalDate {
+fun finnSisteDagMatte(
+    mandag: LocalDate,
+    sisteDag: LocalDate,
+): LocalDate {
     val erIgjenAvPerioden = 14 - mandag.until(sisteDag, ChronoUnit.DAYS) % 14 - 1
     return sisteDag.plusDays(erIgjenAvPerioden)
 }
 
-fun finnSisteDag(mandag: LocalDate, sisteDag: LocalDate): LocalDate {
+fun finnSisteDag(
+    mandag: LocalDate,
+    sisteDag: LocalDate,
+): LocalDate {
     check(mandag.dayOfWeek == DayOfWeek.MONDAY) { "Må være mandag" }
     val nesteMandag = mandag.plusDays(14)
     return if (nesteMandag.isAfter(sisteDag)) {

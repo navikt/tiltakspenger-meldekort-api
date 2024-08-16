@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.api.repository
 
 import kotliquery.Row
+import kotliquery.Session
 import kotliquery.TransactionalSession
 import kotliquery.queryOf
 import kotliquery.sessionOf
@@ -33,9 +34,9 @@ class GrunnlagTiltakRepo {
 
     fun hentTiltakForGrunnlag(
         grunnlagId: String,
-        txSession: TransactionalSession,
+        session: Session,
     ): List<Tiltak> =
-        txSession.run(
+        session.run(
             queryOf(
                 sqlHentTiltakForGrunnlag,
                 mapOf(
