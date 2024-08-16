@@ -18,7 +18,6 @@ import no.nav.tiltakspenger.meldekort.api.clients.defaultHttpClient
 import no.nav.tiltakspenger.meldekort.api.clients.defaultObjectMapper
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import java.time.LocalDate
-import java.util.*
 
 val securelog = KotlinLogging.logger("tjenestekall")
 
@@ -27,10 +26,11 @@ class UtbetalingClient(
     private val objectMapper: ObjectMapper = defaultObjectMapper(),
     private val getToken: suspend () -> String,
     engine: HttpClientEngine? = null,
-    private val httpClient: HttpClient = defaultHttpClient(
-        objectMapper = objectMapper,
-        engine = engine,
-    ),
+    private val httpClient: HttpClient =
+        defaultHttpClient(
+            objectMapper = objectMapper,
+            engine = engine,
+        ),
 ) : Utbetaling {
     companion object {
         const val navCallIdHeader = "Nav-Call-Id"

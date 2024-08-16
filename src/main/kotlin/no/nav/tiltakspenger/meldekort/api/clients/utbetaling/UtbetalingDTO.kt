@@ -40,22 +40,23 @@ fun mapGrunnlag(
 fun mapUtbetalingMeldekort(
     sakId: String,
     behandling: MeldekortBeregning,
-) =
-    UtbetalingDTO(
-        sakId = sakId,
-        utløsendeMeldekortId = behandling.utløsendeMeldekortId,
-        utbetalingDager = behandling.utbetalingDager.map {
-            UtbetalingDagDTO(
-                dato = it.dag,
-                tiltaktype = it.tiltakType?.name,
-                status = when (it.status) {
-                    UtbetalingStatus.FullUtbetaling -> UtbetalingDagStatusDTO.FullUtbetaling
-                    UtbetalingStatus.DelvisUtbetaling -> UtbetalingDagStatusDTO.DelvisUtbetaling
-                    UtbetalingStatus.IngenUtbetaling -> UtbetalingDagStatusDTO.IngenUtbetaling
-                },
-                meldekortId = it.meldekortId,
-                løpenr = it.løpenr,
-            )
-        },
-        saksbehandler = behandling.saksbehandler,
-    )
+) = UtbetalingDTO(
+    sakId = sakId,
+    utløsendeMeldekortId = behandling.utløsendeMeldekortId,
+    utbetalingDager =
+    behandling.utbetalingDager.map {
+        UtbetalingDagDTO(
+            dato = it.dag,
+            tiltaktype = it.tiltakType?.name,
+            status =
+            when (it.status) {
+                UtbetalingStatus.FullUtbetaling -> UtbetalingDagStatusDTO.FullUtbetaling
+                UtbetalingStatus.DelvisUtbetaling -> UtbetalingDagStatusDTO.DelvisUtbetaling
+                UtbetalingStatus.IngenUtbetaling -> UtbetalingDagStatusDTO.IngenUtbetaling
+            },
+            meldekortId = it.meldekortId,
+            løpenr = it.løpenr,
+        )
+    },
+    saksbehandler = behandling.saksbehandler,
+)
