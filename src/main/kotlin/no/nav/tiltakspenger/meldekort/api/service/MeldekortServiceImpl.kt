@@ -1,6 +1,8 @@
 package no.nav.tiltakspenger.meldekort.api.service
 
 import mu.KotlinLogging
+import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
+import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.hentGrunnlagForDato
@@ -35,6 +37,7 @@ class MeldekortServiceImpl(
     private val grunnlagTiltakRepo: GrunnlagTiltakRepo,
     private val utbetalingClient: UtbetalingClient,
     private val dokumentClient: DokumentClient,
+    private val sessionFactory: SessionFactory,
 ) : MeldekortService {
     override fun genererMeldekort(nyDag: LocalDate) {
         LOG.info { "Generer Meldekort for dag: $nyDag" }
@@ -50,14 +53,23 @@ class MeldekortServiceImpl(
         return meldekortRepo.hentMeldekortMedId(meldekortId)
     }
 
-    private fun opprettMeldekortForGrunnlag(meldekortGrunnlag: MeldekortGrunnlag) {
-        opprettMeldekort(meldekortGrunnlag, meldekortGrunnlag.vurderingsperiode.fra, false)
+    private fun opprettMeldekortForGrunnlag(
+        meldekortGrunnlag: MeldekortGrunnlag,
+        transactionContext: TransactionContext? = null,
+    ) {
+        opprettMeldekort(
+            meldekortGrunnlag = meldekortGrunnlag,
+            genererFraDato = meldekortGrunnlag.vurderingsperiode.fra,
+            nyDag = false,
+            transactionContext = transactionContext,
+        )
     }
 
     private fun opprettMeldekort(
         meldekortGrunnlag: MeldekortGrunnlag,
         genererFraDato: LocalDate,
         nyDag: Boolean,
+        transactionContext: TransactionContext? = null,
     ) {
         val tilDag =
             if (nyDag) {
@@ -70,7 +82,7 @@ class MeldekortServiceImpl(
                 // Skal dette være mindre enn, eller mindre lik ?
                 if (meldekortGrunnlag.vurderingsperiode.fra < LocalDate.now()) {
                     val eksisterendeMeldekortPerioder =
-                        meldekortRepo.hentPerioderForMeldekortForGrunnlag(meldekortGrunnlag.id)
+                        meldekortRepo.hentPerioderForMeldekortForGrunnlag(meldekortGrunnlag.id, transactionContext)
                     val mandag = finnMandag(genererFraDato)
                     val sisteDagIperioden =
                         finnSisteDagMatte(mandag, minOf(tilDag, meldekortGrunnlag.vurderingsperiode.til))
@@ -99,7 +111,7 @@ class MeldekortServiceImpl(
                                         utfallsperioder = meldekortGrunnlag.utfallsperioder,
                                     ),
                                 )
-                            meldekortRepo.opprett(meldekortGrunnlag.id, meldekort)
+                            meldekortRepo.opprett(meldekortGrunnlag.id, meldekort, transactionContext)
                         }
                     }
                 }
@@ -119,8 +131,10 @@ class MeldekortServiceImpl(
             LOG.info { "Grunnlag med id ${meldekortGrunnlag.id} finnes allerede. Returnerer OK." }
             return
         }
-        grunnlagRepo.lagre(meldekortGrunnlag)
-        opprettMeldekortForGrunnlag(meldekortGrunnlag)
+        sessionFactory.withTransactionContext { tx ->
+            grunnlagRepo.lagre(meldekortGrunnlag, tx)
+            opprettMeldekortForGrunnlag(meldekortGrunnlag, tx)
+        }
     }
 
     override fun hentGrunnlagForBehandling(behandlingId: String): MeldekortGrunnlag? = grunnlagRepo.hentForBehandling(behandlingId)
@@ -166,7 +180,9 @@ class MeldekortServiceImpl(
 
         val inneværendeMeldekortDagerMedLøpenummer = meldekort.meldekortDager.map { it.copy(løpenr = meldekort.løpenr) }
         val alleMeldekortDager =
-            meldekortDagRepo.hentInnsendteMeldekortDagerForGrunnlag(grunnlagId).filterNot { it.meldekortId == meldekortId } +
+            meldekortDagRepo
+                .hentInnsendteMeldekortDagerForGrunnlag(grunnlagId)
+                .filterNot { it.meldekortId == meldekortId } +
                 inneværendeMeldekortDagerMedLøpenummer
         val utbetalingsDager: List<UtbetalingDag> =
             MeldekortBeregning
@@ -196,6 +212,7 @@ class MeldekortServiceImpl(
                     UtbetalingStatus.FullUtbetaling ->
                         UtbetalingStatus.FullUtbetaling to
                             satserOgBarnForDato.sats + (satserOgBarnForDato.satsBarn * satserOgBarnForDato.antallBarn)
+
                     UtbetalingStatus.DelvisUtbetaling ->
                         UtbetalingStatus.DelvisUtbetaling to
                             satserOgBarnForDato.satsDelvis + (satserOgBarnForDato.satsBarnDelvis * satserOgBarnForDato.antallBarn)
@@ -211,7 +228,10 @@ class MeldekortServiceImpl(
             antallFullUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.FullUtbetaling },
             antallDelvisUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.DelvisUtbetaling },
             antallIngenUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.IngenUtbetaling },
-            sumDelvis = beløpPerDagPerStatus.filter { it.first == UtbetalingStatus.DelvisUtbetaling }.sumOf { it.second },
+            sumDelvis =
+            beløpPerDagPerStatus
+                .filter { it.first == UtbetalingStatus.DelvisUtbetaling }
+                .sumOf { it.second },
             sumFull = beløpPerDagPerStatus.filter { it.first == UtbetalingStatus.FullUtbetaling }.sumOf { it.second },
             sumTotal = beløpPerDagPerStatus.sumOf { it.second },
         )

@@ -18,10 +18,13 @@ import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
+import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
+import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.api.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.api.auth.AzureTokenProvider
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
+import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
 import no.nav.tiltakspenger.meldekort.api.jobber.GenererMeldekortJobb
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepoImpl
@@ -34,10 +37,11 @@ import no.nav.tiltakspenger.meldekort.api.routes.meldekort
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
 import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
 
+private val log = KotlinLogging.logger {}
+
 fun main() {
     System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
 
-    val log = KotlinLogging.logger {}
     val securelog = KotlinLogging.logger("tjenestekall")
 
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
@@ -53,21 +57,36 @@ fun main() {
 fun Application.applicationModule() {
     val utbetalingTokenProvider = AzureTokenProvider(config = Configuration.oauthConfigUtbetaling())
     val dokumentTokenProvider = AzureTokenProvider(config = Configuration.oauthConfigDokument())
+
+    val sessionCounter =
+        SessionCounter(
+            logger = log,
+        )
+    val dataSource by lazy { DataSource.hikariDataSource }
+    val sessionFactory by lazy {
+        PostgresSessionFactory(
+            dataSource = dataSource,
+            sessionCounter = sessionCounter,
+        )
+    }
     val grunnlagTiltakRepo = GrunnlagTiltakRepo()
     val meldekortDagRepo = MeldekortDagRepo(grunnlagTiltakRepo)
-    val meldekortRepo = MeldekortRepoImpl(meldekortDagRepo)
+    val meldekortRepo by lazy { MeldekortRepoImpl(meldekortDagRepo, sessionFactory) }
     val utfallsperiodeDAO = UtfallsperiodeDAO()
-    val grunnlagRepo = GrunnlagRepoImpl(grunnlagTiltakRepo, utfallsperiodeDAO)
+    val grunnlagRepo by lazy { GrunnlagRepoImpl(grunnlagTiltakRepo, utfallsperiodeDAO, sessionFactory) }
     val utbetalingClient = UtbetalingClient(getToken = utbetalingTokenProvider::getToken)
     val dokumentClient = DokumentClient(getToken = dokumentTokenProvider::getToken)
-    val meldekortService = MeldekortServiceImpl(
-        meldekortRepo = meldekortRepo,
-        meldekortDagRepo = meldekortDagRepo,
-        grunnlagRepo = grunnlagRepo,
-        grunnlagTiltakRepo = grunnlagTiltakRepo,
-        utbetalingClient = utbetalingClient,
-        dokumentClient = dokumentClient,
-    )
+    val meldekortService by lazy {
+        MeldekortServiceImpl(
+            meldekortRepo = meldekortRepo,
+            meldekortDagRepo = meldekortDagRepo,
+            grunnlagRepo = grunnlagRepo,
+            grunnlagTiltakRepo = grunnlagTiltakRepo,
+            utbetalingClient = utbetalingClient,
+            dokumentClient = dokumentClient,
+            sessionFactory = sessionFactory,
+        )
+    }
     val innloggetBrukerProvider = InnloggetBrukerProvider()
 
     installJacksonFeature()
@@ -83,24 +102,23 @@ fun Application.applicationModule() {
         }
     }
 
-    val runCheckFactory = if (Configuration.isNais()) {
-        RunCheckFactory(
-            leaderPodLookup = LeaderPodLookupClient(
-                electorPath = Configuration.electorPath(),
-                logger = KotlinLogging.logger { },
-            ),
-        )
-    } else {
-        RunCheckFactory(
-            leaderPodLookup = object : LeaderPodLookup {
-                override fun amITheLeader(
-                    localHostName: String,
-                ): Either<LeaderPodLookupFeil, Boolean> {
-                    return true.right()
-                }
-            },
-        )
-    }
+    val runCheckFactory =
+        if (Configuration.isNais()) {
+            RunCheckFactory(
+                leaderPodLookup =
+                LeaderPodLookupClient(
+                    electorPath = Configuration.electorPath(),
+                    logger = KotlinLogging.logger { },
+                ),
+            )
+        } else {
+            RunCheckFactory(
+                leaderPodLookup =
+                object : LeaderPodLookup {
+                    override fun amITheLeader(localHostName: String): Either<LeaderPodLookupFeil, Boolean> = true.right()
+                },
+            )
+        }
     GenererMeldekortJobb.startJob(
         runCheckFactory = runCheckFactory,
         meldekortService = meldekortService,

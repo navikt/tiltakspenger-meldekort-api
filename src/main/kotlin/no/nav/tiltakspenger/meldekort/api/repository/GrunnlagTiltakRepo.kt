@@ -50,8 +50,8 @@ class GrunnlagTiltakRepo {
     fun hentFørsteTiltakForGrunnlag(grunnlagId: String): Tiltak? =
         sessionOf(DataSource.hikariDataSource)
             .use {
-                it.transaction {
-                    it.run(
+                it.transaction { tx ->
+                    tx.run(
                         queryOf(
                             sqlHentTiltakForGrunnlag,
                             mapOf(

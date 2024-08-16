@@ -9,12 +9,16 @@ import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 class MeldekortDagRepo(
     private val grunnlagTiltakRepo: GrunnlagTiltakRepo,
 ) {
-    fun lagre(meldekortId: UUID, dto: MeldekortDag, tx: TransactionalSession) {
+    fun lagre(
+        meldekortId: UUID,
+        dto: MeldekortDag,
+        tx: TransactionalSession,
+    ) {
         tx.run(
             queryOf(
                 sqlLagreMeldekortDag,
@@ -29,10 +33,15 @@ class MeldekortDagRepo(
         )
     }
 
-    fun oppdater(meldekortId: UUID, tiltakId: UUID?, dato: LocalDate, status: String) {
+    fun oppdater(
+        meldekortId: UUID,
+        tiltakId: UUID?,
+        dato: LocalDate,
+        status: String,
+    ) {
         sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                it.run(
+            it.transaction { tx ->
+                tx.run(
                     queryOf(
                         sqlOppdaterMeldekortDag,
                         mapOf(
@@ -47,16 +56,18 @@ class MeldekortDagRepo(
         }
     }
 
-    fun hentInnsendteMeldekortDagerForGrunnlag(grunnlagId: UUID): List<MeldekortDag> {
-        return sessionOf(DataSource.hikariDataSource).use {
+    fun hentInnsendteMeldekortDagerForGrunnlag(grunnlagId: UUID): List<MeldekortDag> =
+        sessionOf(DataSource.hikariDataSource).use {
             it.transaction { tx ->
                 hentInnsendteMeldekortDagerForGrunnlag(grunnlagId, tx)
             }
         }
-    }
 
-    fun hentInnsendteMeldekortDagerForGrunnlag(grunnlagId: UUID, txSession: TransactionalSession): List<MeldekortDag> {
-        return txSession.run(
+    fun hentInnsendteMeldekortDagerForGrunnlag(
+        grunnlagId: UUID,
+        txSession: TransactionalSession,
+    ): List<MeldekortDag> =
+        txSession.run(
             queryOf(
                 sqlHentInnsendteMeldekortDagerForGrunnlagId,
                 mapOf(
@@ -66,10 +77,12 @@ class MeldekortDagRepo(
                 row.toMeldekortDag(txSession)
             }.asList,
         )
-    }
 
-    fun hentMeldekortDager(meldekortId: String, txSession: TransactionalSession): List<MeldekortDag> {
-        return txSession.run(
+    fun hentMeldekortDager(
+        meldekortId: String,
+        txSession: TransactionalSession,
+    ): List<MeldekortDag> =
+        txSession.run(
             queryOf(
                 sqlHentMeldekortDagerForMeldekort,
                 mapOf(
@@ -79,20 +92,19 @@ class MeldekortDagRepo(
                 row.toMeldekortDag(txSession)
             }.asList,
         )
-    }
 
-    private fun Row.toMeldekortDag(txSession: TransactionalSession): MeldekortDag {
-        return MeldekortDag(
+    private fun Row.toMeldekortDag(txSession: TransactionalSession): MeldekortDag =
+        MeldekortDag(
             dato = localDate("dato"),
             tiltak = stringOrNull("tiltak_id")?.let { grunnlagTiltakRepo.hentTiltak(it, txSession) },
             status = MeldekortDagStatus.valueOf(string("status")),
             løpenr = int("løpenr"),
             meldekortId = UUID.fromString(string("meldekort_id")),
         )
-    }
 
     @Language("SQL")
-    private val sqlHentMeldekortDagerForMeldekort = """
+    private val sqlHentMeldekortDagerForMeldekort =
+        """
         select d.*, m.løpenr 
           from meldekortdag d
           
@@ -100,10 +112,11 @@ class MeldekortDagRepo(
             on m.id = d.meldekort_id
           
         where d.meldekort_id = :meldekortId
-    """.trimIndent()
+        """.trimIndent()
 
     @Language("SQL")
-    private val sqlHentInnsendteMeldekortDagerForGrunnlagId = """
+    private val sqlHentInnsendteMeldekortDagerForGrunnlagId =
+        """
         select d.*, m.løpenr
         from meldekortdag d
         
@@ -112,10 +125,11 @@ class MeldekortDagRepo(
         
         where m.grunnlag_id = :grunnlagId
           and m.type = 'INNSENDT'
-    """.trimIndent()
+        """.trimIndent()
 
     @Language("SQL")
-    private val sqlLagreMeldekortDag = """
+    private val sqlLagreMeldekortDag =
+        """
         insert into meldekortdag (
             id,
             meldekort_id,
@@ -129,14 +143,15 @@ class MeldekortDagRepo(
             :dato,
             :status
         )
-    """.trimIndent()
+        """.trimIndent()
 
     @Language("SQL")
-    private val sqlOppdaterMeldekortDag = """
+    private val sqlOppdaterMeldekortDag =
+        """
         update meldekortdag set 
             status = :status,
             tiltak_id = :tiltakId
         where meldekort_id = :meldekortId
           and dato = :dato
-    """.trimIndent()
+        """.trimIndent()
 }

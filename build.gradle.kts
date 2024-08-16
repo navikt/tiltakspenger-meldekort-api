@@ -4,7 +4,7 @@ val ktorVersion = "2.3.12"
 val kotestVersion = "5.9.1"
 val tokenSupportVersion = "3.2.0"
 val jacksonVersion = "2.16.1"
-val felleslibVersion = "0.0.190"
+val felleslibVersion = "0.0.193"
 
 plugins {
     application
@@ -29,6 +29,8 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:jobber:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:meldekort:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:tiltak-dtos:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
 
     implementation("ch.qos.logback:logback-classic:1.4.14")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
@@ -67,7 +69,6 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
-
     // DB
     implementation("org.flywaydb:flyway-core:10.4.1")
     implementation("org.flywaydb:flyway-database-postgresql:10.4.1")
@@ -76,6 +77,7 @@ dependencies {
     implementation("com.github.seratch:kotliquery:1.9.0")
 
     // Testing
+    testApi("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
     testImplementation(platform("org.junit:junit-bom:5.10.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:$mockkVersion")

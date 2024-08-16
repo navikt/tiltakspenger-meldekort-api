@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
+import no.nav.tiltakspenger.libs.common.TestSessionFactory
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
@@ -22,7 +23,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class MeldekortServiceImplTest {
-
     private lateinit var meldekortService: MeldekortService
     private lateinit var meldekortRepo: MeldekortRepo
     private lateinit var meldekortDagRepo: MeldekortDagRepo
@@ -30,6 +30,7 @@ class MeldekortServiceImplTest {
     private lateinit var grunnlagTiltakRepo: GrunnlagTiltakRepo
     private lateinit var utbetalingClient: UtbetalingClient
     private lateinit var dokumentClient: DokumentClient
+    private val sessionFactory: TestSessionFactory = TestSessionFactory()
 
     @BeforeEach
     fun setup() {
@@ -47,6 +48,7 @@ class MeldekortServiceImplTest {
                 grunnlagTiltakRepo,
                 utbetalingClient,
                 dokumentClient,
+                sessionFactory,
             )
     }
 
@@ -56,12 +58,13 @@ class MeldekortServiceImplTest {
         val tom = LocalDate.of(2021, 12, 19)
 
         val perioder = lagMeldekortPerioder(fom, tom)
-        perioder shouldBe listOf(
-            Periode(fra = LocalDate.of(2021, 11, 1), til = LocalDate.of(2021, 11, 14)),
-            Periode(fra = LocalDate.of(2021, 11, 15), til = LocalDate.of(2021, 11, 28)),
-            Periode(fra = LocalDate.of(2021, 11, 29), til = LocalDate.of(2021, 12, 12)),
-            Periode(fra = LocalDate.of(2021, 12, 13), til = LocalDate.of(2021, 12, 26)),
-        )
+        perioder shouldBe
+            listOf(
+                Periode(fra = LocalDate.of(2021, 11, 1), til = LocalDate.of(2021, 11, 14)),
+                Periode(fra = LocalDate.of(2021, 11, 15), til = LocalDate.of(2021, 11, 28)),
+                Periode(fra = LocalDate.of(2021, 11, 29), til = LocalDate.of(2021, 12, 12)),
+                Periode(fra = LocalDate.of(2021, 12, 13), til = LocalDate.of(2021, 12, 26)),
+            )
     }
 
     @Test
@@ -70,7 +73,12 @@ class MeldekortServiceImplTest {
         val mandag = finnMandag(LocalDate.of(2021, 11, 1))
         mandag.dayOfWeek shouldBe DayOfWeek.MONDAY
 
-        MeldekortDag.lagIkkeUtfyltPeriode(meldekortId, mandag, mandag.plusDays(13), listOf(Utfallsperiode(mandag, mandag.plusDays(14), UtfallForPeriode.GIR_RETT_TILTAKSPENGER))) shouldBe
+        MeldekortDag.lagIkkeUtfyltPeriode(
+            meldekortId,
+            mandag,
+            mandag.plusDays(13),
+            listOf(Utfallsperiode(mandag, mandag.plusDays(14), UtfallForPeriode.GIR_RETT_TILTAKSPENGER)),
+        ) shouldBe
             listOf(
                 MeldekortDag(mandag, null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(1), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
@@ -79,7 +87,6 @@ class MeldekortServiceImplTest {
                 MeldekortDag(mandag.plusDays(4), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(5), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(6), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-
                 MeldekortDag(mandag.plusDays(7), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(8), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(9), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
@@ -93,11 +100,12 @@ class MeldekortServiceImplTest {
     @Test
     fun `test at dager uten rett til tiltakspenger blir sperret`() {
         val meldekortId = UUID.randomUUID()
-        val utfallsperioder = listOf(
-            Utfallsperiode(LocalDate.of(2021, 10, 1), LocalDate.of(2021, 11, 2), UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
-            Utfallsperiode(LocalDate.of(2021, 11, 3), LocalDate.of(2021, 11, 10), UtfallForPeriode.GIR_RETT_TILTAKSPENGER),
-            Utfallsperiode(LocalDate.of(2021, 11, 11), LocalDate.of(2021, 11, 12), UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
-        )
+        val utfallsperioder =
+            listOf(
+                Utfallsperiode(LocalDate.of(2021, 10, 1), LocalDate.of(2021, 11, 2), UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
+                Utfallsperiode(LocalDate.of(2021, 11, 3), LocalDate.of(2021, 11, 10), UtfallForPeriode.GIR_RETT_TILTAKSPENGER),
+                Utfallsperiode(LocalDate.of(2021, 11, 11), LocalDate.of(2021, 11, 12), UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
+            )
         val mandag = finnMandag(LocalDate.of(2021, 11, 1))
         MeldekortDag.lagIkkeUtfyltPeriode(meldekortId, mandag, mandag.plusDays(13), utfallsperioder) shouldBe
             listOf(
@@ -108,7 +116,6 @@ class MeldekortServiceImplTest {
                 MeldekortDag(mandag.plusDays(4), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(5), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(6), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-
                 MeldekortDag(mandag.plusDays(7), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(8), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
                 MeldekortDag(mandag.plusDays(9), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),

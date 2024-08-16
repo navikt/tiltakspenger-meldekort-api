@@ -4,45 +4,49 @@ import kotliquery.Row
 import kotliquery.Session
 import kotliquery.queryOf
 import kotliquery.sessionOf
+import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
+import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Personopplysninger
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import org.intellij.lang.annotations.Language
-import java.util.*
+import java.util.UUID
 
 class GrunnlagRepoImpl(
     private val tiltakRepo: GrunnlagTiltakRepo,
     private val utfallsperiodeDAO: UtfallsperiodeDAO,
+    private val sessionFactory: PostgresSessionFactory,
 ) : GrunnlagRepo {
-    override fun lagre(dto: MeldekortGrunnlag) {
-        sessionOf(DataSource.hikariDataSource).use {
-            it.transaction { tx ->
-                it
-                    .run(
-                        queryOf(
-                            sqlLagreGrunnlag,
-                            mapOf(
-                                "id" to dto.id.toString(),
-                                "sakId" to dto.sakId,
-                                "behandlingId" to dto.behandlingId,
-                                "vedtakId" to dto.vedtakId,
-                                "status" to dto.status.name,
-                                "fom" to dto.vurderingsperiode.fra,
-                                "tom" to dto.vurderingsperiode.til,
-                                "fornavn" to dto.personopplysninger.fornavn,
-                                "etternavn" to dto.personopplysninger.etternavn,
-                                "ident" to dto.personopplysninger.ident,
-                            ),
-                        ).asUpdate,
-                    ).also {
-                        dto.tiltak.forEach { tiltak ->
-                            tiltakRepo.lagre(dto.id.toString(), tiltak, tx)
-                        }
-                        utfallsperiodeDAO.lagre(dto.id, dto.utfallsperioder, tx)
+    override fun lagre(
+        dto: MeldekortGrunnlag,
+        transactionContext: TransactionContext?,
+    ) {
+        sessionFactory.withTransaction(transactionContext) { tx ->
+            tx
+                .run(
+                    queryOf(
+                        sqlLagreGrunnlag,
+                        mapOf(
+                            "id" to dto.id.toString(),
+                            "sakId" to dto.sakId,
+                            "behandlingId" to dto.behandlingId,
+                            "vedtakId" to dto.vedtakId,
+                            "status" to dto.status.name,
+                            "fom" to dto.vurderingsperiode.fra,
+                            "tom" to dto.vurderingsperiode.til,
+                            "fornavn" to dto.personopplysninger.fornavn,
+                            "etternavn" to dto.personopplysninger.etternavn,
+                            "ident" to dto.personopplysninger.ident,
+                        ),
+                    ).asUpdate,
+                ).also {
+                    dto.tiltak.forEach { tiltak ->
+                        tiltakRepo.lagre(dto.id.toString(), tiltak, tx)
                     }
-            }
+                    utfallsperiodeDAO.lagre(dto.id, dto.utfallsperioder, tx)
+                }
         }
     }
 
@@ -85,15 +89,15 @@ class GrunnlagRepoImpl(
 
     override fun hentGrunnlag(id: UUID): MeldekortGrunnlag? =
         sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                it.run(
+            it.transaction { tx ->
+                tx.run(
                     queryOf(
                         sqlHentGrunnlag,
                         mapOf(
                             "id" to id.toString(),
                         ),
                     ).map { row ->
-                        row.toGrunnlag(it)
+                        row.toGrunnlag(tx)
                     }.asSingle,
                 )
             }
@@ -115,15 +119,15 @@ class GrunnlagRepoImpl(
 
     override fun hentForBehandling(behandlingId: String): MeldekortGrunnlag? =
         sessionOf(DataSource.hikariDataSource).use {
-            it.transaction {
-                it.run(
+            it.transaction { tx ->
+                tx.run(
                     queryOf(
                         sqlHentForBehandling,
                         mapOf(
                             "behandling_id" to behandlingId,
                         ),
                     ).map { row ->
-                        row.toGrunnlag(it)
+                        row.toGrunnlag(tx)
                     }.asSingle,
                 )
             }
