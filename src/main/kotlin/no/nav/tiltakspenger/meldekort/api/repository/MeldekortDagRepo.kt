@@ -25,7 +25,7 @@ class MeldekortDagRepo(
                 mapOf(
                     "id" to UUID.randomUUID().toString(),
                     "meldekortId" to meldekortId.toString(),
-                    "tiltakId" to if (dto.tiltak == null) null else dto.tiltak.id.toString(),
+                    "tiltakId" to dto.tiltak.id.toString(),
                     "dato" to dto.dato,
                     "status" to dto.status.name,
                 ),
@@ -96,7 +96,7 @@ class MeldekortDagRepo(
     private fun Row.toMeldekortDag(txSession: TransactionalSession): MeldekortDag =
         MeldekortDag(
             dato = localDate("dato"),
-            tiltak = stringOrNull("tiltak_id")?.let { grunnlagTiltakRepo.hentTiltak(it, txSession) },
+            tiltak = string("tiltak_id").let { grunnlagTiltakRepo.hentTiltak(it, txSession)!! },
             status = MeldekortDagStatus.valueOf(string("status")),
             løpenr = int("løpenr"),
             meldekortId = UUID.fromString(string("meldekort_id")),

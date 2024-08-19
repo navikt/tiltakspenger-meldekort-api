@@ -73,27 +73,36 @@ class MeldekortServiceImplTest {
         val mandag = finnMandag(LocalDate.of(2021, 11, 1))
         mandag.dayOfWeek shouldBe DayOfWeek.MONDAY
 
+        val tiltak = ObjectMother.tiltak()
         MeldekortDag.lagIkkeUtfyltPeriode(
-            meldekortId,
-            mandag,
-            mandag.plusDays(13),
-            listOf(Utfallsperiode(mandag, mandag.plusDays(14), UtfallForPeriode.GIR_RETT_TILTAKSPENGER)),
+            meldekortId = meldekortId,
+            fom = mandag,
+            tom = mandag.plusDays(13),
+            utfallsperioder =
+            listOf(
+                Utfallsperiode(
+                    mandag,
+                    mandag.plusDays(14),
+                    UtfallForPeriode.GIR_RETT_TILTAKSPENGER,
+                ),
+            ),
+            tiltak = tiltak,
         ) shouldBe
             listOf(
-                MeldekortDag(mandag, null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(1), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(2), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(3), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(4), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(5), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(6), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(7), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(8), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(9), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(10), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(11), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(12), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(13), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag, tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(1), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(2), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(3), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(4), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(5), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(6), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(7), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(8), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(9), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(10), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(11), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(12), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(13), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
             )
     }
 
@@ -102,27 +111,56 @@ class MeldekortServiceImplTest {
         val meldekortId = UUID.randomUUID()
         val utfallsperioder =
             listOf(
-                Utfallsperiode(LocalDate.of(2021, 10, 1), LocalDate.of(2021, 11, 2), UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
-                Utfallsperiode(LocalDate.of(2021, 11, 3), LocalDate.of(2021, 11, 10), UtfallForPeriode.GIR_RETT_TILTAKSPENGER),
-                Utfallsperiode(LocalDate.of(2021, 11, 11), LocalDate.of(2021, 11, 12), UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER),
+                Utfallsperiode(
+                    LocalDate.of(2021, 10, 1),
+                    LocalDate.of(2021, 11, 2),
+                    UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER,
+                ),
+                Utfallsperiode(
+                    LocalDate.of(2021, 11, 3),
+                    LocalDate.of(2021, 11, 10),
+                    UtfallForPeriode.GIR_RETT_TILTAKSPENGER,
+                ),
+                Utfallsperiode(
+                    LocalDate.of(2021, 11, 11),
+                    LocalDate.of(2021, 11, 12),
+                    UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER,
+                ),
             )
         val mandag = finnMandag(LocalDate.of(2021, 11, 1))
-        MeldekortDag.lagIkkeUtfyltPeriode(meldekortId, mandag, mandag.plusDays(13), utfallsperioder) shouldBe
+        val tiltak = ObjectMother.tiltak()
+        MeldekortDag.lagIkkeUtfyltPeriode(
+            meldekortId,
+            mandag,
+            mandag.plusDays(13),
+            utfallsperioder,
+            tiltak,
+        ) shouldBe
             listOf(
-                MeldekortDag(mandag, null, MeldekortDagStatus.SPERRET, meldekortId),
-                MeldekortDag(mandag.plusDays(1), null, MeldekortDagStatus.SPERRET, meldekortId),
-                MeldekortDag(mandag.plusDays(2), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(3), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(4), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(5), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(6), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(7), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(8), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(9), null, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
-                MeldekortDag(mandag.plusDays(10), null, MeldekortDagStatus.SPERRET, meldekortId),
-                MeldekortDag(mandag.plusDays(11), null, MeldekortDagStatus.SPERRET, meldekortId),
-                MeldekortDag(mandag.plusDays(12), null, MeldekortDagStatus.SPERRET, meldekortId), // Utenfor perioden
-                MeldekortDag(mandag.plusDays(13), null, MeldekortDagStatus.SPERRET, meldekortId), // Utenfor perioden
+                MeldekortDag(mandag, tiltak, MeldekortDagStatus.SPERRET, meldekortId),
+                MeldekortDag(mandag.plusDays(1), tiltak, MeldekortDagStatus.SPERRET, meldekortId),
+                MeldekortDag(mandag.plusDays(2), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(3), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(4), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(5), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(6), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(7), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(8), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(9), tiltak, MeldekortDagStatus.IKKE_UTFYLT, meldekortId),
+                MeldekortDag(mandag.plusDays(10), tiltak, MeldekortDagStatus.SPERRET, meldekortId),
+                MeldekortDag(mandag.plusDays(11), tiltak, MeldekortDagStatus.SPERRET, meldekortId),
+                MeldekortDag(
+                    mandag.plusDays(12),
+                    tiltak,
+                    MeldekortDagStatus.SPERRET,
+                    meldekortId,
+                ), // Utenfor perioden
+                MeldekortDag(
+                    mandag.plusDays(13),
+                    tiltak,
+                    MeldekortDagStatus.SPERRET,
+                    meldekortId,
+                ), // Utenfor perioden
             )
     }
 

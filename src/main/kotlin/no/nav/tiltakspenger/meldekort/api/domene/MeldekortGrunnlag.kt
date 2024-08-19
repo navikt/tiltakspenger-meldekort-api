@@ -11,6 +11,7 @@ data class MeldekortGrunnlag(
     val behandlingId: String,
     val status: Status,
     val vurderingsperiode: Periode,
+    // TODO jah: Endre til single
     val tiltak: List<Tiltak>,
     val personopplysninger: Personopplysninger,
     val utfallsperioder: List<Utfallsperiode>,

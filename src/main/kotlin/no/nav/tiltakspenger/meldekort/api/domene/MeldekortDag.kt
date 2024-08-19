@@ -5,29 +5,25 @@ import java.util.UUID
 
 data class MeldekortDag(
     val dato: LocalDate,
-    val tiltak: Tiltak?,
+    val tiltak: Tiltak,
     val status: MeldekortDagStatus,
     val meldekortId: UUID,
     val løpenr: Int = -1,
 ) {
-    init {
-        check(status != MeldekortDagStatus.IKKE_UTFYLT || tiltak == null) {
-            "Må ha tiltak hvis status ikke er IKKE_UTFYLT"
-        }
-    }
-
     companion object {
         fun lagIkkeUtfyltPeriode(
             meldekortId: UUID,
             fom: LocalDate,
             tom: LocalDate,
             utfallsperioder: List<Utfallsperiode>,
-        ): List<MeldekortDag> {
-            return fom.datesUntil(tom.plusDays(1)).toList().map { idag ->
+            tiltak: Tiltak,
+        ): List<MeldekortDag> =
+            fom.datesUntil(tom.plusDays(1)).toList().map { idag ->
                 MeldekortDag(
                     dato = idag,
-                    tiltak = null,
-                    status = utfallsperioder.find { it.fom <= idag && it.tom >= idag }?.let {
+                    tiltak = tiltak,
+                    status =
+                    utfallsperioder.find { it.fom <= idag && it.tom >= idag }?.let {
                         when (it.utfall) {
                             UtfallForPeriode.GIR_RETT_TILTAKSPENGER -> MeldekortDagStatus.IKKE_UTFYLT
                             UtfallForPeriode.GIR_IKKE_RETT_TILTAKSPENGER -> MeldekortDagStatus.SPERRET
@@ -36,11 +32,12 @@ data class MeldekortDag(
                     meldekortId = meldekortId,
                 )
             }
-        }
     }
 }
 
-enum class MeldekortDagStatus(status: String) {
+enum class MeldekortDagStatus(
+    status: String,
+) {
     SPERRET("Ikke rett på tiltakspenger"),
     IKKE_UTFYLT("Ikke utfylt"),
     DELTATT("Deltatt"),
@@ -50,5 +47,7 @@ enum class MeldekortDagStatus(status: String) {
     FRAVÆR_VELFERD("Fravær velferd"),
     LØNN_FOR_TID_I_ARBEID("Lønn for tid i arbeid"),
     ;
-    fun kanSendesInnFraMeldekort(): Boolean = this in listOf(DELTATT, IKKE_DELTATT, FRAVÆR_SYK, FRAVÆR_SYKT_BARN, FRAVÆR_VELFERD, LØNN_FOR_TID_I_ARBEID)
+
+    fun kanSendesInnFraMeldekort(): Boolean =
+        this in listOf(DELTATT, IKKE_DELTATT, FRAVÆR_SYK, FRAVÆR_SYKT_BARN, FRAVÆR_VELFERD, LØNN_FOR_TID_I_ARBEID)
 }
