@@ -107,7 +107,7 @@ fun Route.meldekort(
 
         meldekortService.mottaGrunnlag(mapGrunnlag(dto))
         LOG.info { "Persistert grunnlag for sakId ${dto.sakId}, returnerer 200 OK." }
-        call.respond(message = "OK", status = HttpStatusCode.OK)
+        call.respond(message = true, status = HttpStatusCode.OK)
     }
 
     post("$MELDEKORT_PATH/godkjenn/{meldekortId}") {
