@@ -3,6 +3,7 @@ kafka:
 sqlInstances:
   diskAutoresize: true
   pointInTimeRecovery: true
+  tier: db-custom-1-3840
 cluster: prod-gcp
 tenant: nav.no
 azure:

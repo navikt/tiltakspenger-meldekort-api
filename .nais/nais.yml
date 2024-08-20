@@ -36,6 +36,7 @@ spec:
     sqlInstances:
       - name: tiltakspenger-meldekort
         type: POSTGRES_15
+        tier: {{ sqlInstances.tier }}
         diskAutoresize: {{ sqlInstances.diskAutoresize }}
         pointInTimeRecovery: {{ sqlInstances.pointInTimeRecovery }}
         databases:

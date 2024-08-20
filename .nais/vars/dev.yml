@@ -1,6 +1,7 @@
 sqlInstances:
   diskAutoresize: false
   pointInTimeRecovery: false
+  tier: db-f1-micro
 cluster: dev-gcp
 tenant: trygdeetaten.no
 azure:
