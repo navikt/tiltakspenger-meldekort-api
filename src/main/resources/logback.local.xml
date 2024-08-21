@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
-                <!--<value>(\b\d{11}\b)</value>-->
-                <value>(?&lt;!\d)\d{11}(?!\d)</value>
-                <path>message/*</path>
-                <defaultMask>***********</defaultMask>
-            </jsonGeneratorDecorator>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <logger name="no.nav.helse.rapids_rivers" level="INFO"/>
+    <logger name="ch.qos.logback" level="WARN"/>
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="org.flywaydb" level="WARN"/>
+    <logger name="no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider" level="INFO"/>
+    <logger name="com.zaxxer" level="WARN"/>
+    <logger name="io.ktor.auth.jwt" level="TRACE"/>
+
+    <logger name="no.nav.helse.rapids_rivers" level="INFO"/>
+    <logger name="io.ktor.auth.jwt" level="TRACE"/>
 
     <logger name="tjenestekall" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT_JSON"/>
+        <appender-ref ref="STDOUT"/>
     </logger>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT_JSON"/>
+        <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

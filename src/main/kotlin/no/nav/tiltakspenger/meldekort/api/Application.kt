@@ -5,6 +5,7 @@ import arrow.core.right
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -12,6 +13,8 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.routing
 import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
@@ -26,21 +29,22 @@ import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
 import no.nav.tiltakspenger.meldekort.api.db.DataSource
 import no.nav.tiltakspenger.meldekort.api.db.flywayMigrate
+import no.nav.tiltakspenger.meldekort.api.exceptions.IkkeImplementertException
 import no.nav.tiltakspenger.meldekort.api.jobber.GenererMeldekortJobb
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagRepoImpl
 import no.nav.tiltakspenger.meldekort.api.repository.GrunnlagTiltakRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortDagRepo
 import no.nav.tiltakspenger.meldekort.api.repository.MeldekortRepoImpl
 import no.nav.tiltakspenger.meldekort.api.repository.UtfallsperiodeDAO
+import no.nav.tiltakspenger.meldekort.api.routes.exceptionhandling.ExceptionHandler
 import no.nav.tiltakspenger.meldekort.api.routes.healthRoutes
 import no.nav.tiltakspenger.meldekort.api.routes.meldekort
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortServiceImpl
 import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
 
-private val log = KotlinLogging.logger {}
-
 fun main() {
     System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
+    val log = KotlinLogging.logger {}
 
     val securelog = KotlinLogging.logger("tjenestekall")
 
@@ -55,6 +59,7 @@ fun main() {
 }
 
 fun Application.applicationModule() {
+    val log = KotlinLogging.logger {}
     val utbetalingTokenProvider = AzureTokenProvider(config = Configuration.oauthConfigUtbetaling())
     val dokumentTokenProvider = AzureTokenProvider(config = Configuration.oauthConfigDokument())
 
@@ -88,6 +93,8 @@ fun Application.applicationModule() {
         )
     }
     val innloggetBrukerProvider = InnloggetBrukerProvider()
+
+    setupKtorExceptionHandling()
 
     installJacksonFeature()
     flywayMigrate()
@@ -131,6 +138,18 @@ fun Application.installJacksonFeature() {
             configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             registerModule(JavaTimeModule())
             registerModule(KotlinModule.Builder().build())
+        }
+    }
+}
+
+private fun Application.setupKtorExceptionHandling() {
+    install(StatusPages) {
+        exception<Throwable> { call, cause ->
+            if (cause is IkkeImplementertException) {
+                call.respondText(text = "Støtter ikke utfall: $cause", status = HttpStatusCode.NotImplemented)
+            } else {
+                ExceptionHandler.handle(call, cause)
+            }
         }
     }
 }

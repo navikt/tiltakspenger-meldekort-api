@@ -17,7 +17,7 @@ class InnloggetBrukerProvider(
         allAvailableRoles.single { configRole -> configRole.objectId == uuidFraClaim }
 
     private fun List<UUID>.mapFromUUIDToRoleName(): List<Rolle> =
-        this.map { LOG.info { "Mapper rolle $it" }; it }
+        this.map { LOG.debug { "Mapper rolle $it" }; it }
             .map { finnRolleMedUUID(it).name }
 
     private fun hentSaksbehandler(principal: TokenValidationContextPrincipal): Saksbehandler {
