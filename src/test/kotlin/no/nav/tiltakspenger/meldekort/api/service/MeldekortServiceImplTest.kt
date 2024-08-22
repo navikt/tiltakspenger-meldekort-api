@@ -188,7 +188,7 @@ class MeldekortServiceImplTest {
     fun `test at dag med gyldig status skal kunne sendes inn med oppdaterMeldekortDag`() {
         val meldekortId = UUID.randomUUID()
         val dag = LocalDate.of(2021, 11, 1)
-        val status = MeldekortDagStatus.DELTATT
+        val status = MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET
         shouldNotThrow<IllegalStateException> {
             meldekortService.oppdaterMeldekortDag(meldekortId, dag, status)
         }

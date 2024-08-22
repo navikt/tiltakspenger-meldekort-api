@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.api.domene
 
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagStatusMotFrontendDTO
 import java.time.LocalDate
 import java.util.UUID
 
@@ -38,16 +39,33 @@ data class MeldekortDag(
 enum class MeldekortDagStatus(
     status: String,
 ) {
-    SPERRET("Ikke rett på tiltakspenger"),
+    SPERRET("sperret"),
     IKKE_UTFYLT("Ikke utfylt"),
-    DELTATT("Deltatt"),
-    IKKE_DELTATT("Ikke deltatt"),
-    FRAVÆR_SYK("Fravær syk"),
-    FRAVÆR_SYKT_BARN("Fravær sykt barn"),
-    FRAVÆR_VELFERD("Fravær velferd"),
-    LØNN_FOR_TID_I_ARBEID("Lønn for tid i arbeid"),
+    DELTATT_UTEN_LØNN_I_TILTAKET("Deltatt uten lønn i tiltaket"),
+    DELTATT_MED_LØNN_I_TILTAKET("Deltatt med lønn i tiltaket"),
+    IKKE_DELTATT("Ikke deltatt i tiltaket"),
+    FRAVÆR_SYK("Fravær - Syk"),
+    FRAVÆR_SYKT_BARN("Fravær - Sykt barn"),
+    FRAVÆR_VELFERD_GODKJENT_AV_NAV("Fravær - Velferd. Godkjent av NAV"),
+    FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV("Fravær - Velferd. Ikke godkjent av NA"),
     ;
 
     fun kanSendesInnFraMeldekort(): Boolean =
-        this in listOf(DELTATT, IKKE_DELTATT, FRAVÆR_SYK, FRAVÆR_SYKT_BARN, FRAVÆR_VELFERD, LØNN_FOR_TID_I_ARBEID)
+        this in listOf(DELTATT_UTEN_LØNN_I_TILTAKET, DELTATT_MED_LØNN_I_TILTAKET, IKKE_DELTATT, FRAVÆR_SYK, FRAVÆR_SYKT_BARN, FRAVÆR_VELFERD_GODKJENT_AV_NAV, FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV)
+
+    companion object {
+        fun fromDTO(status: MeldekortDagStatusMotFrontendDTO): MeldekortDagStatus {
+            return when (status) {
+                MeldekortDagStatusMotFrontendDTO.SPERRET -> SPERRET
+                MeldekortDagStatusMotFrontendDTO.IKKE_UTFYLT -> IKKE_UTFYLT
+                MeldekortDagStatusMotFrontendDTO.DELTATT_UTEN_LØNN_I_TILTAKET -> DELTATT_UTEN_LØNN_I_TILTAKET
+                MeldekortDagStatusMotFrontendDTO.DELTATT_MED_LØNN_I_TILTAKET -> DELTATT_MED_LØNN_I_TILTAKET
+                MeldekortDagStatusMotFrontendDTO.IKKE_DELTATT -> IKKE_DELTATT
+                MeldekortDagStatusMotFrontendDTO.FRAVÆR_SYK -> FRAVÆR_SYK
+                MeldekortDagStatusMotFrontendDTO.FRAVÆR_SYKT_BARN -> FRAVÆR_SYKT_BARN
+                MeldekortDagStatusMotFrontendDTO.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> FRAVÆR_VELFERD_GODKJENT_AV_NAV
+                MeldekortDagStatusMotFrontendDTO.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
+            }
+        }
+    }
 }

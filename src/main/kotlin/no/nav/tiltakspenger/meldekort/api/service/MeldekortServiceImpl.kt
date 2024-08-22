@@ -220,12 +220,13 @@ class MeldekortServiceImpl(
                 }
             }
 
+        // TODO Kew: Denne må vi gå opp på nytt siden det er flere statuser som er lagt til!
         return MeldekortBeregningDTO(
-            antallDeltatt = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.DELTATT },
+            antallDeltatt = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET || it.status == MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET },
             antallIkkeDeltatt = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.IKKE_DELTATT },
             antallSykDager = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_SYK },
             antallSykBarnDager = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_SYKT_BARN },
-            antallVelferd = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_VELFERD },
+            antallVelferd = meldekort.meldekortDager.count { it.status == MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV || it.status == MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV },
             antallFullUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.FullUtbetaling },
             antallDelvisUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.DelvisUtbetaling },
             antallIngenUtbetaling = utbetalingsDager.count { it.status == UtbetalingStatus.IngenUtbetaling },

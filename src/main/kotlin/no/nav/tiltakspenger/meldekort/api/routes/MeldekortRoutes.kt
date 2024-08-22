@@ -21,6 +21,7 @@ import no.nav.tiltakspenger.meldekort.api.domene.UtfallForPeriode
 import no.nav.tiltakspenger.meldekort.api.domene.Utfallsperiode
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagStatusMotFrontendDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortUtenDagerDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
@@ -42,6 +43,7 @@ fun Route.meldekort(
         val meldekortId =
             call.parameters["meldekortId"]
                 ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
+        // TODO Kew: Ser at det ikke er noe DTO her, den bare later som.. Det bør legges til et meldekortDTO!
         val dto = meldekortService.hentMeldekort(UUID.fromString(meldekortId))
         checkNotNull(dto) { "Meldekort med ident:$meldekortId eksisterer ikke i databasen" }
         call.respond(status = HttpStatusCode.OK, message = dto)
@@ -66,10 +68,12 @@ fun Route.meldekort(
         // kan alle saksbehandlere oppdatere?
         // hvis denne skal kunne kalles fra en bruker må vi validere at meldekortet er denne brukeren sitt eller en egen rute
         // validere at man ikke setter en tiltakId som ikke tilhører meldekortet?
+
+        val status = MeldekortDagStatusMotFrontendDTO.valueOf(dto.status)
         meldekortService.oppdaterMeldekortDag(
             meldekortId = UUID.fromString(dto.meldekortId),
             dato = dto.dato,
-            status = MeldekortDagStatus.valueOf(dto.status),
+            status = MeldekortDagStatus.fromDTO(status),
         )
 
         call.respond(message = "{}", status = HttpStatusCode.OK)
