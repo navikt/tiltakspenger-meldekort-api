@@ -5,7 +5,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.api.clients.dokument.DokumentClient
 import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingClient
-import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.hentGrunnlagForDato
+import no.nav.tiltakspenger.meldekort.api.clients.utbetaling.UtbetalingGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortBeregning
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDag
@@ -199,15 +199,15 @@ class MeldekortServiceImpl(
                     it.meldekortId == meldekortId
                 }
 
-        val periodiserteSatserOgBarn =
-            utbetalingClient.hentPeriodisertUtbetalingsgrunnlag(
-                behandlingId = grunnlag.behandlingId,
-                fom = utbetalingsDager.minByOrNull { it.dag }!!.dag,
-                tom = utbetalingsDager.maxByOrNull { it.dag }!!.dag,
-            )
         val beløpPerDagPerStatus: List<Pair<UtbetalingStatus, Int>> =
             utbetalingsDager.map {
-                val satserOgBarnForDato = periodiserteSatserOgBarn.hentGrunnlagForDato(it.dag)
+                val satserOgBarnForDato = UtbetalingGrunnlag(
+                    sats = 285,
+                    satsDelvis = 214,
+                    satsBarn = 53,
+                    satsBarnDelvis = 40,
+                    antallBarn = 0,
+                )
                 when (it.status) {
                     UtbetalingStatus.IngenUtbetaling -> UtbetalingStatus.IngenUtbetaling to 0
                     UtbetalingStatus.FullUtbetaling ->
