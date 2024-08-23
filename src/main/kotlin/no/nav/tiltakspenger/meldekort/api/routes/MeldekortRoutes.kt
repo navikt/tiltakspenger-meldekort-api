@@ -12,17 +12,17 @@ import no.nav.tiltakspenger.libs.meldekort.MeldekortGrunnlagDTO
 import no.nav.tiltakspenger.libs.meldekort.StatusDTO
 import no.nav.tiltakspenger.libs.meldekort.UtfallForPeriodeDTO
 import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
-import no.nav.tiltakspenger.meldekort.api.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.api.domene.MeldekortGrunnlag
 import no.nav.tiltakspenger.meldekort.api.domene.Personopplysninger
 import no.nav.tiltakspenger.meldekort.api.domene.Status
 import no.nav.tiltakspenger.meldekort.api.domene.Tiltak
 import no.nav.tiltakspenger.meldekort.api.domene.UtfallForPeriode
 import no.nav.tiltakspenger.meldekort.api.domene.Utfallsperiode
+import no.nav.tiltakspenger.meldekort.api.domene.toDomain
 import no.nav.tiltakspenger.meldekort.api.felles.Periode
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagDTO
-import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortDagStatusMotFrontendDTO
 import no.nav.tiltakspenger.meldekort.api.routes.dto.MeldekortUtenDagerDTO
+import no.nav.tiltakspenger.meldekort.api.routes.dto.toDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
 import no.nav.tiltakspenger.meldekort.api.tilgang.Saksbehandler
@@ -44,9 +44,9 @@ fun Route.meldekort(
             call.parameters["meldekortId"]
                 ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
         // TODO Kew: Ser at det ikke er noe DTO her, den bare later som.. Det bør legges til et meldekortDTO!
-        val dto = meldekortService.hentMeldekort(UUID.fromString(meldekortId))
-        checkNotNull(dto) { "Meldekort med ident:$meldekortId eksisterer ikke i databasen" }
-        call.respond(status = HttpStatusCode.OK, message = dto)
+        val meldekort = meldekortService.hentMeldekort(UUID.fromString(meldekortId))
+        checkNotNull(meldekort) { "Meldekort med ident:$meldekortId eksisterer ikke i databasen" }
+        call.respond(status = HttpStatusCode.OK, message = meldekort.toDTO())
     }
 
     get("$MELDEKORT_PATH/hentBeregning/{meldekortId}") {
@@ -69,11 +69,10 @@ fun Route.meldekort(
         // hvis denne skal kunne kalles fra en bruker må vi validere at meldekortet er denne brukeren sitt eller en egen rute
         // validere at man ikke setter en tiltakId som ikke tilhører meldekortet?
 
-        val status = MeldekortDagStatusMotFrontendDTO.valueOf(dto.status)
         meldekortService.oppdaterMeldekortDag(
             meldekortId = UUID.fromString(dto.meldekortId),
             dato = dto.dato,
-            status = MeldekortDagStatus.fromDTO(status),
+            status = dto.status.toDomain(),
         )
 
         call.respond(message = "{}", status = HttpStatusCode.OK)
