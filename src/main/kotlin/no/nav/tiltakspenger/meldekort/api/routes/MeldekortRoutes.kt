@@ -26,6 +26,7 @@ import no.nav.tiltakspenger.meldekort.api.routes.dto.toDTO
 import no.nav.tiltakspenger.meldekort.api.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.api.tilgang.InnloggetBrukerProvider
 import no.nav.tiltakspenger.meldekort.api.tilgang.Saksbehandler
+import java.lang.Exception
 import java.time.LocalDate
 import java.util.UUID
 
@@ -43,8 +44,12 @@ fun Route.meldekort(
         val meldekortId =
             call.parameters["meldekortId"]
                 ?: return@get call.respond(message = "meldekortId mangler", status = HttpStatusCode.NotFound)
-        // TODO Kew: Ser at det ikke er noe DTO her, den bare later som.. Det bør legges til et meldekortDTO!
-        val meldekort = meldekortService.hentMeldekort(UUID.fromString(meldekortId))
+        val meldekortUUID = try {
+            UUID.fromString(meldekortId)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Kunne ikke parse meldekortID ($meldekortId) til UUID")
+        }
+        val meldekort = meldekortService.hentMeldekort(meldekortUUID)
         checkNotNull(meldekort) { "Meldekort med ident:$meldekortId eksisterer ikke i databasen" }
         call.respond(status = HttpStatusCode.OK, message = meldekort.toDTO())
     }
