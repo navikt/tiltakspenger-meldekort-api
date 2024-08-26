@@ -1,11 +1,13 @@
 package no.nav.tiltakspenger.meldekort.api.routes.dto
 
 data class MeldekortBeregningDTO(
-    val antallDeltatt: Int,
+    val antallDeltattUtenLønn: Int,
+    val antallDeltattMedLønn: Int,
     val antallIkkeDeltatt: Int,
     val antallSykDager: Int,
     val antallSykBarnDager: Int,
-    val antallVelferd: Int,
+    val antallVelferdGodkjentAvNav: Int,
+    val antallVelferdIkkeGodkjentAvNav: Int,
     val antallFullUtbetaling: Int,
     val antallDelvisUtbetaling: Int,
     val antallIngenUtbetaling: Int,
