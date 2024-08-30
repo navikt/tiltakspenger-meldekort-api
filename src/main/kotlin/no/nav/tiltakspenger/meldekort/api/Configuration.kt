@@ -65,7 +65,7 @@ object Configuration {
             "DB_PORT" to "5431",
             "DB_USERNAME" to "postgres",
             "logback.configurationFile" to "logback.local.xml",
-            "AZURE_APP_CLIENT_ID" to "tiltakspenger-vedtak",
+            "AZURE_APP_CLIENT_ID" to "tiltakspenger-meldekort-api",
             "AZURE_APP_CLIENT_SECRET" to "secret",
             "AZURE_APP_WELL_KNOWN_URL" to "http://host.docker.internal:6969/azure/.well-known/openid-configuration",
             "AZURE_OPENID_CONFIG_ISSUER" to "http://host.docker.internal:6969/azure",
