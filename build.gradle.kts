@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 val jvmVersion = JvmTarget.JVM_21
-val main = "no.nav.tiltakspenger.ApplicationKt"
+val mainClass = "no.nav.tiltakspenger.ApplicationKt"
 
 val ktorVersion = "3.0.1"
 val kotestVersion = "5.9.1"
@@ -12,10 +12,18 @@ val poaoTilgangVersjon = "2024.10.04_12.38-e183cd9d187f"
 val iverksettVersjon = "1.0_20241029145217_29f9f5d"
 val kotlinxCoroutinesVersion = "1.9.0"
 
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
+}
+
 plugins {
     application
     kotlin("jvm") version "2.0.21"
     id("com.diffplug.spotless") version "6.25.0"
+    id("com.github.ben-manes.versions") version "0.51.0"
 }
 
 repositories {
@@ -25,9 +33,7 @@ repositories {
     }
 }
 
-application {
-    mainClass.set(main)
-}
+application.mainClass.set(mainClass)
 
 dependencies {
     // Align versions of all Kotlin components
@@ -73,6 +79,12 @@ spotless {
 }
 
 tasks {
+    dependencyUpdates.configure {
+        rejectVersionIf {
+            isNonStable(candidate.version)
+        }
+    }
+
     compileKotlin {
         compilerOptions {
             jvmTarget.set(jvmVersion)
@@ -100,7 +112,7 @@ tasks {
         dependsOn(configurations.runtimeClasspath)
 
         manifest {
-            attributes["Main-Class"] = main
+            attributes["Main-Class"] = mainClass
             attributes["Class-Path"] = configurations.runtimeClasspath
                 .get()
                 .joinToString(separator = " ") { file -> file.name }
