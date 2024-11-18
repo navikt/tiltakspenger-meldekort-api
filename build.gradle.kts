@@ -1,4 +1,6 @@
-val javaVersion = JavaVersion.VERSION_21
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+val jvmVersion = JvmTarget.JVM_21
 
 val ktorVersion = "3.0.1"
 val kotestVersion = "5.9.1"
@@ -17,10 +19,13 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven("https://packages.confluent.io/maven/")
     maven {
         url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
+}
+
+application {
+    mainClass.set("no.nav.tiltakspenger.ApplicationKt")
 }
 
 dependencies {
@@ -31,7 +36,6 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:8.0")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
     implementation("org.jetbrains:annotations:24.1.0")
-    // implementation("com.github.navikt:rapids-and-rivers:2022112407251669271100.df879df951cf")
     implementation("com.natpryce:konfig:1.6.10.0")
 
     testImplementation(platform("org.junit:junit-bom:5.11.0"))
@@ -39,7 +43,6 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.mockk:mockk-dsl-jvm:$mockkVersion")
     testImplementation("org.skyscreamer:jsonassert:1.5.3")
-
 
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
@@ -57,24 +60,6 @@ dependencies {
     implementation("io.ktor:ktor-utils:$ktorVersion")
 }
 
-configurations.all {
-    // exclude JUnit 4
-    exclude(group = "junit", module = "junit")
-}
-
-application {
-    mainClass.set("no.nav.tiltakspenger.ApplicationKt")
-}
-
-java {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-}
-
-
-apply(plugin = "org.jetbrains.kotlin.jvm")
-apply(plugin = "com.diffplug.spotless")
-
 spotless {
     kotlin {
         ktlint()
@@ -88,23 +73,28 @@ spotless {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = javaVersion.toString()
+        compilerOptions {
+            jvmTarget.set(jvmVersion)
+        }
     }
+
     compileTestKotlin {
-        kotlinOptions.jvmTarget = javaVersion.toString()
-        kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+        compilerOptions {
+            jvmTarget.set(jvmVersion)
+            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+
+        }
     }
+
     test {
         // JUnit 5 support
         useJUnitPlatform()
         // https://phauer.com/2018/best-practices-unit-testing-kotlin/
         systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
-
-        if (javaVersion.isCompatibleWith(JavaVersion.VERSION_21)) {
-            // https://github.com/mockito/mockito/issues/3037#issuecomment-1588199599
-            jvmArgs("-XX:+EnableDynamicAgentLoading")
-        }
+        // https://github.com/mockito/mockito/issues/3037#issuecomment-1588199599
+        jvmArgs("-XX:+EnableDynamicAgentLoading")
     }
+
     jar {
         dependsOn(configurations.runtimeClasspath)
 
@@ -115,62 +105,34 @@ tasks {
                 .joinToString(separator = " ") { file -> file.name }
         }
     }
-}
-configurations.all {
-    // exclude JUnit 4
-    exclude(group = "junit", module = "junit")
-}
 
+    register<Copy>("gitHooks") {
+        from(file(".scripts/pre-commit"))
+        into(file(".git/hooks"))
+    }
 
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = javaVersion.toString()
+    build {
+        dependsOn("gitHooks")
     }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = javaVersion.toString()
-        kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    }
-    test {
-        // JUnit 5 support
-        useJUnitPlatform()
-        // https://phauer.com/2018/best-practices-unit-testing-kotlin/
-        systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
-    }
-    /*
-    analyzeClassesDependencies {
-        warnUsedUndeclared = true
-        warnUnusedDeclared = true
-    }
-    analyzeTestClassesDependencies {
-        warnUsedUndeclared = true
-        warnUnusedDeclared = true
-    }
-     */
-}
-tasks.register<Copy>("gitHooks") {
-    from(file(".scripts/pre-commit"))
-    into(file(".git/hooks"))
-}
-tasks.named("build") {
-    dependsOn("gitHooks")
-}
-tasks.register("checkFlywayMigrationNames") {
-    doLast {
-        val migrationDir = project.file("app/src/main/resources/db/migration")
-        val invalidFiles = migrationDir.walk()
-            .filter { it.isFile && it.extension == "sql" }
-            .filterNot { it.name.matches(Regex("V[0-9]+__[\\w]+\\.sql")) }
-            .map { it.name }
-            .toList()
 
-        if (invalidFiles.isNotEmpty()) {
-            throw GradleException("Invalid migration filenames:\n${invalidFiles.joinToString("\n")}")
-        } else {
-            println("All migration filenames are valid.")
+    register("checkFlywayMigrationNames") {
+        doLast {
+            val migrationDir = project.file("app/src/main/resources/db/migration")
+            val invalidFiles = migrationDir.walk()
+                .filter { it.isFile && it.extension == "sql" }
+                .filterNot { it.name.matches(Regex("V[0-9]+__[\\w]+\\.sql")) }
+                .map { it.name }
+                .toList()
+
+            if (invalidFiles.isNotEmpty()) {
+                throw GradleException("Invalid migration filenames:\n${invalidFiles.joinToString("\n")}")
+            } else {
+                println("All migration filenames are valid.")
+            }
         }
     }
-}
 
-tasks.named("check") {
-    dependsOn("checkFlywayMigrationNames")
+    check {
+        dependsOn("checkFlywayMigrationNames")
+    }
 }
