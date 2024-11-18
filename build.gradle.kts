@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 val jvmVersion = JvmTarget.JVM_21
+val main = "no.nav.tiltakspenger.ApplicationKt"
 
 val ktorVersion = "3.0.1"
 val kotestVersion = "5.9.1"
@@ -25,7 +26,7 @@ repositories {
 }
 
 application {
-    mainClass.set("no.nav.tiltakspenger.ApplicationKt")
+    mainClass.set(main)
 }
 
 dependencies {
@@ -99,7 +100,7 @@ tasks {
         dependsOn(configurations.runtimeClasspath)
 
         manifest {
-            attributes["Main-Class"] = "no.nav.tiltakspenger.vedtak.AppKt"
+            attributes["Main-Class"] = main
             attributes["Class-Path"] = configurations.runtimeClasspath
                 .get()
                 .joinToString(separator = " ") { file -> file.name }
