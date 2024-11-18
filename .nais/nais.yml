@@ -1,0 +1,50 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: tiltakspenger-meldekort-api
+  namespace: tpts
+  labels:
+    team: tpts
+spec:
+  image: {{ image }}
+  port: 8080
+  replicas:
+    min: {{ replicas }}
+    max: {{ replicas }}
+  ingresses:
+    - {{ ingress.url }}
+  liveness:
+    path: /isalive
+  readiness:
+    path: /isready
+  prometheus:
+    enabled: true
+    path: /metrics
+  secureLogs:
+    enabled: true
+  tokenx:
+    enabled: true
+  gcp:
+    sqlInstances:
+      - name: tiltakspenger-meldekort-api
+        type: POSTGRES_16
+        tier: {{ sqlInstances.tier }}
+        diskAutoresize: {{ sqlInstances.diskAutoresize }}
+        pointInTimeRecovery: {{ sqlInstances.pointInTimeRecovery }}
+        flags:
+          - name: cloudsql.logical_decoding
+            value: "on"
+        databases:
+          - name: meldekort
+            envVarPrefix: DB
+  accessPolicy:
+    outbound:
+      rules:
+        - application: tiltakspenger-saksbehandling-api
+    inbound:
+      rules:
+        - application: tiltakspenger-meldekort
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java

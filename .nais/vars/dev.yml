@@ -1,0 +1,8 @@
+sqlInstances:
+  diskAutoresize: true
+  pointInTimeRecovery: false
+  tier: db-f1-micro
+ingress:
+  url: https://tiltakspenger-meldekort-api.intern.dev.nav.no
+cluster: dev-gcp
+replicas: 1
