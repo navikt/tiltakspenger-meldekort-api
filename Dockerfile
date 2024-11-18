@@ -6,7 +6,7 @@ ENV LANG='nb_NO.UTF-8'
 
 WORKDIR /app
 
-COPY build/install/app/lib/*.jar .
+COPY build/install/tiltakspenger-meldekort-api/lib/*.jar .
 
 USER nobody
 
