@@ -10,4 +10,4 @@ COPY build/install/tiltakspenger-meldekort-api/lib/*.jar .
 
 USER nobody
 
-CMD ["app.jar"]
+CMD ["tiltakspenger-meldekort-api.jar"]
