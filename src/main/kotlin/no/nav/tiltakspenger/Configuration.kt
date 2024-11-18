@@ -11,7 +11,7 @@ object Configuration {
     private val defaultProperties = ConfigurationMap(
         mapOf(
             "application.httpPort" to 8080.toString(),
-            )
+        ),
     )
 
     private fun config() =
@@ -28,5 +28,4 @@ object Configuration {
         }
 
     fun httpPort() = config()[Key("application.httpPort", intType)]
-
 }

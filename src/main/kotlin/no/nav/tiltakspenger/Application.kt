@@ -24,7 +24,7 @@ fun main() {
         port = httpPort(),
         module = {
             meldekortApi(
-                //applicationContext = applicationContext,
+                // applicationContext = applicationContext,
             )
         },
     ).start(wait = true)
