@@ -41,9 +41,12 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation("ch.qos.logback:logback-classic:1.5.12")
     implementation("net.logstash.logback:logstash-logback-encoder:8.0")
-    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
     implementation("org.jetbrains:annotations:26.0.1")
     implementation("com.natpryce:konfig:1.6.10.0")
+    implementation ("io.github.oshai:kotlin-logging-jvm:7.0.0")
+
+    implementation("com.github.navikt.tiltakspenger-libs:auth-core:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:auth-ktor:$felleslibVersion")
 
     testImplementation(platform("org.junit:junit-bom:5.11.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
