@@ -7,12 +7,12 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 
 object Configuration {
-
-    private val defaultProperties = ConfigurationMap(
-        mapOf(
-            "application.httpPort" to 8080.toString(),
-        ),
-    )
+    private val defaultProperties =
+        ConfigurationMap(
+            mapOf(
+                "application.httpPort" to 8080.toString(),
+            ),
+        )
 
     private fun config() =
         when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {

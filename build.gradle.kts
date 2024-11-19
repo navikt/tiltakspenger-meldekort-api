@@ -43,10 +43,12 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:8.0")
     implementation("org.jetbrains:annotations:26.0.1")
     implementation("com.natpryce:konfig:1.6.10.0")
-    implementation ("io.github.oshai:kotlin-logging-jvm:7.0.0")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
 
     implementation("com.github.navikt.tiltakspenger-libs:auth-core:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:auth-ktor:$felleslibVersion")
+
+    implementation("no.nav.security:token-validation-ktor-v2:5.0.11")
 
     testImplementation(platform("org.junit:junit-bom:5.11.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -98,7 +100,6 @@ tasks {
         compilerOptions {
             jvmTarget.set(jvmVersion)
             freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
-
         }
     }
 
@@ -116,9 +117,10 @@ tasks {
 
         manifest {
             attributes["Main-Class"] = mainClass
-            attributes["Class-Path"] = configurations.runtimeClasspath
-                .get()
-                .joinToString(separator = " ") { file -> file.name }
+            attributes["Class-Path"] =
+                configurations.runtimeClasspath
+                    .get()
+                    .joinToString(separator = " ") { file -> file.name }
         }
     }
 
@@ -134,11 +136,13 @@ tasks {
     register("checkFlywayMigrationNames") {
         doLast {
             val migrationDir = project.file("app/src/main/resources/db/migration")
-            val invalidFiles = migrationDir.walk()
-                .filter { it.isFile && it.extension == "sql" }
-                .filterNot { it.name.matches(Regex("V[0-9]+__[\\w]+\\.sql")) }
-                .map { it.name }
-                .toList()
+            val invalidFiles =
+                migrationDir
+                    .walk()
+                    .filter { it.isFile && it.extension == "sql" }
+                    .filterNot { it.name.matches(Regex("V[0-9]+__[\\w]+\\.sql")) }
+                    .map { it.name }
+                    .toList()
 
             if (invalidFiles.isNotEmpty()) {
                 throw GradleException("Invalid migration filenames:\n${invalidFiles.joinToString("\n")}")

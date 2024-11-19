@@ -23,9 +23,7 @@ fun main() {
         factory = Netty,
         port = httpPort(),
         module = {
-            meldekortApi(
-                // applicationContext = applicationContext,
-            )
+            meldekortApi()
         },
     ).start(wait = true)
 }
