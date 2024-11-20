@@ -3,14 +3,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val jvmVersion = JvmTarget.JVM_21
 val mainClass = "no.nav.tiltakspenger.ApplicationKt"
 
-val ktorVersion = "3.0.1"
-val kotestVersion = "5.9.1"
+val ktorVersion = "2.3.12"
 val mockkVersion = "1.13.13"
-val testContainersVersion = "1.20.3"
 val felleslibVersion = "0.0.282"
-val poaoTilgangVersjon = "2024.10.04_12.38-e183cd9d187f"
-val iverksettVersjon = "1.0_20241029145217_29f9f5d"
-val kotlinxCoroutinesVersion = "1.9.0"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }

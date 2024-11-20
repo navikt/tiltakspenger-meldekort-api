@@ -1,18 +1,21 @@
 package no.nav.tiltakspenger.routes
 
 import io.ktor.server.application.Application
-import io.ktor.server.auth.authentication
+import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.routing
-import no.nav.tiltakspenger.auth.initAuthentication
+import no.nav.security.token.support.v2.asIssuerProps
+import no.nav.tiltakspenger.auth.getSecurityConfig
+import no.nav.tiltakspenger.auth.installAuthentication
 import no.nav.tiltakspenger.routes.meldekort.meldekortRoutes
 
 internal fun Application.meldekortApi() {
-    initAuthentication()
+    installAuthentication()
+
+    val issuers = getSecurityConfig().asIssuerProps().keys
 
     routing {
         healthRoutes()
-
-        authentication {
+        authenticate(*issuers.toTypedArray()) {
             meldekortRoutes()
         }
     }
