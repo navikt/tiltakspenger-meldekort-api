@@ -1,5 +1,6 @@
 name: Auto Merge dependabot
-on: pull_request_target
+# TODO: enable this after writing some tests to ensure auto-merge doesn't break the app :D
+#on: pull_request_target
 
 jobs:
   build:

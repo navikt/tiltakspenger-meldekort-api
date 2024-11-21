@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val jvmVersion = JvmTarget.JVM_21
 val mainClass = "no.nav.tiltakspenger.ApplicationKt"
 
-val ktorVersion = "3.0.1"
+val ktorVersion = "2.3.12"
 val mockkVersion = "1.13.13"
 val felleslibVersion = "0.0.282"
 
