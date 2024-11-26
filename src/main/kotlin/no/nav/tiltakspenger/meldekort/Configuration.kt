@@ -18,8 +18,15 @@ object Configuration {
     private val defaultProperties =
         ConfigurationMap(
             mapOf(
-                "application.httpPort" to 8080.toString(),
+                "application.httpPort" to 8083.toString(),
             ),
+        )
+
+    private val localProperties =
+        ConfigurationMap(
+            mapOf(
+                "DB_JDBC_URL" to "jdbc:postgresql://host.docker.internal:5435/meldekort?user=postgres&password=test",
+            )
         )
 
 
@@ -40,7 +47,7 @@ object Configuration {
                 systemProperties() overriding defaultProperties
 
             else -> {
-                systemProperties() overriding defaultProperties
+                systemProperties() overriding localProperties overriding defaultProperties
             }
         }
 

@@ -40,8 +40,11 @@ dependencies {
     implementation("com.natpryce:konfig:1.6.10.0")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
 
+    // Felles libs
     implementation("com.github.navikt.tiltakspenger-libs:auth-core:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:auth-ktor:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
 
     implementation("no.nav.security:token-validation-ktor-v2:5.0.11")
 

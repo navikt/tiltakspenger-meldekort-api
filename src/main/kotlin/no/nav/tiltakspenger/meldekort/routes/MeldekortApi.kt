@@ -19,7 +19,7 @@ internal fun Application.meldekortApi(
     routing {
         healthRoutes()
         authenticate(*issuers.toTypedArray()) {
-            meldekortRoutes()
+            meldekortRoutes(meldekortService = applicationContext.meldekortService)
         }
     }
 }
