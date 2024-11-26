@@ -13,4 +13,14 @@ interface MeldekortRepo {
         meldekortId: String,
         transactionContext: TransactionContext? = null,
     ): Meldekort?
+
+    fun hentSisteMeldekort(
+        fnr: String,
+        transactionContext: TransactionContext? = null,
+    ): Meldekort?
+
+    fun hentAlleMeldekort(
+        fnr: String,
+        transactionContext: TransactionContext? = null,
+    ): List<Meldekort>
 }

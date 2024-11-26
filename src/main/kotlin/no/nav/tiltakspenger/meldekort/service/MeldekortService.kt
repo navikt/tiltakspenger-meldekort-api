@@ -7,4 +7,8 @@ interface MeldekortService {
     fun lagreMeldekort(meldekort: Meldekort)
 
     fun hentMeldekort(id: String): Meldekort?
+
+    fun hentSisteMeldekort(fnr: String): Meldekort?
+
+    fun hentAlleMeldekort(fnr: String): List<Meldekort>
 }

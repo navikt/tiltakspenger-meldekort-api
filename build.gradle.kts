@@ -45,6 +45,7 @@ dependencies {
     // Felles libs
     implementation("com.github.navikt.tiltakspenger-libs:auth-core:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:auth-ktor:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:json:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
 

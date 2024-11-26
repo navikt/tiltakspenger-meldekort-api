@@ -13,4 +13,12 @@ class MeldekortServiceImpl(
     override fun hentMeldekort(id: String): Meldekort? {
         return meldekortRepo.hentMeldekort(id)
     }
+
+    override fun hentSisteMeldekort(fnr: String): Meldekort? {
+        return meldekortRepo.hentSisteMeldekort(fnr)
+    }
+
+    override fun hentAlleMeldekort(fnr: String): List<Meldekort> {
+        return meldekortRepo.hentAlleMeldekort(fnr)
+    }
 }

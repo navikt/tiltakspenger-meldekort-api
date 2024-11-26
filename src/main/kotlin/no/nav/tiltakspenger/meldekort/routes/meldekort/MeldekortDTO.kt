@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -10,12 +11,12 @@ data class MeldekortDTO(
     val sakId: String,
     val rammevedtakId: String,
     val fnr: String,
-    val forrigeMeldekortId: String,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
-    val meldekortDager: String,
+    val meldekortDager: List<MeldekortDag>,
     val status: String,
-    val iverksattTidspunkt: LocalDateTime,
+    val forrigeMeldekortId: String?,
+    val iverksattTidspunkt: LocalDateTime?,
 )
 
 fun Meldekort.toDTO(): MeldekortDTO {
