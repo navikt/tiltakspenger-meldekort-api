@@ -1,10 +1,18 @@
-package no.nav.tiltakspenger
+package no.nav.tiltakspenger.meldekort
 
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
 import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
+import com.natpryce.konfig.stringType
+
+
+enum class Profile {
+    LOCAL,
+    DEV,
+    PROD,
+}
 
 object Configuration {
     private val defaultProperties =
@@ -13,6 +21,15 @@ object Configuration {
                 "application.httpPort" to 8080.toString(),
             ),
         )
+
+
+    fun applicationProfile() =
+        when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
+            "dev-gcp" -> Profile.DEV
+            "prod-gcp" -> Profile.PROD
+            else -> Profile.LOCAL
+        }
+
 
     private fun config() =
         when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
@@ -28,4 +45,8 @@ object Configuration {
         }
 
     fun httpPort() = config()[Key("application.httpPort", intType)]
+
+    fun database() =
+        config()[Key("DB_JDBC_URL", stringType)]
+
 }

@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 val jvmVersion = JvmTarget.JVM_21
-val mainClass = "no.nav.tiltakspenger.ApplicationKt"
+val mainClass = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "2.3.12"
 val mockkVersion = "1.13.13"
@@ -44,6 +44,12 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:auth-ktor:$felleslibVersion")
 
     implementation("no.nav.security:token-validation-ktor-v2:5.0.11")
+
+    // DB
+    implementation("org.flywaydb:flyway-database-postgresql:11.0.0")
+    implementation("com.zaxxer:HikariCP:6.2.1")
+    implementation("org.postgresql:postgresql:42.7.4")
+    implementation("com.github.seratch:kotliquery:1.9.0")
 
     testImplementation(platform("org.junit:junit-bom:5.11.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")

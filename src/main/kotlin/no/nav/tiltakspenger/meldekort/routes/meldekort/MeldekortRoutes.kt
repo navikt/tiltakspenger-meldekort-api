@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.routes.meldekort
+package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import io.ktor.server.application.call
 import io.ktor.server.response.respondText

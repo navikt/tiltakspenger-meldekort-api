@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.auth
+package no.nav.tiltakspenger.meldekort.auth
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
