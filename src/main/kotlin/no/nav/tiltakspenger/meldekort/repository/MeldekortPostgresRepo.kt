@@ -46,7 +46,8 @@ class MeldekortPostgresRepo(
                         "forrige_meldekort_id" to meldekort.forrigeMeldekortId,
                         "fra_og_med" to meldekort.fraOgMed,
                         "til_og_med" to meldekort.tilOgMed,
-                        "meldekortdager" to "meldekort.meldekortDager", // TODO Kew: Lag om til Json
+                        // TODO Kew: Lag om til Json
+                        "meldekortdager" to "meldekort.meldekortDager",
                         "status" to meldekort.status,
                         "iverksatt_tidspunkt" to meldekort.iverksattTidspunkt,
                     ),
@@ -89,7 +90,7 @@ class MeldekortPostgresRepo(
                 tilOgMed = row.localDate("til_og_med"),
                 meldekortDager = row.string("meldekortdager"),
                 status = row.string("status"),
-                iverksattTidspunkt = row.localDateTime("iverksatt_tidspunkt")
+                iverksattTidspunkt = row.localDateTime("iverksatt_tidspunkt"),
             )
         }
     }

@@ -8,11 +8,7 @@ import no.nav.security.token.support.v2.asIssuerProps
 import no.nav.security.token.support.v2.tokenValidationSupport
 
 fun getSecurityConfig(): ApplicationConfig {
-    val isNaisEnv = System.getenv("NAIS_CLUSTER_NAME") != null
-
-    val configFile = if (isNaisEnv) "security.conf" else "security.local.conf"
-
-    return ApplicationConfig(configFile)
+    return ApplicationConfig("security.conf")
 }
 
 fun Application.installAuthentication() {

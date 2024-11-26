@@ -4,8 +4,8 @@ import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 
 class MeldekortServiceImpl(
-    val meldekortRepo: MeldekortRepo
-):MeldekortService {
+    val meldekortRepo: MeldekortRepo,
+) : MeldekortService {
     override fun lagreMeldekort(meldekort: Meldekort) {
         meldekortRepo.lagreMeldekort(meldekort = meldekort)
     }

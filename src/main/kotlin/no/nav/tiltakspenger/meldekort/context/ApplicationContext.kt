@@ -29,5 +29,4 @@ open class ApplicationContext() {
     val meldekortService: MeldekortService by lazy {
         MeldekortServiceImpl(meldekortRepo = meldekortRepo)
     }
-
 }

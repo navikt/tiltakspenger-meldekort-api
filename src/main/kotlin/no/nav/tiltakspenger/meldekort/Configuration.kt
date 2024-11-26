@@ -7,7 +7,6 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 
-
 enum class Profile {
     LOCAL,
     DEV,
@@ -18,17 +17,17 @@ object Configuration {
     private val defaultProperties =
         ConfigurationMap(
             mapOf(
-                "application.httpPort" to 8083.toString(),
+                "application.httpPort" to 8080.toString(),
             ),
         )
 
     private val localProperties =
         ConfigurationMap(
             mapOf(
+                "application.httpPort" to 8083.toString(),
                 "DB_JDBC_URL" to "jdbc:postgresql://host.docker.internal:5435/meldekort?user=postgres&password=test",
-            )
+            ),
         )
-
 
     fun applicationProfile() =
         when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
@@ -37,16 +36,15 @@ object Configuration {
             else -> Profile.LOCAL
         }
 
-
     private fun config() =
-        when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
-            "dev-gcp" ->
+        when (applicationProfile()) {
+            Profile.DEV ->
                 systemProperties() overriding defaultProperties
 
-            "prod-gcp" ->
+            Profile.PROD ->
                 systemProperties() overriding defaultProperties
 
-            else -> {
+            Profile.LOCAL -> {
                 systemProperties() overriding localProperties overriding defaultProperties
             }
         }
@@ -55,5 +53,4 @@ object Configuration {
 
     fun database() =
         config()[Key("DB_JDBC_URL", stringType)]
-
 }

@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 val jvmVersion = JvmTarget.JVM_21
-val mainClass = "no.nav.tiltakspenger.meldekort.ApplicationKt"
+val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "2.3.12"
 val mockkVersion = "1.13.13"
@@ -28,7 +28,9 @@ repositories {
     }
 }
 
-application.mainClass.set(mainClass)
+application {
+    mainClass.set(mainClassFile)
+}
 
 dependencies {
     // Align versions of all Kotlin components
@@ -120,7 +122,7 @@ tasks {
         dependsOn(configurations.runtimeClasspath)
 
         manifest {
-            attributes["Main-Class"] = mainClass
+            attributes["Main-Class"] = mainClassFile
             attributes["Class-Path"] =
                 configurations.runtimeClasspath
                     .get()

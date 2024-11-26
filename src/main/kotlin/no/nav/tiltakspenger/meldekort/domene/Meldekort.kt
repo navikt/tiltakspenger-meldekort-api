@@ -4,7 +4,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class Meldekort(
-    val id: String, // TODO Kew: Lag en type for MeldekortId
+    // TODO Kew: Lag en type for MeldekortId
+    val id: String,
     val sakId: String,
     val rammevedtakId: String,
     val fnr: String,

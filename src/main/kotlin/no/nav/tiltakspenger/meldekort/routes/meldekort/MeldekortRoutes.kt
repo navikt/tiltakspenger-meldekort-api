@@ -8,7 +8,7 @@ import io.ktor.server.routing.post
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
 internal fun Route.meldekortRoutes(
-    meldekortService: MeldekortService
+    meldekortService: MeldekortService,
 ) {
     post("/meldekort") {
         meldekortService.hentMeldekort("123")
