@@ -22,7 +22,7 @@ internal fun start(
 ) {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
         log.error { "Uncaught exception logget i securelog" }
-        sikkerlogg.error(e) { e.message }
+        sikkerlogg.error { e.message }
     }
 
     log.info { "starting server" }
