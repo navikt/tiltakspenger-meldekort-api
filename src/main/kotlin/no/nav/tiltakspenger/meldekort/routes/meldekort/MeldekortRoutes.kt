@@ -8,9 +8,9 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.meldekort.auth.getFnr
 import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
@@ -38,8 +38,7 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/siste") {
-        // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
-        val fnr = call.request.queryParameters["fnr"]?.let { fnr -> Fnr.fromString(fnr) }
+        val fnr = call.getFnr()
 
         if (fnr == null) {
             call.respond(HttpStatusCode.BadRequest)
@@ -56,8 +55,7 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/alle") {
-        // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
-        val fnr = call.request.queryParameters["fnr"]?.let { fnr -> Fnr.fromString(fnr) }
+        val fnr = call.getFnr()
 
         if (fnr == null) {
             call.respond(HttpStatusCode.BadRequest)
@@ -72,8 +70,7 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/generer") {
-        // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
-        val fnr = call.request.queryParameters["fnr"]?.let { fnr -> Fnr.fromString(fnr) }
+        val fnr = call.getFnr()
 
         if (fnr == null) {
             call.respond(HttpStatusCode.BadRequest)
