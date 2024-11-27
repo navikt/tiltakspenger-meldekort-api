@@ -43,7 +43,7 @@ object Configuration {
                 "application.profile" to Profile.LOCAL.toString(),
                 "application.httpPort" to 8083.toString(),
                 "logback.configurationFile" to "logback.local.xml",
-                "DB_JDBC_URL" to "jdbc:postgresql://localhost:5435/meldekort?user=postgres&password=test",
+                "DB_JDBC_URL" to "jdbc:postgresql://host.docker.internal:5435/meldekort?user=postgres&password=test",
             ),
         )
 
