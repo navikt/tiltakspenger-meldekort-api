@@ -66,7 +66,7 @@ internal fun Route.meldekortRoutes(
         call.respond(alleMeldekort)
     }
 
-    get("/meldekort/dummy") {
+    get("/meldekort/generer") {
         // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
         val fnr = call.request.queryParameters["fnr"]?.let { fnr -> Fnr.fromString(fnr) }
 
@@ -76,6 +76,8 @@ internal fun Route.meldekortRoutes(
         }
 
         val meldekort = genererDummyMeldekort(fnr)
+
+        meldekortService.lagreMeldekort(meldekort)
 
         call.respond(meldekort)
     }
