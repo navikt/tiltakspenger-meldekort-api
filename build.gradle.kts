@@ -5,7 +5,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "2.3.12"
 val mockkVersion = "1.13.13"
-val felleslibVersion = "0.0.282"
+val felleslibVersion = "0.0.286"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
@@ -33,6 +33,9 @@ application {
 }
 
 dependencies {
+    // <3
+    implementation("io.arrow-kt:arrow-core:1.2.4")
+
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(kotlin("stdlib"))
@@ -48,6 +51,7 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:json:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
 
     implementation("no.nav.security:token-validation-ktor-v2:5.0.11")
 

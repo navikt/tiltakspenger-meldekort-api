@@ -1,5 +1,7 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 
@@ -10,17 +12,17 @@ interface MeldekortRepo {
     )
 
     fun hentMeldekort(
-        meldekortId: String,
+        meldekortId: MeldekortId,
         transactionContext: TransactionContext? = null,
     ): Meldekort?
 
     fun hentSisteMeldekort(
-        fnr: String,
+        fnr: Fnr,
         transactionContext: TransactionContext? = null,
     ): Meldekort?
 
     fun hentAlleMeldekort(
-        fnr: String,
+        fnr: Fnr,
         transactionContext: TransactionContext? = null,
     ): List<Meldekort>
 }

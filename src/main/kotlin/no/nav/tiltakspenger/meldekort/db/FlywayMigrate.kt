@@ -25,6 +25,9 @@ private fun gcpFlyway(dataSource: javax.sql.DataSource) =
         .loggers("slf4j")
         .encoding("UTF-8")
         .dataSource(dataSource)
+        // TODO kew: Disse må bort når vi går i prod / er fornøyde med basen v1
+        .cleanDisabled(false)
+        .cleanOnValidationError(true)
         .load()
 
 fun flywayMigrate(dataSource: javax.sql.DataSource) {

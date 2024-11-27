@@ -2,6 +2,10 @@ package no.nav.tiltakspenger.meldekort.repository
 
 import kotliquery.Row
 import kotliquery.queryOf
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeId
+import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
@@ -19,35 +23,32 @@ class MeldekortPostgresRepo(
                         insert into meldekort (
                             id,
                             sak_id,
-                            rammevedtak_id,
                             fnr,
-                            forrige_meldekort_id,
                             fra_og_med,
                             til_og_med,
+                            meldeperiode_id,
                             meldekortdager,
                             status,
                             iverksatt_tidspunkt
                         ) values (
                           :id,
                           :sak_id,
-                          :rammevedtak_id,
                           :fnr,
-                          :forrige_meldekort_id,
                           :fra_og_med,
                           :til_og_med,
+                          :meldeperiode_id,
                           to_jsonb(:meldekortdager::jsonb),
                           :status,
                           :iverksatt_tidspunkt
                         )
                     """.trimIndent(),
                     mapOf(
-                        "id" to meldekort.id,
-                        "sak_id" to meldekort.sakId,
-                        "rammevedtak_id" to meldekort.rammevedtakId,
-                        "fnr" to meldekort.fnr,
-                        "forrige_meldekort_id" to meldekort.forrigeMeldekortId,
+                        "id" to meldekort.id.toString(),
+                        "sak_id" to meldekort.sakId.toString(),
+                        "fnr" to meldekort.fnr.verdi,
                         "fra_og_med" to meldekort.fraOgMed,
                         "til_og_med" to meldekort.tilOgMed,
+                        "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
                         "meldekortdager" to serialize(meldekort.meldekortDager),
                         "status" to meldekort.status,
                         "iverksatt_tidspunkt" to meldekort.iverksattTidspunkt,
@@ -57,7 +58,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentMeldekort(meldekortId: String, transactionContext: TransactionContext?): Meldekort? {
+    override fun hentMeldekort(meldekortId: MeldekortId, transactionContext: TransactionContext?): Meldekort? {
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
                 queryOf(
@@ -67,7 +68,7 @@ class MeldekortPostgresRepo(
                         from meldekort
                         where id = :id
                     """.trimIndent(),
-                    mapOf("id" to meldekortId),
+                    mapOf("id" to meldekortId.toString()),
                 ).map { row ->
                     fromRow(row)
                 }.asSingle,
@@ -75,16 +76,16 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentSisteMeldekort(fnr: String, transactionContext: TransactionContext?): Meldekort? {
+    override fun hentSisteMeldekort(fnr: Fnr, transactionContext: TransactionContext?): Meldekort? {
         return this.hentMeldekortForBruker(fnr, 1, transactionContext).firstOrNull()
     }
 
-    override fun hentAlleMeldekort(fnr: String, transactionContext: TransactionContext?): List<Meldekort> {
+    override fun hentAlleMeldekort(fnr: Fnr, transactionContext: TransactionContext?): List<Meldekort> {
         return this.hentMeldekortForBruker(fnr, null, transactionContext)
     }
 
     private fun hentMeldekortForBruker(
-        fnr: String,
+        fnr: Fnr,
         limit: Int?,
         transactionContext: TransactionContext?,
     ): List<Meldekort> {
@@ -100,7 +101,7 @@ class MeldekortPostgresRepo(
             tx.run(
                 queryOf(
                     query.trimIndent(),
-                    mapOf("fnr" to fnr),
+                    mapOf("fnr" to fnr.verdi),
                 ).map { row -> fromRow(row) }.asList,
             )
         }
@@ -111,15 +112,14 @@ class MeldekortPostgresRepo(
             row: Row,
         ): Meldekort {
             return Meldekort(
-                id = row.string("id"),
-                sakId = row.string("sak_id"),
-                rammevedtakId = row.string("rammevedtak_id"),
-                fnr = row.string("fnr"),
+                id = MeldekortId.Companion.fromString(row.string("id")),
+                sakId = SakId.fromString(row.string("sak_id")),
+                fnr = Fnr.fromString(row.string("fnr")),
                 fraOgMed = row.localDate("fra_og_med"),
                 tilOgMed = row.localDate("til_og_med"),
+                meldeperiodeId = MeldeperiodeId(row.string("meldeperiode_id")),
                 meldekortDager = deserializeList(row.string("meldekortdager")),
                 status = row.string("status"),
-                forrigeMeldekortId = row.stringOrNull("forrige_meldekort_id"),
                 iverksattTidspunkt = row.localDateTimeOrNull("iverksatt_tidspunkt"),
             )
         }

@@ -1,34 +1,30 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class MeldekortDTO(
-    // TODO Kew: Lag en type for MeldekortId
     val id: String,
     val sakId: String,
-    val rammevedtakId: String,
     val fnr: String,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
-    val meldekortDager: List<MeldekortDag>,
+    val meldeperiodeId: String,
+    val meldekortDager: List<MeldekortDagDTO>,
     val status: String,
-    val forrigeMeldekortId: String?,
     val iverksattTidspunkt: LocalDateTime?,
 )
 
 fun Meldekort.toDTO(): MeldekortDTO {
     return MeldekortDTO(
-        id = this.id,
-        sakId = this.sakId,
-        rammevedtakId = this.rammevedtakId,
-        fnr = this.fnr,
-        forrigeMeldekortId = this.forrigeMeldekortId,
+        id = this.id.toString(),
+        sakId = this.sakId.toString(),
+        fnr = this.fnr.verdi,
         fraOgMed = this.fraOgMed,
         tilOgMed = this.tilOgMed,
-        meldekortDager = this.meldekortDager,
+        meldeperiodeId = this.meldeperiodeId.verdi,
+        meldekortDager = this.meldekortDager.toDTO(),
         status = this.status,
         iverksattTidspunkt = this.iverksattTidspunkt,
     )

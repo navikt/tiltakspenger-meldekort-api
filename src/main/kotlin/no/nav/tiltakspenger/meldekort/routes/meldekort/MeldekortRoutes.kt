@@ -6,6 +6,8 @@ import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
@@ -15,7 +17,8 @@ internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
 ) {
     get("/meldekort/{meldekortId}") {
-        val meldekortId = call.parameters["meldekortId"]
+        // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
+        val meldekortId = call.parameters["meldekortId"]?.let { id -> MeldekortId.Companion.fromString(id) }
 
         if (meldekortId == null) {
             call.respond(HttpStatusCode.BadRequest)
@@ -32,7 +35,8 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/siste") {
-        val fnr = call.request.queryParameters["fnr"]
+        // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
+        val fnr = call.request.queryParameters["fnr"]?.let { fnr -> Fnr.fromString(fnr) }
 
         if (fnr == null) {
             call.respond(HttpStatusCode.BadRequest)
@@ -49,7 +53,8 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/alle") {
-        val fnr = call.request.queryParameters["fnr"]
+        // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
+        val fnr = call.request.queryParameters["fnr"]?.let { fnr -> Fnr.fromString(fnr) }
 
         if (fnr == null) {
             call.respond(HttpStatusCode.BadRequest)
@@ -62,7 +67,8 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/dummy") {
-        val fnr = call.request.queryParameters["fnr"]
+        // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
+        val fnr = call.request.queryParameters["fnr"]?.let { fnr -> Fnr.fromString(fnr) }
 
         if (fnr == null) {
             call.respond(HttpStatusCode.BadRequest)
