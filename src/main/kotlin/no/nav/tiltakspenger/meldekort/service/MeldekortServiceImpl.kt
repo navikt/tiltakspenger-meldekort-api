@@ -4,12 +4,17 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
+import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
 
 class MeldekortServiceImpl(
     val meldekortRepo: MeldekortRepo,
 ) : MeldekortService {
     override fun lagreMeldekort(meldekort: Meldekort) {
-        meldekortRepo.lagreMeldekort(meldekort = meldekort)
+        meldekortRepo.lagreMeldekort(meldekort)
+    }
+
+    override fun oppdaterMeldekort(meldekort: MeldekortFraUtfyllingDTO) {
+        meldekortRepo.oppdaterMeldekort(meldekort)
     }
 
     override fun hentMeldekort(meldekortId: MeldekortId): Meldekort? {

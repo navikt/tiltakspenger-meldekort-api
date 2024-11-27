@@ -3,11 +3,14 @@ package no.nav.tiltakspenger.meldekort.routes.meldekort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
+import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
@@ -31,7 +34,7 @@ internal fun Route.meldekortRoutes(
             return@get
         }
 
-        call.respond(meldekort)
+        call.respond(meldekort.tilUtfyllingDTO())
     }
 
     get("/meldekort/siste") {
@@ -49,7 +52,7 @@ internal fun Route.meldekortRoutes(
             return@get
         }
 
-        call.respond(meldekort)
+        call.respond(meldekort.tilUtfyllingDTO())
     }
 
     get("/meldekort/alle") {
@@ -61,7 +64,9 @@ internal fun Route.meldekortRoutes(
             return@get
         }
 
-        val alleMeldekort = meldekortService.hentAlleMeldekort(fnr)
+        val alleMeldekort = meldekortService.hentAlleMeldekort(fnr).map {
+            it.tilUtfyllingDTO()
+        }
 
         call.respond(alleMeldekort)
     }
@@ -80,5 +85,23 @@ internal fun Route.meldekortRoutes(
         meldekortService.lagreMeldekort(meldekort)
 
         call.respond(meldekort)
+    }
+
+    post("/meldekort/send-inn") {
+        val body = try {
+            deserialize<MeldekortFraUtfyllingDTO>(call.receiveText())
+        } catch (e: Exception) {
+            logger.error { "Error parsing body: $e" }
+            null
+        }
+
+        if (body == null) {
+            call.respond(HttpStatusCode.BadRequest)
+            return@post
+        }
+
+        meldekortService.oppdaterMeldekort(body)
+
+        call.respond(HttpStatusCode.OK)
     }
 }

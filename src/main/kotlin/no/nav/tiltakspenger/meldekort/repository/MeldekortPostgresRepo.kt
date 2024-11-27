@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -11,6 +12,9 @@ import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
+
+val logger = KotlinLogging.logger {}
 
 class MeldekortPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
@@ -52,6 +56,29 @@ class MeldekortPostgresRepo(
                         "meldekortdager" to serialize(meldekort.meldekortDager),
                         "status" to meldekort.status,
                         "iverksatt_tidspunkt" to meldekort.iverksattTidspunkt,
+                    ),
+                ).asUpdate,
+            )
+        }
+    }
+
+    override fun oppdaterMeldekort(
+        meldekort: MeldekortFraUtfyllingDTO,
+        transactionContext: TransactionContext?,
+    ) {
+        sessionFactory.withTransaction(transactionContext) { tx ->
+            tx.run(
+                queryOf(
+                    """
+                    update meldekort set 
+                        status = :status,
+                        meldekortdager = to_jsonb(:meldekortdager::jsonb)
+                    where id = :id
+                    """.trimIndent(),
+                    mapOf(
+                        "id" to meldekort.id,
+                        "status" to "Innsendt",
+                        "meldekortdager" to serialize(meldekort.meldekortDager),
                     ),
                 ).asUpdate,
             )
