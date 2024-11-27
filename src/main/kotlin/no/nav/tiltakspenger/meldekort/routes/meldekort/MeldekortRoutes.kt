@@ -6,6 +6,7 @@ import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
 val logger = KotlinLogging.logger {}
@@ -58,5 +59,18 @@ internal fun Route.meldekortRoutes(
         val alleMeldekort = meldekortService.hentAlleMeldekort(fnr)
 
         call.respond(alleMeldekort)
+    }
+
+    get("/meldekort/dummy") {
+        val fnr = call.request.queryParameters["fnr"]
+
+        if (fnr == null) {
+            call.respond(HttpStatusCode.BadRequest)
+            return@get
+        }
+
+        val meldekort = genererDummyMeldekort(fnr)
+
+        call.respond(meldekort)
     }
 }

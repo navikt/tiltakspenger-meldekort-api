@@ -19,16 +19,23 @@ data class Meldekort(
 )
 
 fun genererDummyMeldekort(fnr: String): Meldekort {
-    val now = LocalDate.now()
+    val forrigeMandag = LocalDate.now().let {
+        val diffTilMandag = 1 - it.dayOfWeek.value
+        it.plusDays(diffTilMandag.toLong())
+    }
+
+    val meldekortDager = List<MeldekortDag>(14) { index ->
+        MeldekortDag(dag = forrigeMandag.plusDays(index.toLong()), status = "IKKE_REGISTRERT")
+    }
 
     return Meldekort(
         id = UUID.randomUUID().toString(),
         sakId = "asdf",
         rammevedtakId = "asdf",
         fnr = fnr,
-        fraOgMed = now,
-        tilOgMed = now.plusWeeks(2),
-        meldekortDager = listOf(),
-        status = "asdf",
+        fraOgMed = forrigeMandag,
+        tilOgMed = forrigeMandag.plusDays(13),
+        status = "TilUtfylling",
+        meldekortDager = meldekortDager,
     )
 }
