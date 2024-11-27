@@ -5,7 +5,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "2.3.12"
 val mockkVersion = "1.13.13"
-val felleslibVersion = "0.0.282"
+val felleslibVersion = "0.0.286"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
