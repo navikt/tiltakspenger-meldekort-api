@@ -1,4 +1,4 @@
-name: Build, push and deploy to dev (manual)
+name: Build, push and deploy to dev
 
 on:
   workflow_dispatch:
