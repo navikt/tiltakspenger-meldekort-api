@@ -53,7 +53,7 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
 
-    implementation("no.nav.security:token-validation-ktor-v2:5.0.11")
+    implementation("no.nav.security:token-validation-ktor-v2:5.0.13")
 
     // DB
     implementation("org.flywaydb:flyway-database-postgresql:11.0.0")
