@@ -10,8 +10,6 @@ import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekortApi
 
 fun main() {
-    System.setProperty("logback.configurationFile", "logback.local.xml")
-
     val log = KotlinLogging.logger {}
 
     start(log = log)

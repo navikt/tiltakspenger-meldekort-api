@@ -18,14 +18,31 @@ object Configuration {
         ConfigurationMap(
             mapOf(
                 "application.httpPort" to 8080.toString(),
+                "logback.configurationFile" to "logback.xml",
                 "DB_JDBC_URL" to System.getenv("DB_JDBC_URL"),
+            ),
+        )
+
+    private val prodProperties =
+        ConfigurationMap(
+            mapOf(
+                "application.profile" to Profile.PROD.toString(),
+            ),
+        )
+
+    private val devProperties =
+        ConfigurationMap(
+            mapOf(
+                "application.profile" to Profile.DEV.toString(),
             ),
         )
 
     private val localProperties =
         ConfigurationMap(
             mapOf(
+                "application.profile" to Profile.LOCAL.toString(),
                 "application.httpPort" to 8083.toString(),
+                "logback.configurationFile" to "logback.local.xml",
                 "DB_JDBC_URL" to "jdbc:postgresql://host.docker.internal:5435/meldekort?user=postgres&password=test",
             ),
         )
@@ -40,10 +57,10 @@ object Configuration {
     private fun config() =
         when (applicationProfile()) {
             Profile.PROD ->
-                systemProperties() overriding defaultProperties
+                systemProperties() overriding prodProperties overriding defaultProperties
 
             Profile.DEV ->
-                systemProperties() overriding defaultProperties
+                systemProperties() overriding devProperties overriding defaultProperties
 
             Profile.LOCAL -> {
                 systemProperties() overriding localProperties overriding defaultProperties
