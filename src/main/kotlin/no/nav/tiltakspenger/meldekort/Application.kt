@@ -10,6 +10,8 @@ import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekortApi
 
 fun main() {
+    System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
+
     val log = KotlinLogging.logger {}
 
     start(log = log)
@@ -22,7 +24,7 @@ internal fun start(
 ) {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
         log.error { "Uncaught exception logget i securelog" }
-        sikkerlogg.error { e.message }
+        sikkerlogg.error(e) { e.message }
     }
 
     log.info { "starting server" }

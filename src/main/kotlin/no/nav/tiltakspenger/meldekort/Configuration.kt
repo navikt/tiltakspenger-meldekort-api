@@ -20,6 +20,8 @@ object Configuration {
                 "application.httpPort" to 8080.toString(),
                 "logback.configurationFile" to "logback.xml",
                 "DB_JDBC_URL" to System.getenv("DB_JDBC_URL"),
+                "NAIS_TOKEN_ENDPOINT" to System.getenv("NAIS_TOKEN_ENDPOINT"),
+                "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to System.getenv("NAIS_TOKEN_INTROSPECTION_ENDPOINT"),
             ),
         )
 
@@ -44,6 +46,8 @@ object Configuration {
                 "application.httpPort" to 8083.toString(),
                 "logback.configurationFile" to "logback.local.xml",
                 "DB_JDBC_URL" to "jdbc:postgresql://localhost:5435/meldekort?user=postgres&password=test",
+                "NAIS_TOKEN_ENDPOINT" to "Denne finnes bare runtime i miljø",
+                "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to "Denne finnes bare runtime i miljø",
             ),
         )
 
@@ -66,6 +70,11 @@ object Configuration {
                 systemProperties() overriding localProperties overriding defaultProperties
             }
         }
+
+    val naisTokenEndpoint: String by lazy { config()[Key("NAIS_TOKEN_ENDPOINT", stringType)] }
+    val naisTokenIntrospectionEndpoint: String by lazy { config()[Key("NAIS_TOKEN_INTROSPECTION_ENDPOINT", stringType)] }
+
+    fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 
     fun httpPort() = config()[Key("application.httpPort", intType)]
 

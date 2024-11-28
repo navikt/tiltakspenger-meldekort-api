@@ -10,7 +10,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.meldekort.auth.getFnr
+import no.nav.tiltakspenger.meldekort.routes.getFnr
 import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 

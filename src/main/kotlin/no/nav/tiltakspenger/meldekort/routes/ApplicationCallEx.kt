@@ -2,7 +2,12 @@ package no.nav.tiltakspenger.meldekort.routes
 
 import arrow.core.Either
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.authentication
+import io.ktor.server.request.authorization
+import io.ktor.server.request.host
+import io.ktor.server.request.uri
 import mu.KotlinLogging
+import no.nav.security.token.support.v2.TokenValidationContextPrincipal
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.ktor.common.respond400BadRequest
@@ -21,16 +26,31 @@ internal suspend inline fun ApplicationCall.withMeldekortId(
     )
 }
 
-internal suspend inline fun ApplicationCall.withFnr(
-    crossinline onRight: suspend (Fnr) -> Unit,
-) {
-    withValidParam(
-        paramName = "fnr",
-        parse = Fnr::fromString,
-        errorMessage = "Ugyldig fnr",
-        errorCode = "ugyldig_fnr",
-        onSuccess = onRight,
-    )
+internal fun ApplicationCall.getFnrString(): String? {
+    return this.authentication
+        .principal<TokenValidationContextPrincipal>()
+        ?.context
+        ?.getClaims("tokendings")
+        ?.getStringClaim("pid")
+}
+
+internal fun ApplicationCall.getFnr(): Fnr? {
+    return getFnrString()?.let { Fnr.fromString(it) }
+}
+
+fun ApplicationCall.bearerToken(): String? =
+    request.authorization()
+        ?.takeIf { it.startsWith("Bearer ", ignoreCase = true) }
+        ?.removePrefix("Bearer ")
+
+// loginUrl constructs a URL string that points to the login endpoint (Wonderwall) for redirecting a request.
+// It also indicates that the user should be redirected back to the original request path after authentication
+internal fun ApplicationCall.loginUrl(defaultHost: String): String {
+    val host = defaultHost.ifEmpty(defaultValue = {
+        "${this.request.local.scheme}://${this.request.host()}"
+    })
+
+    return "$host/oauth2/login?redirect=${this.request.uri}"
 }
 
 private suspend inline fun <T> ApplicationCall.withValidParam(

@@ -61,11 +61,12 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("com.github.seratch:kotliquery:1.9.0")
 
-    testImplementation(platform("org.junit:junit-bom:5.11.3"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("io.mockk:mockk-dsl-jvm:$mockkVersion")
-    testImplementation("org.skyscreamer:jsonassert:1.5.3")
+    // Http
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-client-logging:$ktorVersion")
+    implementation("io.ktor:ktor-http:$ktorVersion")
 
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
@@ -81,6 +82,14 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
     implementation("io.ktor:ktor-utils:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+
+    // Test
+    testImplementation(platform("org.junit:junit-bom:5.11.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("io.mockk:mockk-dsl-jvm:$mockkVersion")
+    testImplementation("org.skyscreamer:jsonassert:1.5.3")
 }
 
 spotless {

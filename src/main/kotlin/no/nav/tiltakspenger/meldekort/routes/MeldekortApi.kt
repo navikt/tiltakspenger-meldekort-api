@@ -6,12 +6,12 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
 import io.ktor.server.routing.routing
 import no.nav.security.token.support.v2.asIssuerProps
+import no.nav.tiltakspenger.meldekort.auth.TexasWall
 import no.nav.tiltakspenger.meldekort.auth.getSecurityConfig
 import no.nav.tiltakspenger.meldekort.auth.installAuthentication
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
@@ -36,7 +36,7 @@ internal fun Application.meldekortApi(
 
     routing {
         healthRoutes()
-        authenticate(*issuers.toTypedArray()) {
+        install(TexasWall) {
             meldekortRoutes(meldekortService = applicationContext.meldekortService)
         }
     }
