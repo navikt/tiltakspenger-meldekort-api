@@ -8,7 +8,6 @@ import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.routes.bearerToken
 import no.nav.tiltakspenger.meldekort.routes.loginUrl
 
-
 class AuthPluginConfiguration(
     var client: TexasHttpClient? = null,
     var ingress: String? = null,
@@ -24,7 +23,7 @@ val TexasWall = createRouteScopedPlugin(
 
     val challenge: suspend (ApplicationCall) -> Unit = { call ->
         val target = call.loginUrl(ingress)
-        log.info { "unauthenticated: redirecting to '$target'"}
+        log.info { "unauthenticated: redirecting to '$target'" }
         call.respondRedirect(target)
     }
 
@@ -32,7 +31,7 @@ val TexasWall = createRouteScopedPlugin(
         onCall { call ->
             val token = call.bearerToken()
             if (token == null) {
-                log.warn { "unauthenticated: no Bearer token found in Authorization header"}
+                log.warn { "unauthenticated: no Bearer token found in Authorization header" }
                 challenge(call)
                 return@onCall
             }
@@ -40,21 +39,21 @@ val TexasWall = createRouteScopedPlugin(
             val introspectResponse = try {
                 client.introspectToken(token)
             } catch (e: Exception) {
-                log.error { "unauthenticated: introspect request failed: ${e.message}"}
+                log.error { "unauthenticated: introspect request failed: ${e.message}" }
                 challenge(call)
                 return@onCall
             }
 
             if (introspectResponse.active) {
-                log.info { "authenticated - claims='${introspectResponse.other}'"}
+                log.info { "authenticated - claims='${introspectResponse.other}'" }
                 return@onCall
             }
 
-            log.warn { "unauthenticated: ${introspectResponse.error}"}
+            log.warn { "unauthenticated: ${introspectResponse.error}" }
             challenge(call)
             return@onCall
         }
     }
 
-    log.info { "NaisAuth plugin loaded."}
+    log.info { "NaisAuth plugin loaded." }
 }

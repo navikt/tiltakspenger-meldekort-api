@@ -10,6 +10,7 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.future.await
 import no.nav.tiltakspenger.libs.json.lesTre
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
+import no.nav.tiltakspenger.meldekort.Configuration
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
@@ -18,8 +19,6 @@ import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
-import no.nav.tiltakspenger.meldekort.Configuration
-
 
 sealed class TokenResponse {
     data class Success(
@@ -92,9 +91,8 @@ class TexasHttpClientImpl(
                 TokenIntrospectionResponse(
                     active = active,
                     error = error,
-                    other = otherFields
+                    other = otherFields,
                 )
-
             }.getOrElse {
                 sikkerlogg.error(it) { "Feil ved parsing av respons fra Texas. status: $status, jsonResponse: $jsonResponse. uri: $uri" }
                 throw RuntimeException("Feil ved parsing av respons fra Texas. status: $status. Se sikkerlogg for detaljer.")
