@@ -48,10 +48,6 @@ internal fun Route.meldekortRoutes(
         }
 
         get("/siste") {
-            if (call.attributes[fnrAttributeKey].isBlank()) {
-                throw RuntimeException("fnr er tomt!?")
-            }
-
             val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
             val meldekort = meldekortService.hentSisteMeldekort(fnr)
@@ -64,10 +60,6 @@ internal fun Route.meldekortRoutes(
         }
 
         get("/alle") {
-            if (call.attributes[fnrAttributeKey].isBlank()) {
-                throw RuntimeException("fnr er tomt!?")
-            }
-
             val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
             val alleMeldekort = meldekortService.hentAlleMeldekort(fnr).map {
@@ -78,10 +70,6 @@ internal fun Route.meldekortRoutes(
         }
 
         get("/generer") {
-            if (call.attributes[fnrAttributeKey].isBlank()) {
-                throw RuntimeException("fnr er tomt!?")
-            }
-
             val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
             val meldekort = genererDummyMeldekort(fnr)
