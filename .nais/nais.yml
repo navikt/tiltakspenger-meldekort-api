@@ -46,6 +46,9 @@ spec:
     inbound:
       rules:
         - application: tiltakspenger-meldekort
+        - application: tokenx-token-generator
+          namespace: aura
+          cluster: dev-gcp
   observability:
     autoInstrumentation:
       enabled: true
