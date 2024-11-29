@@ -10,10 +10,6 @@ import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
 import io.ktor.server.routing.routing
-import no.nav.security.token.support.v2.asIssuerProps
-import no.nav.tiltakspenger.meldekort.auth.TexasWall
-import no.nav.tiltakspenger.meldekort.auth.getSecurityConfig
-import no.nav.tiltakspenger.meldekort.auth.installAuthentication
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
 import org.slf4j.event.Level
@@ -25,8 +21,8 @@ internal fun Application.meldekortApi(
         level = Level.INFO
         filter { call ->
             !call.request.path().startsWith("/isalive") &&
-                    !call.request.path().startsWith("/isready") &&
-                    !call.request.path().startsWith("/metrics")
+                !call.request.path().startsWith("/isready") &&
+                !call.request.path().startsWith("/metrics")
         }
     }
     jacksonSerialization()
@@ -36,7 +32,7 @@ internal fun Application.meldekortApi(
 
         meldekortRoutes(
             meldekortService = applicationContext.meldekortService,
-            texasHttpClient = applicationContext.texasHttpClient
+            texasHttpClient = applicationContext.texasHttpClient,
         )
     }
 }

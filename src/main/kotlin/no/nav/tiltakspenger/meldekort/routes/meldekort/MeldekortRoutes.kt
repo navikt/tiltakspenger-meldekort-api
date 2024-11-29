@@ -21,9 +21,8 @@ val logger = KotlinLogging.logger {}
 
 internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
-    texasHttpClient: TexasHttpClient
+    texasHttpClient: TexasHttpClient,
 ) {
-
     install(TexasWall) {
         client = texasHttpClient
     }
