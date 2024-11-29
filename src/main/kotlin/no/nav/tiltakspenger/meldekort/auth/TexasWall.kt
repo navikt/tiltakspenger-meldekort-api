@@ -17,11 +17,11 @@ class AuthPluginConfiguration(
 val fnrAttributeKey = AttributeKey<String>("fnr")
 
 val TexasWall = createRouteScopedPlugin(
-    name = "NaisAuth",
+    name = "TexasWall",
     createConfiguration = ::AuthPluginConfiguration,
 ) {
     val log = KotlinLogging.logger("TexasWall")
-    val client = pluginConfig.client ?: throw IllegalArgumentException("NaisAuth plugin: client must be set")
+    val client = pluginConfig.client ?: throw IllegalArgumentException("TexasWall plugin: client must be set")
     val ingress = pluginConfig.ingress ?: ""
 
     val challenge: suspend (ApplicationCall) -> Unit = { call ->

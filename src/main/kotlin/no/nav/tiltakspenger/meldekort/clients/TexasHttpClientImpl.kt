@@ -19,6 +19,7 @@ import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
+import no.nav.tiltakspenger.libs.json.deserialize
 
 sealed class TokenResponse {
     data class Success(
@@ -58,6 +59,11 @@ class TexasHttpClientImpl(
         .followRedirects(HttpClient.Redirect.NEVER)
         .build()
 
+    private fun systemTokenFormData(audienceTarget: String): String {
+        val urlEncodedAudienceTarget = URLEncoder.encode(audienceTarget, StandardCharsets.UTF_8)
+        return "identity_provider=maskinporten&target=$urlEncodedAudienceTarget"
+    }
+
     private fun introspectFormData(accessToken: String): String {
         val urlEncodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8)
         return "identity_provider=tokenx&token=$urlEncodedAccessToken"
@@ -93,6 +99,38 @@ class TexasHttpClientImpl(
                     error = error,
                     other = otherFields,
                 )
+            }.getOrElse {
+                sikkerlogg.error(it) { "Feil ved parsing av respons fra Texas. status: $status, jsonResponse: $jsonResponse. uri: $uri" }
+                throw RuntimeException("Feil ved parsing av respons fra Texas. status: $status. Se sikkerlogg for detaljer.")
+            }
+        }.getOrElse {
+            // Either.catch slipper igjennom CancellationException som er ønskelig.
+            sikkerlogg.error(it) { "Ukjent feil ved kall mot Texas. Message: ${it.message}" }
+            throw RuntimeException("Feil ved henting av systemtoken. Se sikkerlogg for detaljer.")
+        }
+    }
+
+    override suspend fun getSystemToken(audienceTarget: String): TokenResponse {
+        return Either.catch {
+            val uri = URI.create(Configuration.naisTokenEndpoint)
+            val formData = systemTokenFormData(audienceTarget)
+            val request = createRequest(formData, uri)
+            val httpResponse = client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
+            val jsonResponse = httpResponse.body()
+            val status = httpResponse.statusCode()
+            if (status != 200) {
+                val tokenResponseError = deserialize<TokenResponse.Error>(jsonResponse)
+                sikkerlogg.error(
+                    """ 
+                    Fikk ikke hentet systemtoken. Status: ${tokenResponseError.status}.
+                    error: ${tokenResponseError.error.error}
+                    errordescription: ${tokenResponseError.error.errorDescription} . uri: $uri 
+                """
+                )
+                throw RuntimeException("Fikk ikke hentet systemtoken. Status: ${tokenResponseError.status}. uri: $uri. Se sikkerlogg for detaljer.")
+            }
+            Either.catch {
+                deserialize<TokenResponse.Success>(jsonResponse)
             }.getOrElse {
                 sikkerlogg.error(it) { "Feil ved parsing av respons fra Texas. status: $status, jsonResponse: $jsonResponse. uri: $uri" }
                 throw RuntimeException("Feil ved parsing av respons fra Texas. status: $status. Se sikkerlogg for detaljer.")
