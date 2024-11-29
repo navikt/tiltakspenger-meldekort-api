@@ -5,6 +5,8 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
+import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
+import no.nav.tiltakspenger.meldekort.clients.TexasHttpClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
@@ -19,6 +21,8 @@ open class ApplicationContext() {
     open val dataSource by lazy { DataSourceSetup.createDatasource(jdbcUrl) }
     open val sessionCounter by lazy { SessionCounter(log) }
     open val sessionFactory: SessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
+
+    open val texasHttpClient: TexasHttpClient by lazy { TexasHttpClientImpl() }
 
     open val meldekortRepo: MeldekortRepo by lazy {
         MeldekortPostgresRepo(

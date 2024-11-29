@@ -17,7 +17,7 @@ val TexasWall = createRouteScopedPlugin(
     name = "NaisAuth",
     createConfiguration = ::AuthPluginConfiguration,
 ) {
-    val log = KotlinLogging.logger("Trump")
+    val log = KotlinLogging.logger("TexasWall")
     val client = pluginConfig.client ?: throw IllegalArgumentException("NaisAuth plugin: client must be set")
     val ingress = pluginConfig.ingress ?: ""
 

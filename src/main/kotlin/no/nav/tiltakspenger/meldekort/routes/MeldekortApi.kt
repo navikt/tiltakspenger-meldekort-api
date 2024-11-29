@@ -21,24 +21,23 @@ import org.slf4j.event.Level
 internal fun Application.meldekortApi(
     applicationContext: ApplicationContext,
 ) {
-    installAuthentication()
     install(CallLogging) {
         level = Level.INFO
         filter { call ->
             !call.request.path().startsWith("/isalive") &&
-                !call.request.path().startsWith("/isready") &&
-                !call.request.path().startsWith("/metrics")
+                    !call.request.path().startsWith("/isready") &&
+                    !call.request.path().startsWith("/metrics")
         }
     }
     jacksonSerialization()
 
-    val issuers = getSecurityConfig().asIssuerProps().keys
-
     routing {
         healthRoutes()
-        install(TexasWall) {
-            meldekortRoutes(meldekortService = applicationContext.meldekortService)
-        }
+
+        meldekortRoutes(
+            meldekortService = applicationContext.meldekortService,
+            texasHttpClient = applicationContext.texasHttpClient
+        )
     }
 }
 
