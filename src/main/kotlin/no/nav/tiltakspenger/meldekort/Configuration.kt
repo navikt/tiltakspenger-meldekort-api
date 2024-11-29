@@ -50,8 +50,8 @@ object Configuration {
                 "SAKSBEHANDLING_API_URL" to "http://localhost8080",
                 "logback.configurationFile" to "logback.local.xml",
                 "DB_JDBC_URL" to "jdbc:postgresql://localhost:5435/meldekort?user=postgres&password=test",
-                "NAIS_TOKEN_ENDPOINT" to "Denne finnes bare runtime i miljø",
-                "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to "Denne finnes bare runtime i miljø",
+                "NAIS_TOKEN_ENDPOINT" to "http://localhost:7164/api/v1/token",
+                "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to "http://localhost:7164/api/v1/introspect",
             ),
         )
 
