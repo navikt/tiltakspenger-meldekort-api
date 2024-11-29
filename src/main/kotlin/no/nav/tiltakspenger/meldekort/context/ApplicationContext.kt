@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClientImpl
+import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
@@ -32,5 +33,12 @@ open class ApplicationContext() {
 
     val meldekortService: MeldekortService by lazy {
         MeldekortServiceImpl(meldekortRepo = meldekortRepo)
+    }
+
+    open val saksbehandlingClient by lazy {
+        SaksbehandlingClientImpl(
+            baseUrl = Configuration.saksbehandlingApiUrl,
+            getToken = { texasHttpClient.getSaksbehandlingApiToken() },
+        )
     }
 }

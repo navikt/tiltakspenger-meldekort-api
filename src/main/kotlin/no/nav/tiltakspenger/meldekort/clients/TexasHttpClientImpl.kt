@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.future.await
+import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.Configuration
@@ -17,6 +18,7 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
+import java.time.Instant
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
@@ -25,7 +27,7 @@ sealed class TokenResponse {
         @JsonProperty("access_token")
         val accessToken: String,
         @JsonProperty("expires_in")
-        val expiresInSeconds: Int,
+        val expiresInSeconds: Long,
     ) : TokenResponse()
 
     data class Error(
@@ -95,7 +97,16 @@ class TexasHttpClientImpl(
         }
     }
 
-    override suspend fun getSystemToken(audienceTarget: String): TokenResponse {
+    override suspend fun getSaksbehandlingApiToken(): AccessToken {
+        val tokenResponse = getSystemToken(Configuration.saksbehandlingApiAudience) as TokenResponse.Success
+        return AccessToken(
+            token = tokenResponse.accessToken,
+            expiresAt = Instant.now().plusSeconds(tokenResponse.expiresInSeconds),
+            invaliderCache = {},
+        )
+    }
+
+    private suspend fun getSystemToken(audienceTarget: String): TokenResponse {
         return Either.catch {
             val uri = URI.create(Configuration.naisTokenEndpoint)
             val formData = systemTokenFormData(audienceTarget)

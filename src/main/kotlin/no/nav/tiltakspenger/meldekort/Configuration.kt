@@ -19,6 +19,7 @@ object Configuration {
             mapOf(
                 "application.httpPort" to 8080.toString(),
                 "logback.configurationFile" to "logback.xml",
+                "SAKSBEHANDLING_API_AUDIENCE" to "tiltakspenger-saksbehandling-api",
                 "DB_JDBC_URL" to System.getenv("DB_JDBC_URL"),
                 "NAIS_TOKEN_ENDPOINT" to System.getenv("NAIS_TOKEN_ENDPOINT"),
                 "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to System.getenv("NAIS_TOKEN_INTROSPECTION_ENDPOINT"),
@@ -29,6 +30,7 @@ object Configuration {
         ConfigurationMap(
             mapOf(
                 "application.profile" to Profile.PROD.toString(),
+                "SAKSBEHANDLING_API_URL" to "https://tiltakspenger-meldekort-api.intern.nav.no",
             ),
         )
 
@@ -36,6 +38,7 @@ object Configuration {
         ConfigurationMap(
             mapOf(
                 "application.profile" to Profile.DEV.toString(),
+                "SAKSBEHANDLING_API_URL" to "https://tiltakspenger-meldekort-api.intern.dev.nav.no",
             ),
         )
 
@@ -44,6 +47,7 @@ object Configuration {
             mapOf(
                 "application.profile" to Profile.LOCAL.toString(),
                 "application.httpPort" to 8083.toString(),
+                "SAKSBEHANDLING_API_URL" to "http://localhost8080",
                 "logback.configurationFile" to "logback.local.xml",
                 "DB_JDBC_URL" to "jdbc:postgresql://localhost:5435/meldekort?user=postgres&password=test",
                 "NAIS_TOKEN_ENDPOINT" to "Denne finnes bare runtime i miljø",
@@ -73,6 +77,9 @@ object Configuration {
 
     val naisTokenEndpoint: String by lazy { config()[Key("NAIS_TOKEN_ENDPOINT", stringType)] }
     val naisTokenIntrospectionEndpoint: String by lazy { config()[Key("NAIS_TOKEN_INTROSPECTION_ENDPOINT", stringType)] }
+
+    val saksbehandlingApiAudience: String by lazy { config()[Key("SAKSBEHANDLING_API_AUDIENCE", stringType)] }
+    val saksbehandlingApiUrl: String by lazy { config()[Key("SAKSBEHANDLING_API_URL", stringType)] }
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 
