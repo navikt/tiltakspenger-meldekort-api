@@ -53,6 +53,8 @@ val TexasWall = createRouteScopedPlugin(
                 return@onCall
             }
 
+            log.info { "Pid: ${fnr.slice(0..4)}" }
+
             call.attributes.put(fnrAttributeKey, fnr)
         }
     }
