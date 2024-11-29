@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.future.await
+import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.json.lesTre
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.Configuration
@@ -19,7 +20,6 @@ import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
-import no.nav.tiltakspenger.libs.json.deserialize
 
 sealed class TokenResponse {
     data class Success(
@@ -125,7 +125,7 @@ class TexasHttpClientImpl(
                     Fikk ikke hentet systemtoken. Status: ${tokenResponseError.status}.
                     error: ${tokenResponseError.error.error}
                     errordescription: ${tokenResponseError.error.errorDescription} . uri: $uri 
-                """
+                """,
                 )
                 throw RuntimeException("Fikk ikke hentet systemtoken. Status: ${tokenResponseError.status}. uri: $uri. Se sikkerlogg for detaljer.")
             }
