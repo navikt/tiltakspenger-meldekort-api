@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.future.await
 import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.libs.json.lesTre
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.Configuration
 import java.net.URI
@@ -84,21 +83,7 @@ class TexasHttpClientImpl(
                 throw RuntimeException("Fikk ikke validert token. Status: $status. uri: $uri. Se sikkerlogg for detaljer.")
             }
             Either.catch {
-                val jsonNode = lesTre(jsonResponse)
-
-                val active = jsonNode["active"].asBoolean()
-                val error = jsonNode["error"]?.asText()
-                val knownFields = setOf("active", "error")
-
-                val otherFields = jsonNode.fields().asSequence()
-                    .filter { it.key !in knownFields }
-                    .associate { it.key to it.value }
-
-                TokenIntrospectionResponse(
-                    active = active,
-                    error = error,
-                    other = otherFields,
-                )
+                deserialize<TokenIntrospectionResponse>(jsonResponse)
             }.getOrElse {
                 sikkerlogg.error(it) { "Feil ved parsing av respons fra Texas. status: $status, jsonResponse: $jsonResponse. uri: $uri" }
                 throw RuntimeException("Feil ved parsing av respons fra Texas. status: $status. Se sikkerlogg for detaljer.")
