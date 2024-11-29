@@ -48,7 +48,16 @@ internal fun Route.meldekortRoutes(
         }
 
         get("/siste") {
-            val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
+            val fnrFromAttribute = call.attributes[fnrAttributeKey]
+            logger.info { "Fnr: $fnrFromAttribute" }
+
+            val fnr = try {
+                Fnr.fromString(fnrFromAttribute)
+            } catch (e: Exception) {
+                logger.error { "Feil fnr $e" }
+                call.respond(status = HttpStatusCode.InternalServerError, message = "Feil fnr $e")
+                return@get
+            }
 
             val meldekort = meldekortService.hentSisteMeldekort(fnr)
             if (meldekort == null) {
