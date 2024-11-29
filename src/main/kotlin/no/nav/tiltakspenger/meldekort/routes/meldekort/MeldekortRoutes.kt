@@ -2,20 +2,20 @@ package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
-import io.ktor.server.application.install
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.auth.TexasWall
+import no.nav.tiltakspenger.meldekort.auth.fnrAttributeKey
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
-import no.nav.tiltakspenger.meldekort.routes.getFnr
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
+import java.lang.RuntimeException
 
 val logger = KotlinLogging.logger {}
 
@@ -29,6 +29,7 @@ internal fun Route.meldekortRoutes(
 
     get("/meldekort/{meldekortId}") {
         // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
+
         val meldekortId = call.parameters["meldekortId"]?.let { id -> MeldekortId.Companion.fromString(id) }
 
         if (meldekortId == null) {
@@ -46,12 +47,11 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/siste") {
-        val fnr = call.getFnr()
-
-        if (fnr == null) {
-            call.respond(HttpStatusCode.BadRequest)
-            return@get
+        if (call.attributes[fnrAttributeKey].isBlank()) {
+            throw RuntimeException("fnr er tomt!?")
         }
+
+        val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
         val meldekort = meldekortService.hentSisteMeldekort(fnr)
         if (meldekort == null) {
@@ -63,12 +63,11 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/alle") {
-        val fnr = call.getFnr()
-
-        if (fnr == null) {
-            call.respond(HttpStatusCode.BadRequest)
-            return@get
+        if (call.attributes[fnrAttributeKey].isBlank()) {
+            throw RuntimeException("fnr er tomt!?")
         }
+
+        val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
         val alleMeldekort = meldekortService.hentAlleMeldekort(fnr).map {
             it.tilUtfyllingDTO()
@@ -78,12 +77,11 @@ internal fun Route.meldekortRoutes(
     }
 
     get("/meldekort/generer") {
-        val fnr = call.getFnr()
-
-        if (fnr == null) {
-            call.respond(HttpStatusCode.BadRequest)
-            return@get
+        if (call.attributes[fnrAttributeKey].isBlank()) {
+            throw RuntimeException("fnr er tomt!?")
         }
+
+        val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
         val meldekort = genererDummyMeldekort(fnr)
 

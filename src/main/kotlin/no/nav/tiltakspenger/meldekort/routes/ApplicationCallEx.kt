@@ -2,13 +2,10 @@ package no.nav.tiltakspenger.meldekort.routes
 
 import arrow.core.Either
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.auth.authentication
 import io.ktor.server.request.authorization
 import io.ktor.server.request.host
 import io.ktor.server.request.uri
 import mu.KotlinLogging
-import no.nav.security.token.support.v2.TokenValidationContextPrincipal
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.ktor.common.respond400BadRequest
 
@@ -24,18 +21,6 @@ internal suspend inline fun ApplicationCall.withMeldekortId(
         errorCode = "ugyldig_meldekort_id",
         onSuccess = onRight,
     )
-}
-
-internal fun ApplicationCall.getFnrString(): String? {
-    return this.authentication
-        .principal<TokenValidationContextPrincipal>()
-        ?.context
-        ?.getClaims("tokendings")
-        ?.getStringClaim("pid")
-}
-
-internal fun ApplicationCall.getFnr(): Fnr? {
-    return getFnrString()?.let { Fnr.fromString(it) }
 }
 
 fun ApplicationCall.bearerToken(): String? =

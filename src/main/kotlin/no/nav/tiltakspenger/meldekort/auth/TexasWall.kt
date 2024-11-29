@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.auth
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.response.respondRedirect
+import io.ktor.util.AttributeKey
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.routes.bearerToken
@@ -12,6 +13,8 @@ class AuthPluginConfiguration(
     var client: TexasHttpClient? = null,
     var ingress: String? = null,
 )
+
+val fnrAttributeKey = AttributeKey<String>("fnr")
 
 val TexasWall = createRouteScopedPlugin(
     name = "NaisAuth",
@@ -46,6 +49,7 @@ val TexasWall = createRouteScopedPlugin(
 
             if (introspectResponse.active) {
                 log.info { "authenticated - claims='${introspectResponse.other}'" }
+                call.attributes.put(fnrAttributeKey, introspectResponse.other["pid"].toString())
                 return@onCall
             }
 

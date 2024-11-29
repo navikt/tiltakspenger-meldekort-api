@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val jvmVersion = JvmTarget.JVM_21
 val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.1"
 val mockkVersion = "1.13.13"
 val felleslibVersion = "0.0.286"
 
@@ -52,8 +52,6 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
-
-    implementation("no.nav.security:token-validation-ktor-v2:5.0.11")
 
     // DB
     implementation("org.flywaydb:flyway-database-postgresql:11.0.0")
