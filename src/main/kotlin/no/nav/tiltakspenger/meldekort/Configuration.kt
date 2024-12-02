@@ -31,6 +31,7 @@ object Configuration {
         ConfigurationMap(
             mapOf(
                 "application.profile" to Profile.PROD.toString(),
+                "SAKSBEHANDLING_API_AUDIENCE" to "api://prod-gcp.tpts.tiltakspenger-saksbehandling-api/.default",
                 "SAKSBEHANDLING_API_URL" to "http://tiltakspenger-saksbehandling-api",
             ),
         )
@@ -39,6 +40,7 @@ object Configuration {
         ConfigurationMap(
             mapOf(
                 "application.profile" to Profile.DEV.toString(),
+                "SAKSBEHANDLING_API_AUDIENCE" to "api://dev-gcp.tpts.tiltakspenger-saksbehandling-api/.default",
                 "SAKSBEHANDLING_API_URL" to "http://tiltakspenger-saksbehandling-api",
             ),
         )
