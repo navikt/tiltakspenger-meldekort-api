@@ -4,6 +4,7 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
+import java.time.LocalDateTime
 
 interface MeldekortService {
 
@@ -16,4 +17,8 @@ interface MeldekortService {
     fun hentSisteMeldekort(fnr: Fnr): Meldekort?
 
     fun hentAlleMeldekort(fnr: Fnr): List<Meldekort>
+
+    fun hentMeldekortSomSkalSendesTilSaksbehandling(): List<Meldekort>
+
+    fun markerSendt(meldekortId: MeldekortId, tidspunkt: LocalDateTime)
 }

@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
+import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
 
@@ -109,6 +110,14 @@ class MeldekortPostgresRepo(
 
     override fun hentAlleMeldekort(fnr: Fnr, transactionContext: TransactionContext?): List<Meldekort> {
         return this.hentMeldekortForBruker(fnr, null, transactionContext)
+    }
+
+    override fun hentUsendteMeldekort(): List<Meldekort> {
+        TODO("Not yet implemented")
+    }
+
+    override fun markerSendt(meldekortId: MeldekortId, tidspunkt: LocalDateTime) {
+        TODO("Not yet implemented")
     }
 
     private fun hentMeldekortForBruker(

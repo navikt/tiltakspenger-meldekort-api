@@ -6,6 +6,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
@@ -14,10 +16,14 @@ import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
 import org.slf4j.event.Level
 
+const val CALL_ID_MDC_KEY = "call-id"
+
 internal fun Application.meldekortApi(
     applicationContext: ApplicationContext,
 ) {
+    install(CallId)
     install(CallLogging) {
+        callIdMdc(CALL_ID_MDC_KEY)
         level = Level.INFO
         filter { call ->
             !call.request.path().startsWith("/isalive") &&
