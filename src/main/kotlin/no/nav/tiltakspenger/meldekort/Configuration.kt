@@ -31,7 +31,7 @@ object Configuration {
         ConfigurationMap(
             mapOf(
                 "application.profile" to Profile.PROD.toString(),
-                "SAKSBEHANDLING_API_URL" to "https://tiltakspenger-meldekort-api.intern.nav.no",
+                "SAKSBEHANDLING_API_URL" to "http://tiltakspenger-saksbehandling-api",
             ),
         )
 
@@ -39,7 +39,7 @@ object Configuration {
         ConfigurationMap(
             mapOf(
                 "application.profile" to Profile.DEV.toString(),
-                "SAKSBEHANDLING_API_URL" to "https://tiltakspenger-meldekort-api.intern.dev.nav.no",
+                "SAKSBEHANDLING_API_URL" to "http://tiltakspenger-saksbehandling-api",
             ),
         )
 
