@@ -11,6 +11,7 @@ import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
+import io.ktor.server.resources.Resources
 import io.ktor.server.routing.routing
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
@@ -31,7 +32,14 @@ internal fun Application.meldekortApi(
                 !call.request.path().startsWith("/metrics")
         }
     }
-    jacksonSerialization()
+    install(ContentNegotiation) {
+        jackson {
+            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            registerModule(JavaTimeModule())
+            registerModule(KotlinModule.Builder().build())
+        }
+    }
+    install(Resources)
 
     routing {
         healthRoutes()
@@ -40,15 +48,5 @@ internal fun Application.meldekortApi(
             meldekortService = applicationContext.meldekortService,
             texasHttpClient = applicationContext.texasHttpClient,
         )
-    }
-}
-
-fun Application.jacksonSerialization() {
-    install(ContentNegotiation) {
-        jackson {
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            registerModule(JavaTimeModule())
-            registerModule(KotlinModule.Builder().build())
-        }
     }
 }

@@ -17,6 +17,7 @@ fun isNonStable(version: String): Boolean {
 plugins {
     application
     kotlin("jvm") version "2.1.0"
+    kotlin("plugin.serialization") version "2.0.21"
     id("com.diffplug.spotless") version "6.25.0"
     id("com.github.ben-manes.versions") version "0.51.0"
 }
@@ -78,8 +79,9 @@ dependencies {
     implementation("io.ktor:ktor-server-host-common-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-server-resources:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+
     implementation("io.ktor:ktor-utils:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
