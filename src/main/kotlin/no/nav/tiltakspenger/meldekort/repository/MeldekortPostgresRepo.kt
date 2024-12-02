@@ -117,7 +117,7 @@ class MeldekortPostgresRepo(
     override fun hentUsendteMeldekort(transactionContext: TransactionContext?): List<Meldekort> {
         val query = """ 
             select * from meldekort
-            where innsendt_tidspunkt is null
+            where innsendt_tidspunkt is null and meldekortstatus is 'Innsendt'
         """.trimIndent()
 
         return sessionFactory.withTransaction(transactionContext) { tx ->
@@ -129,18 +129,19 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, tidspunkt: LocalDateTime, transactionContext: TransactionContext?) {
+    override fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime, transactionContext: TransactionContext?) {
         val query = """ 
             update meldekort set
-            tidspunkt = :tidspunkt
+            innsendt_tidspunkt = :innsendtTidspunkt,
             status = :meldekortstatus
-            where id = :meldekortId 
+            where id = :meldekortId
         """.trimIndent()
 
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
                 queryOf(
                     query.trimIndent(),
+                    mapOf("meldekortstatus" to meldekortStatus.name, "innsendtTidspunkt" to innsendtTidspunkt),
                 ).map { row -> fromRow(row) }.asList,
             )
         }
