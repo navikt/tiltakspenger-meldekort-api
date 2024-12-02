@@ -46,15 +46,16 @@ class SaksbehandlingClientImpl(
             val status = httpResponse.statusCode()
             if (status != 200) {
                 val melding = "Feil ved kall til tiltakspenger-saksbehandling-api - Status $status - MeldekortId: ${meldekort.id}"
-                logger.error { "$melding - Se sikkerlogg for detaljer." }
-                sikkerlogg.error { "$melding - Response: $responseBody - Payload: $jsonPayload" }
+                logger.warn { "$melding - Se sikkerlogg for detaljer." }
+                sikkerlogg.warn { "$melding - Response: $responseBody - Payload: $jsonPayload" }
                 return SaksbehandlingApiError.left()
             }
             Unit
         }.mapLeft {
             // Either.catch slipper igjennom CancellationException som er ønskelig.
-            logger.error(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. Se sikkerlogg for detaljer." }
-            sikkerlogg.error(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. jsonPayload: $jsonPayload, uri: $saksbehandlingApiMeldekortUri" }
+            // TODO: endre til log level error (setter til warn midlertidig for å slippe alert-mas :D)
+            logger.warn(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. Se sikkerlogg for detaljer." }
+            sikkerlogg.warn(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. jsonPayload: $jsonPayload, uri: $saksbehandlingApiMeldekortUri" }
             SaksbehandlingApiError
         }
     }

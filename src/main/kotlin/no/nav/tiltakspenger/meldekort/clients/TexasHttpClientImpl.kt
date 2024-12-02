@@ -56,7 +56,7 @@ class TexasHttpClientImpl(
 
     private fun systemTokenFormData(audienceTarget: String): String {
         val urlEncodedAudienceTarget = URLEncoder.encode(audienceTarget, StandardCharsets.UTF_8)
-        return "identity_provider=maskinporten&target=$urlEncodedAudienceTarget"
+        return "identity_provider=azuread&target=$urlEncodedAudienceTarget"
     }
 
     private fun introspectFormData(accessToken: String): String {

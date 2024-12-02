@@ -26,6 +26,9 @@ spec:
     enabled: true
   tokenx:
     enabled: true
+  azure:
+    application:
+      enabled: true
   leaderElection: true
   gcp:
     sqlInstances:
