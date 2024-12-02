@@ -65,6 +65,7 @@ internal fun start(
             applicationContext.sendMeldekortService.sendMeldekort(correlationId)
         },
     )
+
     embeddedServer(
         factory = Netty,
         port = port,

@@ -3,13 +3,13 @@ package no.nav.tiltakspenger.meldekort.clients.saksbehandling
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 
 enum class MeldekortStatusDTO {
-    Til_Utfylling,
-    Innsendt
+    TilUtfylling,
+    Innsendt,
 }
 
-fun MeldekortStatus.toDTO() : MeldekortStatusDTO {
-    return when (this){
-        MeldekortStatus.Til_Utfylling -> MeldekortStatusDTO.Til_Utfylling
+fun MeldekortStatus.toDTO(): MeldekortStatusDTO {
+    return when (this) {
+        MeldekortStatus.TilUtfylling -> MeldekortStatusDTO.TilUtfylling
         MeldekortStatus.Innsendt -> MeldekortStatusDTO.Innsendt
     }
 }

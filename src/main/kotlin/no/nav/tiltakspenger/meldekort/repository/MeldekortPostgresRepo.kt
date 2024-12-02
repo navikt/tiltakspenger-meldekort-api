@@ -79,8 +79,8 @@ class MeldekortPostgresRepo(
                     """.trimIndent(),
                     mapOf(
                         "id" to meldekort.id,
-                        //TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
-                        "status" to "Innsendt",
+                        // TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
+                        "status" to MeldekortStatus.Innsendt.name,
                         "meldekortdager" to serialize(meldekort.meldekortDager),
                     ),
                 ).asUpdate,
@@ -117,7 +117,7 @@ class MeldekortPostgresRepo(
     override fun hentUsendteMeldekort(transactionContext: TransactionContext?): List<Meldekort> {
         val query = """ 
             select * from meldekort
-            where innsendt_tidspunkt is null and meldekortstatus is 'Innsendt'
+            where innsendt_tidspunkt is null and status = 'Innsendt'
         """.trimIndent()
 
         return sessionFactory.withTransaction(transactionContext) { tx ->
@@ -129,7 +129,12 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime, transactionContext: TransactionContext?) {
+    override fun markerSendt(
+        meldekortId: MeldekortId,
+        meldekortStatus: MeldekortStatus,
+        innsendtTidspunkt: LocalDateTime,
+        transactionContext: TransactionContext?,
+    ) {
         val query = """ 
             update meldekort set
             innsendt_tidspunkt = :innsendtTidspunkt,
@@ -142,7 +147,7 @@ class MeldekortPostgresRepo(
                 queryOf(
                     query.trimIndent(),
                     mapOf("meldekortstatus" to meldekortStatus.name, "innsendtTidspunkt" to innsendtTidspunkt),
-                ).map { row -> fromRow(row) }.asList,
+                ).asUpdate,
             )
         }
     }

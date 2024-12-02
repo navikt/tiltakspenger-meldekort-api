@@ -38,7 +38,7 @@ fun genererDummyMeldekort(fnr: Fnr): Meldekort {
         fraOgMed = fraOgMed,
         tilOgMed = tilOgMed,
         meldeperiodeId = MeldeperiodeId("$fraOgMed/$tilOgMed"),
-        status = MeldekortStatus.Til_Utfylling,
+        status = MeldekortStatus.TilUtfylling,
         meldekortDager = meldekortDager,
     )
 }
