@@ -87,4 +87,8 @@ object Configuration {
 
     fun database() =
         config()[Key("DB_JDBC_URL", stringType)]
+
+    fun isNais() = applicationProfile() != Profile.LOCAL
+
+    fun electorPath(): String = config()[Key("ELECTOR_PATH", stringType)]
 }
