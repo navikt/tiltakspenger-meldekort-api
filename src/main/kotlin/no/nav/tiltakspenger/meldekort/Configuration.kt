@@ -23,6 +23,7 @@ object Configuration {
                 "DB_JDBC_URL" to System.getenv("DB_JDBC_URL"),
                 "NAIS_TOKEN_ENDPOINT" to System.getenv("NAIS_TOKEN_ENDPOINT"),
                 "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to System.getenv("NAIS_TOKEN_INTROSPECTION_ENDPOINT"),
+                "ELECTOR_PATH" to System.getenv("ELECTOR_PATH"),
             ),
         )
 
