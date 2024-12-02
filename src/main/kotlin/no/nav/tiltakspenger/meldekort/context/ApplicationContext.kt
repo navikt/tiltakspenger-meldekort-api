@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldekortServiceImpl
+import no.nav.tiltakspenger.meldekort.service.SendMeldekortService
 
 @Suppress("unused")
 open class ApplicationContext() {
@@ -39,6 +40,13 @@ open class ApplicationContext() {
         SaksbehandlingClientImpl(
             baseUrl = Configuration.saksbehandlingApiUrl,
             getToken = { texasHttpClient.getSaksbehandlingApiToken() },
+        )
+    }
+
+    val sendMeldekortService: SendMeldekortService by lazy {
+        SendMeldekortService(
+            meldekortService = meldekortService,
+            saksbehandlingClient = saksbehandlingClient,
         )
     }
 }

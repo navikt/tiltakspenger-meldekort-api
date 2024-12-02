@@ -12,7 +12,9 @@ import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
+import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
 
@@ -54,7 +56,7 @@ class MeldekortPostgresRepo(
                         "til_og_med" to meldekort.tilOgMed,
                         "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
                         "meldekortdager" to serialize(meldekort.meldekortDager),
-                        "status" to meldekort.status,
+                        "status" to meldekort.status.name,
                         "iverksatt_tidspunkt" to meldekort.iverksattTidspunkt,
                     ),
                 ).asUpdate,
@@ -77,7 +79,8 @@ class MeldekortPostgresRepo(
                     """.trimIndent(),
                     mapOf(
                         "id" to meldekort.id,
-                        "status" to "Innsendt",
+                        // TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
+                        "status" to MeldekortStatus.Innsendt.name,
                         "meldekortdager" to serialize(meldekort.meldekortDager),
                     ),
                 ).asUpdate,
@@ -109,6 +112,44 @@ class MeldekortPostgresRepo(
 
     override fun hentAlleMeldekort(fnr: Fnr, transactionContext: TransactionContext?): List<Meldekort> {
         return this.hentMeldekortForBruker(fnr, null, transactionContext)
+    }
+
+    override fun hentUsendteMeldekort(transactionContext: TransactionContext?): List<Meldekort> {
+        val query = """ 
+            select * from meldekort
+            where innsendt_tidspunkt is null and status = 'Innsendt'
+        """.trimIndent()
+
+        return sessionFactory.withTransaction(transactionContext) { tx ->
+            tx.run(
+                queryOf(
+                    query.trimIndent(),
+                ).map { row -> fromRow(row) }.asList,
+            )
+        }
+    }
+
+    override fun markerSendt(
+        meldekortId: MeldekortId,
+        meldekortStatus: MeldekortStatus,
+        innsendtTidspunkt: LocalDateTime,
+        transactionContext: TransactionContext?,
+    ) {
+        val query = """ 
+            update meldekort set
+            innsendt_tidspunkt = :innsendtTidspunkt,
+            status = :meldekortstatus
+            where id = :meldekortId
+        """.trimIndent()
+
+        return sessionFactory.withTransaction(transactionContext) { tx ->
+            tx.run(
+                queryOf(
+                    query.trimIndent(),
+                    mapOf("meldekortstatus" to meldekortStatus.name, "innsendtTidspunkt" to innsendtTidspunkt),
+                ).asUpdate,
+            )
+        }
     }
 
     private fun hentMeldekortForBruker(
@@ -146,7 +187,7 @@ class MeldekortPostgresRepo(
                 tilOgMed = row.localDate("til_og_med"),
                 meldeperiodeId = MeldeperiodeId(row.string("meldeperiode_id")),
                 meldekortDager = deserializeList(row.string("meldekortdager")),
-                status = row.string("status"),
+                status = MeldekortStatus.valueOf(row.string("status")),
                 iverksattTidspunkt = row.localDateTimeOrNull("iverksatt_tidspunkt"),
             )
         }

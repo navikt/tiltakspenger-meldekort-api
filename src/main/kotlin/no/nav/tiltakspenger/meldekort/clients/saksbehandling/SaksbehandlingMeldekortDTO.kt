@@ -14,7 +14,7 @@ data class SaksbehandlingMeldekortDTO(
     val tilOgMed: LocalDate,
     val meldeperiodeId: MeldeperiodeId,
     val meldekortDager: List<SaksbehandlingMeldekortDagDTO>,
-    val status: String,
+    val status: MeldekortStatusDTO,
     val iverksattTidspunkt: LocalDateTime? = null,
 )
 
@@ -27,7 +27,7 @@ fun Meldekort.toSaksbehandlingMeldekortDTO(): SaksbehandlingMeldekortDTO =
         tilOgMed = this.tilOgMed,
         meldeperiodeId = this.meldeperiodeId,
         meldekortDager = this.meldekortDager.toSaksbehandlingDTO(),
-        status = this.status,
+        status = this.status.toDTO(),
         iverksattTidspunkt = this.iverksattTidspunkt,
     )
 

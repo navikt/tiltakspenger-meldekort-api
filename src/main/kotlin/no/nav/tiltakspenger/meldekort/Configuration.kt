@@ -47,7 +47,7 @@ object Configuration {
             mapOf(
                 "application.profile" to Profile.LOCAL.toString(),
                 "application.httpPort" to 8083.toString(),
-                "SAKSBEHANDLING_API_URL" to "http://localhost8080",
+                "SAKSBEHANDLING_API_URL" to "http://localhost:8080",
                 "logback.configurationFile" to "logback.local.xml",
                 "DB_JDBC_URL" to "jdbc:postgresql://localhost:5435/meldekort?user=postgres&password=test",
                 "NAIS_TOKEN_ENDPOINT" to "http://localhost:7164/api/v1/token",
@@ -87,4 +87,8 @@ object Configuration {
 
     fun database() =
         config()[Key("DB_JDBC_URL", stringType)]
+
+    fun isNais() = applicationProfile() != Profile.LOCAL
+
+    fun electorPath(): String = config()[Key("ELECTOR_PATH", stringType)]
 }

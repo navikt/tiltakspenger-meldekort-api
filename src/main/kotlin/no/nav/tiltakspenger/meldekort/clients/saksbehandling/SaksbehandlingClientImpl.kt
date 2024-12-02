@@ -45,8 +45,9 @@ class SaksbehandlingClientImpl(
             val responseBody = httpResponse.body()
             val status = httpResponse.statusCode()
             if (status != 200) {
-                logger.error { "Feil ved kall til tiltakspenger-saksbehandling-api. MeldekortId: ${meldekort.id} Se sikkerlogg for detaljer." }
-                sikkerlogg.error { "Feil ved kall til tiltakspenger-saksbehandling-api. MeldekortId: ${meldekort.id}. JsonResponse: $responseBody jsonPayload: $jsonPayload" }
+                val melding = "Feil ved kall til tiltakspenger-saksbehandling-api - Status $status - MeldekortId: ${meldekort.id}"
+                logger.error { "$melding - Se sikkerlogg for detaljer." }
+                sikkerlogg.error { "$melding - Response: $responseBody - Payload: $jsonPayload" }
                 return SaksbehandlingApiError.left()
             }
             Unit

@@ -3,8 +3,10 @@ package no.nav.tiltakspenger.meldekort.service
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
+import java.time.LocalDateTime
 
 class MeldekortServiceImpl(
     val meldekortRepo: MeldekortRepo,
@@ -27,5 +29,13 @@ class MeldekortServiceImpl(
 
     override fun hentAlleMeldekort(fnr: Fnr): List<Meldekort> {
         return meldekortRepo.hentAlleMeldekort(fnr)
+    }
+
+    override fun hentMeldekortSomSkalSendesTilSaksbehandling(): List<Meldekort> {
+        return meldekortRepo.hentUsendteMeldekort()
+    }
+
+    override fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, tidspunkt: LocalDateTime) {
+        meldekortRepo.markerSendt(meldekortId, meldekortStatus, tidspunkt)
     }
 }
