@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
+import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -24,7 +25,7 @@ class SendMeldekortService(
                 Either.catch {
                     saksbehandlingClient.sendMeldekort(meldekort, correlationId)
                     log.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
-                    meldekortService.markerSendt(meldekort.id, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
+                    meldekortService.markerSendt(meldekort.id, MeldekortStatus.Innsendt, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
                     log.info { "Meldekort oppdatert med innsendingstidspunkt ${meldekort.id}" }
                 }.onLeft {
                     log.error(it) { "Feil ved sending av meldekort: ${meldekort.id}" }

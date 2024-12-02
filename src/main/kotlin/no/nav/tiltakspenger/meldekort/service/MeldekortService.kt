@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.service
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
 import java.time.LocalDateTime
 
@@ -20,5 +21,5 @@ interface MeldekortService {
 
     fun hentMeldekortSomSkalSendesTilSaksbehandling(): List<Meldekort>
 
-    fun markerSendt(meldekortId: MeldekortId, tidspunkt: LocalDateTime)
+    fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, tidspunkt: LocalDateTime)
 }

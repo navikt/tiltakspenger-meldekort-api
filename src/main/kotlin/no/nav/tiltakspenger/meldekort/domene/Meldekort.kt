@@ -15,7 +15,7 @@ data class Meldekort(
     val tilOgMed: LocalDate,
     val meldeperiodeId: MeldeperiodeId,
     val meldekortDager: List<MeldekortDag>,
-    val status: String,
+    val status: MeldekortStatus,
     val iverksattTidspunkt: LocalDateTime? = null,
 )
 
@@ -38,7 +38,7 @@ fun genererDummyMeldekort(fnr: Fnr): Meldekort {
         fraOgMed = fraOgMed,
         tilOgMed = tilOgMed,
         meldeperiodeId = MeldeperiodeId("$fraOgMed/$tilOgMed"),
-        status = "TilUtfylling",
+        status = MeldekortStatus.Til_Utfylling,
         meldekortDager = meldekortDager,
     )
 }
