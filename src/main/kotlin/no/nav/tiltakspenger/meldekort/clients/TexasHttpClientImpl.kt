@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.future.await
 import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.json.deserialize
@@ -31,16 +30,11 @@ sealed class TokenResponse {
     ) : TokenResponse()
 
     data class Error(
-        val error: TokenErrorResponse,
-        val status: HttpStatusCode,
+        val error: String,
+        @JsonProperty("error_description")
+        val errorDescription: String,
     ) : TokenResponse()
 }
-
-data class TokenErrorResponse(
-    val error: String,
-    @JsonProperty("error_description")
-    val errorDescription: String,
-)
 
 data class TokenIntrospectionResponse(
     val active: Boolean,
@@ -115,15 +109,24 @@ class TexasHttpClientImpl(
             val jsonResponse = httpResponse.body()
             val status = httpResponse.statusCode()
             if (status != 200) {
-                val tokenResponseError = deserialize<TokenResponse.Error>(jsonResponse)
+                val tokenResponseError = try {
+                    deserialize<TokenResponse.Error>(jsonResponse)
+                } catch (e: Exception) {
+                    sikkerlogg.error("Kunne ikke parse error JSON: $jsonResponse")
+
+                    TokenResponse.Error(
+                        error = "Kunne ikke parse feil-response",
+                        errorDescription = e.toString(),
+                    )
+                }
                 sikkerlogg.error(
                     """ 
-                    Fikk ikke hentet systemtoken. Status: ${tokenResponseError.status}.
-                    error: ${tokenResponseError.error.error}
-                    errordescription: ${tokenResponseError.error.errorDescription} . uri: $uri 
+                    Fikk ikke hentet systemtoken. Status: $status.
+                    error: ${tokenResponseError.error}
+                    errordescription: ${tokenResponseError.errorDescription} . uri: $uri 
                 """,
                 )
-                throw RuntimeException("Fikk ikke hentet systemtoken. Status: ${tokenResponseError.status}. uri: $uri. Se sikkerlogg for detaljer.")
+                throw RuntimeException("Fikk ikke hentet systemtoken. Status: $status. uri: $uri. Se sikkerlogg for detaljer.")
             }
             Either.catch {
                 deserialize<TokenResponse.Success>(jsonResponse)
