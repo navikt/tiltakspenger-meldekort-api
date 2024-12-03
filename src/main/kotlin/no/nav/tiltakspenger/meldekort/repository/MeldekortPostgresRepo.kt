@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.repository
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
-import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
@@ -11,6 +10,7 @@ import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
+import no.nav.tiltakspenger.meldekort.db.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
@@ -24,7 +24,7 @@ class MeldekortPostgresRepo(
     override fun lagreMeldekort(meldekort: Meldekort, transactionContext: TransactionContext?) {
         sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
-                queryOf(
+                sqlQuery(
                     """
                         insert into meldekort (
                             id,
@@ -47,7 +47,7 @@ class MeldekortPostgresRepo(
                           :status,
                           :iverksatt_tidspunkt
                         )
-                    """.trimIndent(),
+                    """,
                     mapOf(
                         "id" to meldekort.id.toString(),
                         "sak_id" to meldekort.sakId.toString(),
@@ -70,13 +70,13 @@ class MeldekortPostgresRepo(
     ) {
         sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
-                queryOf(
+                sqlQuery(
                     """
-                    update meldekort set 
-                        status = :status,
-                        meldekortdager = to_jsonb(:meldekortdager::jsonb)
-                    where id = :id
-                    """.trimIndent(),
+                        update meldekort set 
+                            status = :status,
+                            meldekortdager = to_jsonb(:meldekortdager::jsonb)
+                        where id = :id
+                    """,
                     mapOf(
                         "id" to meldekort.id,
                         // TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
@@ -91,13 +91,13 @@ class MeldekortPostgresRepo(
     override fun hentMeldekort(meldekortId: MeldekortId, transactionContext: TransactionContext?): Meldekort? {
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
-                queryOf(
+                sqlQuery(
                     """
                         select
                           *
                         from meldekort
                         where id = :id
-                    """.trimIndent(),
+                    """,
                     mapOf("id" to meldekortId.toString()),
                 ).map { row ->
                     fromRow(row)
@@ -115,16 +115,15 @@ class MeldekortPostgresRepo(
     }
 
     override fun hentUsendteMeldekort(transactionContext: TransactionContext?): List<Meldekort> {
-        val query = """ 
-            select * from meldekort
-            where innsendt_tidspunkt is null and status = 'Innsendt'
-        """.trimIndent()
-
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
-                queryOf(
-                    query.trimIndent(),
-                ).map { row -> fromRow(row) }.asList,
+                sqlQuery(
+                    """ 
+                        select * from meldekort
+                        where innsendt_tidspunkt is null and status = 'Innsendt'
+                    """,
+                )
+                    .map { row -> fromRow(row) }.asList,
             )
         }
     }
@@ -135,17 +134,15 @@ class MeldekortPostgresRepo(
         innsendtTidspunkt: LocalDateTime,
         transactionContext: TransactionContext?,
     ) {
-        val query = """ 
-            update meldekort set
-            innsendt_tidspunkt = :innsendtTidspunkt,
-            status = :meldekortstatus
-            where id = :meldekortId
-        """.trimIndent()
-
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
-                queryOf(
-                    query.trimIndent(),
+                sqlQuery(
+                    """ 
+                        update meldekort set
+                        innsendt_tidspunkt = :innsendtTidspunkt,
+                        status = :meldekortstatus
+                        where id = :meldekortId
+                    """,
                     mapOf("meldekortstatus" to meldekortStatus.name, "innsendtTidspunkt" to innsendtTidspunkt),
                 ).asUpdate,
             )
@@ -157,18 +154,17 @@ class MeldekortPostgresRepo(
         limit: Int?,
         transactionContext: TransactionContext?,
     ): List<Meldekort> {
-        val query = """
-            select
-                *
-            from meldekort
-            where fnr = :fnr
-            order by fra_og_med
-        """.let { if (limit == null) it else it.plus("limit $limit") }
-
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
-                queryOf(
-                    query.trimIndent(),
+                sqlQuery(
+                    """
+                        select
+                            *
+                        from meldekort
+                        where fnr = :fnr
+                        order by fra_og_med
+                        limit $limit
+                    """,
                     mapOf("fnr" to fnr.verdi),
                 ).map { row -> fromRow(row) }.asList,
             )
