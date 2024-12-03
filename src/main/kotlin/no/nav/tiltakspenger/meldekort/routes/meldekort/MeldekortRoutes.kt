@@ -45,7 +45,6 @@ internal fun Route.meldekortRoutes(
         }
 
         get<HentForMeldekortId> {
-            // TODO kew: midlertidig frem til vi får på plass den fra ApplicationCallEx.kt
             val meldekortId = MeldekortId.Companion.fromString(it.meldekortId)
 
             val meldekort = meldekortService.hentMeldekort(meldekortId)
