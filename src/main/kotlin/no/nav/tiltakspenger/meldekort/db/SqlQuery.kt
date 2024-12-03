@@ -6,7 +6,7 @@ import org.intellij.lang.annotations.Language
 fun sqlQuery(
     @Language("PostgreSQL")
     query: String,
-    paramMap: Map<String, Any?>? = null,
+    vararg params: Pair<String, Any?>,
 ): Query {
-    return Query(query.trimIndent(), paramMap = paramMap ?: emptyMap())
+    return Query(query.trimIndent(), paramMap = mapOf(*params))
 }

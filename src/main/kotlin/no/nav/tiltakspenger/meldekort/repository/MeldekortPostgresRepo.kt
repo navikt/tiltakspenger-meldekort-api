@@ -48,17 +48,15 @@ class MeldekortPostgresRepo(
                           :iverksatt_tidspunkt
                         )
                     """,
-                    mapOf(
-                        "id" to meldekort.id.toString(),
-                        "sak_id" to meldekort.sakId.toString(),
-                        "fnr" to meldekort.fnr.verdi,
-                        "fra_og_med" to meldekort.fraOgMed,
-                        "til_og_med" to meldekort.tilOgMed,
-                        "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
-                        "meldekortdager" to serialize(meldekort.meldekortDager),
-                        "status" to meldekort.status.name,
-                        "iverksatt_tidspunkt" to meldekort.iverksattTidspunkt,
-                    ),
+                    "id" to meldekort.id.toString(),
+                    "sak_id" to meldekort.sakId.toString(),
+                    "fnr" to meldekort.fnr.verdi,
+                    "fra_og_med" to meldekort.fraOgMed,
+                    "til_og_med" to meldekort.tilOgMed,
+                    "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
+                    "meldekortdager" to serialize(meldekort.meldekortDager),
+                    "status" to meldekort.status.name,
+                    "iverksatt_tidspunkt" to meldekort.iverksattTidspunkt,
                 ).asUpdate,
             )
         }
@@ -77,12 +75,10 @@ class MeldekortPostgresRepo(
                             meldekortdager = to_jsonb(:meldekortdager::jsonb)
                         where id = :id
                     """,
-                    mapOf(
-                        "id" to meldekort.id,
-                        // TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
-                        "status" to MeldekortStatus.Innsendt.name,
-                        "meldekortdager" to serialize(meldekort.meldekortDager),
-                    ),
+                    "id" to meldekort.id,
+                    // TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
+                    "status" to MeldekortStatus.Innsendt.name,
+                    "meldekortdager" to serialize(meldekort.meldekortDager),
                 ).asUpdate,
             )
         }
@@ -98,7 +94,7 @@ class MeldekortPostgresRepo(
                         from meldekort
                         where id = :id
                     """,
-                    mapOf("id" to meldekortId.toString()),
+                    "id" to meldekortId.toString(),
                 ).map { row ->
                     fromRow(row)
                 }.asSingle,
@@ -143,7 +139,8 @@ class MeldekortPostgresRepo(
                         status = :meldekortstatus
                         where id = :meldekortId
                     """,
-                    mapOf("meldekortstatus" to meldekortStatus.name, "innsendtTidspunkt" to innsendtTidspunkt),
+                    "meldekortstatus" to meldekortStatus.name,
+                    "innsendtTidspunkt" to innsendtTidspunkt,
                 ).asUpdate,
             )
         }
@@ -165,7 +162,7 @@ class MeldekortPostgresRepo(
                         order by fra_og_med
                         limit $limit
                     """,
-                    mapOf("fnr" to fnr.verdi),
+                    "fnr" to fnr.verdi,
                 ).map { row -> fromRow(row) }.asList,
             )
         }
