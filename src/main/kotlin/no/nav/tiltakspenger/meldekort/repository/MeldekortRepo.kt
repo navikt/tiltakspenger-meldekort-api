@@ -3,14 +3,14 @@ package no.nav.tiltakspenger.meldekort.repository
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
 import java.time.LocalDateTime
 
 interface MeldekortRepo {
     fun lagreMeldekort(
-        meldekort: Meldekort,
+        meldeperiode: Meldeperiode,
         transactionContext: TransactionContext? = null,
     )
 
@@ -22,19 +22,19 @@ interface MeldekortRepo {
     fun hentMeldekort(
         meldekortId: MeldekortId,
         transactionContext: TransactionContext? = null,
-    ): Meldekort?
+    ): Meldeperiode?
 
     fun hentSisteMeldekort(
         fnr: Fnr,
         transactionContext: TransactionContext? = null,
-    ): Meldekort?
+    ): Meldeperiode?
 
     fun hentAlleMeldekort(
         fnr: Fnr,
         transactionContext: TransactionContext? = null,
-    ): List<Meldekort>
+    ): List<Meldeperiode>
 
-    fun hentUsendteMeldekort(transactionContext: TransactionContext? = null): List<Meldekort>
+    fun hentUsendteMeldekort(transactionContext: TransactionContext? = null): List<Meldeperiode>
 
     fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, tidspunkt: LocalDateTime, transactionContext: TransactionContext? = null)
 }

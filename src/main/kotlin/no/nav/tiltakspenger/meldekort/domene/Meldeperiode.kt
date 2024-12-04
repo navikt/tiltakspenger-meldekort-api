@@ -2,24 +2,21 @@ package no.nav.tiltakspenger.meldekort.domene
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
-import no.nav.tiltakspenger.libs.common.MeldeperiodeId
-import no.nav.tiltakspenger.libs.common.SakId
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class Meldekort(
-    val id: MeldekortId,
-    val sakId: SakId,
+data class Meldeperiode(
+    val meldekortId: MeldekortId,
+    val meldeperiodeInstansId: MeldekortId,
     val fnr: Fnr,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
-    val meldeperiodeId: MeldeperiodeId,
-    val meldekortDager: List<MeldekortDag>,
     val status: MeldekortStatus,
-    val iverksattTidspunkt: LocalDateTime? = null,
+    val innsendtTidspunkt: LocalDateTime?,
+    val meldekortDager: List<MeldekortDag>,
 )
 
-fun genererDummyMeldekort(fnr: Fnr): Meldekort {
+fun genererDummyMeldekort(fnr: Fnr): Meldeperiode {
     val fraOgMed = LocalDate.now().let {
         val diffTilMandag = 1 - it.dayOfWeek.value
         it.plusDays(diffTilMandag.toLong())
@@ -28,17 +25,17 @@ fun genererDummyMeldekort(fnr: Fnr): Meldekort {
     val tilOgMed = fraOgMed.plusDays(13)
 
     val meldekortDager = List(14) { index ->
-        MeldekortDag(dag = fraOgMed.plusDays(index.toLong()), status = "IKKE_REGISTRERT")
+        MeldekortDag(dato = fraOgMed.plusDays(index.toLong()), status = MeldekortDagStatus.IkkeRegistrert)
     }
 
-    return Meldekort(
-        id = MeldekortId.random(),
-        sakId = SakId.random(),
+    return Meldeperiode(
+        meldekortId = MeldekortId.random(),
+        meldeperiodeInstansId = MeldekortId.random(),
         fnr = fnr,
         fraOgMed = fraOgMed,
         tilOgMed = tilOgMed,
-        meldeperiodeId = MeldeperiodeId("$fraOgMed/$tilOgMed"),
         status = MeldekortStatus.TilUtfylling,
         meldekortDager = meldekortDager,
+        innsendtTidspunkt = null,
     )
 }

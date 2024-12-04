@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.MeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.toDTO
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import java.time.LocalDate
 
 data class MeldekortTilUtfyllingDTO(
@@ -18,9 +18,9 @@ data class MeldekortFraUtfyllingDTO(
     val meldekortDager: List<MeldekortDagDTO>,
 )
 
-fun Meldekort.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
+fun Meldeperiode.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
     return MeldekortTilUtfyllingDTO(
-        id = this.id.toString(),
+        id = this.meldekortId.toString(),
         fraOgMed = this.fraOgMed,
         tilOgMed = this.tilOgMed,
         status = this.status.toDTO(),

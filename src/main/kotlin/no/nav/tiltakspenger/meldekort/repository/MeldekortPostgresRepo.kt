@@ -11,8 +11,8 @@ import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.meldekort.db.sqlQuery
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
 import java.time.LocalDateTime
 
@@ -21,7 +21,7 @@ val logger = KotlinLogging.logger {}
 class MeldekortPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
 ) : MeldekortRepo {
-    override fun lagreMeldekort(meldekort: Meldekort, transactionContext: TransactionContext?) {
+    override fun lagreMeldekort(meldeperiode: Meldeperiode, transactionContext: TransactionContext?) {
         sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
                 sqlQuery(
@@ -48,15 +48,15 @@ class MeldekortPostgresRepo(
                           :iverksatt_tidspunkt
                         )
                     """,
-                    "id" to meldekort.id.toString(),
-                    "sak_id" to meldekort.sakId.toString(),
-                    "fnr" to meldekort.fnr.verdi,
-                    "fra_og_med" to meldekort.fraOgMed,
-                    "til_og_med" to meldekort.tilOgMed,
-                    "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
-                    "meldekortdager" to serialize(meldekort.meldekortDager),
-                    "status" to meldekort.status.name,
-                    "iverksatt_tidspunkt" to meldekort.iverksattTidspunkt,
+                    "id" to meldeperiode.meldekortId.toString(),
+                    "sak_id" to meldeperiode.sakId.toString(),
+                    "fnr" to meldeperiode.fnr.verdi,
+                    "fra_og_med" to meldeperiode.fraOgMed,
+                    "til_og_med" to meldeperiode.tilOgMed,
+                    "meldeperiode_id" to meldeperiode.meldeperiodeInstansId.verdi,
+                    "meldekortdager" to serialize(meldeperiode.meldekortDager),
+                    "status" to meldeperiode.status.name,
+                    "iverksatt_tidspunkt" to meldeperiode.iverksattTidspunkt,
                 ).asUpdate,
             )
         }
@@ -84,7 +84,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentMeldekort(meldekortId: MeldekortId, transactionContext: TransactionContext?): Meldekort? {
+    override fun hentMeldekort(meldekortId: MeldekortId, transactionContext: TransactionContext?): Meldeperiode? {
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
                 sqlQuery(
@@ -102,15 +102,15 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentSisteMeldekort(fnr: Fnr, transactionContext: TransactionContext?): Meldekort? {
+    override fun hentSisteMeldekort(fnr: Fnr, transactionContext: TransactionContext?): Meldeperiode? {
         return this.hentMeldekortForBruker(fnr, 1, transactionContext).firstOrNull()
     }
 
-    override fun hentAlleMeldekort(fnr: Fnr, transactionContext: TransactionContext?): List<Meldekort> {
+    override fun hentAlleMeldekort(fnr: Fnr, transactionContext: TransactionContext?): List<Meldeperiode> {
         return this.hentMeldekortForBruker(fnr, null, transactionContext)
     }
 
-    override fun hentUsendteMeldekort(transactionContext: TransactionContext?): List<Meldekort> {
+    override fun hentUsendteMeldekort(transactionContext: TransactionContext?): List<Meldeperiode> {
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
                 sqlQuery(
@@ -150,7 +150,7 @@ class MeldekortPostgresRepo(
         fnr: Fnr,
         limit: Int?,
         transactionContext: TransactionContext?,
-    ): List<Meldekort> {
+    ): List<Meldeperiode> {
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
                 sqlQuery(
@@ -171,14 +171,14 @@ class MeldekortPostgresRepo(
     companion object {
         private fun fromRow(
             row: Row,
-        ): Meldekort {
-            return Meldekort(
-                id = MeldekortId.Companion.fromString(row.string("id")),
+        ): Meldeperiode {
+            return Meldeperiode(
+                meldekortId = MeldekortId.Companion.fromString(row.string("id")),
                 sakId = SakId.fromString(row.string("sak_id")),
                 fnr = Fnr.fromString(row.string("fnr")),
                 fraOgMed = row.localDate("fra_og_med"),
                 tilOgMed = row.localDate("til_og_med"),
-                meldeperiodeId = MeldeperiodeId(row.string("meldeperiode_id")),
+                meldeperiodeInstansId = MeldeperiodeId(row.string("meldeperiode_id")),
                 meldekortDager = deserializeList(row.string("meldekortdager")),
                 status = MeldekortStatus.valueOf(row.string("status")),
                 iverksattTidspunkt = row.localDateTimeOrNull("iverksatt_tidspunkt"),

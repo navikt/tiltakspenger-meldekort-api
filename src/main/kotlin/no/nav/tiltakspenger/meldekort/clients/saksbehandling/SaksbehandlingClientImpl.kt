@@ -8,7 +8,7 @@ import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -33,11 +33,11 @@ class SaksbehandlingClientImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun sendMeldekort(meldekort: Meldekort, correlationId: CorrelationId): Either<SaksbehandlingApiError, Unit> {
-        val jsonPayload = serialize(meldekort.toSaksbehandlingMeldekortDTO())
+    override suspend fun sendMeldekort(meldeperiode: Meldeperiode, correlationId: CorrelationId): Either<SaksbehandlingApiError, Unit> {
+        val jsonPayload = serialize(meldeperiode.toSaksbehandlingMeldekortDTO())
 
         return Either.catch {
-            logger.info { "Sender kall til saksbehandling med id ${meldekort.id}" }
+            logger.info { "Sender kall til saksbehandling med id ${meldeperiode.meldekortId}" }
 
             val request = createRequest(token = getToken(), jsonPayload = jsonPayload)
             val httpResponse = client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
@@ -45,7 +45,7 @@ class SaksbehandlingClientImpl(
             val responseBody = httpResponse.body()
             val status = httpResponse.statusCode()
             if (status != 200) {
-                val melding = "Feil ved kall til tiltakspenger-saksbehandling-api - Status $status - MeldekortId: ${meldekort.id}"
+                val melding = "Feil ved kall til tiltakspenger-saksbehandling-api - Status $status - MeldekortId: ${meldeperiode.meldekortId}"
                 logger.warn { "$melding - Se sikkerlogg for detaljer." }
                 sikkerlogg.warn { "$melding - Response: $responseBody - Payload: $jsonPayload" }
                 return SaksbehandlingApiError.left()

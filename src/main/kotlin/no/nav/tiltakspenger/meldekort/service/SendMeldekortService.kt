@@ -21,14 +21,14 @@ class SendMeldekortService(
     ) {
         Either.catch {
             meldekortService.hentMeldekortSomSkalSendesTilSaksbehandling().forEach { meldekort ->
-                log.info { "Sender meldekort med id ${meldekort.id}" }
+                log.info { "Sender meldekort med id ${meldekort.meldekortId}" }
                 Either.catch {
                     saksbehandlingClient.sendMeldekort(meldekort, correlationId)
-                    log.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
-                    meldekortService.markerSendt(meldekort.id, MeldekortStatus.Innsendt, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
-                    log.info { "Meldekort oppdatert med innsendingstidspunkt ${meldekort.id}" }
+                    log.info { "Meldekort sendt til saksbehandling: ${meldekort.meldekortId}" }
+                    meldekortService.markerSendt(meldekort.meldekortId, MeldekortStatus.Innsendt, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
+                    log.info { "Meldekort oppdatert med innsendingstidspunkt ${meldekort.meldekortId}" }
                 }.onLeft {
-                    log.error(it) { "Feil ved sending av meldekort: ${meldekort.id}" }
+                    log.error(it) { "Feil ved sending av meldekort: ${meldekort.meldekortId}" }
                 }
             }
         }.onLeft {

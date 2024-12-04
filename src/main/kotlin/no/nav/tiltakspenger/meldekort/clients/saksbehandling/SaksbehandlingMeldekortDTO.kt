@@ -1,8 +1,8 @@
 package no.nav.tiltakspenger.meldekort.clients.saksbehandling
 
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -18,14 +18,14 @@ data class SaksbehandlingMeldekortDTO(
     val iverksattTidspunkt: LocalDateTime? = null,
 )
 
-fun Meldekort.toSaksbehandlingMeldekortDTO(): SaksbehandlingMeldekortDTO =
+fun Meldeperiode.toSaksbehandlingMeldekortDTO(): SaksbehandlingMeldekortDTO =
     SaksbehandlingMeldekortDTO(
-        id = this.id.toString(),
+        id = this.meldekortId.toString(),
         sakId = this.sakId.toString(),
         fnr = this.fnr.verdi,
         fraOgMed = this.fraOgMed,
         tilOgMed = this.tilOgMed,
-        meldeperiodeId = this.meldeperiodeId,
+        meldeperiodeId = this.meldeperiodeInstansId,
         meldekortDager = this.meldekortDager.toSaksbehandlingDTO(),
         status = this.status.toDTO(),
         iverksattTidspunkt = this.iverksattTidspunkt,
@@ -38,5 +38,5 @@ data class SaksbehandlingMeldekortDagDTO(
 
 fun List<MeldekortDag>.toSaksbehandlingDTO(): List<SaksbehandlingMeldekortDagDTO> =
     this.map { dag ->
-        SaksbehandlingMeldekortDagDTO(dag = dag.dag, status = dag.status)
+        SaksbehandlingMeldekortDagDTO(dag = dag.dato, status = dag.status)
     }
