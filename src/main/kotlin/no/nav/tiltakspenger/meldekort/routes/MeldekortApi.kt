@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.routes
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -10,6 +11,7 @@ import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.request.header
 import io.ktor.server.request.path
 import io.ktor.server.resources.Resources
 import io.ktor.server.routing.routing
@@ -22,7 +24,11 @@ const val CALL_ID_MDC_KEY = "call-id"
 internal fun Application.meldekortApi(
     applicationContext: ApplicationContext,
 ) {
-    install(CallId)
+    install(CallId) {
+        generate { java.util.UUID.randomUUID().toString() }
+        retrieve { call -> call.request.header(HttpHeaders.XRequestId) }
+        verify { callId: String -> callId.isNotEmpty() }
+    }
     install(CallLogging) {
         callIdMdc(CALL_ID_MDC_KEY)
         level = Level.INFO
