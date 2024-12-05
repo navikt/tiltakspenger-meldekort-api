@@ -36,5 +36,5 @@ interface MeldekortRepo {
 
     fun hentUsendteMeldekort(transactionContext: TransactionContext? = null): List<Meldekort>
 
-    fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, tidspunkt: LocalDateTime, transactionContext: TransactionContext? = null)
+    fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime, transactionContext: TransactionContext? = null)
 }

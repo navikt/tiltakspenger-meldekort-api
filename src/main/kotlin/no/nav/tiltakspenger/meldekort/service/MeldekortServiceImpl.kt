@@ -35,7 +35,7 @@ class MeldekortServiceImpl(
         return meldekortRepo.hentUsendteMeldekort()
     }
 
-    override fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, tidspunkt: LocalDateTime) {
-        meldekortRepo.markerSendt(meldekortId, meldekortStatus, tidspunkt)
+    override fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime) {
+        meldekortRepo.markerSendt(meldekortId, meldekortStatus, innsendtTidspunkt)
     }
 }

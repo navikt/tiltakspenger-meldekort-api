@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.service
 
 import arrow.core.Either
+import arrow.core.getOrElse
 import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
@@ -23,9 +24,16 @@ class SendMeldekortService(
             meldekortService.hentMeldekortSomSkalSendesTilSaksbehandling().forEach { meldekort ->
                 log.info { "Sender meldekort med id ${meldekort.id}" }
                 Either.catch {
-                    saksbehandlingClient.sendMeldekort(meldekort, correlationId)
+                    saksbehandlingClient.sendMeldekort(meldekort, correlationId).getOrElse {
+                        log.error { "Feil under sending av meldekort med id: ${meldekort.id} til SaksbehandlingApi" }
+                        return@forEach
+                    }
                     log.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
-                    meldekortService.markerSendt(meldekort.id, MeldekortStatus.Innsendt, LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
+                    meldekortService.markerSendt(
+                        meldekortId = meldekort.id,
+                        meldekortStatus = MeldekortStatus.Innsendt,
+                        innsendtTidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                    )
                     log.info { "Meldekort oppdatert med innsendingstidspunkt ${meldekort.id}" }
                 }.onLeft {
                     log.error(it) { "Feil ved sending av meldekort: ${meldekort.id}" }
