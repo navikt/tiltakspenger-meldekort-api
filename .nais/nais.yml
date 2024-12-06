@@ -33,7 +33,7 @@ spec:
   gcp:
     sqlInstances:
       - name: tiltakspenger-meldekort-api
-        type: POSTGRES_16
+        type: POSTGRES_17
         tier: {{ sqlInstances.tier }}
         diskAutoresize: {{ sqlInstances.diskAutoresize }}
         pointInTimeRecovery: {{ sqlInstances.pointInTimeRecovery }}
