@@ -25,7 +25,7 @@ class SendMeldekortService(
                 log.info { "Sender meldekort med id ${meldekort.id}" }
                 Either.catch {
                     saksbehandlingClient.sendMeldekort(meldekort, correlationId).getOrElse {
-                        log.error { "Feil under sending av meldekort med id: ${meldekort.id} til SaksbehandlingApi" }
+                        log.warn { "Feil under sending av meldekort med id: ${meldekort.id} til SaksbehandlingApi" }
                         return@forEach
                     }
                     log.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
