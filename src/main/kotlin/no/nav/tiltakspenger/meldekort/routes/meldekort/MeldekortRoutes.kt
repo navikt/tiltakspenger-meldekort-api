@@ -24,16 +24,19 @@ val logger = KotlinLogging.logger {}
 private class HentForMeldekortId(val meldekortId: String)
 
 @Resource("siste")
-private class HentSiste()
+private class HentSiste
 
 @Resource("alle")
-private class HentAlle()
+private class HentAlle
 
 @Resource("generer")
-private class GenererDummyMeldekort()
+private class GenererDummyMeldekort
 
 @Resource("send-inn")
-private class SendInn()
+private class SendInn
+
+@Resource("til-utfylling")
+private class TilUtfylling
 
 internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
@@ -102,6 +105,13 @@ internal fun Route.meldekortRoutes(
             }
 
             meldekortService.oppdaterMeldekort(body)
+
+            call.respond(HttpStatusCode.OK)
+        }
+
+        post<TilUtfylling> {
+            val body = call.receiveText()
+            logger.info { "Fikk meldekort fra saksbehandling: $body" }
 
             call.respond(HttpStatusCode.OK)
         }
