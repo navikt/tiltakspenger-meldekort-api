@@ -152,7 +152,7 @@ class MeldekortPostgresRepo(
                             *
                         from meldekort
                         where fnr = :fnr
-                        order by fra_og_med
+                        order by fra_og_med desc
                         limit $limit
                     """,
                     "fnr" to fnr.verdi,
