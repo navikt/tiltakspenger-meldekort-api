@@ -31,7 +31,7 @@ class SendMeldekortService(
                     log.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
                     meldekortService.markerSendt(
                         meldekortId = meldekort.id,
-                        meldekortStatus = MeldekortStatus.Innsendt,
+                        meldekortStatus = MeldekortStatus.INNSENDT,
                         innsendtTidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
                     )
                     log.info { "Meldekort oppdatert med innsendingstidspunkt ${meldekort.id}" }

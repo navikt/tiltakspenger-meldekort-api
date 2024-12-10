@@ -10,5 +10,5 @@ data class MeldekortDagDTO(
 
 fun List<MeldekortDag>.toDTO(): List<MeldekortDagDTO> =
     this.map { dag ->
-        MeldekortDagDTO(dag = dag.dag, status = dag.status)
+        MeldekortDagDTO(dag = dag.dag, status = dag.status.name)
     }

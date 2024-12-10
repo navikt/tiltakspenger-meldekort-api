@@ -4,7 +4,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 data class Meldekort(
     val id: MeldekortId,
@@ -14,7 +13,6 @@ data class Meldekort(
     val meldeperiodeId: MeldeperiodeId,
     val meldekortDager: List<MeldekortDag>,
     val status: MeldekortStatus,
-    val iverksattTidspunkt: LocalDateTime? = null,
 )
 
 fun genererDummyMeldekort(fnr: Fnr): Meldekort {
@@ -26,7 +24,7 @@ fun genererDummyMeldekort(fnr: Fnr): Meldekort {
     val tilOgMed = fraOgMed.plusDays(13)
 
     val meldekortDager = List(14) { index ->
-        MeldekortDag(dag = fraOgMed.plusDays(index.toLong()), status = "IKKE_REGISTRERT")
+        MeldekortDag(dag = fraOgMed.plusDays(index.toLong()), status = MeldekortDagStatus.IKKE_REGISTRERT)
     }
 
     return Meldekort(
@@ -35,7 +33,7 @@ fun genererDummyMeldekort(fnr: Fnr): Meldekort {
         fraOgMed = fraOgMed,
         tilOgMed = tilOgMed,
         meldeperiodeId = MeldeperiodeId("$fraOgMed/$tilOgMed"),
-        status = MeldekortStatus.TilUtfylling,
+        status = MeldekortStatus.KAN_UTFYLLES,
         meldekortDager = meldekortDager,
     )
 }

@@ -32,8 +32,7 @@ class MeldekortPostgresRepo(
                             til_og_med,
                             meldeperiode_id,
                             meldekortdager,
-                            status,
-                            iverksatt_tidspunkt
+                            status
                         ) values (
                           :id,
                           :fnr,
@@ -41,8 +40,7 @@ class MeldekortPostgresRepo(
                           :til_og_med,
                           :meldeperiode_id,
                           to_jsonb(:meldekortdager::jsonb),
-                          :status,
-                          :iverksatt_tidspunkt
+                          :status
                         )
                     """,
                     "id" to meldekort.id.toString(),
@@ -52,7 +50,6 @@ class MeldekortPostgresRepo(
                     "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
                     "meldekortdager" to serialize(meldekort.meldekortDager),
                     "status" to meldekort.status.name,
-                    "iverksatt_tidspunkt" to meldekort.iverksattTidspunkt,
                 ).asUpdate,
             )
         }
@@ -73,7 +70,7 @@ class MeldekortPostgresRepo(
                     """,
                     "id" to meldekort.id,
                     // TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
-                    "status" to MeldekortStatus.Innsendt.name,
+                    "status" to MeldekortStatus.INNSENDT.name,
                     "meldekortdager" to serialize(meldekort.meldekortDager),
                 ).asUpdate,
             )
@@ -176,7 +173,6 @@ class MeldekortPostgresRepo(
                 meldeperiodeId = MeldeperiodeId(row.string("meldeperiode_id")),
                 meldekortDager = deserializeList(row.string("meldekortdager")),
                 status = MeldekortStatus.valueOf(row.string("status")),
-                iverksattTidspunkt = row.localDateTimeOrNull("iverksatt_tidspunkt"),
             )
         }
     }

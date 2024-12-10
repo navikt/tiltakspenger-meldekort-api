@@ -4,5 +4,5 @@ import java.time.LocalDate
 
 data class MeldekortDag(
     val dag: LocalDate,
-    val status: String,
+    val status: MeldekortDagStatus,
 )

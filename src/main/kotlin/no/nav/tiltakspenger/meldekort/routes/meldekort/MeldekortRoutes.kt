@@ -104,8 +104,21 @@ internal fun Route.meldekortRoutes(
         }
 
         post("meldekort") {
-            val body = call.receiveText()
-            logger.info { "Fikk meldekort fra saksbehandling: $body" }
+            val meldekortFraSaksbehandling = try {
+                deserialize<MeldekortTilBrukerDTO>(call.receiveText())
+            } catch (e: Exception) {
+                logger.error { "Error parsing body: $e" }
+                null
+            }
+
+            if (meldekortFraSaksbehandling == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+
+            logger.info { "Fikk meldekort fra saksbehandling: ${meldekortFraSaksbehandling.id}" }
+
+            meldekortService.lagreMeldekort(meldekortFraSaksbehandling.tilMeldekort())
 
             call.respond(HttpStatusCode.OK)
         }

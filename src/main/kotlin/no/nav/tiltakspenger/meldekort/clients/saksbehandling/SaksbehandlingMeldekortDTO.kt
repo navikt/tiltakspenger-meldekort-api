@@ -4,7 +4,6 @@ import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 data class SaksbehandlingMeldekortDTO(
     val id: String,
@@ -14,7 +13,6 @@ data class SaksbehandlingMeldekortDTO(
     val meldeperiodeId: MeldeperiodeId,
     val meldekortDager: List<SaksbehandlingMeldekortDagDTO>,
     val status: MeldekortStatusDTO,
-    val iverksattTidspunkt: LocalDateTime? = null,
 )
 
 fun Meldekort.toSaksbehandlingMeldekortDTO(): SaksbehandlingMeldekortDTO =
@@ -26,7 +24,6 @@ fun Meldekort.toSaksbehandlingMeldekortDTO(): SaksbehandlingMeldekortDTO =
         meldeperiodeId = this.meldeperiodeId,
         meldekortDager = this.meldekortDager.toSaksbehandlingDTO(),
         status = this.status.toDTO(),
-        iverksattTidspunkt = this.iverksattTidspunkt,
     )
 
 data class SaksbehandlingMeldekortDagDTO(
@@ -36,5 +33,5 @@ data class SaksbehandlingMeldekortDagDTO(
 
 fun List<MeldekortDag>.toSaksbehandlingDTO(): List<SaksbehandlingMeldekortDagDTO> =
     this.map { dag ->
-        SaksbehandlingMeldekortDagDTO(dag = dag.dag, status = dag.status)
+        SaksbehandlingMeldekortDagDTO(dag = dag.dag, status = dag.status.name)
     }
