@@ -8,7 +8,6 @@ import java.time.LocalDateTime
 
 data class SaksbehandlingMeldekortDTO(
     val id: String,
-    val sakId: String,
     val fnr: String,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
@@ -21,7 +20,6 @@ data class SaksbehandlingMeldekortDTO(
 fun Meldekort.toSaksbehandlingMeldekortDTO(): SaksbehandlingMeldekortDTO =
     SaksbehandlingMeldekortDTO(
         id = this.id.toString(),
-        sakId = this.sakId.toString(),
         fnr = this.fnr.verdi,
         fraOgMed = this.fraOgMed,
         tilOgMed = this.tilOgMed,

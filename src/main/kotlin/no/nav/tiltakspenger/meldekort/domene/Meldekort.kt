@@ -3,13 +3,11 @@ package no.nav.tiltakspenger.meldekort.domene
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
-import no.nav.tiltakspenger.libs.common.SakId
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class Meldekort(
     val id: MeldekortId,
-    val sakId: SakId,
     val fnr: Fnr,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
@@ -33,7 +31,6 @@ fun genererDummyMeldekort(fnr: Fnr): Meldekort {
 
     return Meldekort(
         id = MeldekortId.random(),
-        sakId = SakId.random(),
         fnr = fnr,
         fraOgMed = fraOgMed,
         tilOgMed = tilOgMed,

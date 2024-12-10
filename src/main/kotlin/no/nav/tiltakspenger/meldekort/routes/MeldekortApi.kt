@@ -13,7 +13,6 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.header
 import io.ktor.server.request.path
-import io.ktor.server.resources.Resources
 import io.ktor.server.routing.routing
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
@@ -45,7 +44,6 @@ internal fun Application.meldekortApi(
             registerModule(KotlinModule.Builder().build())
         }
     }
-    install(Resources)
 
     routing {
         healthRoutes()

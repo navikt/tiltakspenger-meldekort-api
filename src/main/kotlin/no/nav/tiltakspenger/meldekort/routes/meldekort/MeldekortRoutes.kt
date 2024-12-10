@@ -2,12 +2,11 @@ package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
-import io.ktor.resources.Resource
 import io.ktor.server.request.receiveText
-import io.ktor.server.resources.get
-import io.ktor.server.resources.post
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
@@ -21,24 +20,6 @@ import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
 val logger = KotlinLogging.logger {}
 
-@Resource("{meldekortId}")
-private class HentForMeldekortId(val meldekortId: String)
-
-@Resource("siste")
-private class HentSiste
-
-@Resource("alle")
-private class HentAlle
-
-@Resource("generer")
-private class GenererDummyMeldekort
-
-@Resource("send-inn")
-private class SendInn
-
-@Resource("meldekort")
-private class TilUtfylling
-
 internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     texasHttpClient: TexasHttpClient,
@@ -48,8 +29,14 @@ internal fun Route.meldekortRoutes(
             client = texasHttpClient
         }
 
-        get<HentForMeldekortId> {
-            val meldekortId = MeldekortId.Companion.fromString(it.meldekortId)
+        get("{meldekortId}") {
+            val meldekortIdParam = call.parameters["meldekortId"]
+            if (meldekortIdParam == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+
+            val meldekortId = MeldekortId.Companion.fromString(meldekortIdParam)
 
             val meldekort = meldekortService.hentMeldekort(meldekortId)
             if (meldekort == null) {
@@ -60,7 +47,7 @@ internal fun Route.meldekortRoutes(
             call.respond(meldekort.tilUtfyllingDTO())
         }
 
-        get<HentSiste> {
+        get("siste") {
             val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
             val meldekort = meldekortService.hentSisteMeldekort(fnr)
@@ -72,7 +59,7 @@ internal fun Route.meldekortRoutes(
             call.respond(meldekort.tilUtfyllingDTO())
         }
 
-        get<HentAlle> {
+        get("alle") {
             val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
             val alleMeldekort = meldekortService.hentAlleMeldekort(fnr).map {
@@ -82,7 +69,7 @@ internal fun Route.meldekortRoutes(
             call.respond(alleMeldekort)
         }
 
-        get<GenererDummyMeldekort> {
+        get("generer") {
             val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
 
             val meldekort = genererDummyMeldekort(fnr)
@@ -92,7 +79,7 @@ internal fun Route.meldekortRoutes(
             call.respond(meldekort)
         }
 
-        post<SendInn> {
+        post("send-inn") {
             val body = try {
                 deserialize<MeldekortFraUtfyllingDTO>(call.receiveText())
             } catch (e: Exception) {
@@ -116,7 +103,7 @@ internal fun Route.meldekortRoutes(
             client = texasHttpClient
         }
 
-        post<TilUtfylling> {
+        post("meldekort") {
             val body = call.receiveText()
             logger.info { "Fikk meldekort fra saksbehandling: $body" }
 

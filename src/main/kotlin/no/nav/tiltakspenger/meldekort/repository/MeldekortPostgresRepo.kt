@@ -5,7 +5,6 @@ import kotliquery.Row
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
-import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
@@ -28,7 +27,6 @@ class MeldekortPostgresRepo(
                     """
                         insert into meldekort (
                             id,
-                            sak_id,
                             fnr,
                             fra_og_med,
                             til_og_med,
@@ -38,7 +36,6 @@ class MeldekortPostgresRepo(
                             iverksatt_tidspunkt
                         ) values (
                           :id,
-                          :sak_id,
                           :fnr,
                           :fra_og_med,
                           :til_og_med,
@@ -49,7 +46,6 @@ class MeldekortPostgresRepo(
                         )
                     """,
                     "id" to meldekort.id.toString(),
-                    "sak_id" to meldekort.sakId.toString(),
                     "fnr" to meldekort.fnr.verdi,
                     "fra_og_med" to meldekort.fraOgMed,
                     "til_og_med" to meldekort.tilOgMed,
@@ -174,7 +170,6 @@ class MeldekortPostgresRepo(
         ): Meldekort {
             return Meldekort(
                 id = MeldekortId.Companion.fromString(row.string("id")),
-                sakId = SakId.fromString(row.string("sak_id")),
                 fnr = Fnr.fromString(row.string("fnr")),
                 fraOgMed = row.localDate("fra_og_med"),
                 tilOgMed = row.localDate("til_og_med"),
