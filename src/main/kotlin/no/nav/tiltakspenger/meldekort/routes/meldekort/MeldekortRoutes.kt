@@ -12,7 +12,8 @@ import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.meldekort.auth.TexasWall
+import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
+import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnrAttributeKey
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
@@ -35,7 +36,7 @@ private class GenererDummyMeldekort
 @Resource("send-inn")
 private class SendInn
 
-@Resource("til-utfylling")
+@Resource("meldekort")
 private class TilUtfylling
 
 internal fun Route.meldekortRoutes(
@@ -43,7 +44,7 @@ internal fun Route.meldekortRoutes(
     texasHttpClient: TexasHttpClient,
 ) {
     route("/meldekort") {
-        install(TexasWall) {
+        install(TexasWallBrukerToken) {
             client = texasHttpClient
         }
 
@@ -107,6 +108,12 @@ internal fun Route.meldekortRoutes(
             meldekortService.oppdaterMeldekort(body)
 
             call.respond(HttpStatusCode.OK)
+        }
+    }
+
+    route("/saksbehandling") {
+        install(TexasWallSystemToken) {
+            client = texasHttpClient
         }
 
         post<TilUtfylling> {

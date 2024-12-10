@@ -59,17 +59,18 @@ class TexasHttpClientImpl(
         return "identity_provider=azuread&target=$urlEncodedAudienceTarget"
     }
 
-    private fun introspectFormData(accessToken: String): String {
+    private fun introspectFormData(accessToken: String, identityProvider: String): String {
         val urlEncodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8)
-        return "identity_provider=tokenx&token=$urlEncodedAccessToken"
+        return "identity_provider=$identityProvider&token=$urlEncodedAccessToken"
     }
 
     override suspend fun introspectToken(
         accessToken: String,
+        identityProvider: String,
     ): TokenIntrospectionResponse {
         return Either.catch {
             val uri = URI.create(Configuration.naisTokenIntrospectionEndpoint)
-            val formData = introspectFormData(accessToken)
+            val formData = introspectFormData(accessToken, identityProvider)
             val request = createRequest(formData, uri)
             val httpResponse = client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
             val jsonResponse = httpResponse.body()
