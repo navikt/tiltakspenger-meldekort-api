@@ -50,6 +50,7 @@ spec:
     inbound:
       rules:
         - application: tiltakspenger-meldekort
+        - application: tiltakspenger-saksbehandling-api
         - application: tokenx-token-generator
           namespace: aura
           cluster: dev-gcp
