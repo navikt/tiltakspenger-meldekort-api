@@ -6,6 +6,7 @@ import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.response.respond
 import io.ktor.util.AttributeKey
 import mu.KotlinLogging
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TokenIntrospectionResponse
 import no.nav.tiltakspenger.meldekort.routes.bearerToken
@@ -14,7 +15,7 @@ class AuthPluginConfiguration(
     var client: TexasHttpClient? = null,
 )
 
-val fnrAttributeKey = AttributeKey<String>("fnr")
+val fnrAttributeKey = AttributeKey<Fnr>("fnr")
 
 val log = KotlinLogging.logger("TexasWall")
 
@@ -57,12 +58,14 @@ val TexasWallBrukerToken = createRouteScopedPlugin(
             val tokenClaims =
                 validateAndGetClaims(call, { token -> client.introspectToken(token, "tokenx") }) ?: return@onCall
 
-            val fnr = tokenClaims["pid"]?.toString()
-            if (fnr == null) {
+            val fnrString = tokenClaims["pid"]?.toString()
+            if (fnrString == null) {
                 log.warn { "Fant ikke fnr i pid claim" }
                 call.respond(HttpStatusCode.InternalServerError)
                 return@onCall
             }
+
+            val fnr = Fnr.fromString(fnrString)
 
             call.attributes.put(fnrAttributeKey, fnr)
         }

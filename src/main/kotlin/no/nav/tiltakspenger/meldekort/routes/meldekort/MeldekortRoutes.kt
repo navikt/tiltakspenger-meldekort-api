@@ -9,7 +9,6 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
@@ -76,9 +75,8 @@ internal fun Route.meldekortRoutes(
             call.respond(meldekort.tilUtfyllingDTO())
         }
 
-
         get("siste") {
-            val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
+            val fnr = call.attributes[fnrAttributeKey]
 
             val meldekort = meldekortService.hentSisteMeldekort(fnr)
             if (meldekort == null) {
@@ -90,7 +88,7 @@ internal fun Route.meldekortRoutes(
         }
 
         get("alle") {
-            val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
+            val fnr = call.attributes[fnrAttributeKey]
 
             val alleMeldekort = meldekortService.hentAlleMeldekort(fnr).map {
                 it.tilUtfyllingDTO()
@@ -100,7 +98,7 @@ internal fun Route.meldekortRoutes(
         }
 
         get("generer") {
-            val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
+            val fnr = call.attributes[fnrAttributeKey]
 
             val meldekort = genererDummyMeldekort(fnr)
 
