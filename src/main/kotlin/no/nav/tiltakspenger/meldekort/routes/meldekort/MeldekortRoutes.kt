@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
@@ -24,7 +25,35 @@ internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     texasHttpClient: TexasHttpClient,
 ) {
-    route("/meldekort") {
+    // Kalles fra saksbehandling-api
+    route("/meldekort", HttpMethod.Post) {
+        install(TexasWallSystemToken) {
+            client = texasHttpClient
+        }
+
+        handle {
+            val meldekortFraSaksbehandling = try {
+                deserialize<MeldekortTilBrukerDTO>(call.receiveText())
+            } catch (e: Exception) {
+                logger.error { "Error parsing body: $e" }
+                null
+            }
+
+            if (meldekortFraSaksbehandling == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@handle
+            }
+
+            logger.info { "Fikk meldekort fra saksbehandling: ${meldekortFraSaksbehandling.id}" }
+
+            meldekortService.lagreMeldekort(meldekortFraSaksbehandling.tilMeldekort())
+
+            call.respond(HttpStatusCode.OK)
+        }
+    }
+
+    // Endepunkter som kalles fra brukers meldekort-frontend
+    route("/meldekort/bruker") {
         install(TexasWallBrukerToken) {
             client = texasHttpClient
         }
@@ -46,6 +75,7 @@ internal fun Route.meldekortRoutes(
 
             call.respond(meldekort.tilUtfyllingDTO())
         }
+
 
         get("siste") {
             val fnr = Fnr.fromString(call.attributes[fnrAttributeKey])
@@ -93,32 +123,6 @@ internal fun Route.meldekortRoutes(
             }
 
             meldekortService.oppdaterMeldekort(body)
-
-            call.respond(HttpStatusCode.OK)
-        }
-    }
-
-    route("/saksbehandling") {
-        install(TexasWallSystemToken) {
-            client = texasHttpClient
-        }
-
-        post("meldekort") {
-            val meldekortFraSaksbehandling = try {
-                deserialize<MeldekortTilBrukerDTO>(call.receiveText())
-            } catch (e: Exception) {
-                logger.error { "Error parsing body: $e" }
-                null
-            }
-
-            if (meldekortFraSaksbehandling == null) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@post
-            }
-
-            logger.info { "Fikk meldekort fra saksbehandling: ${meldekortFraSaksbehandling.id}" }
-
-            meldekortService.lagreMeldekort(meldekortFraSaksbehandling.tilMeldekort())
 
             call.respond(HttpStatusCode.OK)
         }
