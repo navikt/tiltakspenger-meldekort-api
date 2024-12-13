@@ -109,7 +109,7 @@ class MeldekortPostgresRepo(
                 sqlQuery(
                     """ 
                         select * from meldekort
-                        where innsendt_tidspunkt is null and status = 'Innsendt'
+                        where innsendt_tidspunkt is null and status = '${MeldekortStatus.INNSENDT.name}'
                     """,
                 )
                     .map { row -> fromRow(row) }.asList,
