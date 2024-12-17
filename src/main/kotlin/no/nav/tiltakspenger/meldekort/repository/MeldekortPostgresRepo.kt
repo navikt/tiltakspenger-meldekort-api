@@ -32,6 +32,7 @@ class MeldekortPostgresRepo(
                             til_og_med,
                             meldeperiode_id,
                             meldekortdager,
+                            tiltakstype,
                             status
                         ) values (
                           :id,
@@ -40,6 +41,7 @@ class MeldekortPostgresRepo(
                           :til_og_med,
                           :meldeperiode_id,
                           to_jsonb(:meldekortdager::jsonb),
+                          :tiltakstype,
                           :status
                         )
                     """,
@@ -49,6 +51,7 @@ class MeldekortPostgresRepo(
                     "til_og_med" to meldekort.tilOgMed,
                     "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
                     "meldekortdager" to serialize(meldekort.meldekortDager),
+                    "tiltakstype" to meldekort.tiltakstype.name,
                     "status" to meldekort.status.name,
                 ).asUpdate,
             )
@@ -173,6 +176,7 @@ class MeldekortPostgresRepo(
                 meldeperiodeId = MeldeperiodeId(row.string("meldeperiode_id")),
                 meldekortDager = deserializeList(row.string("meldekortdager")),
                 status = MeldekortStatus.valueOf(row.string("status")),
+                tiltakstype = enumValueOf(row.string("tiltakstype")),
             )
         }
     }

@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.routes.meldekort
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
+import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
@@ -26,10 +27,10 @@ enum class MeldekortDagStatusTilBrukerDTO {
     FRAVÆR_ANNET_UTEN_RETT,
     IKKE_DELTATT,
     IKKE_REGISTRERT,
-    IKKE_RETT
+    IKKE_RETT,
 }
 
-fun MeldekortDagStatusTilBrukerDTO.tilMeldekortDagStatus(): MeldekortDagStatus  =
+fun MeldekortDagStatusTilBrukerDTO.tilMeldekortDagStatus(): MeldekortDagStatus =
     when (this) {
         MeldekortDagStatusTilBrukerDTO.DELTATT_UTEN_LØNN -> MeldekortDagStatus.DELTATT
         MeldekortDagStatusTilBrukerDTO.DELTATT_MED_LØNN -> MeldekortDagStatus.DELTATT
@@ -52,6 +53,7 @@ data class MeldekortTilBrukerDTO(
     val fnr: String,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
+    val tiltakstype: TiltakstypeSomGirRett,
     val status: MeldekortStatusTilBrukerDTO,
     val meldekortDager: List<MeldekortDagTilBrukerDTO>,
 ) {
@@ -67,6 +69,7 @@ data class MeldekortTilBrukerDTO(
                 MeldekortStatusTilBrukerDTO.KAN_UTFYLLES -> MeldekortStatus.KAN_UTFYLLES
                 MeldekortStatusTilBrukerDTO.KAN_IKKE_UTFYLLES -> MeldekortStatus.KAN_IKKE_UTFYLLES
             },
+            tiltakstype = this.tiltakstype,
             meldekortDager = this.meldekortDager.map {
                 MeldekortDag(
                     dag = it.dag,

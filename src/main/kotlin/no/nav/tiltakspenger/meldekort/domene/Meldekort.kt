@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.domene
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
+import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
 import java.time.LocalDate
 
 data class Meldekort(
@@ -10,6 +11,7 @@ data class Meldekort(
     val fnr: Fnr,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
+    val tiltakstype: TiltakstypeSomGirRett,
     val meldeperiodeId: MeldeperiodeId,
     val meldekortDager: List<MeldekortDag>,
     val status: MeldekortStatus,
@@ -34,6 +36,7 @@ fun genererDummyMeldekort(fnr: Fnr): Meldekort {
         tilOgMed = tilOgMed,
         meldeperiodeId = MeldeperiodeId("$fraOgMed/$tilOgMed"),
         status = MeldekortStatus.KAN_UTFYLLES,
+        tiltakstype = TiltakstypeSomGirRett.JOBBKLUBB,
         meldekortDager = meldekortDager,
     )
 }
