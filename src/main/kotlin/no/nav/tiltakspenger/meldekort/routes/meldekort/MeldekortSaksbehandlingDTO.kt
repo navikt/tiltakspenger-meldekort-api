@@ -17,9 +17,34 @@ enum class MeldekortStatusTilBrukerDTO {
     GODKJENT,
 }
 
+enum class MeldekortDagStatusTilBrukerDTO {
+    DELTATT_UTEN_LØNN,
+    DELTATT_MED_LØNN,
+    FRAVÆR_SYK,
+    FRAVÆR_SYKT_BARN,
+    FRAVÆR_ANNET_MED_RETT,
+    FRAVÆR_ANNET_UTEN_RETT,
+    IKKE_DELTATT,
+    IKKE_REGISTRERT,
+    IKKE_RETT
+}
+
+fun MeldekortDagStatusTilBrukerDTO.tilMeldekortDagStatus(): MeldekortDagStatus  =
+    when (this) {
+        MeldekortDagStatusTilBrukerDTO.DELTATT_UTEN_LØNN -> MeldekortDagStatus.DELTATT
+        MeldekortDagStatusTilBrukerDTO.DELTATT_MED_LØNN -> MeldekortDagStatus.DELTATT
+        MeldekortDagStatusTilBrukerDTO.FRAVÆR_SYK -> MeldekortDagStatus.FRAVÆR_SYK
+        MeldekortDagStatusTilBrukerDTO.FRAVÆR_SYKT_BARN -> MeldekortDagStatus.FRAVÆR_SYKT_BARN
+        MeldekortDagStatusTilBrukerDTO.FRAVÆR_ANNET_MED_RETT -> MeldekortDagStatus.FRAVÆR_ANNET
+        MeldekortDagStatusTilBrukerDTO.FRAVÆR_ANNET_UTEN_RETT -> MeldekortDagStatus.IKKE_DELTATT
+        MeldekortDagStatusTilBrukerDTO.IKKE_DELTATT -> MeldekortDagStatus.IKKE_DELTATT
+        MeldekortDagStatusTilBrukerDTO.IKKE_REGISTRERT -> MeldekortDagStatus.IKKE_REGISTRERT
+        MeldekortDagStatusTilBrukerDTO.IKKE_RETT -> MeldekortDagStatus.SPERRET
+    }
+
 data class MeldekortDagTilBrukerDTO(
     val dag: LocalDate,
-    val status: MeldekortDagStatus,
+    val status: MeldekortDagStatusTilBrukerDTO,
 )
 
 data class MeldekortTilBrukerDTO(
@@ -45,7 +70,7 @@ data class MeldekortTilBrukerDTO(
             meldekortDager = this.meldekortDager.map {
                 MeldekortDag(
                     dag = it.dag,
-                    status = it.status,
+                    status = it.status.tilMeldekortDagStatus(),
                 )
             },
         )
