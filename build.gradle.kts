@@ -85,7 +85,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
     // Test
-    testImplementation(platform("org.junit:junit-bom:5.11.3"))
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.mockk:mockk-dsl-jvm:$mockkVersion")
