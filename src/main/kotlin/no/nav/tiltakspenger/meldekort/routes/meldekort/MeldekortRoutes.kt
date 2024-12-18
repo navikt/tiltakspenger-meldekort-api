@@ -43,11 +43,18 @@ internal fun Route.meldekortRoutes(
                 return@handle
             }
 
-            logger.info { "Fikk meldekort fra saksbehandling: ${meldekortFraSaksbehandling.id}" }
+            val meldekort = meldekortFraSaksbehandling.tilMeldekort()
 
-            meldekortService.lagreMeldekort(meldekortFraSaksbehandling.tilMeldekort())
+            if (meldekortService.hentMeldekort(meldekort.id) != null) {
+                call.respond(message = "Meldekortet finnes allerede", status = HttpStatusCode.Conflict)
+                return@handle
+            }
 
-            call.respond(HttpStatusCode.OK)
+            meldekortService.lagreMeldekort(meldekort).onLeft {
+                call.respond(message = "Lagring av meldekortet feilet", status = HttpStatusCode.InternalServerError)
+            }.onRight {
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 
