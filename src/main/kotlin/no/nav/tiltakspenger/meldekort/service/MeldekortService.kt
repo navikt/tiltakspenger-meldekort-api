@@ -25,4 +25,4 @@ interface MeldekortService {
     fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime)
 }
 
-data object FeilVedLagringAvMeldekort;
+data object FeilVedLagringAvMeldekort

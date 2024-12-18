@@ -52,9 +52,8 @@ class MeldekortServiceImpl(
     override fun markerSendt(
         meldekortId: MeldekortId,
         meldekortStatus: MeldekortStatus,
-        innsendtTidspunkt: LocalDateTime
+        innsendtTidspunkt: LocalDateTime,
     ) {
         meldekortRepo.markerSendt(meldekortId, meldekortStatus, innsendtTidspunkt)
     }
 }
-
