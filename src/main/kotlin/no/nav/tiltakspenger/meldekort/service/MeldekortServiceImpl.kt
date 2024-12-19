@@ -6,9 +6,9 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
-import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
 import java.time.LocalDateTime
 
 class MeldekortServiceImpl(
@@ -29,7 +29,7 @@ class MeldekortServiceImpl(
         }
     }
 
-    override fun oppdaterMeldekort(meldekort: MeldekortFraUtfyllingDTO) {
+    override fun oppdaterMeldekort(meldekort: MeldekortFraUtfylling) {
         meldekortRepo.oppdaterMeldekort(meldekort)
     }
 

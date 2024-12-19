@@ -4,8 +4,8 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
-import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
 import java.time.LocalDateTime
 
 interface MeldekortRepo {
@@ -15,8 +15,7 @@ interface MeldekortRepo {
     )
 
     fun oppdaterMeldekort(
-        // TODO KEW: Dette burde ikke være en DTO, lag en domene eller databasevariant av 'MeldekortFraUtfylling'
-        meldekort: MeldekortFraUtfyllingDTO,
+        meldekort: MeldekortFraUtfylling,
         transactionContext: TransactionContext? = null,
     )
 

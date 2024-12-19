@@ -11,8 +11,8 @@ import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
-import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
@@ -59,7 +59,7 @@ class MeldekortPostgresRepo(
     }
 
     override fun oppdaterMeldekort(
-        meldekort: MeldekortFraUtfyllingDTO,
+        meldekort: MeldekortFraUtfylling,
         transactionContext: TransactionContext?,
     ) {
         sessionFactory.withTransaction(transactionContext) { tx ->
@@ -71,7 +71,7 @@ class MeldekortPostgresRepo(
                             meldekortdager = to_jsonb(:meldekortdager::jsonb)
                         where id = :id
                     """,
-                    "id" to meldekort.id,
+                    "id" to meldekort.id.toString(),
                     // TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
                     "status" to MeldekortStatus.INNSENDT.name,
                     "meldekortdager" to serialize(meldekort.meldekortDager),

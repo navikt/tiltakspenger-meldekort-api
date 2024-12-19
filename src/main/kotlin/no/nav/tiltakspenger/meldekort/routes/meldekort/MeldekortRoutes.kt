@@ -16,6 +16,7 @@ import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnrAttributeKey
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
+import no.nav.tiltakspenger.meldekort.domene.tilMeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
 val logger = KotlinLogging.logger {}
@@ -115,19 +116,19 @@ internal fun Route.meldekortRoutes(
         }
 
         post("send-inn") {
-            val body = try {
+            val meldekortFraUtfyllingDTO = try {
                 deserialize<MeldekortFraUtfyllingDTO>(call.receiveText())
             } catch (e: Exception) {
                 logger.error { "Error parsing body: $e" }
                 null
             }
 
-            if (body == null) {
+            if (meldekortFraUtfyllingDTO == null) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
 
-            meldekortService.oppdaterMeldekort(body)
+            meldekortService.oppdaterMeldekort(meldekortFraUtfyllingDTO.tilMeldekortFraUtfylling())
 
             call.respond(HttpStatusCode.OK)
         }

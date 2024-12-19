@@ -6,9 +6,9 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
-import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
 import java.time.LocalDateTime
 
 class MeldekortFake : MeldekortRepo {
@@ -18,18 +18,17 @@ class MeldekortFake : MeldekortRepo {
         data.get()[meldekort.id] = meldekort
     }
 
-    override fun oppdaterMeldekort(meldekort: MeldekortFraUtfyllingDTO, transactionContext: TransactionContext?) {
-        // TODO KEW: Fiks opp i denne når den tar inn domene/base versjon av meldekortFraUtfylling.
-//        val meldekortId = MeldekortId.fromString(meldekort.id)
-//        val oppdaterMeldekort = data.get()[meldekortId]?.copy(
-//            meldekortDager = meldekort.meldekortDager
-//        )
-//
-//        if (oppdaterMeldekort == null) {
-//            throw NotFoundException("Fant ikke meldekort med id $meldekortId")
-//        }
-//
-//        data.get()[meldekortId] = oppdaterMeldekort
+    override fun oppdaterMeldekort(meldekort: MeldekortFraUtfylling, transactionContext: TransactionContext?) {
+        val meldekortId = meldekort.id
+        val oppdaterMeldekort = data.get()[meldekortId]?.copy(
+            meldekortDager = meldekort.meldekortDager,
+        )
+
+        if (oppdaterMeldekort == null) {
+            throw NotFoundException("Fant ikke meldekort med id $meldekortId")
+        }
+
+        data.get()[meldekortId] = oppdaterMeldekort
     }
 
     override fun hentMeldekort(meldekortId: MeldekortId, transactionContext: TransactionContext?): Meldekort? {
