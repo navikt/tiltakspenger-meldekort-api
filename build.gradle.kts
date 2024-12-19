@@ -6,6 +6,8 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 val ktorVersion = "3.0.3"
 val mockkVersion = "1.13.13"
 val felleslibVersion = "0.0.309"
+val kotestVersion = "5.9.1"
+val kotlinxCoroutinesVersion = "1.9.0"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
@@ -91,6 +93,16 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.mockk:mockk-dsl-jvm:$mockkVersion")
     testImplementation("org.skyscreamer:jsonassert:1.5.3")
+
+    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-json:$kotestVersion")
+    testImplementation("io.kotest:kotest-extensions:$kotestVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion")
+
+    testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
 }
 
 spotless {

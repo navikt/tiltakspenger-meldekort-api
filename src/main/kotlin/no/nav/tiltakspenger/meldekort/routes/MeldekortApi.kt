@@ -37,13 +37,7 @@ internal fun Application.meldekortApi(
                 !call.request.path().startsWith("/metrics")
         }
     }
-    install(ContentNegotiation) {
-        jackson {
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            registerModule(JavaTimeModule())
-            registerModule(KotlinModule.Builder().build())
-        }
-    }
+    jacksonSerialization()
 
     routing {
         healthRoutes()
@@ -52,5 +46,15 @@ internal fun Application.meldekortApi(
             meldekortService = applicationContext.meldekortService,
             texasHttpClient = applicationContext.texasHttpClient,
         )
+    }
+}
+
+fun Application.jacksonSerialization() {
+    install(ContentNegotiation) {
+        jackson {
+            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            registerModule(JavaTimeModule())
+            registerModule(KotlinModule.Builder().build())
+        }
     }
 }
