@@ -4,7 +4,7 @@ import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TokenIntrospectionResponse
 
-class TexasFake: TexasHttpClient {
+class TexasFake : TexasHttpClient {
     override suspend fun introspectToken(accessToken: String, identityProvider: String): TokenIntrospectionResponse {
         return godkjentResponse()
     }
@@ -17,7 +17,7 @@ class TexasFake: TexasHttpClient {
         return TokenIntrospectionResponse(
             active = true,
             error = null,
-            other = mutableMapOf("pid" to "12345678901")
+            other = mutableMapOf("pid" to "12345678901"),
         )
     }
 }

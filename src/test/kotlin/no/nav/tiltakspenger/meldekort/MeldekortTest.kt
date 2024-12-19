@@ -43,13 +43,13 @@ internal class MeldekortTest {
                         url {
                             protocol = URLProtocol.HTTPS
                             path("/meldekort/bruker/generer")
-                        }
+                        },
                     ).apply {
                         withClue(
                             "Response details:\n" +
-                                    "Status: ${this.status}\n" +
-                                    "Content-Type: ${this.contentType()}\n" +
-                                    "Body: ${this.bodyAsText()}\n",
+                                "Status: ${this.status}\n" +
+                                "Content-Type: ${this.contentType()}\n" +
+                                "Body: ${this.bodyAsText()}\n",
                         ) {
                             status shouldBe HttpStatusCode.OK
                         }
@@ -59,13 +59,13 @@ internal class MeldekortTest {
                         url {
                             protocol = URLProtocol.HTTPS
                             path("/meldekort/bruker/alle")
-                        }
+                        },
                     ).apply {
                         withClue(
                             "Response details:\n" +
-                                    "Status: ${this.status}\n" +
-                                    "Content-Type: ${this.contentType()}\n" +
-                                    "Body: ${this.bodyAsText()}\n",
+                                "Status: ${this.status}\n" +
+                                "Content-Type: ${this.contentType()}\n" +
+                                "Body: ${this.bodyAsText()}\n",
                         ) {
                             status shouldBe HttpStatusCode.OK
                             val body = deserialize<List<MeldekortTilUtfyllingDTO>>(bodyAsText())
@@ -76,5 +76,4 @@ internal class MeldekortTest {
             }
         }
     }
-
 }

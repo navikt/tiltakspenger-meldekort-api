@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.fakes
 
 import arrow.atomic.Atomic
 import io.ktor.server.plugins.NotFoundException
-import java.time.LocalDateTime
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
@@ -10,8 +9,9 @@ import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
+import java.time.LocalDateTime
 
-class MeldekortFake: MeldekortRepo {
+class MeldekortFake : MeldekortRepo {
     private val data = Atomic(mutableMapOf<MeldekortId, Meldekort>())
 
     override fun lagreMeldekort(meldekort: Meldekort, transactionContext: TransactionContext?) {
@@ -48,11 +48,10 @@ class MeldekortFake: MeldekortRepo {
             .filter { meldekort -> meldekort.fnr == fnr }
     }
 
-
     /**
      * Siden 'innsendt_tidspunkt' bare lever i databasen blir ikke denn helt riktig.
      * Da tar den bare hensyn til om statusen er 'INNSENDT', men det er kanskje greit i et test-scenario
-      */
+     */
     override fun hentUsendteMeldekort(transactionContext: TransactionContext?): List<Meldekort> {
         return data.get().values
             .filter { meldekort -> meldekort.status == MeldekortStatus.INNSENDT }
@@ -62,10 +61,10 @@ class MeldekortFake: MeldekortRepo {
         meldekortId: MeldekortId,
         meldekortStatus: MeldekortStatus,
         innsendtTidspunkt: LocalDateTime,
-        transactionContext: TransactionContext?
+        transactionContext: TransactionContext?,
     ) {
         val oppdaterMeldekort = data.get()[meldekortId]?.copy(
-            status = meldekortStatus
+            status = meldekortStatus,
         )
 
         if (oppdaterMeldekort == null) {
@@ -74,6 +73,4 @@ class MeldekortFake: MeldekortRepo {
 
         data.get()[meldekortId] = oppdaterMeldekort
     }
-
-
 }

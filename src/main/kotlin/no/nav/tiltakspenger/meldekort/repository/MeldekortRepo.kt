@@ -15,7 +15,7 @@ interface MeldekortRepo {
     )
 
     fun oppdaterMeldekort(
-    // TODO KEW: Dette burde ikke være en DTO, lag en domene eller databasevariant av 'MeldekortFraUtfylling'
+        // TODO KEW: Dette burde ikke være en DTO, lag en domene eller databasevariant av 'MeldekortFraUtfylling'
         meldekort: MeldekortFraUtfyllingDTO,
         transactionContext: TransactionContext? = null,
     )
