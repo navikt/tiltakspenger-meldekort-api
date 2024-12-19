@@ -19,7 +19,7 @@ class TestApplicationContext : ApplicationContext() {
 
     override val meldekortRepo: MeldekortRepo = MeldekortFake()
 
-    // TODO: Dette må kanskje lages
+    // TODO: Dette må kanskje lages. Lag nye fakes om det trengs i tester!
 //    val meldekortService: MeldekortService by lazy {
 //        MeldekortServiceImpl(meldekortRepo = meldekortRepo)
 //    }
