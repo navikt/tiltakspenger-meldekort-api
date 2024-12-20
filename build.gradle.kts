@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 val jvmVersion = JvmTarget.JVM_21
@@ -90,6 +91,8 @@ dependencies {
     // Test
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.mockk:mockk-dsl-jvm:$mockkVersion")
     testImplementation("org.skyscreamer:jsonassert:1.5.3")
@@ -123,16 +126,10 @@ tasks {
         }
     }
 
-    compileKotlin {
+    kotlin {
         compilerOptions {
             jvmTarget.set(jvmVersion)
-        }
-    }
-
-    compileTestKotlin {
-        compilerOptions {
-            jvmTarget.set(jvmVersion)
-            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+            freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
         }
     }
 
@@ -143,6 +140,11 @@ tasks {
         systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
         // https://github.com/mockito/mockito/issues/3037#issuecomment-1588199599
         jvmArgs("-XX:+EnableDynamicAgentLoading")
+        testLogging {
+            // We only want to log failed and skipped tests when running Gradle.
+            events("skipped", "failed")
+            exceptionFormat = TestExceptionFormat.FULL
+        }
     }
 
     jar {
