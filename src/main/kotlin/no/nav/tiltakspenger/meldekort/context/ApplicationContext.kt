@@ -16,7 +16,7 @@ import no.nav.tiltakspenger.meldekort.service.MeldekortServiceImpl
 import no.nav.tiltakspenger.meldekort.service.SendMeldekortService
 
 @Suppress("unused")
-open class ApplicationContext() {
+open class ApplicationContext {
     private val log = KotlinLogging.logger {}
 
     open val jdbcUrl by lazy { Configuration.database() }

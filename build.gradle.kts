@@ -21,7 +21,7 @@ plugins {
     application
     kotlin("jvm") version "2.1.0"
     kotlin("plugin.serialization") version "2.1.0"
-    id("com.diffplug.spotless") version "6.25.0"
+    id("com.diffplug.spotless") version "7.0.0"
     id("com.github.ben-manes.versions") version "0.51.0"
 }
 
@@ -114,6 +114,8 @@ spotless {
             .editorConfigOverride(
                 mapOf(
                     "ktlint_standard_max-line-length" to "off",
+                    "ktlint_standard_function-signature" to "disabled",
+                    "ktlint_standard_function-expression-body" to "disabled",
                 ),
             )
     }
