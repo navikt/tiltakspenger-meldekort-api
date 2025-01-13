@@ -7,7 +7,7 @@ import java.time.LocalDate
 data class MeldekortDagDTO(
     val dag: LocalDate,
     val status: String,
-    val tiltakstype: TiltakstypeSomGirRett
+    val tiltakstype: TiltakstypeSomGirRett,
 )
 
 fun List<MeldekortDag>.toDTO(): List<MeldekortDagDTO> =

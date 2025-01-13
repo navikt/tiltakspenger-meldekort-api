@@ -28,7 +28,7 @@ fun genererDummyMeldekort(fnr: Fnr): Meldekort {
         MeldekortDag(
             dag = fraOgMed.plusDays(index.toLong()),
             status = MeldekortDagStatus.IKKE_REGISTRERT,
-            tiltakstype = TiltakstypeSomGirRett.JOBBKLUBB
+            tiltakstype = TiltakstypeSomGirRett.JOBBKLUBB,
         )
     }
 

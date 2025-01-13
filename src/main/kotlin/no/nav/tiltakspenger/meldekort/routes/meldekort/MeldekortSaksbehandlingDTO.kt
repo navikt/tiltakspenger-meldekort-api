@@ -46,7 +46,7 @@ fun MeldekortDagStatusTilBrukerDTO.tilMeldekortDagStatus(): MeldekortDagStatus =
 data class MeldekortDagTilBrukerDTO(
     val dag: LocalDate,
     val status: MeldekortDagStatusTilBrukerDTO,
-    val tiltakstype: TiltakstypeSomGirRett
+    val tiltakstype: TiltakstypeSomGirRett,
 )
 
 data class MeldekortTilBrukerDTO(
@@ -73,7 +73,7 @@ data class MeldekortTilBrukerDTO(
                 MeldekortDag(
                     dag = it.dag,
                     status = it.status.tilMeldekortDagStatus(),
-                    tiltakstype = it.tiltakstype
+                    tiltakstype = it.tiltakstype,
                 )
             },
         )
