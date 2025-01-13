@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.service
 
 import arrow.core.Either
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
@@ -14,7 +14,7 @@ interface MeldekortService {
 
     fun oppdaterMeldekort(meldekort: MeldekortFraUtfylling)
 
-    fun hentMeldekort(meldekortId: MeldekortId): Meldekort?
+    fun hentMeldekort(id: HendelseId): Meldekort?
 
     fun hentSisteMeldekort(fnr: Fnr): Meldekort?
 
@@ -22,7 +22,7 @@ interface MeldekortService {
 
     fun hentMeldekortSomSkalSendesTilSaksbehandling(): List<Meldekort>
 
-    fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime)
+    fun markerSendt(id: HendelseId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime)
 }
 
 data object FeilVedLagringAvMeldekort

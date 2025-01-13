@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.tiltak.TiltakstypeSomGirRett
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
@@ -46,6 +46,7 @@ fun MeldekortDagStatusTilBrukerDTO.tilMeldekortDagStatus(): MeldekortDagStatus =
 data class MeldekortDagTilBrukerDTO(
     val dag: LocalDate,
     val status: MeldekortDagStatusTilBrukerDTO,
+    val tiltakstype: TiltakstypeSomGirRett
 )
 
 data class MeldekortTilBrukerDTO(
@@ -53,13 +54,12 @@ data class MeldekortTilBrukerDTO(
     val fnr: String,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
-    val tiltakstype: TiltakstypeSomGirRett,
     val status: MeldekortStatusTilBrukerDTO,
     val meldekortDager: List<MeldekortDagTilBrukerDTO>,
 ) {
     fun tilMeldekort(): Meldekort {
         return Meldekort(
-            id = MeldekortId.fromString(this.id),
+            id = HendelseId.fromString(this.id),
             fnr = Fnr.fromString(this.fnr),
             fraOgMed = this.fraOgMed,
             tilOgMed = this.tilOgMed,
@@ -69,11 +69,11 @@ data class MeldekortTilBrukerDTO(
                 MeldekortStatusTilBrukerDTO.KAN_UTFYLLES -> MeldekortStatus.KAN_UTFYLLES
                 MeldekortStatusTilBrukerDTO.KAN_IKKE_UTFYLLES -> MeldekortStatus.KAN_IKKE_UTFYLLES
             },
-            tiltakstype = this.tiltakstype,
             meldekortDager = this.meldekortDager.map {
                 MeldekortDag(
                     dag = it.dag,
                     status = it.status.tilMeldekortDagStatus(),
+                    tiltakstype = it.tiltakstype
                 )
             },
         )

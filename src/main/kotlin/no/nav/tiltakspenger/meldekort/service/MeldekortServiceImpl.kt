@@ -3,7 +3,7 @@ package no.nav.tiltakspenger.meldekort.service
 import arrow.core.Either
 import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
@@ -33,8 +33,8 @@ class MeldekortServiceImpl(
         meldekortRepo.oppdaterMeldekort(meldekort)
     }
 
-    override fun hentMeldekort(meldekortId: MeldekortId): Meldekort? {
-        return meldekortRepo.hentMeldekort(meldekortId)
+    override fun hentMeldekort(id: HendelseId): Meldekort? {
+        return meldekortRepo.hentMeldekort(id)
     }
 
     override fun hentSisteMeldekort(fnr: Fnr): Meldekort? {
@@ -50,10 +50,10 @@ class MeldekortServiceImpl(
     }
 
     override fun markerSendt(
-        meldekortId: MeldekortId,
+        id: HendelseId,
         meldekortStatus: MeldekortStatus,
         innsendtTidspunkt: LocalDateTime,
     ) {
-        meldekortRepo.markerSendt(meldekortId, meldekortStatus, innsendtTidspunkt)
+        meldekortRepo.markerSendt(id, meldekortStatus, innsendtTidspunkt)
     }
 }

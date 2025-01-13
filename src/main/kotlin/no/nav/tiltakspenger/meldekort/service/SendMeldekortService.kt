@@ -30,7 +30,7 @@ class SendMeldekortService(
                     }
                     log.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
                     meldekortService.markerSendt(
-                        meldekortId = meldekort.id,
+                        id = meldekort.id,
                         meldekortStatus = MeldekortStatus.INNSENDT,
                         innsendtTidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
                     )

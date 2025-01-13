@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.repository
 
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
@@ -20,7 +20,7 @@ interface MeldekortRepo {
     )
 
     fun hentMeldekort(
-        meldekortId: MeldekortId,
+        id: HendelseId,
         transactionContext: TransactionContext? = null,
     ): Meldekort?
 
@@ -36,5 +36,5 @@ interface MeldekortRepo {
 
     fun hentUsendteMeldekort(transactionContext: TransactionContext? = null): List<Meldekort>
 
-    fun markerSendt(meldekortId: MeldekortId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime, transactionContext: TransactionContext? = null)
+    fun markerSendt(id: HendelseId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime, transactionContext: TransactionContext? = null)
 }

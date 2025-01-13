@@ -9,7 +9,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
@@ -72,9 +72,9 @@ internal fun Route.meldekortRoutes(
                 return@get
             }
 
-            val meldekortId = MeldekortId.Companion.fromString(meldekortIdParam)
+            val id = HendelseId.fromString(meldekortIdParam)
 
-            val meldekort = meldekortService.hentMeldekort(meldekortId)
+            val meldekort = meldekortService.hentMeldekort(id)
             if (meldekort == null) {
                 call.respond(HttpStatusCode.NotFound)
                 return@get

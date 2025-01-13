@@ -3,7 +3,7 @@ package no.nav.tiltakspenger.meldekort.repository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
@@ -32,7 +32,6 @@ class MeldekortPostgresRepo(
                             til_og_med,
                             meldeperiode_id,
                             meldekortdager,
-                            tiltakstype,
                             status
                         ) values (
                           :id,
@@ -41,7 +40,6 @@ class MeldekortPostgresRepo(
                           :til_og_med,
                           :meldeperiode_id,
                           to_jsonb(:meldekortdager::jsonb),
-                          :tiltakstype,
                           :status
                         )
                     """,
@@ -51,7 +49,6 @@ class MeldekortPostgresRepo(
                     "til_og_med" to meldekort.tilOgMed,
                     "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
                     "meldekortdager" to serialize(meldekort.meldekortDager),
-                    "tiltakstype" to meldekort.tiltakstype.name,
                     "status" to meldekort.status.name,
                 ).asUpdate,
             )
@@ -80,7 +77,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentMeldekort(meldekortId: MeldekortId, transactionContext: TransactionContext?): Meldekort? {
+    override fun hentMeldekort(id: HendelseId, transactionContext: TransactionContext?): Meldekort? {
         return sessionFactory.withTransaction(transactionContext) { tx ->
             tx.run(
                 sqlQuery(
@@ -90,7 +87,7 @@ class MeldekortPostgresRepo(
                         from meldekort
                         where id = :id
                     """,
-                    "id" to meldekortId.toString(),
+                    "id" to id.toString(),
                 ).map { row ->
                     fromRow(row)
                 }.asSingle,
@@ -121,7 +118,7 @@ class MeldekortPostgresRepo(
     }
 
     override fun markerSendt(
-        meldekortId: MeldekortId,
+        id: HendelseId,
         meldekortStatus: MeldekortStatus,
         innsendtTidspunkt: LocalDateTime,
         transactionContext: TransactionContext?,
@@ -169,14 +166,13 @@ class MeldekortPostgresRepo(
             row: Row,
         ): Meldekort {
             return Meldekort(
-                id = MeldekortId.Companion.fromString(row.string("id")),
+                id = HendelseId.fromString(row.string("id")),
                 fnr = Fnr.fromString(row.string("fnr")),
                 fraOgMed = row.localDate("fra_og_med"),
                 tilOgMed = row.localDate("til_og_med"),
                 meldeperiodeId = MeldeperiodeId(row.string("meldeperiode_id")),
                 meldekortDager = deserializeList(row.string("meldekortdager")),
                 status = MeldekortStatus.valueOf(row.string("status")),
-                tiltakstype = enumValueOf(row.string("tiltakstype")),
             )
         }
     }

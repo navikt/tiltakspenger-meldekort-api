@@ -4,17 +4,17 @@ import arrow.core.Either
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.authorization
 import mu.KotlinLogging
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.ktor.common.respond400BadRequest
 
 private val logger = KotlinLogging.logger {}
 
 internal suspend inline fun ApplicationCall.withMeldekortId(
-    crossinline onRight: suspend (MeldekortId) -> Unit,
+    crossinline onRight: suspend (HendelseId) -> Unit,
 ) {
     withValidParam(
         paramName = "meldekortId",
-        parse = MeldekortId::fromString,
+        parse = HendelseId::fromString,
         errorMessage = "Ugyldig meldekort id",
         errorCode = "ugyldig_meldekort_id",
         onSuccess = onRight,

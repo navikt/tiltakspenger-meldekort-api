@@ -3,7 +3,7 @@ package no.nav.tiltakspenger.fakes
 import arrow.atomic.Atomic
 import io.ktor.server.plugins.NotFoundException
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
@@ -12,7 +12,7 @@ import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.LocalDateTime
 
 class MeldekortFake : MeldekortRepo {
-    private val data = Atomic(mutableMapOf<MeldekortId, Meldekort>())
+    private val data = Atomic(mutableMapOf<HendelseId, Meldekort>())
 
     override fun lagreMeldekort(meldekort: Meldekort, transactionContext: TransactionContext?) {
         data.get()[meldekort.id] = meldekort
@@ -31,8 +31,8 @@ class MeldekortFake : MeldekortRepo {
         data.get()[meldekortId] = oppdaterMeldekort
     }
 
-    override fun hentMeldekort(meldekortId: MeldekortId, transactionContext: TransactionContext?): Meldekort? {
-        return data.get()[meldekortId]
+    override fun hentMeldekort(id: HendelseId, transactionContext: TransactionContext?): Meldekort? {
+        return data.get()[id]
     }
 
     override fun hentSisteMeldekort(fnr: Fnr, transactionContext: TransactionContext?): Meldekort? {
@@ -57,19 +57,19 @@ class MeldekortFake : MeldekortRepo {
     }
 
     override fun markerSendt(
-        meldekortId: MeldekortId,
+        id: HendelseId,
         meldekortStatus: MeldekortStatus,
         innsendtTidspunkt: LocalDateTime,
         transactionContext: TransactionContext?,
     ) {
-        val oppdaterMeldekort = data.get()[meldekortId]?.copy(
+        val oppdaterMeldekort = data.get()[id]?.copy(
             status = meldekortStatus,
         )
 
         if (oppdaterMeldekort == null) {
-            throw NotFoundException("Fant ikke meldekort med id $meldekortId")
+            throw NotFoundException("Fant ikke meldekort med id $id")
         }
 
-        data.get()[meldekortId] = oppdaterMeldekort
+        data.get()[id] = oppdaterMeldekort
     }
 }
