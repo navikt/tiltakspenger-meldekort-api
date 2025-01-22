@@ -5,7 +5,6 @@ import kotliquery.Row
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
-import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
@@ -48,7 +47,7 @@ class MeldekortPostgresRepo(
                     "fra_og_med" to meldekort.periode.fraOgMed,
                     "til_og_med" to meldekort.periode.tilOgMed,
                     "meldeperiode_id" to meldekort.meldeperiodeKjedeId.verdi,
-                    "meldekortdager" to serialize(meldekort.dager),
+                    "meldekortdager" to meldekort.dager.toDbJson(),
                     "status" to meldekort.status.name,
                 ).asUpdate,
             )
