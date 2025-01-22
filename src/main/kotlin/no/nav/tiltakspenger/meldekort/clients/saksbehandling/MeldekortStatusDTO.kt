@@ -6,7 +6,6 @@ enum class MeldekortStatusDTO {
     KAN_UTFYLLES,
     KAN_IKKE_UTFYLLES,
     INNSENDT,
-    GODKJENT,
 }
 
 fun MeldekortStatus.toDTO(): MeldekortStatusDTO {
@@ -14,6 +13,5 @@ fun MeldekortStatus.toDTO(): MeldekortStatusDTO {
         MeldekortStatus.KAN_UTFYLLES -> MeldekortStatusDTO.KAN_UTFYLLES
         MeldekortStatus.INNSENDT -> MeldekortStatusDTO.INNSENDT
         MeldekortStatus.KAN_IKKE_UTFYLLES -> MeldekortStatusDTO.KAN_IKKE_UTFYLLES
-        MeldekortStatus.GODKJENT -> MeldekortStatusDTO.GODKJENT
     }
 }

@@ -58,6 +58,8 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:jobber:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:tiltak-dtos:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:meldekort-dtos:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:periodisering:$felleslibVersion")
 
     // DB
     implementation("org.flywaydb:flyway-database-postgresql:11.2.0")

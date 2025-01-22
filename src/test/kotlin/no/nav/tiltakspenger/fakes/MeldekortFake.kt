@@ -21,7 +21,7 @@ class MeldekortFake : MeldekortRepo {
     override fun oppdaterMeldekort(meldekort: MeldekortFraUtfylling, transactionContext: TransactionContext?) {
         val meldekortId = meldekort.id
         val oppdaterMeldekort = data.get()[meldekortId]?.copy(
-            meldekortDager = meldekort.meldekortDager,
+            dager = meldekort.meldekortDager,
         )
 
         if (oppdaterMeldekort == null) {
@@ -38,7 +38,7 @@ class MeldekortFake : MeldekortRepo {
     override fun hentSisteMeldekort(fnr: Fnr, transactionContext: TransactionContext?): Meldekort? {
         return data.get().values
             .filter { meldekort -> meldekort.fnr == fnr }
-            .sortedBy { meldekort -> meldekort.fraOgMed }
+            .sortedBy { meldekort -> meldekort.periode.fraOgMed }
             .single()
     }
 

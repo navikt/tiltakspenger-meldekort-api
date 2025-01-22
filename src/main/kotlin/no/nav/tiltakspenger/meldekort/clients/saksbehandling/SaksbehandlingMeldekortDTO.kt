@@ -19,10 +19,10 @@ fun Meldekort.toSaksbehandlingMeldekortDTO(): SaksbehandlingMeldekortDTO =
     SaksbehandlingMeldekortDTO(
         id = this.id.toString(),
         fnr = this.fnr.verdi,
-        fraOgMed = this.fraOgMed,
-        tilOgMed = this.tilOgMed,
-        meldeperiodeId = this.meldeperiodeId,
-        meldekortDager = this.meldekortDager.toSaksbehandlingDTO(),
+        fraOgMed = this.periode.fraOgMed,
+        tilOgMed = this.periode.tilOgMed,
+        meldeperiodeId = this.meldeperiodeKjedeId,
+        meldekortDager = this.dager.toSaksbehandlingDTO(),
         status = this.status.toDTO(),
     )
 

@@ -11,11 +11,12 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnrAttributeKey
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
-import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldekort
+import no.nav.tiltakspenger.meldekort.domene.genererDummyMeldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
@@ -33,7 +34,7 @@ internal fun Route.meldekortRoutes(
 
         handle {
             val meldekortFraSaksbehandling = try {
-                deserialize<MeldekortTilBrukerDTO>(call.receiveText())
+                deserialize<MeldeperiodeDTO>(call.receiveText())
             } catch (e: Exception) {
                 logger.error { "Error parsing body: $e" }
                 null
@@ -108,11 +109,11 @@ internal fun Route.meldekortRoutes(
         get("generer") {
             val fnr = call.attributes[fnrAttributeKey]
 
-            val meldekort = genererDummyMeldekort(fnr)
+            val meldekort = genererDummyMeldeperiode(fnr)
 
             meldekortService.lagreMeldekort(meldekort)
 
-            call.respond(meldekort)
+            call.respond(meldekort.tilUtfyllingDTO())
         }
 
         post("send-inn") {

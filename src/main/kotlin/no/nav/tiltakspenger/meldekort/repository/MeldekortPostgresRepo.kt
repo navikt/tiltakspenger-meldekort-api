@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import arrow.core.toNonEmptyListOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -7,10 +8,12 @@ import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
+import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import java.time.LocalDateTime
@@ -45,10 +48,10 @@ class MeldekortPostgresRepo(
                     """,
                     "id" to meldekort.id.toString(),
                     "fnr" to meldekort.fnr.verdi,
-                    "fra_og_med" to meldekort.fraOgMed,
-                    "til_og_med" to meldekort.tilOgMed,
-                    "meldeperiode_id" to meldekort.meldeperiodeId.verdi,
-                    "meldekortdager" to serialize(meldekort.meldekortDager),
+                    "fra_og_med" to meldekort.periode.fraOgMed,
+                    "til_og_med" to meldekort.periode.tilOgMed,
+                    "meldeperiode_id" to meldekort.meldeperiodeKjedeId.verdi,
+                    "meldekortdager" to serialize(meldekort.dager),
                     "status" to meldekort.status.name,
                 ).asUpdate,
             )
@@ -165,13 +168,14 @@ class MeldekortPostgresRepo(
         private fun fromRow(
             row: Row,
         ): Meldekort {
+            val fraOgMed = row.localDate("fra_og_med")
+            val tilOgMed = row.localDate("til_og_med")
             return Meldekort(
                 id = HendelseId.fromString(row.string("id")),
                 fnr = Fnr.fromString(row.string("fnr")),
-                fraOgMed = row.localDate("fra_og_med"),
-                tilOgMed = row.localDate("til_og_med"),
-                meldeperiodeId = MeldeperiodeId(row.string("meldeperiode_id")),
-                meldekortDager = deserializeList(row.string("meldekortdager")),
+                periode = Periode(fraOgMed, tilOgMed),
+                meldeperiodeKjedeId = MeldeperiodeId(row.string("meldeperiode_id")),
+                dager = deserializeList<MeldekortDag>(row.string("meldekortdager")).toNonEmptyListOrNull()!!,
                 status = MeldekortStatus.valueOf(row.string("status")),
             )
         }
