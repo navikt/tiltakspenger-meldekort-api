@@ -1,19 +1,16 @@
 package no.nav.tiltakspenger.meldekort.repository
 
-import arrow.core.toNonEmptyListOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
-import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import java.time.LocalDateTime
@@ -74,7 +71,7 @@ class MeldekortPostgresRepo(
                     "id" to meldekort.id.toString(),
                     // TODO KEW, ANOM & HEB - Finn ut hvordan status skal settes
                     "status" to MeldekortStatus.INNSENDT.name,
-                    "meldekortdager" to serialize(meldekort.meldekortDager),
+                    "meldekortdager" to meldekort.meldekortDager.toDbJson(),
                 ).asUpdate,
             )
         }
@@ -175,7 +172,7 @@ class MeldekortPostgresRepo(
                 fnr = Fnr.fromString(row.string("fnr")),
                 periode = Periode(fraOgMed, tilOgMed),
                 meldeperiodeKjedeId = MeldeperiodeId(row.string("meldeperiode_id")),
-                dager = deserializeList<MeldekortDag>(row.string("meldekortdager")).toNonEmptyListOrNull()!!,
+                dager = row.string("meldekortdager").toMeldekortDager(),
                 status = MeldekortStatus.valueOf(row.string("status")),
             )
         }
