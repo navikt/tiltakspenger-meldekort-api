@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 class SendMeldekortService(
-    private val meldekortService: MeldekortService,
+    private val meldekortService: BrukersMeldekortService,
     private val saksbehandlingClient: SaksbehandlingClient,
 ) {
     private val log = KotlinLogging.logger {}
