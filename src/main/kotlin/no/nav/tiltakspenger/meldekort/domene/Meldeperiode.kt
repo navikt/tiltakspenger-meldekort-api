@@ -33,6 +33,6 @@ data class Meldeperiode(
         require(girRett.size.toLong() == periode.antallDager) { "GirRett må ha like mange dager som perioden" }
         require(maksAntallDagerForPeriode >= 1) { "MaksAntallDagerForPeriode må være større eller lik 1" }
         require(maksAntallDagerForPeriode <= periode.antallDager) { "MaksAntallDagerForPeriode må være mindre eller lik dager i perioden" }
-        require(periode.tilDager() == girRett.keys) { "GirRett må ha en verdi for hver dag i perioden" }
+        require(periode.tilDager() == girRett.keys.toList()) { "GirRett må ha en verdi for hver dag i perioden" }
     }
 }

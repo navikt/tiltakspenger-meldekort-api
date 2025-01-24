@@ -47,12 +47,12 @@ internal fun Route.meldekortRoutes(
             val meldekort = meldeperiode.tilMeldeperiode()
 
             if (meldeperiodeService.hentMeldeperiodeForId(meldekort.id) != null) {
-                call.respond(message = "Meldekortet finnes allerede", status = HttpStatusCode.Conflict)
+                call.respond(message = "Meldeperioden finnes allerede", status = HttpStatusCode.Conflict)
                 return@handle
             }
 
             meldeperiodeService.lagreMeldeperiode(meldekort).onLeft {
-                call.respond(message = "Lagring av meldekortet feilet", status = HttpStatusCode.InternalServerError)
+                call.respond(message = "Lagring av meldeperiode feilet", status = HttpStatusCode.InternalServerError)
             }.onRight {
                 call.respond(HttpStatusCode.OK)
             }
