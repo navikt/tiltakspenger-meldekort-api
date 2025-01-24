@@ -13,8 +13,8 @@ CREATE TABLE meldeperiode
     maks_antall_dager_for_periode INTEGER     NOT NULL,
     gir_rett                      JSONB       NOT NULL,
 
-    CONSTRAINT unique_kjede_id_opprettet UNIQUE (sak_id, kjede_id, opprettet),
-    CONSTRAINT unique_kjede_id_versjon UNIQUE (sak_id, kjede_id, versjon)
+    CONSTRAINT unique_kjede_id_opprettet UNIQUE (kjede_id, opprettet),
+    CONSTRAINT unique_kjede_id_versjon UNIQUE (kjede_id, versjon)
 );
 CREATE INDEX idx_meldeperiode_sak_id ON meldeperiode (sak_id);
 CREATE INDEX idx_meldeperiode_kjede_id ON meldeperiode (kjede_id);
