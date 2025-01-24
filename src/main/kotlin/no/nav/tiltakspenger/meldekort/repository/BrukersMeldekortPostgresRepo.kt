@@ -189,7 +189,7 @@ class BrukersMeldekortPostgresRepo(
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.fnr = :fnr
                         where mp.id = mk.meldeperiode_id
-                        order by mottatt desc
+                        order by fra_og_med desc, versjon desc
                         limit $limit
                     """,
                     "fnr" to fnr.verdi,
