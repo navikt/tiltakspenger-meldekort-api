@@ -166,8 +166,9 @@ class BrukersMeldekortPostgresRepo(
                     """ 
                         update meldekort_bruker set
                             sendt_til_saksbehandling = :sendtTidspunkt
-                        where id = :meldekortId
+                        where id = :id
                     """,
+                    "id" to id.toString(),
                     "sendtTidspunkt" to sendtTidspunkt,
                 ).asUpdate,
             )
