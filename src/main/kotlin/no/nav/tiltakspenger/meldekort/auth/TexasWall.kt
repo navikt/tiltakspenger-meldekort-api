@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.auth
 
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.PipelineCall
 import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.response.respond
@@ -15,7 +16,7 @@ class AuthPluginConfiguration(
     var client: TexasHttpClient? = null,
 )
 
-val fnrAttributeKey = AttributeKey<Fnr>("fnr")
+private val fnrAttributeKey = AttributeKey<Fnr>("fnr")
 
 val log = KotlinLogging.logger("TexasWall")
 
@@ -83,4 +84,8 @@ val TexasWallSystemToken = createRouteScopedPlugin(
             validateAndGetClaims(call, { token -> client.introspectToken(token, "azuread") }) ?: return@onCall
         }
     }
+}
+
+fun ApplicationCall.fnr(): Fnr {
+    return this.attributes[fnrAttributeKey]
 }

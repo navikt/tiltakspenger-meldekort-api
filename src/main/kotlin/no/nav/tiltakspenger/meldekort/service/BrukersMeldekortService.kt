@@ -15,7 +15,7 @@ class BrukersMeldekortService(
 ) {
     private val logger = KotlinLogging.logger { }
 
-    fun lagreBrukersMeldekort(meldekort: MeldekortFraUtfylling) {
+    fun lagreBrukersMeldekort(meldekort: MeldekortFraUtfylling, fnr: Fnr) {
         if (brukersMeldekortRepo.hentMeldekortForMeldeperiodeKjedeId(meldekort.meldeperiodeKjedeId) != null) {
             throw IllegalArgumentException("Innsending med id ${meldekort.meldeperiodeId} finnes allerede")
         }
@@ -26,7 +26,7 @@ class BrukersMeldekortService(
             meldeperiode = meldeperiode,
             sakId = meldeperiode.sakId,
             dager = meldekort.meldekortDager,
-
+            fnr = fnr
         )
         brukersMeldekortRepo.lagre(brukersMeldekort)
     }

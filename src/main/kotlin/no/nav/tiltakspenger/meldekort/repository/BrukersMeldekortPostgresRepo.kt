@@ -10,12 +10,11 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
 
-class MeldekortPostgresRepo(
+class BrukersMeldekortPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
 ) : BrukersMeldekortRepo {
 
@@ -29,19 +28,22 @@ class MeldekortPostgresRepo(
                             meldeperiode_id,
                             sak_id,
                             mottatt,
+                            fnr,
                             dager
                         ) values (
-                          :id,
-                          :meldeperiode_id,
-                          :sak_id,
-                          :mottatt,
-                          to_jsonb(:dager::jsonb)
+                            :id,
+                            :meldeperiode_id,
+                            :sak_id,
+                            :mottatt,
+                            :fnr,
+                            to_jsonb(:dager::jsonb)
                         )
                     """,
                     "id" to meldekort.id.toString(),
                     "meldeperiode_id" to meldekort.meldeperiode.kjedeId,
                     "sak_id" to meldekort.periode.fraOgMed,
                     "mottatt" to meldekort.periode.fraOgMed,
+                    "fnr" to meldekort.fnr.verdi,
                     "dager" to meldekort.dager.toDbJson(),
                 ).asUpdate,
             )
@@ -56,7 +58,12 @@ class MeldekortPostgresRepo(
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
-                    "select * from meldekort_bruker where meldeperiode_id = :meldeperiode_id",
+                    """
+                        select
+                            *
+                        from meldekort_bruker
+                        where meldeperiode_id = :meldeperiode_id
+                    """,
                     "meldeperiode_id" to meldeperiodeId,
                 ).map { row ->
                     fromRow(row, session)
@@ -73,7 +80,13 @@ class MeldekortPostgresRepo(
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
-                    "select mk.* from meldekort_bruker mk join meldeperiode mp on mk.meldeperiode_id = mp.id where mp.kjede_id = :kjede_id",
+                    """
+                    select
+                        mk.*
+                    from meldekort_bruker mk
+                    join meldeperiode mp on mk.meldeperiode_id = mp.id
+                    where mp.kjede_id = :kjede_id
+                    """,
                     "kjede_id" to meldeperiodeKjedeId,
                 ).map { row ->
                     fromRow(row, session)
@@ -96,7 +109,7 @@ class MeldekortPostgresRepo(
                 sqlQuery(
                     """ 
                         select * from meldekort_bruker
-                        where innsendt_tidspunkt is null and status = '${MeldekortStatus.INNSENDT.name}'
+                        where meldekort_bruker.sendt_til_saksbehandling is null
                     """,
                 )
                     .map { row -> fromRow(row, session) }.asList,
@@ -114,7 +127,7 @@ class MeldekortPostgresRepo(
                 sqlQuery(
                     """ 
                         update meldekort_bruker set
-                        sendt_til_saksbehandling = :sendtTidspunkt
+                            sendt_til_saksbehandling = :sendtTidspunkt
                         where id = :meldekortId
                     """,
                     "sendtTidspunkt" to sendtTidspunkt,
@@ -136,7 +149,7 @@ class MeldekortPostgresRepo(
                             *
                         from meldekort_bruker
                         where fnr = :fnr
-                        order by fra_og_med desc
+                        order by mottatt desc
                         limit $limit
                     """,
                     "fnr" to fnr.verdi,
@@ -156,6 +169,7 @@ class MeldekortPostgresRepo(
                 meldeperiode = MeldeperiodePostgresRepo.hentForId(row.string("meldeperiode_id"), session)!!,
                 sakId = SakId.fromString(row.string("sak_id")),
                 dager = row.string("dager").toMeldekortDager(),
+                fnr = Fnr.fromString(row.string("fnr"))
             )
         }
     }

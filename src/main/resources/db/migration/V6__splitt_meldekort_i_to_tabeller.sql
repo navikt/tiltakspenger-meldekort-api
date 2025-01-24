@@ -26,6 +26,7 @@ CREATE TABLE meldekort_bruker
     sak_id                   varchar     NOT NULL,
     mottatt                  TIMESTAMPTZ NOT NULL,
     dager                    jsonb       NOT NULL,
+    fnr                      varchar     NOT NULL,
     sendt_til_saksbehandling TIMESTAMPTZ NULL
 );
 

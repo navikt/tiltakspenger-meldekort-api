@@ -14,7 +14,7 @@ import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
-import no.nav.tiltakspenger.meldekort.auth.fnrAttributeKey
+import no.nav.tiltakspenger.meldekort.auth.fnr
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.service.BrukersMeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
@@ -88,9 +88,7 @@ internal fun Route.meldekortRoutes(
         }
 
         get("siste") {
-            val fnr = call.attributes[fnrAttributeKey]
-
-            val meldekort = brukersMeldekortService.hentSisteMeldekort(fnr)
+            val meldekort = brukersMeldekortService.hentSisteMeldekort(call.fnr())
             if (meldekort == null) {
                 call.respond(HttpStatusCode.NotFound)
                 return@get
@@ -100,9 +98,7 @@ internal fun Route.meldekortRoutes(
         }
 
         get("alle") {
-            val fnr = call.attributes[fnrAttributeKey]
-
-            val alleMeldekort = brukersMeldekortService.hentAlleMeldekort(fnr).map {
+            val alleMeldekort = brukersMeldekortService.hentAlleMeldekort(call.fnr()).map {
                 it.tilUtfyllingDTO()
             }
 
@@ -122,7 +118,10 @@ internal fun Route.meldekortRoutes(
                 return@post
             }
 
-            brukersMeldekortService.lagreBrukersMeldekort(meldekortFraUtfyllingDTO.toDomain())
+            brukersMeldekortService.lagreBrukersMeldekort(
+                meldekort = meldekortFraUtfyllingDTO.toDomain(),
+                fnr = call.fnr()
+            )
 
             call.respond(HttpStatusCode.OK)
         }
