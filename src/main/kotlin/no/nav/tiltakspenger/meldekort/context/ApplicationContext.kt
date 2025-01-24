@@ -9,10 +9,12 @@ import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClientImpl
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
-import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
-import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
-import no.nav.tiltakspenger.meldekort.service.MeldekortService
-import no.nav.tiltakspenger.meldekort.service.MeldekortServiceImpl
+import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
+import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
+import no.nav.tiltakspenger.meldekort.service.BrukersMeldekortService
+import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
 import no.nav.tiltakspenger.meldekort.service.SendMeldekortService
 
 @Suppress("unused")
@@ -26,14 +28,22 @@ open class ApplicationContext {
 
     open val texasHttpClient: TexasHttpClient by lazy { TexasHttpClientImpl() }
 
-    open val meldekortRepo: MeldekortRepo by lazy {
-        MeldekortPostgresRepo(
+    open val brukersMeldekortRepo: BrukersMeldekortRepo by lazy {
+        BrukersMeldekortPostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
         )
     }
+    open val meldeperiodeRepo: MeldeperiodeRepo by lazy {
+        MeldeperiodePostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
+    val brukersMeldekortService: BrukersMeldekortService by lazy {
+        BrukersMeldekortService(brukersMeldekortRepo = brukersMeldekortRepo)
+    }
 
-    val meldekortService: MeldekortService by lazy {
-        MeldekortServiceImpl(meldekortRepo = meldekortRepo)
+    val meldeperiodeService: MeldeperiodeService by lazy {
+        MeldeperiodeService(repo = meldeperiodeRepo)
     }
 
     open val saksbehandlingClient by lazy {
@@ -45,7 +55,7 @@ open class ApplicationContext {
 
     val sendMeldekortService: SendMeldekortService by lazy {
         SendMeldekortService(
-            meldekortService = meldekortService,
+            meldekortService = brukersMeldekortService,
             saksbehandlingClient = saksbehandlingClient,
         )
     }

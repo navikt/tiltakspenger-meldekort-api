@@ -43,7 +43,8 @@ internal fun Application.meldekortApi(
         healthRoutes()
 
         meldekortRoutes(
-            meldekortService = applicationContext.meldekortService,
+            brukersMeldekortService = applicationContext.brukersMeldekortService,
+            meldeperiodeService = applicationContext.meldeperiodeService,
             texasHttpClient = applicationContext.texasHttpClient,
         )
     }

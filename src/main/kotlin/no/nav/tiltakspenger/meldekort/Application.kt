@@ -13,7 +13,10 @@ import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
+import no.nav.tiltakspenger.meldekort.jobber.TaskExecutor
 import no.nav.tiltakspenger.meldekort.routes.meldekortApi
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 fun main() {
     System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
@@ -54,14 +57,14 @@ internal fun start(
         )
     }
 
-//    TaskExecutor.startJob(
-//        initialDelay = if (isNais) 1.minutes else 1.seconds,
-//        runCheckFactory = runCheckFactory,
-//        tasks =
-//        listOf { correlationId ->
-//            applicationContext.sendMeldekortService.sendMeldekort(correlationId)
-//        },
-//    )
+    TaskExecutor.startJob(
+        initialDelay = if (isNais) 1.minutes else 1.seconds,
+        runCheckFactory = runCheckFactory,
+        tasks =
+        listOf { correlationId ->
+            applicationContext.sendMeldekortService.sendMeldekort(correlationId)
+        },
+    )
 
     embeddedServer(
         factory = Netty,

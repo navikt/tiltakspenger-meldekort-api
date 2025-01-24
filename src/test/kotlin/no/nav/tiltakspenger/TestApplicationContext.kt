@@ -1,11 +1,9 @@
 package no.nav.tiltakspenger
 
 import mu.KotlinLogging
-import no.nav.tiltakspenger.fakes.MeldekortFake
 import no.nav.tiltakspenger.fakes.TexasFake
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
-import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 
 /**
  * Oppretter en tom ApplicationContext for bruk i tester.
@@ -17,7 +15,7 @@ class TestApplicationContext : ApplicationContext() {
 
     override val texasHttpClient: TexasHttpClient = TexasFake()
 
-    override val meldekortRepo: MeldekortRepo = MeldekortFake()
+    // val brukersMeldekortRepo: BrukersMeldekortRepo = MeldekortFake()
 
     // TODO: Dette må kanskje lages. Lag nye fakes om det trengs i tester!
 //    val meldekortService: MeldekortService by lazy {

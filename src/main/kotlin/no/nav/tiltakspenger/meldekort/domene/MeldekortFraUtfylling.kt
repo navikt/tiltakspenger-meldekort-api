@@ -1,19 +1,16 @@
 package no.nav.tiltakspenger.meldekort.domene
 
 import arrow.core.NonEmptyList
-import arrow.core.toNonEmptyListOrNull
-import no.nav.tiltakspenger.libs.common.HendelseId
-import no.nav.tiltakspenger.meldekort.routes.meldekort.MeldekortFraUtfyllingDTO
-import no.nav.tiltakspenger.meldekort.routes.meldekort.toMeldekortDager
+import no.nav.tiltakspenger.libs.common.MeldekortId
+import java.time.LocalDateTime
 
-class MeldekortFraUtfylling(
-    val id: HendelseId,
-    val meldekortDager: NonEmptyList<MeldekortDag>,
+/**
+ * Command-delen av CQRS for meldekort. Brukes for å lagre meldekort som bruker har fylt ut.
+ *
+ * @param id Id til spesifikk versjon av meldeperioden på denne saken.
+ */
+data class MeldekortFraUtfylling(
+    val id: MeldekortId,
+    val meldekortDager: NonEmptyList<BrukersMeldekortDag>,
+    val mottatt: LocalDateTime,
 )
-
-fun MeldekortFraUtfyllingDTO.tilMeldekortFraUtfylling(): MeldekortFraUtfylling {
-    return MeldekortFraUtfylling(
-        id = HendelseId.fromString(id),
-        meldekortDager = meldekortDager.toMeldekortDager().toNonEmptyListOrNull()!!,
-    )
-}
