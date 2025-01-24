@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.meldekort.domene
 
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -18,15 +17,14 @@ import java.time.LocalDateTime
  */
 data class BrukersMeldekort(
     val id: MeldekortId,
-    val mottatt: LocalDateTime,
+    val mottatt: LocalDateTime?,
     val meldeperiode: Meldeperiode,
     val sakId: SakId,
-    val fnr: Fnr,
     val dager: List<BrukersMeldekortDag>,
 ) {
     val periode: Periode = meldeperiode.periode
 
-    val status: MeldekortStatus = MeldekortStatus.INNSENDT
+    val status: MeldekortStatus = if (mottatt == null) MeldekortStatus.KAN_UTFYLLES else MeldekortStatus.INNSENDT
 
     init {
         dager.zipWithNext().forEach { (dag, nesteDag) ->
@@ -36,4 +34,19 @@ data class BrukersMeldekort(
         require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden" }
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden" }
     }
+}
+
+fun Meldeperiode.tilTomtBrukersMeldekort(): BrukersMeldekort {
+    return BrukersMeldekort(
+        id = MeldekortId.random(),
+        mottatt = null,
+        meldeperiode = this,
+        sakId = this.sakId,
+        dager = this.girRett.map {
+            BrukersMeldekortDag(
+                dag = it.key,
+                status = if (it.value) MeldekortDagStatus.IKKE_REGISTRERT else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
+            )
+        }
+    )
 }

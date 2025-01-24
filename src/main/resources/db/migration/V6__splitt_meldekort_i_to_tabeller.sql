@@ -6,6 +6,7 @@ CREATE TABLE meldeperiode
     kjede_id                      varchar     NOT NULL,
     versjon                       INTEGER     NOT NULL,
     sak_id                        varchar     NOT NULL,
+    fnr                           varchar     NOT NULL,
     opprettet                     TIMESTAMPTZ NOT NULL,
     fra_og_med                    DATE        NOT NULL,
     til_og_med                    DATE        NOT NULL,
@@ -24,9 +25,8 @@ CREATE TABLE meldekort_bruker
     id                       varchar PRIMARY KEY,
     meldeperiode_id          varchar     NOT NULL REFERENCES meldeperiode (id),
     sak_id                   varchar     NOT NULL,
-    mottatt                  TIMESTAMPTZ NOT NULL,
+    mottatt                  TIMESTAMPTZ NULL,
     dager                    jsonb       NOT NULL,
-    fnr                      varchar     NOT NULL,
     sendt_til_saksbehandling TIMESTAMPTZ NULL
 );
 

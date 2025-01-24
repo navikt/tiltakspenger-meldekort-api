@@ -1,6 +1,8 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import arrow.core.toNonEmptyListOrNull
+import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.MeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.toDTO
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
@@ -9,7 +11,7 @@ import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import java.time.LocalDate
 
 data class MeldekortTilUtfyllingDTO(
-    val meldekortId: String?,
+    val id: String?,
     val meldeperiodeId: String,
     val meldeperiodeKjedeId: String,
     val versjon: Int,
@@ -20,22 +22,22 @@ data class MeldekortTilUtfyllingDTO(
 )
 
 data class MeldekortFraUtfyllingDTO(
-    val meldeperiodeId: String,
-    val meldeperiodeKjedeId: String,
+    val id: String,
     val meldekortDager: List<MeldekortDagDTO>,
 ) {
     fun toDomain(): MeldekortFraUtfylling {
         return MeldekortFraUtfylling(
-            meldeperiodeId = meldeperiodeId,
-            meldeperiodeKjedeId = meldeperiodeKjedeId,
+            id = MeldekortId.fromString(id),
+            // TODO: valider dagene
             meldekortDager = meldekortDager.toMeldekortDager().toNonEmptyListOrNull()!!,
+            mottatt = nå()
         )
     }
 }
 
 fun BrukersMeldekort.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
     return MeldekortTilUtfyllingDTO(
-        meldekortId = this.id.toString(),
+        id = this.id.toString(),
         meldeperiodeId = this.meldeperiode.id,
         meldeperiodeKjedeId = this.meldeperiode.kjedeId,
         versjon = this.meldeperiode.versjon,
@@ -48,7 +50,7 @@ fun BrukersMeldekort.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
 
 fun Meldeperiode.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
     return MeldekortTilUtfyllingDTO(
-        meldekortId = null,
+        id = null,
         meldeperiodeId = this.id,
         meldeperiodeKjedeId = this.kjedeId,
         versjon = this.versjon,

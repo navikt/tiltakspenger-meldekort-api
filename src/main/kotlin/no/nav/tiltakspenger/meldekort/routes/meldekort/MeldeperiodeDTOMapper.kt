@@ -17,7 +17,6 @@ fun MeldeperiodeDTO.tilMeldeperiode(): Either<UgyldigMeldeperiode, Meldeperiode>
             kjedeId = this.meldeperiodeKjedeId,
             versjon = this.versjon,
             sakId = SakId.fromString(this.sakId),
-            saksnummer = this.saksnummer,
             fnr = Fnr.fromString(this.fnr),
             periode = Periode(this.fraOgMed, this.tilOgMed),
             opprettet = this.opprettet,

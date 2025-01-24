@@ -5,29 +5,31 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
+import no.nav.tiltakspenger.meldekort.domene.tilTomtBrukersMeldekort
 import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
-import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import java.time.LocalDateTime
 
 class BrukersMeldekortService(
     val brukersMeldekortRepo: BrukersMeldekortRepo,
-    val meldeperiodeRepo: MeldeperiodeRepo,
 ) {
     private val logger = KotlinLogging.logger { }
 
+    // Burde vi validere at det innsendte meldekort faktiske tilhører brukeren som sendte inn?
     fun lagreBrukersMeldekort(meldekort: MeldekortFraUtfylling, fnr: Fnr) {
-        if (brukersMeldekortRepo.hentMeldekortForMeldeperiodeKjedeId(meldekort.meldeperiodeKjedeId) != null) {
-            throw IllegalArgumentException("Innsending med id ${meldekort.meldeperiodeId} finnes allerede")
+        val brukersMeldekort = brukersMeldekortRepo.hentForMeldekortId(meldekort.id)
+            ?: throw IllegalArgumentException("Meldekortet med id ${meldekort.id} finnes ikke")
+
+        if (brukersMeldekort.mottatt != null) {
+            throw IllegalArgumentException("Meldekortet med id ${meldekort.id} er allerede mottatt")
         }
-        val meldeperiode = meldeperiodeRepo.hentForId(meldekort.meldeperiodeId)!!
-        val brukersMeldekort = BrukersMeldekort(
-            id = MeldekortId.random(),
-            mottatt = LocalDateTime.now(),
-            meldeperiode = meldeperiode,
-            sakId = meldeperiode.sakId,
-            dager = meldekort.meldekortDager,
-            fnr = fnr
-        )
+
+        brukersMeldekortRepo.lagreUtfylling(meldekort)
+    }
+
+    fun opprettFraMeldeperiode(meldeperiode: Meldeperiode) {
+        val brukersMeldekort = meldeperiode.tilTomtBrukersMeldekort()
+
         brukersMeldekortRepo.lagre(brukersMeldekort)
     }
 

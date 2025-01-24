@@ -55,11 +55,14 @@ internal fun Route.meldekortRoutes(
                 return@handle
             }
 
+            // Disse to må være en transaksjon
             meldeperiodeService.lagreMeldeperiode(meldekort).onLeft {
                 call.respond(message = "Lagring av meldeperiode feilet", status = HttpStatusCode.InternalServerError)
-            }.onRight {
-                call.respond(HttpStatusCode.OK)
+                return@handle
             }
+            brukersMeldekortService.opprettFraMeldeperiode(meldekort)
+
+            call.respond(HttpStatusCode.OK)
         }
     }
 

@@ -14,7 +14,7 @@ fun BrukersMeldekort.toSaksbehandlingMeldekortDTO(): BrukerutfyltMeldekortDTO {
         sakId = this.sakId.toString(),
         periode = this.periode.toDTO(),
         meldeperiodeId = this.id.toString(),
-        mottatt = this.mottatt,
+        mottatt = this.mottatt!!, // TODO: ikke bang bang!!
         dager = this.dager.toSaksbehandlingDTO(),
     )
 }

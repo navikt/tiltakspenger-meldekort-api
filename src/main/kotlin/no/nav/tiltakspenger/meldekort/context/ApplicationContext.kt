@@ -39,7 +39,7 @@ open class ApplicationContext {
         )
     }
     val brukersMeldekortService: BrukersMeldekortService by lazy {
-        BrukersMeldekortService(brukersMeldekortRepo = brukersMeldekortRepo, meldeperiodeRepo = meldeperiodeRepo)
+        BrukersMeldekortService(brukersMeldekortRepo = brukersMeldekortRepo)
     }
 
     val meldeperiodeService: MeldeperiodeService by lazy {

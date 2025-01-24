@@ -10,6 +10,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
@@ -28,23 +29,38 @@ class BrukersMeldekortPostgresRepo(
                             meldeperiode_id,
                             sak_id,
                             mottatt,
-                            fnr,
                             dager
                         ) values (
                             :id,
                             :meldeperiode_id,
                             :sak_id,
                             :mottatt,
-                            :fnr,
                             to_jsonb(:dager::jsonb)
                         )
                     """,
                     "id" to meldekort.id.toString(),
-                    "meldeperiode_id" to meldekort.meldeperiode.kjedeId,
-                    "sak_id" to meldekort.periode.fraOgMed,
-                    "mottatt" to meldekort.periode.fraOgMed,
-                    "fnr" to meldekort.fnr.verdi,
+                    "meldeperiode_id" to meldekort.meldeperiode.id,
+                    "sak_id" to meldekort.sakId.toString(),
+                    "mottatt" to meldekort.mottatt,
                     "dager" to meldekort.dager.toDbJson(),
+                ).asUpdate,
+            )
+        }
+    }
+
+    override fun lagreUtfylling(meldekort: MeldekortFraUtfylling, sessionContext: SessionContext?) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update meldekort_bruker set
+                        mottatt = :mottatt,
+                        dager = to_jsonb(:dager::jsonb)
+                    where id = :id
+                    """,
+                    "id" to meldekort.id.toString(),
+                    "mottatt" to meldekort.mottatt,
+                    "dager" to meldekort.meldekortDager.toDbJson(),
                 ).asUpdate,
             )
         }
@@ -95,6 +111,27 @@ class BrukersMeldekortPostgresRepo(
         }
     }
 
+    override fun hentForMeldekortId(
+        meldekortId: MeldekortId,
+        sessionContext: SessionContext?,
+    ): BrukersMeldekort? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    select
+                        *
+                    from meldekort_bruker
+                    where id = :id
+                    """,
+                    "id" to meldekortId.toString(),
+                ).map { row ->
+                    fromRow(row, session)
+                }.asSingle,
+            )
+        }
+    }
+
     override fun hentSisteMeldekort(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return this.hentMeldekortForBruker(fnr, 1, sessionContext).firstOrNull()
     }
@@ -110,6 +147,7 @@ class BrukersMeldekortPostgresRepo(
                     """ 
                         select * from meldekort_bruker
                         where meldekort_bruker.sendt_til_saksbehandling is null
+                        and mottatt is not null
                     """,
                 )
                     .map { row -> fromRow(row, session) }.asList,
@@ -146,9 +184,10 @@ class BrukersMeldekortPostgresRepo(
                 sqlQuery(
                     """
                         select
-                            *
-                        from meldekort_bruker
-                        where fnr = :fnr
+                            mk.*
+                        from meldekort_bruker mk
+                        join meldeperiode mp on mp.fnr = :fnr
+                        where mp.id = mk.meldeperiode_id
                         order by mottatt desc
                         limit $limit
                     """,
@@ -165,11 +204,10 @@ class BrukersMeldekortPostgresRepo(
         ): BrukersMeldekort {
             return BrukersMeldekort(
                 id = MeldekortId.Companion.fromString(row.string("id")),
-                mottatt = row.localDateTime("mottatt"),
+                mottatt = row.localDateTimeOrNull("mottatt"),
                 meldeperiode = MeldeperiodePostgresRepo.hentForId(row.string("meldeperiode_id"), session)!!,
                 sakId = SakId.fromString(row.string("sak_id")),
-                dager = row.string("dager").toMeldekortDager(),
-                fnr = Fnr.fromString(row.string("fnr"))
+                dager = row.string("dager").toMeldekortDager()
             )
         }
     }
