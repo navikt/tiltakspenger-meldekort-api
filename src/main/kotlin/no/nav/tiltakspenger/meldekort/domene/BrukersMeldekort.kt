@@ -45,8 +45,8 @@ fun Meldeperiode.tilTomtBrukersMeldekort(): BrukersMeldekort {
         dager = this.girRett.map {
             BrukersMeldekortDag(
                 dag = it.key,
-                status = if (it.value) MeldekortDagStatus.IKKE_REGISTRERT else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
+                status = if (it.value) MeldekortDagStatus.IKKE_REGISTRERT else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
             )
-        }
+        },
     )
 }

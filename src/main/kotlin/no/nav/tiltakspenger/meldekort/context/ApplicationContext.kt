@@ -9,8 +9,8 @@ import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClientImpl
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
-import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.service.BrukersMeldekortService

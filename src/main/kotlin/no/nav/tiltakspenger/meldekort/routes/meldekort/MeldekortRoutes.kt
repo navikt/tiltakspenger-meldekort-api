@@ -123,7 +123,7 @@ internal fun Route.meldekortRoutes(
 
             brukersMeldekortService.lagreBrukersMeldekort(
                 meldekort = meldekortFraUtfyllingDTO.toDomain(),
-                fnr = call.fnr()
+                fnr = call.fnr(),
             )
 
             call.respond(HttpStatusCode.OK)

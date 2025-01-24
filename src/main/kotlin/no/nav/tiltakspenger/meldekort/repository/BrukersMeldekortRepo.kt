@@ -48,6 +48,6 @@ interface BrukersMeldekortRepo {
     fun markerSendtTilSaksbehandling(
         id: MeldekortId,
         sendtTidspunkt: LocalDateTime,
-        sessionContext: SessionContext? = null
+        sessionContext: SessionContext? = null,
     )
 }

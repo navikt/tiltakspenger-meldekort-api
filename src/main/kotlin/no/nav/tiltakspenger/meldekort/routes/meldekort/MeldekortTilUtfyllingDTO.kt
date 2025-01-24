@@ -30,7 +30,7 @@ data class MeldekortFraUtfyllingDTO(
             id = MeldekortId.fromString(id),
             // TODO: valider dagene
             meldekortDager = meldekortDager.toMeldekortDager().toNonEmptyListOrNull()!!,
-            mottatt = nå()
+            mottatt = nå(),
         )
     }
 }

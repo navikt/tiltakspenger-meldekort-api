@@ -146,7 +146,7 @@ class BrukersMeldekortPostgresRepo(
                 sqlQuery(
                     """ 
                         select * from meldekort_bruker
-                        where meldekort_bruker.sendt_til_saksbehandling is null
+                        where sendt_til_saksbehandling is null
                         and mottatt is not null
                     """,
                 )
@@ -207,7 +207,7 @@ class BrukersMeldekortPostgresRepo(
                 mottatt = row.localDateTimeOrNull("mottatt"),
                 meldeperiode = MeldeperiodePostgresRepo.hentForId(row.string("meldeperiode_id"), session)!!,
                 sakId = SakId.fromString(row.string("sak_id")),
-                dager = row.string("dager").toMeldekortDager()
+                dager = row.string("dager").toMeldekortDager(),
             )
         }
     }
