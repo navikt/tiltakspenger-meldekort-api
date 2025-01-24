@@ -6,7 +6,6 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
-import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -14,7 +13,7 @@ class SendMeldekortService(
     private val meldekortService: BrukersMeldekortService,
     private val saksbehandlingClient: SaksbehandlingClient,
 ) {
-    private val log = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
     /** Ment å kalles fra en jobb - sender alle usendte meldekort til saksbehandling. */
     suspend fun sendMeldekort(
@@ -22,25 +21,25 @@ class SendMeldekortService(
     ) {
         Either.catch {
             meldekortService.hentMeldekortSomSkalSendesTilSaksbehandling().forEach { meldekort ->
-                log.info { "Sender meldekort med id ${meldekort.id}" }
+                logger.info { "Sender meldekort med id ${meldekort.id}" }
+
                 Either.catch {
                     saksbehandlingClient.sendMeldekort(meldekort, correlationId).getOrElse {
-                        log.warn { "Feil under sending av meldekort med id: ${meldekort.id} til SaksbehandlingApi" }
+                        logger.warn { "Feil under sending av meldekort med id: ${meldekort.id} til SaksbehandlingApi" }
                         return@forEach
                     }
-                    log.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
-                    meldekortService.markerSendt(
+                    logger.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
+                    meldekortService.markerSendtTilSaksbehandling(
                         id = meldekort.id,
-                        meldekortStatus = MeldekortStatus.INNSENDT,
-                        innsendtTidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                        sendtTidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
                     )
-                    log.info { "Meldekort oppdatert med innsendingstidspunkt ${meldekort.id}" }
+                    logger.info { "Meldekort oppdatert med innsendingstidspunkt ${meldekort.id}" }
                 }.onLeft {
-                    log.error(it) { "Feil ved sending av meldekort: ${meldekort.id}" }
+                    logger.error(it) { "Feil ved sending av meldekort: ${meldekort.id}" }
                 }
             }
         }.onLeft {
-            log.error(RuntimeException("Trigger stacktrace for enklere debug.")) { "Ukjent feil skjedde under sending av meldekort." }
+            logger.error(RuntimeException("Trigger stacktrace for enklere debug.")) { "Ukjent feil skjedde under sending av meldekort." }
             sikkerlogg.error(it) { "Ukjent feil skjedde under sending av meldekort." }
         }
     }

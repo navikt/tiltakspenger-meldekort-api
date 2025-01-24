@@ -4,7 +4,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import java.time.LocalDateTime
 
 interface BrukersMeldekortRepo {
@@ -35,5 +34,9 @@ interface BrukersMeldekortRepo {
 
     fun hentUsendteMeldekort(sessionContext: SessionContext? = null): List<BrukersMeldekort>
 
-    fun markerSendt(id: MeldekortId, meldekortStatus: MeldekortStatus, innsendtTidspunkt: LocalDateTime, sessionContext: SessionContext? = null)
+    fun markerSendtTilSaksbehandling(
+        id: MeldekortId,
+        sendtTidspunkt: LocalDateTime,
+        sessionContext: SessionContext? = null
+    )
 }

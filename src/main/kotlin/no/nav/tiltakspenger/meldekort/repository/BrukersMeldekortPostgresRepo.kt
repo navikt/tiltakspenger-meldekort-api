@@ -29,20 +29,20 @@ class MeldekortPostgresRepo(
                             meldeperiode_id,
                             sak_id,
                             mottatt,
-                            meldekortdager
+                            dager
                         ) values (
                           :id,
                           :meldeperiode_id,
                           :sak_id,
                           :mottatt,
-                          to_jsonb(:meldekortdager::jsonb)
+                          to_jsonb(:dager::jsonb)
                         )
                     """,
                     "id" to meldekort.id.toString(),
                     "meldeperiode_id" to meldekort.meldeperiode.kjedeId,
                     "sak_id" to meldekort.periode.fraOgMed,
                     "mottatt" to meldekort.periode.fraOgMed,
-                    "meldekortdager" to meldekort.dager.toDbJson(),
+                    "dager" to meldekort.dager.toDbJson(),
                 ).asUpdate,
             )
         }
@@ -104,10 +104,9 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun markerSendt(
+    override fun markerSendtTilSaksbehandling(
         id: MeldekortId,
-        meldekortStatus: MeldekortStatus,
-        innsendtTidspunkt: LocalDateTime,
+        sendtTidspunkt: LocalDateTime,
         sessionContext: SessionContext?,
     ) {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -115,12 +114,10 @@ class MeldekortPostgresRepo(
                 sqlQuery(
                     """ 
                         update meldekort_bruker set
-                        innsendt_tidspunkt = :innsendtTidspunkt,
-                        status = :meldekortstatus
+                        sendt_til_saksbehandling = :sendtTidspunkt
                         where id = :meldekortId
                     """,
-                    "meldekortstatus" to meldekortStatus.name,
-                    "innsendtTidspunkt" to innsendtTidspunkt,
+                    "sendtTidspunkt" to sendtTidspunkt,
                 ).asUpdate,
             )
         }

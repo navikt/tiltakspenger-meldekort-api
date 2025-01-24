@@ -5,7 +5,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
-import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import java.time.LocalDateTime
@@ -48,11 +47,10 @@ class BrukersMeldekortService(
         return brukersMeldekortRepo.hentUsendteMeldekort()
     }
 
-    fun markerSendt(
+    fun markerSendtTilSaksbehandling(
         id: MeldekortId,
-        meldekortStatus: MeldekortStatus,
-        innsendtTidspunkt: LocalDateTime,
+        sendtTidspunkt: LocalDateTime,
     ) {
-        brukersMeldekortRepo.markerSendt(id, meldekortStatus, innsendtTidspunkt)
+        brukersMeldekortRepo.markerSendtTilSaksbehandling(id, sendtTidspunkt)
     }
 }
