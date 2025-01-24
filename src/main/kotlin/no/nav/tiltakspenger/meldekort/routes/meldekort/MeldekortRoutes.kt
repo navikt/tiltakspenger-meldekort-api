@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
+import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -40,11 +41,14 @@ internal fun Route.meldekortRoutes(
             }
 
             if (meldeperiode == null) {
-                call.respond(HttpStatusCode.BadRequest)
+                call.respond(message = "Deserialize av meldeperiode feilet", status = HttpStatusCode.BadRequest)
                 return@handle
             }
 
-            val meldekort = meldeperiode.tilMeldeperiode()
+            val meldekort = meldeperiode.tilMeldeperiode().getOrElse {
+                call.respond(message = "Ugyldig meldeperiode: ${it.message}", status = HttpStatusCode.BadRequest)
+                return@handle
+            }
 
             if (meldeperiodeService.hentMeldeperiodeForId(meldekort.id) != null) {
                 call.respond(message = "Meldeperioden finnes allerede", status = HttpStatusCode.Conflict)
