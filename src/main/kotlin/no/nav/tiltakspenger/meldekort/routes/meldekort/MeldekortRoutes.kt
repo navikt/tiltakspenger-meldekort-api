@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
+import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpMethod
@@ -11,12 +12,14 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnr
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.service.BrukersMeldekortService
+import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvMeldeperiode
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
 
 val logger = KotlinLogging.logger {}
@@ -33,36 +36,35 @@ internal fun Route.meldekortRoutes(
         }
 
         handle {
-            val meldeperiode = try {
+            val meldeperiodeDto = Either.catch {
                 deserialize<MeldeperiodeDTO>(call.receiveText())
-            } catch (e: Exception) {
-                logger.error { "Error parsing body: $e" }
-                null
-            }
-
-            if (meldeperiode == null) {
-                call.respond(message = "Deserialize av meldeperiode feilet", status = HttpStatusCode.BadRequest)
+            }.getOrElse {
+                with("Feil ved parsing av meldeperiode fra saksbehandling-api") {
+                    logger.error { this }
+                    sikkerlogg.error(it) { this }
+                    call.respond(message = this, status = HttpStatusCode.BadRequest)
+                }
                 return@handle
             }
 
-            val meldekort = meldeperiode.tilMeldeperiode().getOrElse {
-                call.respond(message = "Ugyldig meldeperiode: ${it.message}", status = HttpStatusCode.BadRequest)
-                return@handle
+            meldeperiodeService.lagreFraSaksbehandling(meldeperiodeDto).onLeft {
+                when (it) {
+                    FeilVedMottakAvMeldeperiode.UgyldigMeldeperiode -> call.respond(
+                        message = "Ugyldig meldeperiode: $it",
+                        status = HttpStatusCode.BadRequest,
+                    )
+                    FeilVedMottakAvMeldeperiode.MeldeperiodeFinnes -> call.respond(
+                        message = "Meldeperioden finnes allerede",
+                        status = HttpStatusCode.Conflict,
+                    )
+                    FeilVedMottakAvMeldeperiode.LagringFeilet -> call.respond(
+                        message = "Lagring av meldeperiode feilet",
+                        status = HttpStatusCode.InternalServerError,
+                    )
+                }
+            }.onRight {
+                call.respond(message = "Meldeperiode lagret", status = HttpStatusCode.OK)
             }
-
-            if (meldeperiodeService.hentMeldeperiodeForId(meldekort.id) != null) {
-                call.respond(message = "Meldeperioden finnes allerede", status = HttpStatusCode.Conflict)
-                return@handle
-            }
-
-            // Disse to må være en transaksjon
-            meldeperiodeService.lagreMeldeperiode(meldekort).onLeft {
-                call.respond(message = "Lagring av meldeperiode feilet", status = HttpStatusCode.InternalServerError)
-                return@handle
-            }
-            brukersMeldekortService.opprettFraMeldeperiode(meldekort)
-
-            call.respond(HttpStatusCode.OK)
         }
     }
 

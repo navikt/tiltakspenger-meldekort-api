@@ -1,7 +1,6 @@
 package no.nav.tiltakspenger.meldekort.context
 
 import mu.KotlinLogging
-import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
@@ -24,26 +23,32 @@ open class ApplicationContext {
     open val jdbcUrl by lazy { Configuration.database() }
     open val dataSource by lazy { DataSourceSetup.createDatasource(jdbcUrl) }
     open val sessionCounter by lazy { SessionCounter(log) }
-    open val sessionFactory: SessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
+    open val sessionFactory: PostgresSessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
 
     open val texasHttpClient: TexasHttpClient by lazy { TexasHttpClientImpl() }
 
     open val brukersMeldekortRepo: BrukersMeldekortRepo by lazy {
         BrukersMeldekortPostgresRepo(
-            sessionFactory = sessionFactory as PostgresSessionFactory,
+            sessionFactory = sessionFactory,
         )
     }
     open val meldeperiodeRepo: MeldeperiodeRepo by lazy {
         MeldeperiodePostgresRepo(
-            sessionFactory = sessionFactory as PostgresSessionFactory,
+            sessionFactory = sessionFactory,
         )
     }
     val brukersMeldekortService: BrukersMeldekortService by lazy {
-        BrukersMeldekortService(brukersMeldekortRepo = brukersMeldekortRepo)
+        BrukersMeldekortService(
+            brukersMeldekortRepo = brukersMeldekortRepo,
+        )
     }
 
     val meldeperiodeService: MeldeperiodeService by lazy {
-        MeldeperiodeService(repo = meldeperiodeRepo)
+        MeldeperiodeService(
+            meldeperiodeRepo = meldeperiodeRepo,
+            brukersMeldekortRepo = brukersMeldekortService.brukersMeldekortRepo,
+            sessionFactory = sessionFactory,
+        )
     }
 
     open val saksbehandlingClient by lazy {
