@@ -7,18 +7,19 @@ import no.nav.tiltakspenger.meldekort.clients.saksbehandling.MeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.toDTO
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class MeldekortTilUtfyllingDTO(
-    val id: String?,
+    val id: String,
     val meldeperiodeId: String,
     val meldeperiodeKjedeId: String,
     val versjon: Int,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
     val status: MeldekortStatusDTO,
-    val meldekortDager: List<MeldekortDagDTO>,
+    val innsendt: LocalDateTime?,
+    val dager: List<MeldekortDagDTO>,
 )
 
 data class MeldekortFraUtfyllingDTO(
@@ -44,19 +45,7 @@ fun BrukersMeldekort.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
         fraOgMed = this.periode.fraOgMed,
         tilOgMed = this.periode.tilOgMed,
         status = this.status.toDTO(),
-        meldekortDager = this.dager.toMeldekortDagDTO(),
-    )
-}
-
-fun Meldeperiode.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
-    return MeldekortTilUtfyllingDTO(
-        id = null,
-        meldeperiodeId = this.id,
-        meldeperiodeKjedeId = this.kjedeId,
-        versjon = this.versjon,
-        fraOgMed = this.periode.fraOgMed,
-        tilOgMed = this.periode.tilOgMed,
-        status = this.status.toDTO(),
-        meldekortDager = this.toMeldekortDagDTOliste(),
+        innsendt = this.mottatt,
+        dager = this.dager.toMeldekortDagDTO(),
     )
 }

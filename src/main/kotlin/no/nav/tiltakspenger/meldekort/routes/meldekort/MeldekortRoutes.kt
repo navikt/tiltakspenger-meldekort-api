@@ -80,14 +80,12 @@ internal fun Route.meldekortRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
             }
+
             brukersMeldekortService.hentMeldekortForMeldeperiodeKjedeId(meldeperiodeKjedeIdParam)?.also {
                 call.respond(it.tilUtfyllingDTO())
                 return@get
             }
-            meldeperiodeService.hentMeldeperiodeForKjedeId(meldeperiodeKjedeIdParam)?.also {
-                call.respond(it.tilUtfyllingDTO())
-                return@get
-            }
+
             call.respond(HttpStatusCode.NotFound)
             return@get
         }

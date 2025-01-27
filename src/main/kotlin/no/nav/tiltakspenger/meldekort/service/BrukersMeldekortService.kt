@@ -5,8 +5,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
-import no.nav.tiltakspenger.meldekort.domene.tilTomtBrukersMeldekort
 import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
 import java.time.LocalDateTime
 
@@ -25,12 +23,6 @@ class BrukersMeldekortService(
         }
 
         brukersMeldekortRepo.lagreUtfylling(meldekort)
-    }
-
-    fun opprettFraMeldeperiode(meldeperiode: Meldeperiode) {
-        val brukersMeldekort = meldeperiode.tilTomtBrukersMeldekort()
-
-        brukersMeldekortRepo.lagre(brukersMeldekort)
     }
 
     fun hentMeldekortForMeldeperiodeKjedeId(id: String): BrukersMeldekort? {
