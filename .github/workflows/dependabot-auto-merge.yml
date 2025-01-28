@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Print action type
         run: |
-          echo PR event type: ${{ github.event.action != 'synchronize' }}
+          echo PR event type: ${{ github.event.action }}
       - name: Fetch dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v2
