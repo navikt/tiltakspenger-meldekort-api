@@ -19,7 +19,7 @@ class BrukersMeldekortService(
             ?: throw IllegalArgumentException("Meldekortet med id ${meldekort.id} finnes ikke")
 
         if (brukersMeldekort.mottatt != null) {
-            throw IllegalArgumentException("Meldekortet med id ${meldekort.id} er allerede mottatt")
+            throw IllegalArgumentException("Meldekortet med id ${meldekort.id} er allerede mottatt!")
         }
 
         brukersMeldekortRepo.lagreUtfylling(meldekort)
