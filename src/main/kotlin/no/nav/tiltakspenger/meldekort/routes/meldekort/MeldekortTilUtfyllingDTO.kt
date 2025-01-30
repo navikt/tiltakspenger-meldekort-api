@@ -39,8 +39,8 @@ data class MeldekortFraUtfyllingDTO(
 fun BrukersMeldekort.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
     return MeldekortTilUtfyllingDTO(
         id = this.id.toString(),
-        meldeperiodeId = this.meldeperiode.id,
-        meldeperiodeKjedeId = this.meldeperiode.kjedeId,
+        meldeperiodeId = this.meldeperiode.id.toString(),
+        meldeperiodeKjedeId = this.meldeperiode.kjedeId.toString(),
         versjon = this.meldeperiode.versjon,
         fraOgMed = this.periode.fraOgMed,
         tilOgMed = this.periode.tilOgMed,

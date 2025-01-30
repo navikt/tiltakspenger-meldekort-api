@@ -1,6 +1,8 @@
 package no.nav.tiltakspenger.meldekort.domene
 
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.HendelseId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import java.time.LocalDate
@@ -14,8 +16,8 @@ import java.time.LocalDateTime
  * @param versjon Angir hvilken versjon meldeperioden dette er. Når vi får nye vedtak som påvirker en spesifikk meldeperiode, vil denne øke.
  */
 data class Meldeperiode(
-    val id: String,
-    val kjedeId: String,
+    val id: HendelseId,
+    val kjedeId: MeldeperiodeKjedeId,
     val versjon: Int,
     val sakId: SakId,
     val fnr: Fnr,

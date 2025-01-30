@@ -5,6 +5,8 @@ import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.HendelseId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -13,8 +15,8 @@ import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 fun MeldeperiodeDTO.tilMeldeperiode(): Either<UgyldigMeldeperiode, Meldeperiode> {
     return Either.catch {
         Meldeperiode(
-            id = this.id,
-            kjedeId = this.meldeperiodeKjedeId,
+            id = HendelseId.fromString(this.id),
+            kjedeId = MeldeperiodeKjedeId(this.meldeperiodeKjedeId),
             versjon = this.versjon,
             sakId = SakId.fromString(this.sakId),
             fnr = Fnr.fromString(this.fnr),

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference
 import kotliquery.Row
 import kotliquery.Session
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.HendelseId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -48,8 +50,8 @@ internal class MeldeperiodePostgresRepo(
                         to_jsonb(:gir_rett::jsonb)
                     )
                     """,
-                    "id" to meldeperiode.id,
-                    "kjede_id" to meldeperiode.kjedeId,
+                    "id" to meldeperiode.id.toString(),
+                    "kjede_id" to meldeperiode.kjedeId.toString(),
                     "versjon" to meldeperiode.versjon,
                     "sak_id" to meldeperiode.sakId.toString(),
                     "fnr" to meldeperiode.fnr.verdi,
@@ -63,13 +65,13 @@ internal class MeldeperiodePostgresRepo(
         }
     }
 
-    override fun hentForId(id: String, sessionContext: SessionContext?): Meldeperiode? {
+    override fun hentForId(id: HendelseId, sessionContext: SessionContext?): Meldeperiode? {
         return sessionFactory.withSession(sessionContext) { session ->
             Companion.hentForId(id, session)
         }
     }
 
-    override fun hentForKjedeId(kjedeId: String, sessionContext: SessionContext?): Meldeperiode? {
+    override fun hentForKjedeId(kjedeId: MeldeperiodeKjedeId, sessionContext: SessionContext?): Meldeperiode? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -92,21 +94,21 @@ internal class MeldeperiodePostgresRepo(
 
     companion object {
         internal fun hentForId(
-            id: String,
+            id: HendelseId,
             session: Session,
         ): Meldeperiode? {
             return session.run(
                 sqlQuery(
                     "select * from meldeperiode where id = :id",
-                    "id" to id,
+                    "id" to id.toString(),
                 ).map { row -> fromRow(row) }.asSingle,
             )
         }
 
         private fun fromRow(row: Row): Meldeperiode {
             return Meldeperiode(
-                id = row.string("id"),
-                kjedeId = row.string("kjede_id"),
+                id = HendelseId.fromString(row.string("id")),
+                kjedeId = MeldeperiodeKjedeId(row.string("kjede_id")),
                 versjon = row.int("versjon"),
                 sakId = SakId.fromString(row.string("sak_id")),
                 fnr = Fnr.fromString(row.string("fnr")),

@@ -4,10 +4,12 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
+import no.nav.tiltakspenger.meldekort.Profile
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClientImpl
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
+import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.kafka.createKafkaProducer
@@ -27,15 +29,18 @@ open class ApplicationContext {
     open val dataSource by lazy { DataSourceSetup.createDatasource(jdbcUrl) }
     open val sessionCounter by lazy { SessionCounter(log) }
     open val sessionFactory: PostgresSessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
-    open val kafkaProducer by lazy { createKafkaProducer() }
 
     open val texasHttpClient: TexasHttpClient by lazy { TexasHttpClientImpl() }
 
     open val tmsVarselClient: TmsVarselClient by lazy {
-        TmsVarselClientImpl(
-            kafkaProducer = kafkaProducer,
-            topicName = Configuration.varselHendelseTopic,
-        )
+        if (Configuration.applicationProfile() == Profile.LOCAL) {
+            TmsVarselClientFake()
+        } else {
+            TmsVarselClientImpl(
+                kafkaProducer = createKafkaProducer(),
+                topicName = Configuration.varselHendelseTopic,
+            )
+        }
     }
 
     open val brukersMeldekortRepo: BrukersMeldekortRepo by lazy {

@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import kotliquery.Session
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
@@ -39,7 +40,7 @@ class BrukersMeldekortPostgresRepo(
                         )
                     """,
                     "id" to meldekort.id.toString(),
-                    "meldeperiode_id" to meldekort.meldeperiode.id,
+                    "meldeperiode_id" to meldekort.meldeperiode.id.toString(),
                     "sak_id" to meldekort.sakId.toString(),
                     "mottatt" to meldekort.mottatt,
                     "dager" to meldekort.dager.toDbJson(),
@@ -203,10 +204,17 @@ class BrukersMeldekortPostgresRepo(
             row: Row,
             session: Session,
         ): BrukersMeldekort {
+            val id = MeldekortId.fromString(row.string("id"))
+            val meldeperiodeId = row.string("meldeperiode_id")
+
+            val meldeperiode = MeldeperiodePostgresRepo.hentForId(HendelseId.fromString(meldeperiodeId), session)
+
+            requireNotNull(meldeperiode) { "Fant ingen meldeperiode for $id" }
+
             return BrukersMeldekort(
-                id = MeldekortId.Companion.fromString(row.string("id")),
+                id = id,
+                meldeperiode = meldeperiode,
                 mottatt = row.localDateTimeOrNull("mottatt"),
-                meldeperiode = MeldeperiodePostgresRepo.hentForId(row.string("meldeperiode_id"), session)!!,
                 sakId = SakId.fromString(row.string("sak_id")),
                 dager = row.string("dager").toMeldekortDager(),
             )

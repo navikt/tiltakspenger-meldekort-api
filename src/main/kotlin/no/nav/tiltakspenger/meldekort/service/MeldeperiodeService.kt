@@ -5,6 +5,7 @@ import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import mu.KotlinLogging
+import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
@@ -49,8 +50,8 @@ class MeldeperiodeService(
         }
     }
 
-    fun hentMeldeperiodeForKjedeId(kjedeId: String): Meldeperiode? {
-        return meldeperiodeRepo.hentForId(kjedeId)
+    fun hentMeldeperiodeForKjedeId(kjedeId: MeldeperiodeKjedeId): Meldeperiode? {
+        TODO()
     }
 }
 

@@ -60,6 +60,10 @@ object Configuration {
                 "DB_JDBC_URL" to "jdbc:postgresql://localhost:5435/meldekort?user=postgres&password=test",
                 "NAIS_TOKEN_ENDPOINT" to "http://localhost:7164/api/v1/token",
                 "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to "http://localhost:7164/api/v1/introspect",
+                "KAFKA_BROKERS" to "",
+                "KAFKA_TRUSTSTORE_PATH" to "",
+                "KAFKA_KEYSTORE_PATH" to "",
+                "KAFKA_CREDSTORE_PASSWORD" to "",
             ),
         )
 
