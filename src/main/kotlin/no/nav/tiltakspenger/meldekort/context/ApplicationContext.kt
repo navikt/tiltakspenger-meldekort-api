@@ -39,7 +39,7 @@ open class ApplicationContext {
             TmsVarselClientImpl(
                 kafkaProducer = createKafkaProducer(),
                 topicName = Configuration.varselHendelseTopic,
-                meldekortFrontendUrl = Configuration.meldekortFrontendUrl
+                meldekortFrontendUrl = Configuration.meldekortFrontendUrl,
             )
         }
     }
