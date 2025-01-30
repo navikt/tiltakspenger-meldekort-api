@@ -28,7 +28,7 @@ object Configuration {
                 "KAFKA_TRUSTSTORE_PATH" to System.getenv("KAFKA_TRUSTSTORE_PATH"),
                 "KAFKA_KEYSTORE_PATH" to System.getenv("KAFKA_KEYSTORE_PATH"),
                 "KAFKA_CREDSTORE_PASSWORD" to System.getenv("KAFKA_CREDSTORE_PASSWORD"),
-                "VARSEL_HENDELSE_TOPIC" to System.getenv("VARSEL_HENDELSE_TOPIC"),
+                "VARSEL_HENDELSE_TOPIC" to "min-side.aapen-brukervarsel-v1",
             ),
         )
 
