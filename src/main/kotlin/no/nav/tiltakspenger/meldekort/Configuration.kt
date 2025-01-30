@@ -38,6 +38,7 @@ object Configuration {
                 "application.profile" to Profile.PROD.toString(),
                 "SAKSBEHANDLING_API_AUDIENCE" to "api://prod-gcp.tpts.tiltakspenger-saksbehandling-api/.default",
                 "SAKSBEHANDLING_API_URL" to "http://tiltakspenger-saksbehandling-api",
+                "MELDEKORT_FRONTEND_URL" to "https://www.nav.no/tiltakspenger/meldekort",
             ),
         )
 
@@ -47,6 +48,7 @@ object Configuration {
                 "application.profile" to Profile.DEV.toString(),
                 "SAKSBEHANDLING_API_AUDIENCE" to "api://dev-gcp.tpts.tiltakspenger-saksbehandling-api/.default",
                 "SAKSBEHANDLING_API_URL" to "http://tiltakspenger-saksbehandling-api",
+                "MELDEKORT_FRONTEND_URL" to "https://www.ansatt.dev.nav.no/tiltakspenger/meldekort",
             ),
         )
 
@@ -64,6 +66,7 @@ object Configuration {
                 "KAFKA_TRUSTSTORE_PATH" to "",
                 "KAFKA_KEYSTORE_PATH" to "",
                 "KAFKA_CREDSTORE_PASSWORD" to "",
+                "MELDEKORT_FRONTEND_URL" to "http://localhost:2223/tiltakspenger/meldekort",
             ),
         )
 
@@ -106,6 +109,8 @@ object Configuration {
     val kafkaCredstorePassword: String by lazy { config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)] }
 
     val varselHendelseTopic: String by lazy { config()[Key("VARSEL_HENDELSE_TOPIC", stringType)] }
+
+    val meldekortFrontendUrl: String by lazy { config()[Key("MELDEKORT_FRONTEND_URL", stringType)] }
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 
