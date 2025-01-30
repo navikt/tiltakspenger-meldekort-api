@@ -9,6 +9,8 @@ val mockkVersion = "1.13.16"
 val felleslibVersion = "0.0.350"
 val kotestVersion = "5.9.1"
 val kotlinxCoroutinesVersion = "1.10.1"
+val kafkaVersion = "3.9.0"
+val tmsVarselBuilderVersion = "2.1.1"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
@@ -60,6 +62,9 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:tiltak-dtos:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:meldekort-dtos:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:periodisering:$felleslibVersion")
+
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+    implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilderVersion")
 
     // DB
     implementation("org.flywaydb:flyway-database-postgresql:11.2.0")

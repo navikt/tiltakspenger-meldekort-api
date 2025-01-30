@@ -24,6 +24,11 @@ object Configuration {
                 "NAIS_TOKEN_ENDPOINT" to System.getenv("NAIS_TOKEN_ENDPOINT"),
                 "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to System.getenv("NAIS_TOKEN_INTROSPECTION_ENDPOINT"),
                 "ELECTOR_PATH" to System.getenv("ELECTOR_PATH"),
+                "KAFKA_BROKERS" to System.getenv("KAFKA_BROKERS"),
+                "KAFKA_TRUSTSTORE_PATH" to System.getenv("KAFKA_TRUSTSTORE_PATH"),
+                "KAFKA_KEYSTORE_PATH" to System.getenv("KAFKA_KEYSTORE_PATH"),
+                "KAFKA_CREDSTORE_PASSWORD" to System.getenv("KAFKA_CREDSTORE_PASSWORD"),
+                "VARSEL_HENDELSE_TOPIC" to System.getenv("VARSEL_HENDELSE_TOPIC"),
             ),
         )
 
@@ -79,10 +84,24 @@ object Configuration {
         }
 
     val naisTokenEndpoint: String by lazy { config()[Key("NAIS_TOKEN_ENDPOINT", stringType)] }
-    val naisTokenIntrospectionEndpoint: String by lazy { config()[Key("NAIS_TOKEN_INTROSPECTION_ENDPOINT", stringType)] }
+    val naisTokenIntrospectionEndpoint: String by lazy {
+        config()[
+            Key(
+                "NAIS_TOKEN_INTROSPECTION_ENDPOINT",
+                stringType,
+            ),
+        ]
+    }
 
     val saksbehandlingApiAudience: String by lazy { config()[Key("SAKSBEHANDLING_API_AUDIENCE", stringType)] }
     val saksbehandlingApiUrl: String by lazy { config()[Key("SAKSBEHANDLING_API_URL", stringType)] }
+
+    val kafkaBrokers: String by lazy { config()[Key("KAFKA_BROKERS", stringType)] }
+    val kafkaTruststorePath: String by lazy { config()[Key("KAFKA_TRUSTSTORE_PATH", stringType)] }
+    val kafkaKeystorePath: String by lazy { config()[Key("KAFKA_KEYSTORE_PATH", stringType)] }
+    val kafkaCredstorePassword: String by lazy { config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)] }
+
+    val varselHendelseTopic: String by lazy { config()[Key("VARSEL_HENDELSE_TOPIC", stringType)] }
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 

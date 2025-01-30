@@ -18,15 +18,18 @@ import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnr
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
+import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.service.BrukersMeldekortService
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvMeldeperiode
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
+import java.util.*
 
 val logger = KotlinLogging.logger {}
 
 internal fun Route.meldekortRoutes(
     brukersMeldekortService: BrukersMeldekortService,
     meldeperiodeService: MeldeperiodeService,
+    tmsVarselClient: TmsVarselClient,
     texasHttpClient: TexasHttpClient,
 ) {
     // Kalles fra saksbehandling-api (sender meldeperiodene til meldekort-api)
@@ -47,22 +50,26 @@ internal fun Route.meldekortRoutes(
                 return@handle
             }
 
-            meldeperiodeService.lagreFraSaksbehandling(meldeperiodeDto).onLeft {
+            meldeperiodeService.opprettOgLagreFraSaksbehandling(meldeperiodeDto).onLeft {
                 when (it) {
                     FeilVedMottakAvMeldeperiode.UgyldigMeldeperiode -> call.respond(
                         message = "Ugyldig meldeperiode: $it",
                         status = HttpStatusCode.BadRequest,
                     )
+
                     FeilVedMottakAvMeldeperiode.MeldeperiodeFinnes -> call.respond(
                         message = "Meldeperioden finnes allerede",
                         status = HttpStatusCode.Conflict,
                     )
+
                     FeilVedMottakAvMeldeperiode.LagringFeilet -> call.respond(
                         message = "Lagring av meldeperiode feilet",
                         status = HttpStatusCode.InternalServerError,
                     )
                 }
             }.onRight {
+                tmsVarselClient.sendVarselForNyttMeldekort(it.second, eventId = UUID.randomUUID().toString())
+
                 call.respond(message = "Meldeperiode lagret", status = HttpStatusCode.OK)
             }
         }

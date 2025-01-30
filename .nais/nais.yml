@@ -29,6 +29,8 @@ spec:
   azure:
     application:
       enabled: true
+  kafka:
+    pool: {{ kafka-pool }}
   leaderElection: true
   gcp:
     sqlInstances:

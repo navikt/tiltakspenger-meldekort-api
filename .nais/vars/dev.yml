@@ -6,3 +6,4 @@ ingress:
   url: https://tiltakspenger-meldekort-api.intern.dev.nav.no
 cluster: dev-gcp
 replicas: 1
+kafka-pool: "nav-dev"

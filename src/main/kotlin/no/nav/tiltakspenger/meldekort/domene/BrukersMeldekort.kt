@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.domene
 
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -23,6 +24,7 @@ data class BrukersMeldekort(
     val dager: List<BrukersMeldekortDag>,
 ) {
     val periode: Periode = meldeperiode.periode
+    val fnr: Fnr = meldeperiode.fnr
 
     val status: MeldekortStatus = if (mottatt == null) MeldekortStatus.KAN_UTFYLLES else MeldekortStatus.INNSENDT
 

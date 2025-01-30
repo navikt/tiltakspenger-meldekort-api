@@ -3,10 +3,12 @@ package no.nav.tiltakspenger.meldekort.service
 import arrow.core.Either
 import arrow.core.getOrElse
 import arrow.core.left
+import arrow.core.right
 import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
+import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilTomtBrukersMeldekort
 import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
@@ -20,7 +22,7 @@ class MeldeperiodeService(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun lagreFraSaksbehandling(meldeperiodeDto: MeldeperiodeDTO): Either<FeilVedMottakAvMeldeperiode, Unit> {
+    fun opprettOgLagreFraSaksbehandling(meldeperiodeDto: MeldeperiodeDTO): Either<FeilVedMottakAvMeldeperiode, Pair<Meldeperiode, BrukersMeldekort>> {
         val meldeperiode = meldeperiodeDto.tilMeldeperiode().getOrElse {
             return FeilVedMottakAvMeldeperiode.UgyldigMeldeperiode.left()
         }
@@ -37,6 +39,7 @@ class MeldeperiodeService(
                 brukersMeldekortRepo.lagre(brukersMeldekort, tx)
             }
             logger.info { "Lagret meldeperiode: ${meldeperiode.id} - Opprettet brukers meldekort: ${brukersMeldekort.id}" }
+            return Pair(meldeperiode, brukersMeldekort).right()
         }.mapLeft {
             with("Lagring av meldeperiode feilet for ${meldeperiode.id}") {
                 logger.error { this }
