@@ -11,6 +11,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
@@ -81,7 +82,23 @@ internal fun Route.meldekortRoutes(
             client = texasHttpClient
         }
 
-        get("{meldeperiodeKjedeId}") {
+        get("meldekort/{meldekortId}") {
+            val meldekortId = call.parameters["meldekortId"]?.let { MeldekortId.fromString(it) }
+            if (meldekortId == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+
+            brukersMeldekortService.hentForMeldekortId(meldekortId)?.also {
+                call.respond(it.tilUtfyllingDTO())
+                return@get
+            }
+
+            call.respond(HttpStatusCode.NotFound)
+            return@get
+        }
+
+        get("kjede/{meldeperiodeKjedeId}") {
             val meldeperiodeKjedeIdParam = call.parameters["meldeperiodeKjedeId"]
             if (meldeperiodeKjedeIdParam == null) {
                 call.respond(HttpStatusCode.BadRequest)

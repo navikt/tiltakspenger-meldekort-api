@@ -29,6 +29,10 @@ class BrukersMeldekortService(
         return brukersMeldekortRepo.hentMeldekortForMeldeperiodeKjedeId(id)
     }
 
+    fun hentForMeldekortId(id: MeldekortId): BrukersMeldekort? {
+        return brukersMeldekortRepo.hentForMeldekortId(id)
+    }
+
     fun hentSisteMeldekort(fnr: Fnr): BrukersMeldekort? {
         return brukersMeldekortRepo.hentSisteMeldekort(fnr)
     }
