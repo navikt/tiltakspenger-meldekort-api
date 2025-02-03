@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.domene
 
-enum class BrukersMeldekortStatus {
+enum class MeldekortStatus {
     INNSENDT,
     KAN_UTFYLLES,
 }

@@ -19,16 +19,16 @@ import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnr
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
-import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfyllingDTO
-import no.nav.tiltakspenger.meldekort.domene.tilUtfyllingDTO
-import no.nav.tiltakspenger.meldekort.service.BrukersMeldekortService
+import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvMeldeperiode
+import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
 
 val logger = KotlinLogging.logger {}
 
 internal fun Route.meldekortRoutes(
-    brukersMeldekortService: BrukersMeldekortService,
+    meldekortService: MeldekortService,
     meldeperiodeService: MeldeperiodeService,
     texasHttpClient: TexasHttpClient,
 ) {
@@ -86,8 +86,8 @@ internal fun Route.meldekortRoutes(
                 return@get
             }
 
-            brukersMeldekortService.hentForMeldekortId(meldekortId)?.also {
-                call.respond(it.tilUtfyllingDTO())
+            meldekortService.hentForMeldekortId(meldekortId)?.also {
+                call.respond(it.tilBrukerDTO())
                 return@get
             }
 
@@ -102,8 +102,8 @@ internal fun Route.meldekortRoutes(
                 return@get
             }
 
-            brukersMeldekortService.hentMeldekortForMeldeperiodeKjedeId(meldeperiodeKjedeIdParam)?.also {
-                call.respond(it.tilUtfyllingDTO())
+            meldekortService.hentMeldekortForMeldeperiodeKjedeId(meldeperiodeKjedeIdParam)?.also {
+                call.respond(it.tilBrukerDTO())
                 return@get
             }
 
@@ -112,26 +112,26 @@ internal fun Route.meldekortRoutes(
         }
 
         get("siste") {
-            val meldekort = brukersMeldekortService.hentSisteMeldekort(call.fnr())
+            val meldekort = meldekortService.hentSisteMeldekort(call.fnr())
             if (meldekort == null) {
                 call.respond(HttpStatusCode.NotFound)
                 return@get
             }
 
-            call.respond(meldekort.tilUtfyllingDTO())
+            call.respond(meldekort.tilBrukerDTO())
         }
 
         get("alle") {
-            val alleMeldekort = brukersMeldekortService.hentAlleMeldekort(call.fnr()).map {
-                it.tilUtfyllingDTO()
+            val alleMeldekort = meldekortService.hentAlleMeldekort(call.fnr()).map {
+                it.tilBrukerDTO()
             }
 
             call.respond(alleMeldekort)
         }
 
         post("send-inn") {
-            val meldekortFraUtfyllingDTO = Either.catch {
-                deserialize<MeldekortFraUtfyllingDTO>(call.receiveText())
+            val meldekortFraBruker = Either.catch {
+                deserialize<MeldekortFraBrukerDTO>(call.receiveText())
             }.getOrElse {
                 logger.error(it) { "Feil ved deserialize av utfylt meldekort - ${it.message}" }
                 call.respond(HttpStatusCode.BadRequest)
@@ -139,8 +139,8 @@ internal fun Route.meldekortRoutes(
             }
 
             Either.catch {
-                brukersMeldekortService.lagreBrukersMeldekort(
-                    lagreMeldekortKommando = meldekortFraUtfyllingDTO.toDomain(),
+                meldekortService.lagreMeldekortFraBruker(
+                    lagreKommando = meldekortFraBruker.tilLagreKommando(),
                     innsenderFnr = call.fnr(),
                 )
             }.onLeft {

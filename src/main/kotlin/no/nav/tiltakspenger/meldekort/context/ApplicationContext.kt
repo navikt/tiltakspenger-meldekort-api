@@ -13,11 +13,11 @@ import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.kafka.createKafkaProducer
-import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortPostgresRepo
-import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
+import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
-import no.nav.tiltakspenger.meldekort.service.BrukersMeldekortService
+import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
 import no.nav.tiltakspenger.meldekort.service.SendMeldekortService
 
@@ -44,8 +44,8 @@ open class ApplicationContext {
         }
     }
 
-    open val brukersMeldekortRepo: BrukersMeldekortRepo by lazy {
-        BrukersMeldekortPostgresRepo(
+    open val meldekortRepo: MeldekortRepo by lazy {
+        MeldekortPostgresRepo(
             sessionFactory = sessionFactory,
         )
     }
@@ -54,16 +54,16 @@ open class ApplicationContext {
             sessionFactory = sessionFactory,
         )
     }
-    val brukersMeldekortService: BrukersMeldekortService by lazy {
-        BrukersMeldekortService(
-            brukersMeldekortRepo = brukersMeldekortRepo,
+    val meldekortService: MeldekortService by lazy {
+        MeldekortService(
+            meldekortRepo = meldekortRepo,
         )
     }
 
     val meldeperiodeService: MeldeperiodeService by lazy {
         MeldeperiodeService(
             meldeperiodeRepo = meldeperiodeRepo,
-            brukersMeldekortRepo = brukersMeldekortService.brukersMeldekortRepo,
+            meldekortRepo = meldekortService.meldekortRepo,
             sessionFactory = sessionFactory,
             tmsVarselClient = tmsVarselClient,
         )
@@ -78,7 +78,7 @@ open class ApplicationContext {
 
     val sendMeldekortService: SendMeldekortService by lazy {
         SendMeldekortService(
-            meldekortService = brukersMeldekortService,
+            meldekortService = meldekortService,
             saksbehandlingClient = saksbehandlingClient,
         )
     }

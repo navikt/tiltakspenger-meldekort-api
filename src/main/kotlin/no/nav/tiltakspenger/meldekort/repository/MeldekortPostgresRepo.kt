@@ -10,17 +10,17 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
-import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
+import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
 
-class BrukersMeldekortPostgresRepo(
+class MeldekortPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
-) : BrukersMeldekortRepo {
+) : MeldekortRepo {
 
-    override fun lagre(meldekort: BrukersMeldekort, sessionContext: SessionContext?) {
+    override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -49,7 +49,7 @@ class BrukersMeldekortPostgresRepo(
         }
     }
 
-    override fun lagreUtfylling(meldekort: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
+    override fun lagreFraBruker(meldekort: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -71,7 +71,7 @@ class BrukersMeldekortPostgresRepo(
     override fun hentMeldekortForMeldeperiodeId(
         meldeperiodeId: String,
         sessionContext: SessionContext?,
-    ): BrukersMeldekort? {
+    ): Meldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -93,7 +93,7 @@ class BrukersMeldekortPostgresRepo(
     override fun hentMeldekortForMeldeperiodeKjedeId(
         meldeperiodeKjedeId: String,
         sessionContext: SessionContext?,
-    ): BrukersMeldekort? {
+    ): Meldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -115,7 +115,7 @@ class BrukersMeldekortPostgresRepo(
     override fun hentForMeldekortId(
         meldekortId: MeldekortId,
         sessionContext: SessionContext?,
-    ): BrukersMeldekort? {
+    ): Meldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -133,15 +133,15 @@ class BrukersMeldekortPostgresRepo(
         }
     }
 
-    override fun hentSisteMeldekort(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
+    override fun hentSisteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
         return this.hentMeldekortForBruker(fnr, 1, sessionContext).firstOrNull()
     }
 
-    override fun hentAlleMeldekort(fnr: Fnr, sessionContext: SessionContext?): List<BrukersMeldekort> {
+    override fun hentAlleMeldekort(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
         return this.hentMeldekortForBruker(fnr, 100, sessionContext)
     }
 
-    override fun hentUsendteMeldekort(sessionContext: SessionContext?): List<BrukersMeldekort> {
+    override fun hentUsendteMeldekort(sessionContext: SessionContext?): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -180,7 +180,7 @@ class BrukersMeldekortPostgresRepo(
         fnr: Fnr,
         limit: Int = 100,
         sessionContext: SessionContext?,
-    ): List<BrukersMeldekort> {
+    ): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -203,7 +203,7 @@ class BrukersMeldekortPostgresRepo(
         private fun fromRow(
             row: Row,
             session: Session,
-        ): BrukersMeldekort {
+        ): Meldekort {
             val id = MeldekortId.fromString(row.string("id"))
             val meldeperiodeId = row.string("meldeperiode_id")
 
@@ -211,7 +211,7 @@ class BrukersMeldekortPostgresRepo(
 
             requireNotNull(meldeperiode) { "Fant ingen meldeperiode for $id" }
 
-            return BrukersMeldekort(
+            return Meldekort(
                 id = id,
                 meldeperiode = meldeperiode,
                 mottatt = row.localDateTimeOrNull("mottatt"),

@@ -16,16 +16,16 @@ import java.time.LocalDateTime
  * @param mottatt Tidspunktet mottatt fra bruker
  * @param dager Et innslag per dag i meldeperioden. Må være sortert.
  */
-data class BrukersMeldekort(
+data class Meldekort(
     val id: MeldekortId,
     val mottatt: LocalDateTime?,
     val meldeperiode: Meldeperiode,
     val sakId: SakId,
-    val dager: List<BrukersMeldekortDag>,
+    val dager: List<MeldekortDag>,
 ) {
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
-    val status: BrukersMeldekortStatus = if (mottatt == null) BrukersMeldekortStatus.KAN_UTFYLLES else BrukersMeldekortStatus.INNSENDT
+    val status: MeldekortStatus = if (mottatt == null) MeldekortStatus.KAN_UTFYLLES else MeldekortStatus.INNSENDT
 
     init {
         dager.zipWithNext().forEach { (dag, nesteDag) ->
@@ -38,14 +38,14 @@ data class BrukersMeldekort(
     }
 }
 
-fun Meldeperiode.tilTomtBrukersMeldekort(): BrukersMeldekort {
-    return BrukersMeldekort(
+fun Meldeperiode.tilTomtMeldekort(): Meldekort {
+    return Meldekort(
         id = MeldekortId.random(),
         mottatt = null,
         meldeperiode = this,
         sakId = this.sakId,
         dager = this.girRett.map {
-            BrukersMeldekortDag(
+            MeldekortDag(
                 dag = it.key,
                 harRett = it.value,
                 status = MeldekortDagStatus.IKKE_REGISTRERT,

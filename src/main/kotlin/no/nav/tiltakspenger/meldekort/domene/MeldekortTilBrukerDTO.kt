@@ -3,26 +3,26 @@ package no.nav.tiltakspenger.meldekort.domene
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class MeldekortTilUtfyllingDTO(
+data class MeldekortTilBrukerDTO(
     val id: String,
     val meldeperiodeId: String,
     val meldeperiodeKjedeId: String,
     val versjon: Int,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
-    val status: BrukersMeldekortStatus,
+    val status: MeldekortStatus,
     val innsendt: LocalDateTime?,
-    val dager: List<MeldekortDagTilUtfylling>,
+    val dager: List<MeldekortDagTilBruker>,
 )
 
-data class MeldekortDagTilUtfylling(
+data class MeldekortDagTilBruker(
     override val dag: LocalDate,
     override val status: MeldekortDagStatus,
     val harRett: Boolean,
-) : MeldekortDag
+) : IMeldekortDag
 
-fun BrukersMeldekort.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
-    return MeldekortTilUtfyllingDTO(
+fun Meldekort.tilBrukerDTO(): MeldekortTilBrukerDTO {
+    return MeldekortTilBrukerDTO(
         id = this.id.toString(),
         meldeperiodeId = this.meldeperiode.id.toString(),
         meldeperiodeKjedeId = this.meldeperiode.kjedeId.toString(),
@@ -32,7 +32,7 @@ fun BrukersMeldekort.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
         status = this.status,
         innsendt = this.mottatt,
         dager = this.dager.map { dag ->
-            MeldekortDagTilUtfylling(
+            MeldekortDagTilBruker(
                 dag = dag.dag,
                 harRett = dag.harRett,
                 status = dag.status,

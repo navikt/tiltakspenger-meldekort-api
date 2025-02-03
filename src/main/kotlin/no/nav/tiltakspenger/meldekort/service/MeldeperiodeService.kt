@@ -11,15 +11,15 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
-import no.nav.tiltakspenger.meldekort.domene.tilTomtBrukersMeldekort
-import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
+import no.nav.tiltakspenger.meldekort.domene.tilMeldeperiode
+import no.nav.tiltakspenger.meldekort.domene.tilTomtMeldekort
+import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
-import no.nav.tiltakspenger.meldekort.routes.meldekort.tilMeldeperiode
 import java.util.*
 
 class MeldeperiodeService(
     private val meldeperiodeRepo: MeldeperiodeRepo,
-    private val brukersMeldekortRepo: BrukersMeldekortRepo,
+    private val meldekortRepo: MeldekortRepo,
     private val tmsVarselClient: TmsVarselClient,
     private val sessionFactory: SessionFactory,
 ) {
@@ -36,12 +36,12 @@ class MeldeperiodeService(
             return FeilVedMottakAvMeldeperiode.MeldeperiodeFinnes.left()
         }
 
-        val brukersMeldekort = if (meldeperiode.harRettIPerioden) meldeperiode.tilTomtBrukersMeldekort() else null
+        val meldekort = if (meldeperiode.harRettIPerioden) meldeperiode.tilTomtMeldekort() else null
 
         Either.catch {
             sessionFactory.withTransactionContext { tx ->
                 meldeperiodeRepo.lagre(meldeperiode, tx)
-                brukersMeldekort?.also { brukersMeldekortRepo.lagre(it, tx) }
+                meldekort?.also { meldekortRepo.lagre(it, tx) }
             }
         }.mapLeft {
             with("Lagring av meldeperiode feilet for ${meldeperiode.id}") {
@@ -53,9 +53,9 @@ class MeldeperiodeService(
 
         logger.info { "Lagret meldeperiode ${meldeperiode.id}" }
 
-        if (brukersMeldekort != null) {
-            logger.info { "Lagret brukers meldekort ${brukersMeldekort.id}" }
-            tmsVarselClient.sendVarselForNyttMeldekort(brukersMeldekort, eventId = UUID.randomUUID().toString())
+        if (meldekort != null) {
+            logger.info { "Lagret brukers meldekort ${meldekort.id}" }
+            tmsVarselClient.sendVarselForNyttMeldekort(meldekort, eventId = UUID.randomUUID().toString())
         }
 
         return Unit.right()

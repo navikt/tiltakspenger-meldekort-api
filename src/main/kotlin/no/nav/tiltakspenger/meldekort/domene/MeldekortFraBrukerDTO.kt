@@ -12,15 +12,15 @@ import java.time.LocalDateTime
  */
 data class LagreMeldekortFraBrukerKommando(
     val id: MeldekortId,
-    val dager: List<MeldekortDagFraUtfylling>,
+    val dager: List<MeldekortDagFraBruker>,
     val mottatt: LocalDateTime,
 )
 
-data class MeldekortFraUtfyllingDTO(
+data class MeldekortFraBrukerDTO(
     val id: String,
-    val dager: List<MeldekortDagFraUtfylling>,
+    val dager: List<MeldekortDagFraBruker>,
 ) {
-    fun toDomain(): LagreMeldekortFraBrukerKommando {
+    fun tilLagreKommando(): LagreMeldekortFraBrukerKommando {
         return LagreMeldekortFraBrukerKommando(
             id = MeldekortId.fromString(id),
             dager = dager,
@@ -29,12 +29,12 @@ data class MeldekortFraUtfyllingDTO(
     }
 }
 
-data class MeldekortDagFraUtfylling(
+data class MeldekortDagFraBruker(
     override val dag: LocalDate,
     override val status: MeldekortDagStatus,
-) : MeldekortDag
+) : IMeldekortDag
 
-fun BrukersMeldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
+fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
     val maksAntallDager = meldeperiode.maksAntallDagerForPeriode
     val antallDagerRegistrert = kommando.dager.count { it.status != MeldekortDagStatus.IKKE_REGISTRERT }
 
@@ -46,7 +46,7 @@ fun BrukersMeldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
         it.status != MeldekortDagStatus.IKKE_REGISTRERT && meldeperiode.girRett[it.dag] == false
     }
 
-    require(registrerteDagerUtenRett.isNotEmpty()) {
+    require(registrerteDagerUtenRett.isEmpty()) {
         "Meldekortet har registering på dager uten rett - $registrerteDagerUtenRett"
     }
 }

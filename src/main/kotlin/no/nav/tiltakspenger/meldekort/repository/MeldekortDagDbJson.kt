@@ -4,7 +4,7 @@ import arrow.core.NonEmptyList
 import arrow.core.toNonEmptyListOrNull
 import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
-import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.IMeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import java.time.LocalDate
@@ -21,11 +21,12 @@ private data class MeldekortDagDbJson(
         FRAVÆR_ANNET,
         IKKE_DELTATT,
         IKKE_REGISTRERT,
+        // TODO: Kan fjerne denne
         IKKE_RETT_TIL_TILTAKSPENGER,
     }
 
-    fun toDomain(): BrukersMeldekortDag {
-        return BrukersMeldekortDag(
+    fun toDomain(): MeldekortDag {
+        return MeldekortDag(
             dag = dag,
             harRett = status != MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER,
             status = when (status) {
@@ -41,7 +42,7 @@ private data class MeldekortDagDbJson(
     }
 }
 
-fun List<MeldekortDag>.toDbJson(): String {
+fun List<IMeldekortDag>.toDbJson(): String {
     return this.map { dag ->
         MeldekortDagDbJson(
             dag = dag.dag,
@@ -57,6 +58,6 @@ fun List<MeldekortDag>.toDbJson(): String {
     }.let { serialize(it) }
 }
 
-fun String.toMeldekortDager(): NonEmptyList<BrukersMeldekortDag> {
+fun String.toMeldekortDager(): NonEmptyList<MeldekortDag> {
     return deserializeList<MeldekortDagDbJson>(this).map { it.toDomain() }.toNonEmptyListOrNull()!!
 }

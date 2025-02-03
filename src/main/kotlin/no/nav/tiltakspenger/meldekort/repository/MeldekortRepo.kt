@@ -3,17 +3,17 @@ package no.nav.tiltakspenger.meldekort.repository
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
+import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import java.time.LocalDateTime
 
-interface BrukersMeldekortRepo {
+interface MeldekortRepo {
     fun lagre(
-        meldekort: BrukersMeldekort,
+        meldekort: Meldekort,
         sessionContext: SessionContext? = null,
     )
 
-    fun lagreUtfylling(
+    fun lagreFraBruker(
         meldekort: LagreMeldekortFraBrukerKommando,
         sessionContext: SessionContext? = null,
     )
@@ -21,29 +21,29 @@ interface BrukersMeldekortRepo {
     fun hentForMeldekortId(
         meldekortId: MeldekortId,
         sessionContext: SessionContext? = null,
-    ): BrukersMeldekort?
+    ): Meldekort?
 
     fun hentMeldekortForMeldeperiodeId(
         meldeperiodeId: String,
         sessionContext: SessionContext? = null,
-    ): BrukersMeldekort?
+    ): Meldekort?
 
     fun hentMeldekortForMeldeperiodeKjedeId(
         meldeperiodeKjedeId: String,
         sessionContext: SessionContext? = null,
-    ): BrukersMeldekort?
+    ): Meldekort?
 
     fun hentSisteMeldekort(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): BrukersMeldekort?
+    ): Meldekort?
 
     fun hentAlleMeldekort(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): List<BrukersMeldekort>
+    ): List<Meldekort>
 
-    fun hentUsendteMeldekort(sessionContext: SessionContext? = null): List<BrukersMeldekort>
+    fun hentUsendteMeldekort(sessionContext: SessionContext? = null): List<Meldekort>
 
     fun markerSendtTilSaksbehandling(
         id: MeldekortId,
