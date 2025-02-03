@@ -65,7 +65,7 @@ open class ApplicationContext {
             meldeperiodeRepo = meldeperiodeRepo,
             brukersMeldekortRepo = brukersMeldekortService.brukersMeldekortRepo,
             sessionFactory = sessionFactory,
-            tmsVarselClient = tmsVarselClient
+            tmsVarselClient = tmsVarselClient,
         )
     }
 

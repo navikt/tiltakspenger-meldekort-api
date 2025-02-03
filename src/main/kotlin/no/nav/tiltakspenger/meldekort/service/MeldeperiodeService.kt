@@ -61,7 +61,6 @@ class MeldeperiodeService(
         return Unit.right()
     }
 
-
     fun hentMeldeperiodeForKjedeId(kjedeId: MeldeperiodeKjedeId): Meldeperiode? {
         TODO()
     }
