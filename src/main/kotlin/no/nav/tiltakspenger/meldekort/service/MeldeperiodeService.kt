@@ -27,10 +27,12 @@ class MeldeperiodeService(
 
     fun lagreFraSaksbehandling(meldeperiodeDto: MeldeperiodeDTO): Either<FeilVedMottakAvMeldeperiode, Unit> {
         val meldeperiode = meldeperiodeDto.tilMeldeperiode().getOrElse {
+            logger.error { "Ugyldig meldeperiode ${meldeperiodeDto.id} - ${it.message}" }
             return FeilVedMottakAvMeldeperiode.UgyldigMeldeperiode.left()
         }
 
         meldeperiodeRepo.hentForId(meldeperiode.id)?.also {
+            logger.error { "Meldeperioden ${it.id} finnes allerede" }
             return FeilVedMottakAvMeldeperiode.MeldeperiodeFinnes.left()
         }
 
