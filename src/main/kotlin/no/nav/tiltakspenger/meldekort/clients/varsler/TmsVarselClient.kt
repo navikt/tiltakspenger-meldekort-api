@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.clients.varsler
 
-import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
+import no.nav.tiltakspenger.meldekort.domene.Meldekort
 
 interface TmsVarselClient {
-    fun sendVarselForNyttMeldekort(meldekort: BrukersMeldekort, eventId: String)
+    fun sendVarselForNyttMeldekort(meldekort: Meldekort, eventId: String)
 }

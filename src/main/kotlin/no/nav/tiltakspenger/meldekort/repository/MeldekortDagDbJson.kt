@@ -4,7 +4,8 @@ import arrow.core.NonEmptyList
 import arrow.core.toNonEmptyListOrNull
 import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
-import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.IMeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import java.time.LocalDate
 
@@ -20,12 +21,15 @@ private data class MeldekortDagDbJson(
         FRAVÆR_ANNET,
         IKKE_DELTATT,
         IKKE_REGISTRERT,
+
+        // TODO: Kan fjerne denne
         IKKE_RETT_TIL_TILTAKSPENGER,
     }
 
-    fun toDomain(): BrukersMeldekortDag {
-        return BrukersMeldekortDag(
+    fun toDomain(): MeldekortDag {
+        return MeldekortDag(
             dag = dag,
+            harRett = status != MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER,
             status = when (status) {
                 MeldekortDagDbStatus.DELTATT -> MeldekortDagStatus.DELTATT
                 MeldekortDagDbStatus.FRAVÆR_SYK -> MeldekortDagStatus.FRAVÆR_SYK
@@ -33,13 +37,13 @@ private data class MeldekortDagDbJson(
                 MeldekortDagDbStatus.FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_ANNET
                 MeldekortDagDbStatus.IKKE_DELTATT -> MeldekortDagStatus.IKKE_DELTATT
                 MeldekortDagDbStatus.IKKE_REGISTRERT -> MeldekortDagStatus.IKKE_REGISTRERT
-                MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
+                MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagStatus.IKKE_REGISTRERT
             },
         )
     }
 }
 
-fun List<BrukersMeldekortDag>.toDbJson(): String {
+fun List<IMeldekortDag>.toDbJson(): String {
     return this.map { dag ->
         MeldekortDagDbJson(
             dag = dag.dag,
@@ -50,12 +54,11 @@ fun List<BrukersMeldekortDag>.toDbJson(): String {
                 MeldekortDagStatus.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_ANNET
                 MeldekortDagStatus.IKKE_DELTATT -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_DELTATT
                 MeldekortDagStatus.IKKE_REGISTRERT -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_REGISTRERT
-                MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER
             },
         )
     }.let { serialize(it) }
 }
 
-fun String.toMeldekortDager(): NonEmptyList<BrukersMeldekortDag> {
+fun String.toMeldekortDager(): NonEmptyList<MeldekortDag> {
     return deserializeList<MeldekortDagDbJson>(this).map { it.toDomain() }.toNonEmptyListOrNull()!!
 }
