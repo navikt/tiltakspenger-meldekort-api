@@ -51,7 +51,7 @@ internal fun Route.meldekortRoutes(
             meldeperiodeService.lagreFraSaksbehandling(meldeperiodeDto).onLeft {
                 when (it) {
                     FeilVedMottakAvMeldeperiode.UgyldigMeldeperiode -> call.respond(
-                        message = "Ugyldig meldeperiode: $it",
+                        message = "Ugyldig meldeperiode",
                         status = HttpStatusCode.BadRequest,
                     )
 
