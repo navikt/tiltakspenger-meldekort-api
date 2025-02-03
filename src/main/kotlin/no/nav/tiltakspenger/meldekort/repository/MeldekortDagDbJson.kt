@@ -21,6 +21,7 @@ private data class MeldekortDagDbJson(
         FRAVÆR_ANNET,
         IKKE_DELTATT,
         IKKE_REGISTRERT,
+
         // TODO: Kan fjerne denne
         IKKE_RETT_TIL_TILTAKSPENGER,
     }
