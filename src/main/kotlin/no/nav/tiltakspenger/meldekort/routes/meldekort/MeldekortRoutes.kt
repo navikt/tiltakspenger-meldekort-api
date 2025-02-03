@@ -19,6 +19,8 @@ import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnr
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
+import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfyllingDTO
+import no.nav.tiltakspenger.meldekort.domene.tilUtfyllingDTO
 import no.nav.tiltakspenger.meldekort.service.BrukersMeldekortService
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvMeldeperiode
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
@@ -128,24 +130,25 @@ internal fun Route.meldekortRoutes(
         }
 
         post("send-inn") {
-            val meldekortFraUtfyllingDTO = try {
+            val meldekortFraUtfyllingDTO = Either.catch {
                 deserialize<MeldekortFraUtfyllingDTO>(call.receiveText())
-            } catch (e: Exception) {
-                logger.error { "Error parsing body: $e" }
-                null
-            }
-
-            if (meldekortFraUtfyllingDTO == null) {
+            }.getOrElse {
+                logger.error(it) { "Feil ved deserialize av utfylt meldekort - ${it.message}" }
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
 
-            brukersMeldekortService.lagreBrukersMeldekort(
-                meldekort = meldekortFraUtfyllingDTO.toDomain(),
-                fnr = call.fnr(),
-            )
-
-            call.respond(HttpStatusCode.OK)
+            Either.catch {
+                brukersMeldekortService.lagreBrukersMeldekort(
+                    lagreMeldekortKommando = meldekortFraUtfyllingDTO.toDomain(),
+                    innsenderFnr = call.fnr(),
+                )
+            }.onLeft {
+                logger.error { "Feil ved lagring av innsendt meldekort fra bruker: ${it.message}" }
+                call.respond(HttpStatusCode.InternalServerError)
+            }.onRight {
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }

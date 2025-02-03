@@ -11,7 +11,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
+import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
@@ -49,7 +49,7 @@ class BrukersMeldekortPostgresRepo(
         }
     }
 
-    override fun lagreUtfylling(meldekort: MeldekortFraUtfylling, sessionContext: SessionContext?) {
+    override fun lagreUtfylling(meldekort: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -61,7 +61,7 @@ class BrukersMeldekortPostgresRepo(
                     """,
                     "id" to meldekort.id.toString(),
                     "mottatt" to meldekort.mottatt,
-                    "dager" to meldekort.meldekortDager.toDbJson(),
+                    "dager" to meldekort.dager.toDbJson(),
                 ).asUpdate,
             )
         }

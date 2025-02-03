@@ -11,17 +11,3 @@ enum class MeldekortDagStatus {
     IKKE_DELTATT,
     IKKE_REGISTRERT,
 }
-
-fun toMeldekortDagStatus(status: String): MeldekortDagStatus {
-    return when (status) {
-        "DELTATT" -> MeldekortDagStatus.DELTATT
-        "FRAVÆR_SYK" -> MeldekortDagStatus.FRAVÆR_SYK
-        "FRAVÆR_SYKT_BARN" -> MeldekortDagStatus.FRAVÆR_SYKT_BARN
-        "FRAVÆR_ANNET" -> MeldekortDagStatus.FRAVÆR_ANNET
-        "IKKE_DELTATT" -> MeldekortDagStatus.IKKE_DELTATT
-        "IKKE_REGISTRERT" -> MeldekortDagStatus.IKKE_REGISTRERT
-        else -> {
-            throw IllegalArgumentException("Ingen status for $status")
-        }
-    }
-}

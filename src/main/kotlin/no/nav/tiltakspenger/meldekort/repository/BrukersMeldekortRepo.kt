@@ -4,7 +4,7 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
+import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import java.time.LocalDateTime
 
 interface BrukersMeldekortRepo {
@@ -14,7 +14,7 @@ interface BrukersMeldekortRepo {
     )
 
     fun lagreUtfylling(
-        meldekort: MeldekortFraUtfylling,
+        meldekort: LagreMeldekortFraBrukerKommando,
         sessionContext: SessionContext? = null,
     )
 
