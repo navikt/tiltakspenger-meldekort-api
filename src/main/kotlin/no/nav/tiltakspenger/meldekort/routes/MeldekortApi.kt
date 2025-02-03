@@ -46,7 +46,6 @@ internal fun Application.meldekortApi(
             brukersMeldekortService = applicationContext.brukersMeldekortService,
             meldeperiodeService = applicationContext.meldeperiodeService,
             texasHttpClient = applicationContext.texasHttpClient,
-            tmsVarselClient = applicationContext.tmsVarselClient,
         )
     }
 }

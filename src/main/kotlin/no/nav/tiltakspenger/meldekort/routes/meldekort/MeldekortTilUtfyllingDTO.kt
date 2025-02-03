@@ -3,10 +3,9 @@ package no.nav.tiltakspenger.meldekort.routes.meldekort
 import arrow.core.toNonEmptyListOrNull
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
-import no.nav.tiltakspenger.meldekort.clients.saksbehandling.MeldekortStatusDTO
-import no.nav.tiltakspenger.meldekort.clients.saksbehandling.toDTO
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
+import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -17,7 +16,7 @@ data class MeldekortTilUtfyllingDTO(
     val versjon: Int,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
-    val status: MeldekortStatusDTO,
+    val status: MeldekortStatus,
     val innsendt: LocalDateTime?,
     val dager: List<MeldekortDagDTO>,
 )
@@ -44,7 +43,7 @@ fun BrukersMeldekort.tilUtfyllingDTO(): MeldekortTilUtfyllingDTO {
         versjon = this.meldeperiode.versjon,
         fraOgMed = this.periode.fraOgMed,
         tilOgMed = this.periode.tilOgMed,
-        status = this.status.toDTO(),
+        status = this.status,
         innsendt = this.mottatt,
         dager = this.dager.toMeldekortDagDTO(),
     )

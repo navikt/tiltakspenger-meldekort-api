@@ -9,21 +9,23 @@ import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
-import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
+import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilTomtBrukersMeldekort
 import no.nav.tiltakspenger.meldekort.repository.BrukersMeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.routes.meldekort.tilMeldeperiode
+import java.util.*
 
 class MeldeperiodeService(
     private val meldeperiodeRepo: MeldeperiodeRepo,
     private val brukersMeldekortRepo: BrukersMeldekortRepo,
+    private val tmsVarselClient: TmsVarselClient,
     private val sessionFactory: SessionFactory,
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun opprettOgLagreFraSaksbehandling(meldeperiodeDto: MeldeperiodeDTO): Either<FeilVedMottakAvMeldeperiode, Pair<Meldeperiode, BrukersMeldekort>> {
+    fun lagreFraSaksbehandling(meldeperiodeDto: MeldeperiodeDTO): Either<FeilVedMottakAvMeldeperiode, Unit> {
         val meldeperiode = meldeperiodeDto.tilMeldeperiode().getOrElse {
             return FeilVedMottakAvMeldeperiode.UgyldigMeldeperiode.left()
         }
@@ -32,23 +34,31 @@ class MeldeperiodeService(
             return FeilVedMottakAvMeldeperiode.MeldeperiodeFinnes.left()
         }
 
-        val brukersMeldekort = meldeperiode.tilTomtBrukersMeldekort()
+        val brukersMeldekort = if (meldeperiode.harRettIPerioden) meldeperiode.tilTomtBrukersMeldekort() else null
 
-        return Either.catch {
+        Either.catch {
             sessionFactory.withTransactionContext { tx ->
                 meldeperiodeRepo.lagre(meldeperiode, tx)
-                brukersMeldekortRepo.lagre(brukersMeldekort, tx)
+                brukersMeldekort?.also { brukersMeldekortRepo.lagre(it, tx) }
             }
-            logger.info { "Lagret meldeperiode: ${meldeperiode.id} - Opprettet brukers meldekort: ${brukersMeldekort.id}" }
-            return Pair(meldeperiode, brukersMeldekort).right()
         }.mapLeft {
             with("Lagring av meldeperiode feilet for ${meldeperiode.id}") {
                 logger.error { this }
                 sikkerlogg.error(it) { this }
             }
-            FeilVedMottakAvMeldeperiode.LagringFeilet
+            return FeilVedMottakAvMeldeperiode.LagringFeilet.left()
         }
+
+        logger.info { "Lagret meldeperiode ${meldeperiode.id}" }
+
+        if (brukersMeldekort != null) {
+            logger.info { "Lagret brukers meldekort ${brukersMeldekort.id}" }
+            tmsVarselClient.sendVarselForNyttMeldekort(brukersMeldekort, eventId = UUID.randomUUID().toString())
+        }
+
+        return Unit.right()
     }
+
 
     fun hentMeldeperiodeForKjedeId(kjedeId: MeldeperiodeKjedeId): Meldeperiode? {
         TODO()
