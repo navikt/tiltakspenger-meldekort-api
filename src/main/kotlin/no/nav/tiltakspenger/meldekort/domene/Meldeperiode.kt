@@ -27,7 +27,6 @@ data class Meldeperiode(
     val girRett: Map<LocalDate, Boolean>,
 ) {
     val harRettIPerioden = girRett.any { it.value }
-    val status: MeldekortStatus = if (harRettIPerioden) MeldekortStatus.KAN_UTFYLLES else MeldekortStatus.KAN_IKKE_UTFYLLES
 
     init {
         require(versjon >= 0) { "Versjon må være større eller lik 0" }

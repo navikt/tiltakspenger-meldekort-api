@@ -25,8 +25,7 @@ data class BrukersMeldekort(
 ) {
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
-
-    val status: MeldekortStatus = if (mottatt == null) MeldekortStatus.KAN_UTFYLLES else MeldekortStatus.INNSENDT
+    val status: BrukersMeldekortStatus = if (mottatt == null) BrukersMeldekortStatus.KAN_UTFYLLES else BrukersMeldekortStatus.INNSENDT
 
     init {
         dager.zipWithNext().forEach { (dag, nesteDag) ->
@@ -35,7 +34,7 @@ data class BrukersMeldekort(
         require(dager.first().dag == periode.fraOgMed) { "Første dag i meldekortet må være lik første dag i meldeperioden" }
         require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden" }
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden" }
-        require(dager.any { it.status != MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER }) { "Brukers meldekort må ha minst en dag som kan utfylles" }
+        require(dager.any { it.harRett }) { "Brukers meldekort må ha minst en dag som kan utfylles" }
     }
 }
 
@@ -48,7 +47,8 @@ fun Meldeperiode.tilTomtBrukersMeldekort(): BrukersMeldekort {
         dager = this.girRett.map {
             BrukersMeldekortDag(
                 dag = it.key,
-                status = if (it.value) MeldekortDagStatus.IKKE_REGISTRERT else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
+                harRett = it.value,
+                status = MeldekortDagStatus.IKKE_REGISTRERT,
             )
         },
     )

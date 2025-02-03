@@ -22,7 +22,6 @@ fun List<BrukersMeldekortDag>.toMeldekortDagDTO(): List<MeldekortDagDTO> =
                 MeldekortDagStatus.FRAVÆR_ANNET -> "FRAVÆR_ANNET"
                 MeldekortDagStatus.IKKE_REGISTRERT -> "IKKE_REGISTRERT"
                 MeldekortDagStatus.IKKE_DELTATT -> "IKKE_DELTATT"
-                MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER -> "SPERRET"
             },
         )
     }

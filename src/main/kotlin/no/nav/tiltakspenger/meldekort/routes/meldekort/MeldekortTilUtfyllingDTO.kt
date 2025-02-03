@@ -5,7 +5,7 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraUtfylling
-import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.domene.BrukersMeldekortStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -16,7 +16,7 @@ data class MeldekortTilUtfyllingDTO(
     val versjon: Int,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
-    val status: MeldekortStatus,
+    val status: BrukersMeldekortStatus,
     val innsendt: LocalDateTime?,
     val dager: List<MeldekortDagDTO>,
 )
