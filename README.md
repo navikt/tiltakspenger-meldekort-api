@@ -1,6 +1,6 @@
 tiltakspenger-meldekort-api
 ================
-Håndterer meldekortene som sendes inn for de som mottar tiltakspenger fra Nav ([Forskrift om tiltakspenger mv. (tiltakspengeforskriften) - § 5.Meldeplikt](https://lovdata.no/forskrift/2013-11-04-1286/§5)). For å motta tiltakspenger må man meldekortet sendes inn hver 14. dag.
+Håndterer meldekortene som sendes inn for de som mottar tiltakspenger fra Nav ([Forskrift om tiltakspenger mv. (tiltakspengeforskriften) - § 5.Meldeplikt](https://lovdata.no/forskrift/2013-11-04-1286/§5)). For å motta tiltakspenger må man sende inn et meldekort hver 14. dag.
 
 Dette er backenden til [tiltakspenger-meldekort](https://github.com/navikt/tiltakspenger-meldekort). 
 
