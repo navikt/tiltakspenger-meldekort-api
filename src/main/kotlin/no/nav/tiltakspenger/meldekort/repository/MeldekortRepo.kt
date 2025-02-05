@@ -5,6 +5,7 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
 interface MeldekortRepo {
@@ -51,4 +52,13 @@ interface MeldekortRepo {
         sendtTidspunkt: LocalDateTime,
         sessionContext: SessionContext? = null,
     )
+
+    fun markerJournalført(
+        meldekortId: MeldekortId,
+        journalpostId: JournalpostId,
+        tidspunkt: LocalDateTime,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun hentDeSomSkalJournalføres(limit: Int = 10, sessionContext: SessionContext? = null): List<Meldekort>
 }

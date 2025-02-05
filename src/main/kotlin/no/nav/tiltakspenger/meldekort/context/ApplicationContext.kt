@@ -1,17 +1,22 @@
 package no.nav.tiltakspenger.meldekort.context
 
 import mu.KotlinLogging
+import no.nav.tiltakspenger.libs.auth.core.EntraIdSystemtokenClient
+import no.nav.tiltakspenger.libs.auth.core.EntraIdSystemtokenHttpClient
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.Profile
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClientImpl
+import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
+import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
+import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalførMeldekortService
 import no.nav.tiltakspenger.meldekort.kafka.createKafkaProducer
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
@@ -80,6 +85,33 @@ open class ApplicationContext {
         SendMeldekortService(
             meldekortService = meldekortService,
             saksbehandlingClient = saksbehandlingClient,
+        )
+    }
+
+    open val journalførMeldekortService: JournalførMeldekortService by lazy {
+        JournalførMeldekortService(
+            meldekortRepo = meldekortRepo,
+            pdfgenClient = pdfgenClient,
+            dokarkivClient = dokarkivClient,
+        )
+    }
+
+    open val dokarkivClient by lazy {
+        DokarkivClient(
+            baseUrl = Configuration.dokarkivUrl,
+            getToken = { entraIdSystemtokenClient.getSystemtoken(Configuration.dokarkivScope) },
+        )
+    }
+
+    open val pdfgenClient by lazy {
+        PdfgenClient(baseUrl = Configuration.pdfgenUrl)
+    }
+
+    open val entraIdSystemtokenClient: EntraIdSystemtokenClient by lazy {
+        EntraIdSystemtokenHttpClient(
+            baseUrl = Configuration.azureOpenidConfigTokenEndpoint,
+            clientId = Configuration.azureClientId,
+            clientSecret = Configuration.azureClientSecret,
         )
     }
 }

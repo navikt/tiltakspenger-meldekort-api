@@ -4,6 +4,7 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.periodisering.Periode
+import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
 /**
@@ -22,6 +23,8 @@ data class Meldekort(
     val meldeperiode: Meldeperiode,
     val sakId: SakId,
     val dager: List<MeldekortDag>,
+    val journalpostId: JournalpostId?,
+    val journalføringstidspunkt: LocalDateTime?,
 ) {
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
@@ -29,12 +32,12 @@ data class Meldekort(
 
     init {
         dager.zipWithNext().forEach { (dag, nesteDag) ->
-            require(dag.dag.isBefore(nesteDag.dag)) { "Dager må være sortert" }
+            require(dag.dag.isBefore(nesteDag.dag)) { "Dager må være sortert (id=$id)" }
         }
-        require(dager.first().dag == periode.fraOgMed) { "Første dag i meldekortet må være lik første dag i meldeperioden" }
-        require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden" }
-        require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden" }
-        require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett" }
+        require(dager.first().dag == periode.fraOgMed) { "Første dag i meldekortet må være lik første dag i meldeperioden (id=$id)" }
+        require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden (id=$id)" }
+        require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden (id=$id)" }
+        require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett (id=$id)" }
     }
 }
 
@@ -50,5 +53,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
                 status = MeldekortDagStatus.IKKE_REGISTRERT,
             )
         },
+        journalpostId = null,
+        journalføringstidspunkt = null,
     )
 }

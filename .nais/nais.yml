@@ -49,6 +49,9 @@ spec:
     outbound:
       rules:
         - application: tiltakspenger-saksbehandling-api
+        - application: tiltakspenger-pdfgen
+      external:
+        - host: {{outboundExternalUrls.dokarkiv}}
     inbound:
       rules:
         - application: tiltakspenger-meldekort
@@ -60,3 +63,7 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki

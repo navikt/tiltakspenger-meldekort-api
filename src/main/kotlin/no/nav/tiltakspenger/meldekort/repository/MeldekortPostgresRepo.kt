@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.repository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import kotliquery.Session
+import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.common.MeldekortId
@@ -12,6 +13,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFacto
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
@@ -151,6 +153,7 @@ class MeldekortPostgresRepo(
                     """ 
                         select * from meldekort_bruker
                         where sendt_til_saksbehandling is null
+                        and journalpost_id is not null
                         and mottatt is not null
                     """,
                 )
@@ -202,6 +205,51 @@ class MeldekortPostgresRepo(
         }
     }
 
+    override fun markerJournalført(
+        meldekortId: MeldekortId,
+        journalpostId: JournalpostId,
+        tidspunkt: LocalDateTime,
+        sessionContext: SessionContext?,
+    ) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                queryOf(
+                    //language=sql
+                    """
+                      update meldekort_bruker
+                      set journalpost_id = :journalpost_id,
+                          journalføringstidspunkt = :tidspunkt
+                      where id = :id
+                    """.trimIndent(),
+                    mapOf(
+                        "id" to meldekortId.toString(),
+                        "journalpost_id" to journalpostId.toString(),
+                        "tidspunkt" to tidspunkt,
+                    ),
+                ).asUpdate,
+            )
+        }
+    }
+
+    override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<Meldekort> =
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                queryOf(
+                    //language=sql
+                    """
+                    select u.*, mp.fnr as fnr, mp.saksnummer 
+                    from meldekort_bruker u 
+                    join meldeperiode mp on u.meldeperiode_id = mp.id and mp.saksnummer is not null
+                    where u.journalpost_id is null
+                    limit :limit
+                    """.trimIndent(),
+                    mapOf("limit" to limit),
+                ).map { row ->
+                    fromRow(row, session)
+                }.asList,
+            )
+        }
+
     companion object {
         private fun fromRow(
             row: Row,
@@ -220,6 +268,8 @@ class MeldekortPostgresRepo(
                 mottatt = row.localDateTimeOrNull("mottatt"),
                 sakId = SakId.fromString(row.string("sak_id")),
                 dager = row.string("dager").toMeldekortDager(),
+                journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
+                journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
             )
         }
     }
