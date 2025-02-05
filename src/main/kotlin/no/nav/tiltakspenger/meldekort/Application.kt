@@ -63,6 +63,7 @@ internal fun start(
         tasks =
         listOf { correlationId ->
             applicationContext.sendMeldekortService.sendMeldekort(correlationId)
+            applicationContext.journalførMeldekortService.journalførNyeMeldekort()
         },
     )
 
