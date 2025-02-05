@@ -34,7 +34,7 @@ fun Meldekort.tilBrukerDTO(): MeldekortTilBrukerDTO {
         dager = this.dager.map { dag ->
             MeldekortDagTilBruker(
                 dag = dag.dag,
-                harRett = dag.harRett,
+                harRett = meldeperiode.girRett[dag.dag] == true,
                 status = dag.status,
             )
         },

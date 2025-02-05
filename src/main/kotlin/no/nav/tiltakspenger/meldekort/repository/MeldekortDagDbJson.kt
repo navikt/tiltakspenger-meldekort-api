@@ -29,7 +29,6 @@ private data class MeldekortDagDbJson(
     fun toDomain(): MeldekortDag {
         return MeldekortDag(
             dag = dag,
-            harRett = status != MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER,
             status = when (status) {
                 MeldekortDagDbStatus.DELTATT -> MeldekortDagStatus.DELTATT
                 MeldekortDagDbStatus.FRAVÆR_SYK -> MeldekortDagStatus.FRAVÆR_SYK

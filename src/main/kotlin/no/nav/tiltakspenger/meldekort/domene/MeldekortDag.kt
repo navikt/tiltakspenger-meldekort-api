@@ -10,5 +10,4 @@ interface IMeldekortDag {
 data class MeldekortDag(
     override val dag: LocalDate,
     override val status: MeldekortDagStatus,
-    val harRett: Boolean,
 ) : IMeldekortDag

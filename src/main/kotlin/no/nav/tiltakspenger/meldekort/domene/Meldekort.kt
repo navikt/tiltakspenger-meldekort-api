@@ -34,7 +34,7 @@ data class Meldekort(
         require(dager.first().dag == periode.fraOgMed) { "Første dag i meldekortet må være lik første dag i meldeperioden" }
         require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden" }
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden" }
-        require(dager.any { it.harRett }) { "Brukers meldekort må ha minst en dag som kan utfylles" }
+        require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett" }
     }
 }
 
@@ -47,7 +47,6 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         dager = this.girRett.map {
             MeldekortDag(
                 dag = it.key,
-                harRett = it.value,
                 status = MeldekortDagStatus.IKKE_REGISTRERT,
             )
         },
