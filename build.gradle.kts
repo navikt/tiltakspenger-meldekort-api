@@ -179,7 +179,7 @@ tasks {
 
     register("checkFlywayMigrationNames") {
         doLast {
-            val migrationDir = project.file("app/src/main/resources/db/migration")
+            val migrationDir = project.file("src/main/resources/db/migration")
             val invalidFiles =
                 migrationDir
                     .walk()

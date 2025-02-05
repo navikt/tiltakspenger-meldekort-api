@@ -11,6 +11,7 @@ data class MeldekortTilBrukerDTO(
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
     val status: MeldekortStatus,
+    val maksAntallDager: Int,
     val innsendt: LocalDateTime?,
     val dager: List<MeldekortDagTilBruker>,
 )
@@ -30,6 +31,7 @@ fun Meldekort.tilBrukerDTO(): MeldekortTilBrukerDTO {
         fraOgMed = this.periode.fraOgMed,
         tilOgMed = this.periode.tilOgMed,
         status = this.status,
+        maksAntallDager = this.meldeperiode.maksAntallDagerForPeriode,
         innsendt = this.mottatt,
         dager = this.dager.map { dag ->
             MeldekortDagTilBruker(
