@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.service
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.validerLagring
@@ -12,36 +11,26 @@ import java.time.LocalDateTime
 class MeldekortService(
     val meldekortRepo: MeldekortRepo,
 ) {
-    fun lagreMeldekortFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, innsenderFnr: Fnr) {
-        val meldekortId = lagreKommando.id
-        val meldekort = meldekortRepo.hentForMeldekortId(meldekortId)
+    fun lagreMeldekortFraBruker(kommando: LagreMeldekortFraBrukerKommando) {
+        val meldekortId = kommando.id
+        val innsenderFnr = kommando.fnr
+        val meldekort = meldekortRepo.hentForMeldekortId(meldekortId, innsenderFnr)
 
         requireNotNull(meldekort) {
-            "Meldekortet med id $meldekortId finnes ikke"
+            "Meldekort med id $meldekortId finnes ikke for bruker ${innsenderFnr.verdi}"
         }
 
         require(meldekort.mottatt == null) {
-            "Meldekortet med id $meldekortId er allerede mottatt"
+            "Meldekort med id $meldekortId er allerede mottatt"
         }
 
-        if (meldekort.fnr != innsenderFnr) {
-            sikkerlogg.error {
-                "Meldekortet med id $meldekortId ble innsendt av ${innsenderFnr.verdi} men tilhører ${meldekort.fnr}"
-            }
-            throw IllegalArgumentException("Meldekortet med id $meldekortId ble innsendt av feil bruker")
-        }
-
-        meldekort.validerLagring(lagreKommando).also {
-            meldekortRepo.lagreFraBruker(lagreKommando)
+        meldekort.validerLagring(kommando).also {
+            meldekortRepo.lagreFraBruker(kommando)
         }
     }
 
-    fun hentMeldekortForMeldeperiodeKjedeId(id: String): Meldekort? {
-        return meldekortRepo.hentMeldekortForMeldeperiodeKjedeId(id)
-    }
-
-    fun hentForMeldekortId(id: MeldekortId): Meldekort? {
-        return meldekortRepo.hentForMeldekortId(id)
+    fun hentForMeldekortId(id: MeldekortId, fnr: Fnr): Meldekort? {
+        return meldekortRepo.hentForMeldekortId(id, fnr)
     }
 
     fun hentSisteMeldekort(fnr: Fnr): Meldekort? {

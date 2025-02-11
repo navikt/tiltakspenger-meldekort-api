@@ -86,23 +86,7 @@ internal fun Route.meldekortRoutes(
                 return@get
             }
 
-            meldekortService.hentForMeldekortId(meldekortId)?.also {
-                call.respond(it.tilBrukerDTO())
-                return@get
-            }
-
-            call.respond(HttpStatusCode.NotFound)
-            return@get
-        }
-
-        get("kjede/{meldeperiodeKjedeId}") {
-            val meldeperiodeKjedeIdParam = call.parameters["meldeperiodeKjedeId"]
-            if (meldeperiodeKjedeIdParam == null) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
-
-            meldekortService.hentMeldekortForMeldeperiodeKjedeId(meldeperiodeKjedeIdParam)?.also {
+            meldekortService.hentForMeldekortId(meldekortId, call.fnr())?.also {
                 call.respond(it.tilBrukerDTO())
                 return@get
             }
@@ -130,21 +114,27 @@ internal fun Route.meldekortRoutes(
         }
 
         post("send-inn") {
-            val meldekortFraBruker = Either.catch {
+            val lagreFraBrukerKommando = Either.catch {
                 deserialize<MeldekortFraBrukerDTO>(call.receiveText())
+                    .tilLagreKommando(call.fnr())
             }.getOrElse {
-                logger.error(it) { "Feil ved deserialize av utfylt meldekort - ${it.message}" }
+                with("Feil ved parsing av innsendt meldekort fra bruker") {
+                    logger.error { this }
+                    sikkerlogg.error(it) { "$this - ${it.message}" }
+                }
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
 
             Either.catch {
                 meldekortService.lagreMeldekortFraBruker(
-                    lagreKommando = meldekortFraBruker.tilLagreKommando(),
-                    innsenderFnr = call.fnr(),
+                    kommando = lagreFraBrukerKommando,
                 )
             }.onLeft {
-                logger.error { "Feil ved lagring av innsendt meldekort fra bruker: ${it.message}" }
+                with("Feil ved lagring av innsendt meldekort fra bruker") {
+                    logger.error { "Feil ved lagring av innsendt meldekort med id ${lagreFraBrukerKommando.id}" }
+                    sikkerlogg.error(it) { "$this - ${it.message}" }
+                }
                 call.respond(HttpStatusCode.InternalServerError)
             }.onRight {
                 call.respond(HttpStatusCode.OK)

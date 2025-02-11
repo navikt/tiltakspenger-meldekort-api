@@ -20,6 +20,7 @@ interface MeldekortRepo {
 
     fun hentForMeldekortId(
         meldekortId: MeldekortId,
+        fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): Meldekort?
 

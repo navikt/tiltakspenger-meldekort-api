@@ -114,6 +114,7 @@ class MeldekortPostgresRepo(
 
     override fun hentForMeldekortId(
         meldekortId: MeldekortId,
+        fnr: Fnr,
         sessionContext: SessionContext?,
     ): Meldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -121,11 +122,13 @@ class MeldekortPostgresRepo(
                 sqlQuery(
                     """
                     select
-                        *
-                    from meldekort_bruker
-                    where id = :id
+                        mk.*
+                    from meldekort_bruker mk
+                    join meldeperiode mp on mp.id = mk.meldeperiode_id
+                    where mk.id = :id and mp.fnr = :fnr
                     """,
                     "id" to meldekortId.toString(),
+                    "fnr" to fnr.verdi,
                 ).map { row ->
                     fromRow(row, session)
                 }.asSingle,
