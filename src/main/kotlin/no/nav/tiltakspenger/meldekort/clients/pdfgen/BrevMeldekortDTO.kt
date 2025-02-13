@@ -3,9 +3,9 @@ import no.nav.tiltakspenger.libs.periodisering.PeriodeDTO
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.BrevMeldekortDagDTO
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.toDTO
 import no.nav.tiltakspenger.meldekort.clients.utils.toNorskDato
+import no.nav.tiltakspenger.meldekort.clients.utils.toNorskDatoOgTid
 import no.nav.tiltakspenger.meldekort.clients.utils.toNorskUkenummer
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
-import java.time.LocalDateTime
 
 /**
  * DTO for å serialisere meldekort til brev (PDF). Datoer formateres her fordi vi ikke bruker tid på å opprette hjelpemetoder i pdfgen-core per nå
@@ -18,7 +18,7 @@ class BrevMeldekortDTO(
     val uke2: Int,
     val dager: List<BrevMeldekortDagDTO>,
     val saksnummer: String? = null,
-    val mottatt: LocalDateTime?,
+    val mottatt: String?,
 )
 
 internal fun Meldekort.toBrevMeldekortDTO(): String {
@@ -30,6 +30,6 @@ internal fun Meldekort.toBrevMeldekortDTO(): String {
         uke2 = this.periode.tilOgMed.toNorskUkenummer(),
         dager = this.dager.toDTO(),
         saksnummer = this.meldeperiode.saksnummer,
-        mottatt = this.mottatt,
+        mottatt = this.mottatt?.toNorskDatoOgTid(),
     ).let { serialize(it) }
 }
