@@ -114,6 +114,8 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
+
+    api("io.kotest.extensions:kotest-assertions-arrow:1.4.0")
 }
 
 spotless {
