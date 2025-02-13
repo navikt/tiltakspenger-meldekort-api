@@ -104,7 +104,7 @@ open class ApplicationContext {
     }
 
     open val pdfgenClient by lazy {
-        PdfgenClient(baseUrl = Configuration.pdfgenUrl)
+        PdfgenClient()
     }
 
     open val entraIdSystemtokenClient: EntraIdSystemtokenClient by lazy {

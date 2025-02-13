@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.clients.dokarkiv
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
@@ -12,6 +11,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.json.objectMapper
@@ -21,7 +21,7 @@ import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import org.slf4j.LoggerFactory
 
 /***
- * Dokakriv har tidligere referert til som Joark
+ * Dokarkiv (tidligere Joark) er en tjeneste som brukes for å opprette journalposter i Nav.
  * https://confluence.adeo.no/display/BOA/opprettJournalpost
  * swagger: https://dokarkiv-q2.dev.intern.nav.no/swagger-ui/index.html#/
  */
@@ -55,27 +55,25 @@ class DokarkivClient(
                 contentType(ContentType.Application.Json)
                 setBody(objectMapper.writeValueAsString(request))
             }
-            val response = res.call.body<DokarkivResponse>()
-            log.info("Vi har opprettet journalpost med id: ${response.journalpostId} for meldekort $meldekortId")
+            val httpResponse = res.call.response
 
-            if (request.kanFerdigstilleAutomatisk() && !response.journalpostferdigstilt) {
-                log.error("Journalpost ${response.journalpostId} for meldekort $meldekortId ble opprettet, men ikke ferdigstilt")
-                throw IllegalStateException("Journalpost kunne ikke ferdigstilles automatisk")
+            if (!httpResponse.status.isSuccess() && httpResponse.status != HttpStatusCode.Conflict) {
+                throw IllegalStateException("Feil ved journalføring av meldekort $meldekortId. Status: ${httpResponse.status}")
             }
-            return response.journalpostId
-        } catch (throwable: Throwable) {
-            if (throwable is ClientRequestException && throwable.response.status == HttpStatusCode.Conflict) {
-                val response = throwable.response.call.body<DokarkivResponse>()
-                log.info("Meldekort med id $meldekortId har allerede blitt journalført (409 Conflict) med journalpostId ${response.journalpostId}")
-                return response.journalpostId
-            }
-            if (throwable is IllegalStateException) {
-                log.error("Vi fikk en IllegalStateException i DokarkivClient", throwable)
-                throw throwable
+
+            val responseBody = res.call.body<DokarkivResponse>()
+            if (httpResponse.status == HttpStatusCode.Conflict) {
+                log.warn("Meldekort med id $meldekortId har allerede blitt journalført (409 Conflict) med journalpostId ${responseBody.journalpostId}")
             } else {
-                log.error("DokarkivClient: Fikk en ukjent exception.", throwable)
-                throw RuntimeException("DokarkivClient: Fikk en ukjent exception.", throwable)
+                log.info("Vi har opprettet journalpost med id: ${responseBody.journalpostId} for meldekort $meldekortId")
             }
+
+            if (request.kanFerdigstilleAutomatisk() && !responseBody.journalpostferdigstilt) {
+                log.error("Journalpost ${responseBody.journalpostId} for meldekort $meldekortId ble ikke ferdigstilt")
+            }
+            return responseBody.journalpostId
+        } catch (throwable: Throwable) {
+            throw RuntimeException("DokarkivClient: Fikk en ukjent exception.", throwable)
         }
     }
 

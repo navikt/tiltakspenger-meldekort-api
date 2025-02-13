@@ -6,7 +6,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "3.1.0"
 val mockkVersion = "1.13.16"
-val felleslibVersion = "0.0.362"
+val felleslibVersion = "0.0.365"
 val kotestVersion = "5.9.1"
 val kotlinxCoroutinesVersion = "1.10.1"
 val kafkaVersion = "3.9.0"
@@ -114,6 +114,8 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
+
+    api("io.kotest.extensions:kotest-assertions-arrow:1.4.0")
 }
 
 spotless {

@@ -75,6 +75,8 @@ object Configuration {
                 "AZURE_APP_CLIENT_ID" to "tiltakspenger-saksbehandling-api",
                 "AZURE_APP_CLIENT_SECRET" to "secret",
                 "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT" to "http://host.docker.internal:6969/azuread/token",
+                "DOKARKIV_SCOPE" to "localhost",
+                "DOKARKIV_URL" to "http://host.docker.internal:8091",
                 "SAKSBEHANDLING_API_URL" to "http://localhost:8080",
                 "logback.configurationFile" to "logback.local.xml",
                 "DB_JDBC_URL" to "jdbc:postgresql://localhost:5435/meldekort?user=postgres&password=test",
@@ -85,6 +87,8 @@ object Configuration {
                 "KAFKA_KEYSTORE_PATH" to "",
                 "KAFKA_CREDSTORE_PASSWORD" to "",
                 "MELDEKORT_FRONTEND_URL" to "http://localhost:2223/tiltakspenger/meldekort",
+                "PDFGEN_SCOPE" to "localhost",
+                "PDFGEN_URL" to "http://host.docker.internal:8081",
             ),
         )
 
