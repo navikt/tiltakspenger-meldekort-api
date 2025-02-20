@@ -2,8 +2,10 @@ package no.nav.tiltakspenger.meldekort
 
 import arrow.core.Either
 import arrow.core.right
+import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.AttributeKey
 import mu.KLogger
 import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
@@ -39,6 +41,15 @@ internal fun start(
 
     log.info { "starting server" }
 
+    val server = embeddedServer(
+        factory = Netty,
+        port = port,
+        module = {
+            meldekortApi(applicationContext = applicationContext)
+        },
+    )
+    server.application.attributes.put(isReadyKey, true)
+
     val runCheckFactory = if (isNais) {
         RunCheckFactory(
             leaderPodLookup =
@@ -46,6 +57,7 @@ internal fun start(
                 electorPath = Configuration.electorPath(),
                 logger = KotlinLogging.logger { },
             ),
+            applicationIsReady = { server.application.isReady() },
         )
     } else {
         RunCheckFactory(
@@ -54,6 +66,7 @@ internal fun start(
                 override fun amITheLeader(localHostName: String): Either<LeaderPodLookupFeil, Boolean> =
                     true.right()
             },
+            applicationIsReady = { server.application.isReady() },
         )
     }
 
@@ -67,11 +80,15 @@ internal fun start(
         },
     )
 
-    embeddedServer(
-        factory = Netty,
-        port = port,
-        module = {
-            meldekortApi(applicationContext = applicationContext)
+    Runtime.getRuntime().addShutdownHook(
+        Thread {
+            server.application.attributes.put(isReadyKey, false)
+            server.stop(gracePeriodMillis = 5_000, timeoutMillis = 30_000)
         },
-    ).start(wait = true)
+    )
+    server.start(wait = true)
 }
+
+val isReadyKey = AttributeKey<Boolean>("isReady")
+
+fun Application.isReady() = attributes.getOrNull(isReadyKey) == true

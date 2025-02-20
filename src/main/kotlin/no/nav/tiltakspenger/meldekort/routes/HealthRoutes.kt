@@ -1,8 +1,10 @@
 package no.nav.tiltakspenger.meldekort.routes
 
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import no.nav.tiltakspenger.meldekort.isReady
 
 /** Disse skal være helt åpne. */
 fun Route.healthRoutes() {
@@ -11,6 +13,10 @@ fun Route.healthRoutes() {
     }
 
     get("/isready") {
-        call.respondText("READY")
+        if (call.application.isReady()) {
+            call.respondText("READY")
+        } else {
+            call.respondText("NOT READY", status = HttpStatusCode.ServiceUnavailable)
+        }
     }
 }
