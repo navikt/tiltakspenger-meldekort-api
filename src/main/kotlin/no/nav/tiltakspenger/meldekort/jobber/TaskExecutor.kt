@@ -40,7 +40,7 @@ internal class TaskExecutor(
                     sikkerLogg = sikkerlogg,
                     // Ref callIdMdc(CALL_ID_MDC_KEY) i MeldekortApi.kt
                     mdcCallIdKey = CALL_ID_MDC_KEY,
-                    runJobCheck = listOf(runCheckFactory.leaderPod()),
+                    runJobCheck = listOf(runCheckFactory.leaderPod(), runCheckFactory.isReady()),
                     // Denne kjører så ofte at vi ønsker ikke bli spammet av logging.
                     enableDebuggingLogging = false,
                     job = { correlationId ->
