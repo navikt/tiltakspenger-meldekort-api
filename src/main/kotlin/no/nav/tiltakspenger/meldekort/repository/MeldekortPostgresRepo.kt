@@ -241,6 +241,7 @@ class MeldekortPostgresRepo(
                     from meldekort_bruker u 
                     join meldeperiode mp on u.meldeperiode_id = mp.id and mp.saksnummer is not null
                     where u.journalpost_id is null
+                    and u.mottatt is not null
                     limit :limit
                     """.trimIndent(),
                     mapOf("limit" to limit),
