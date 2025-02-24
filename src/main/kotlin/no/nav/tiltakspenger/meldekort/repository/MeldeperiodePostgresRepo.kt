@@ -31,6 +31,7 @@ internal class MeldeperiodePostgresRepo(
                         kjede_id,
                         versjon,
                         sak_id,
+                        saksnummer,
                         fnr,
                         opprettet,
                         fra_og_med,
@@ -42,6 +43,7 @@ internal class MeldeperiodePostgresRepo(
                         :kjede_id,
                         :versjon,
                         :sak_id,
+                        :saksnummer
                         :fnr,
                         :opprettet,
                         :fra_og_med,
@@ -54,6 +56,7 @@ internal class MeldeperiodePostgresRepo(
                     "kjede_id" to meldeperiode.kjedeId.toString(),
                     "versjon" to meldeperiode.versjon,
                     "sak_id" to meldeperiode.sakId.toString(),
+                    "saksnummer" to meldeperiode.saksnummer,
                     "fnr" to meldeperiode.fnr.verdi,
                     "opprettet" to meldeperiode.opprettet,
                     "fra_og_med" to meldeperiode.periode.fraOgMed,
