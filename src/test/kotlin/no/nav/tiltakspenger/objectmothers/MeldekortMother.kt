@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface MeldekortMother {
@@ -14,6 +15,7 @@ interface MeldekortMother {
         periode: Periode = ObjectMother.periode(),
         mottatt: LocalDateTime = nå(),
         saksnummer: String? = Math.random().toString(),
+        statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap()
     ): Meldekort {
         val meldeperiode = ObjectMother.meldeperiode(periode, saksnummer)
 
@@ -22,10 +24,10 @@ interface MeldekortMother {
             mottatt = mottatt,
             meldeperiode = meldeperiode,
             sakId = SakId.random(),
-            dager = meldeperiode.girRett.map {
+            dager = meldeperiode.girRett.map { (dag, _) ->
                 MeldekortDag(
-                    dag = it.key,
-                    status = MeldekortDagStatus.IKKE_REGISTRERT,
+                    dag = dag,
+                    status = statusMap[dag] ?: MeldekortDagStatus.IKKE_REGISTRERT
                 )
             },
             journalpostId = null,
