@@ -43,7 +43,7 @@ internal class MeldeperiodePostgresRepo(
                         :kjede_id,
                         :versjon,
                         :sak_id,
-                        :saksnummer
+                        :saksnummer,
                         :fnr,
                         :opprettet,
                         :fra_og_med,
