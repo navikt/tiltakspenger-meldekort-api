@@ -15,7 +15,7 @@ interface MeldekortMother {
         periode: Periode = ObjectMother.periode(),
         mottatt: LocalDateTime = nå(),
         saksnummer: String? = Math.random().toString(),
-        statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap()
+        statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
     ): Meldekort {
         val meldeperiode = ObjectMother.meldeperiode(periode, saksnummer)
 
@@ -27,7 +27,7 @@ interface MeldekortMother {
             dager = meldeperiode.girRett.map { (dag, _) ->
                 MeldekortDag(
                     dag = dag,
-                    status = statusMap[dag] ?: MeldekortDagStatus.IKKE_REGISTRERT
+                    status = statusMap[dag] ?: MeldekortDagStatus.IKKE_REGISTRERT,
                 )
             },
             journalpostId = null,

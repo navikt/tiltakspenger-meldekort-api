@@ -70,7 +70,7 @@ class BrevMeldekortDTOTest {
                 mandagDenneUken.plusDays(10) to MeldekortDagStatus.DELTATT,
                 mandagDenneUken.plusDays(11) to MeldekortDagStatus.DELTATT,
                 mandagDenneUken.plusDays(12) to MeldekortDagStatus.IKKE_REGISTRERT,
-                mandagDenneUken.plusDays(13) to MeldekortDagStatus.IKKE_REGISTRERT
+                mandagDenneUken.plusDays(13) to MeldekortDagStatus.IKKE_REGISTRERT,
             )
 
             val meldekort = ObjectMother.meldekort(statusMap = statusMap)
