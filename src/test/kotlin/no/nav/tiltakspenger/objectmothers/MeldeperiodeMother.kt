@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.objectmothers
 
 import kotlinx.datetime.DayOfWeek
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.HendelseId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
@@ -15,7 +15,7 @@ interface MeldeperiodeMother {
         saksnummer: String? = Math.random().toString(),
     ): Meldeperiode {
         return Meldeperiode(
-            id = HendelseId.random(),
+            id = MeldeperiodeId.random(),
             kjedeId = MeldeperiodeKjedeId.fraPeriode(periode),
             versjon = 1,
             sakId = SakId.random(),

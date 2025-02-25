@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import kotliquery.Row
 import kotliquery.Session
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.HendelseId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.json.objectMapper
@@ -68,9 +68,9 @@ internal class MeldeperiodePostgresRepo(
         }
     }
 
-    override fun hentForId(id: HendelseId, sessionContext: SessionContext?): Meldeperiode? {
+    override fun hentForId(id: MeldeperiodeId, sessionContext: SessionContext?): Meldeperiode? {
         return sessionFactory.withSession(sessionContext) { session ->
-            Companion.hentForId(id, session)
+            hentForId(id, session)
         }
     }
 
@@ -97,7 +97,7 @@ internal class MeldeperiodePostgresRepo(
 
     companion object {
         internal fun hentForId(
-            id: HendelseId,
+            id: MeldeperiodeId,
             session: Session,
         ): Meldeperiode? {
             return session.run(
@@ -110,7 +110,7 @@ internal class MeldeperiodePostgresRepo(
 
         private fun fromRow(row: Row): Meldeperiode {
             return Meldeperiode(
-                id = HendelseId.fromString(row.string("id")),
+                id = MeldeperiodeId.fromString(row.string("id")),
                 kjedeId = MeldeperiodeKjedeId(row.string("kjede_id")),
                 versjon = row.int("versjon"),
                 sakId = SakId.fromString(row.string("sak_id")),

@@ -5,8 +5,8 @@ import kotliquery.Row
 import kotliquery.Session
 import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.HendelseId
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
@@ -259,7 +259,7 @@ class MeldekortPostgresRepo(
             val id = MeldekortId.fromString(row.string("id"))
             val meldeperiodeId = row.string("meldeperiode_id")
 
-            val meldeperiode = MeldeperiodePostgresRepo.hentForId(HendelseId.fromString(meldeperiodeId), session)
+            val meldeperiode = MeldeperiodePostgresRepo.hentForId(MeldeperiodeId.fromString(meldeperiodeId), session)
 
             requireNotNull(meldeperiode) { "Fant ingen meldeperiode for $id" }
 

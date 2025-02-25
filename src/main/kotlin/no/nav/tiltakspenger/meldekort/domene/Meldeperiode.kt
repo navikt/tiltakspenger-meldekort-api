@@ -5,7 +5,7 @@ import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.HendelseId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
@@ -21,7 +21,7 @@ import java.time.LocalDateTime
  * @param versjon Angir hvilken versjon meldeperioden dette er. Når vi får nye vedtak som påvirker en spesifikk meldeperiode, vil denne øke.
  */
 data class Meldeperiode(
-    val id: HendelseId,
+    val id: MeldeperiodeId,
     val kjedeId: MeldeperiodeKjedeId,
     val versjon: Int,
     val sakId: SakId,
@@ -45,7 +45,7 @@ data class Meldeperiode(
 fun MeldeperiodeDTO.tilMeldeperiode(): Either<UgyldigMeldeperiode, Meldeperiode> {
     return Either.catch {
         Meldeperiode(
-            id = HendelseId.fromString(this.id),
+            id = MeldeperiodeId.fromString(this.id),
             kjedeId = MeldeperiodeKjedeId(this.meldeperiodeKjedeId),
             versjon = this.versjon,
             sakId = SakId.fromString(this.sakId),
