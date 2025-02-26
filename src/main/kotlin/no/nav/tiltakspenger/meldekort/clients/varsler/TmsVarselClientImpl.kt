@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.clients.varsler
 
 import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tms.varsel.action.Sensitivitet
 import no.nav.tms.varsel.action.Tekst
 import no.nav.tms.varsel.action.Varseltype
@@ -9,6 +10,10 @@ import no.nav.tms.varsel.builder.VarselActionBuilder
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
+/**
+ * Tjeneste for å sende varsel til bruker
+ * @link https://navikt.github.io/tms-dokumentasjon/varsler/
+ */
 class TmsVarselClientImpl(
     val kafkaProducer: KafkaProducer<String, String>,
     val topicName: String,
@@ -16,32 +21,55 @@ class TmsVarselClientImpl(
 ) : TmsVarselClient {
     val logger = KotlinLogging.logger {}
 
-    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, eventId: String) {
-        logger.info { "Sender varsel for meldekort ${meldekort.id} - event id: $eventId" }
-        val varselHendelse = opprettVarselHendelse(meldekort, eventId)
+    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: String) {
+        logger.info { "Sender varsel for meldekort ${meldekort.id} - varselId: $varselId" }
+        val varselHendelse = opprettVarselOppgave(meldekort, varselId)
 
         try {
             kafkaProducer.send(
-                ProducerRecord(topicName, eventId, varselHendelse),
+                ProducerRecord(topicName, varselId, varselHendelse),
             )
         } catch (e: Exception) {
-            logger.error(e) { "Feil ved sending av brukervarsel $eventId - ${e.message}" }
+            logger.error(e) { "Feil ved sending av brukervarsel $varselId - ${e.message}" }
         }
     }
 
-    // TODO: send som oppgave istedenfor beskjed, og send inaktiv-event når bruker har sendt inn meldekortet
-    private fun opprettVarselHendelse(meldekort: Meldekort, eventId: String): String {
+    /**
+     * Inaktiverer varsel for bruker, returnerer true eller false basert på om inaktiveringen ble lagt på kafka-topicet
+     */
+    override fun inaktiverVarsel(varselId: VarselId): Boolean {
+        logger.info { "Inaktiverer varsel $varselId" }
+        val inaktiveringHendelse = inaktiverVarselOppgave(varselId)
+
+        try {
+            kafkaProducer.send(
+                ProducerRecord(topicName, varselId.toString(), inaktiveringHendelse),
+            )
+            return true
+        } catch (e: Exception) {
+            logger.error(e) { "Feil ved inaktivering av brukervarsel $varselId - ${e.message}" }
+            return false
+        }
+    }
+
+    private fun opprettVarselOppgave(meldekort: Meldekort, varselId: String): String {
         return VarselActionBuilder.opprett {
-            type = Varseltype.Beskjed
-            varselId = eventId
-            ident = meldekort.fnr.verdi
-            sensitivitet = Sensitivitet.Substantial
-            link = meldekortFrontendUrl
-            tekster += Tekst(
+            this.type = Varseltype.Oppgave
+            this.varselId = varselId
+            this.ident = meldekort.fnr.verdi
+            this.sensitivitet = Sensitivitet.Substantial
+            this.link = meldekortFrontendUrl
+            this.tekster += Tekst(
                 spraakkode = "nb",
                 default = true,
                 tekst = "Du har et meldekort klart til utfylling for ${meldekort.periode.fraOgMed} - ${meldekort.periode.tilOgMed}",
             )
+        }
+    }
+
+    private fun inaktiverVarselOppgave(varselId: VarselId): String {
+        return VarselActionBuilder.inaktiver {
+            this.varselId = varselId.toString()
         }
     }
 }

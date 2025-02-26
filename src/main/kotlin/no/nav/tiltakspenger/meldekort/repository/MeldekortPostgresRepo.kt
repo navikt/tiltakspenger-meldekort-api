@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFacto
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
@@ -32,13 +33,19 @@ class MeldekortPostgresRepo(
                             meldeperiode_id,
                             sak_id,
                             mottatt,
-                            dager
+                            dager,
+                            journalpost_id,
+                            journalføringstidspunkt,
+                            varsel_id
                         ) values (
                             :id,
                             :meldeperiode_id,
                             :sak_id,
                             :mottatt,
-                            to_jsonb(:dager::jsonb)
+                            to_jsonb(:dager::jsonb),
+                            :journalpost_id,
+                            :journalføringstidspunkt,
+                            :varsel_id
                         )
                     """,
                     "id" to meldekort.id.toString(),
@@ -46,6 +53,9 @@ class MeldekortPostgresRepo(
                     "sak_id" to meldekort.sakId.toString(),
                     "mottatt" to meldekort.mottatt,
                     "dager" to meldekort.dager.toDbJson(),
+                    "journalpost_id" to meldekort.journalpostId?.toString(),
+                    "journalføringstidspunkt" to meldekort.journalføringstidspunkt,
+                    "varsel_id" to meldekort.varselId?.toString(),
                 ).asUpdate,
             )
         }
@@ -251,6 +261,23 @@ class MeldekortPostgresRepo(
             )
         }
 
+    override fun hentMottatteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                queryOf(
+                    //language=sql
+                    """
+                    select * from meldekort_bruker
+                    where mottatt is not null
+                    and varsel_id is not null
+                    limit :limit
+                    """.trimIndent(),
+                    mapOf("limit" to limit),
+                ).map { row -> fromRow(row, session) }.asList,
+            )
+        }
+    }
+
     companion object {
         private fun fromRow(
             row: Row,
@@ -271,6 +298,7 @@ class MeldekortPostgresRepo(
                 dager = row.string("dager").toMeldekortDager(),
                 journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
                 journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
+                varselId = row.stringOrNull("varsel_id")?.let { VarselId(it) },
             )
         }
     }

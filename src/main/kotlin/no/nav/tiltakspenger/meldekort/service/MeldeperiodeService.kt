@@ -5,17 +5,16 @@ import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import mu.KotlinLogging
-import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
+import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.tilMeldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilTomtMeldekort
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
-import java.util.*
+import java.util.UUID
 
 class MeldeperiodeService(
     private val meldeperiodeRepo: MeldeperiodeRepo,
@@ -55,14 +54,12 @@ class MeldeperiodeService(
 
         if (meldekort != null) {
             logger.info { "Lagret brukers meldekort ${meldekort.id}" }
-            tmsVarselClient.sendVarselForNyttMeldekort(meldekort, eventId = UUID.randomUUID().toString())
+            val varselId = UUID.randomUUID().toString()
+            tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId = varselId)
+            meldekortRepo.lagre(meldekort.copy(varselId = VarselId(varselId)))
         }
 
         return Unit.right()
-    }
-
-    fun hentMeldeperiodeForKjedeId(kjedeId: MeldeperiodeKjedeId): Meldeperiode? {
-        TODO()
     }
 }
 

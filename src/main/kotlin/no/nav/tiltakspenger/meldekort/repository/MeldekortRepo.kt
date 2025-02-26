@@ -61,4 +61,6 @@ interface MeldekortRepo {
     )
 
     fun hentDeSomSkalJournalføres(limit: Int = 10, sessionContext: SessionContext? = null): List<Meldekort>
+
+    fun hentMottatteSomDetVarslesFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
 }
