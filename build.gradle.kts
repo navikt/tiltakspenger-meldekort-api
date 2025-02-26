@@ -11,6 +11,7 @@ val kotestVersion = "5.9.1"
 val kotlinxCoroutinesVersion = "1.10.1"
 val kafkaVersion = "3.9.0"
 val tmsVarselBuilderVersion = "2.1.1"
+val testContainersVersion = "1.20.5"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
@@ -113,6 +114,11 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
+
+    testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
+    testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
+    testImplementation("org.testcontainers:postgresql:$testContainersVersion")
+
 
     api("io.kotest.extensions:kotest-assertions-arrow:1.4.0")
 }
