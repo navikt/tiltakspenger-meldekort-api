@@ -3,6 +3,8 @@ package no.nav.tiltakspenger.meldekort.context
 import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.auth.core.EntraIdSystemtokenClient
 import no.nav.tiltakspenger.libs.auth.core.EntraIdSystemtokenHttpClient
+import no.nav.tiltakspenger.libs.kafka.Producer
+import no.nav.tiltakspenger.libs.kafka.config.KafkaConfigImpl
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
@@ -18,7 +20,6 @@ import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalførMeldekortService
 import no.nav.tiltakspenger.meldekort.domene.varsler.InaktiverVarslerService
-import no.nav.tiltakspenger.meldekort.kafka.createKafkaProducer
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
@@ -36,6 +37,9 @@ open class ApplicationContext {
     open val sessionCounter by lazy { SessionCounter(log) }
     open val sessionFactory: PostgresSessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
 
+    open val kafkaConfig = KafkaConfigImpl()
+    open val kafkaProducer = Producer<String, String>(kafkaConfig)
+
     open val texasHttpClient: TexasHttpClient by lazy { TexasHttpClientImpl() }
 
     open val tmsVarselClient: TmsVarselClient by lazy {
@@ -43,7 +47,7 @@ open class ApplicationContext {
             TmsVarselClientFake()
         } else {
             TmsVarselClientImpl(
-                kafkaProducer = createKafkaProducer(),
+                kafkaProducer = kafkaProducer,
                 topicName = Configuration.varselHendelseTopic,
                 meldekortFrontendUrl = Configuration.meldekortFrontendUrl,
             )

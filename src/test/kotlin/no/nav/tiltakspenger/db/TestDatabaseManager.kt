@@ -49,7 +49,7 @@ internal class TestDatabaseManager {
     private val lock = ReentrantReadWriteLock()
 
     /**
-     * @param runIsolated Tømmer databasen før denne testen for kjøre i isolasjon. Brukes når man gjør operasjoner på tvers av saker.
+     * @param runIsolated Tømmer databasen før denne testen for kjøre i isolasjon.
      */
     fun withMigratedDb(runIsolated: Boolean = false, test: (TestDataHelper) -> Unit) {
         if (isClosed) {
