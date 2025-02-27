@@ -9,7 +9,6 @@ val mockkVersion = "1.13.16"
 val felleslibVersion = "0.0.378"
 val kotestVersion = "5.9.1"
 val kotlinxCoroutinesVersion = "1.10.1"
-val kafkaVersion = "3.9.0"
 val tmsVarselBuilderVersion = "2.1.1"
 val testContainersVersion = "1.20.5"
 
@@ -55,16 +54,16 @@ dependencies {
     // Felles libs
     implementation("com.github.navikt.tiltakspenger-libs:auth-core:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:auth-ktor:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:json:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:jobber:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:tiltak-dtos:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:json:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:kafka:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:meldekort-dtos:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:periodisering:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:tiltak-dtos:$felleslibVersion")
 
-    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilderVersion")
 
     // DB

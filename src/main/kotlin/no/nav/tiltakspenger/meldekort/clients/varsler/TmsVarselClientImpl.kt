@@ -1,21 +1,20 @@
 package no.nav.tiltakspenger.meldekort.clients.varsler
 
 import mu.KotlinLogging
+import no.nav.tiltakspenger.libs.kafka.Producer
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tms.varsel.action.Sensitivitet
 import no.nav.tms.varsel.action.Tekst
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
 
 /**
  * Tjeneste for å sende varsel til bruker
  * @link https://navikt.github.io/tms-dokumentasjon/varsler/
  */
 class TmsVarselClientImpl(
-    val kafkaProducer: KafkaProducer<String, String>,
+    val kafkaProducer: Producer<String, String>,
     val topicName: String,
     val meldekortFrontendUrl: String,
 ) : TmsVarselClient {
@@ -26,9 +25,7 @@ class TmsVarselClientImpl(
         val varselHendelse = opprettVarselOppgave(meldekort, varselId)
 
         try {
-            kafkaProducer.send(
-                ProducerRecord(topicName, varselId, varselHendelse),
-            )
+            kafkaProducer.produce(topicName, varselId, varselHendelse)
         } catch (e: Exception) {
             logger.error(e) { "Feil ved sending av brukervarsel $varselId - ${e.message}" }
         }
@@ -42,9 +39,7 @@ class TmsVarselClientImpl(
         val inaktiveringHendelse = inaktiverVarselOppgave(varselId)
 
         try {
-            kafkaProducer.send(
-                ProducerRecord(topicName, varselId.toString(), inaktiveringHendelse),
-            )
+            kafkaProducer.produce(topicName, varselId.toString(), inaktiveringHendelse)
             return true
         } catch (e: Exception) {
             logger.error(e) { "Feil ved inaktivering av brukervarsel $varselId - ${e.message}" }

@@ -133,12 +133,6 @@ object Configuration {
     val dokarkivUrl: String by lazy { config()[Key("DOKARKIV_URL", stringType)] }
     val dokarkivScope: String by lazy { config()[Key("DOKARKIV_SCOPE", stringType)] }
     val pdfgenUrl: String by lazy { config()[Key("PDFGEN_URL", stringType)] }
-
-    val kafkaBrokers: String by lazy { config()[Key("KAFKA_BROKERS", stringType)] }
-    val kafkaTruststorePath: String by lazy { config()[Key("KAFKA_TRUSTSTORE_PATH", stringType)] }
-    val kafkaKeystorePath: String by lazy { config()[Key("KAFKA_KEYSTORE_PATH", stringType)] }
-    val kafkaCredstorePassword: String by lazy { config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)] }
-
     val varselHendelseTopic: String by lazy { config()[Key("VARSEL_HENDELSE_TOPIC", stringType)] }
 
     val meldekortFrontendUrl: String by lazy { config()[Key("MELDEKORT_FRONTEND_URL", stringType)] }
