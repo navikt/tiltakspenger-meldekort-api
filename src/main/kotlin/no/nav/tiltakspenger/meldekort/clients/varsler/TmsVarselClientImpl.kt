@@ -57,7 +57,7 @@ class TmsVarselClientImpl(
             this.tekster += Tekst(
                 spraakkode = "nb",
                 default = true,
-                tekst = "Du har et meldekort klart til utfylling for ${meldekort.periode.fraOgMed} - ${meldekort.periode.tilOgMed}",
+                tekst = "Du har et meldekort klart til utfylling for ${meldekort.periode.tilNorskFormat()}",
             )
         }
     }
