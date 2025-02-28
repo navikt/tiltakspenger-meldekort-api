@@ -28,33 +28,33 @@ class MeldekortPostgresRepo(
             session.run(
                 sqlQuery(
                     """
-                        insert into meldekort_bruker (
-                            id,
-                            meldeperiode_id,
-                            sak_id,
-                            mottatt,
-                            dager,
-                            journalpost_id,
-                            journalføringstidspunkt,
-                            varsel_id
-                        ) values (
-                            :id,
-                            :meldeperiode_id,
-                            :sak_id,
-                            :mottatt,
-                            to_jsonb(:dager::jsonb),
-                            :journalpost_id,
-                            :journalføringstidspunkt,
-                            :varsel_id
-                        )
-                    """,
+                    insert into meldekort_bruker (
+                        id,
+                        meldeperiode_id,
+                        sak_id,
+                        mottatt,
+                        dager,
+                        journalpost_id,
+                        journalføringstidspunkt,
+                        varsel_id
+                    ) values (
+                        :id,
+                        :meldeperiode_id,
+                        :sak_id,
+                        :mottatt,
+                        to_jsonb(:dager::jsonb),
+                        :journalpost_id,
+                        :tidspunkt,
+                        :varsel_id
+                    )
+                """,
                     "id" to meldekort.id.toString(),
                     "meldeperiode_id" to meldekort.meldeperiode.id.toString(),
                     "sak_id" to meldekort.sakId.toString(),
                     "mottatt" to meldekort.mottatt,
                     "dager" to meldekort.dager.toDbJson(),
                     "journalpost_id" to meldekort.journalpostId?.toString(),
-                    "journalføringstidspunkt" to meldekort.journalføringstidspunkt,
+                    "tidspunkt" to meldekort.journalføringstidspunkt,
                     "varsel_id" to meldekort.varselId?.toString(),
                 ).asUpdate,
             )
