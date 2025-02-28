@@ -79,6 +79,22 @@ class MeldekortPostgresRepo(
         }
     }
 
+    override fun oppdater(meldekort: Meldekort, sessionContext: SessionContext?) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update meldekort_bruker set 
+                        varsel_id = :varsel_id
+                    where id = :id
+                """,
+                    "id" to meldekort.id.toString(),
+                    "varsel_id" to meldekort.varselId?.toString(),
+                ).asUpdate,
+            )
+        }
+    }
+
     /** TODO jah: Denne må returnere en liste dersom vi støtter flere innsender på samme meldeperiode */
     override fun hentMeldekortForMeldeperiodeId(
         meldeperiodeId: String,
@@ -137,7 +153,8 @@ class MeldekortPostgresRepo(
                         mk.*
                     from meldekort_bruker mk
                     join meldeperiode mp on mp.id = mk.meldeperiode_id
-                    where mk.id = :id and mp.fnr = :fnr
+                    where mk.id = :id 
+                    and mp.fnr = :fnr
                     """,
                     "id" to meldekortId.toString(),
                     "fnr" to fnr.verdi,
@@ -207,9 +224,10 @@ class MeldekortPostgresRepo(
                         join meldeperiode mp on mp.fnr = :fnr
                         where mp.id = mk.meldeperiode_id
                         order by fra_og_med desc, versjon desc
-                        limit $limit
+                        limit :limit
                     """,
                     "fnr" to fnr.verdi,
+                    "limit" to limit,
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }
@@ -268,7 +286,7 @@ class MeldekortPostgresRepo(
                     //language=sql
                     """
                     select * from meldekort_bruker
-                    where mottatt is not null
+                    where mottatt is not null 
                     and varsel_id is not null
                     limit :limit
                     """.trimIndent(),
