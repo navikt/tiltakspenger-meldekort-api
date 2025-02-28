@@ -119,7 +119,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainersVersion")
 
 
-    api("io.kotest.extensions:kotest-assertions-arrow:1.4.0")
+    api("io.kotest.extensions:kotest-assertions-arrow:2.0.0")
 }
 
 spotless {
