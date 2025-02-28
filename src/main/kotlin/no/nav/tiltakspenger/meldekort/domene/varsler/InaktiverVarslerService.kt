@@ -24,7 +24,7 @@ class InaktiverVarslerService(
                         log.error { "Kunne ikke inaktivere varsel for meldekort med id ${meldekort.id} varselId=$varselId, prøver igjen neste jobbkjøring" }
                     } else {
                         log.info { "Varsel inaktivert for meldekort med id ${meldekort.id} varselId=$varselId" }
-                        meldekortRepo.lagre(meldekort.copy(varselId = null))
+                        meldekortRepo.oppdater(meldekort.copy(varselId = null))
                     }
                 }
             }

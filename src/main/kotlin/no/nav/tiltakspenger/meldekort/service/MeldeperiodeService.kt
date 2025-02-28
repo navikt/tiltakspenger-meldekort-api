@@ -57,7 +57,7 @@ class MeldeperiodeService(
             val varselId = UUID.randomUUID().toString()
             logger.info { "Oppretter varsel $varselId for meldekort ${meldekort.id}" }
             tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId = varselId)
-            meldekortRepo.lagre(meldekort.copy(varselId = VarselId(varselId)))
+            meldekortRepo.oppdater(meldekort.copy(varselId = VarselId(varselId)))
         }
 
         return Unit.right()

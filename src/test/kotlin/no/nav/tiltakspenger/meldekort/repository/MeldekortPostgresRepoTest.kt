@@ -29,7 +29,10 @@ class MeldekortPostgresRepoTest {
                 assertEquals(meldekort.varselId, result.varselId, "varselId")
             }
         }
+    }
 
+    @Nested
+    inner class Oppdater {
         @Test
         fun `kan oppdatere varselId`() {
             withMigratedDb { helper ->
@@ -40,7 +43,7 @@ class MeldekortPostgresRepoTest {
                 assertNotNull(meldekort.varselId, "varselId skal være satt til å begynne med")
 
                 val oppdatertMeldekort = meldekort.copy(varselId = null)
-                repo.lagre(oppdatertMeldekort)
+                repo.oppdater(oppdatertMeldekort)
 
                 val result = repo.hentForMeldekortId(meldekort.id, meldekort.meldeperiode.fnr)
                 assertEquals(oppdatertMeldekort.varselId, result!!.varselId, "varselId")
