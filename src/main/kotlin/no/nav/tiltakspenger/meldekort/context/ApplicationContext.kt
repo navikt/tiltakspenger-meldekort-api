@@ -37,9 +37,6 @@ open class ApplicationContext {
     open val sessionCounter by lazy { SessionCounter(log) }
     open val sessionFactory: PostgresSessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
 
-    open val kafkaConfig = KafkaConfigImpl()
-    open val kafkaProducer = Producer<String, String>(kafkaConfig)
-
     open val texasHttpClient: TexasHttpClient by lazy { TexasHttpClientImpl() }
 
     open val tmsVarselClient: TmsVarselClient by lazy {
@@ -47,7 +44,7 @@ open class ApplicationContext {
             TmsVarselClientFake()
         } else {
             TmsVarselClientImpl(
-                kafkaProducer = kafkaProducer,
+                kafkaProducer = Producer(KafkaConfigImpl()),
                 topicName = Configuration.varselHendelseTopic,
                 meldekortFrontendUrl = Configuration.meldekortFrontendUrl,
             )

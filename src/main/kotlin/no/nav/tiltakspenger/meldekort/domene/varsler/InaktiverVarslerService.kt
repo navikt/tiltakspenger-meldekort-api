@@ -14,7 +14,7 @@ class InaktiverVarslerService(
     fun inaktiverVarslerForMottatteMeldekort() {
         Either.catch {
             val mottatteMeldekort = meldekortRepo.hentMottatteSomDetVarslesFor()
-            log.info { "Fant ${mottatteMeldekort.size} mottatte meldekort som det varsles for" }
+            log.debug { "Fant ${mottatteMeldekort.size} mottatte meldekort som det varsles for" }
 
             mottatteMeldekort.forEach { meldekort ->
                 meldekort.varselId?.let { varselId ->
