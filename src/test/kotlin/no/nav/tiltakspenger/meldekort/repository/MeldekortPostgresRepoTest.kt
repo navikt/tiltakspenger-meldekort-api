@@ -1,12 +1,17 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import io.kotest.matchers.shouldBe
+import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.libs.periodisering.Periode
+import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MeldekortPostgresRepoTest {
@@ -47,6 +52,92 @@ class MeldekortPostgresRepoTest {
 
                 val result = repo.hentForMeldekortId(meldekort.id, meldekort.meldeperiode.fnr)
                 assertEquals(oppdatertMeldekort.varselId, result!!.varselId, "varselId")
+            }
+        }
+    }
+
+    @Nested
+    inner class HentMeldekortTilBruker {
+        private fun lagToMeldekort(helper: TestDataHelper, førstePeriode: Periode): List<Meldekort> {
+            val meldekortRepo = helper.meldekortPostgresRepo
+            val meldeperiodeRepo = helper.meldeperiodeRepo
+
+            val førsteMeldekort = ObjectMother.meldekort(
+                mottatt = førstePeriode.tilOgMed.atTime(0, 0),
+                periode = førstePeriode,
+            )
+
+            val andreMeldekort = ObjectMother.meldekort(
+                mottatt = null,
+                periode = Periode(
+                    fraOgMed = førstePeriode.fraOgMed.plusDays(14),
+                    tilOgMed = førstePeriode.tilOgMed.plusDays(14),
+                ),
+            )
+
+            meldeperiodeRepo.lagre(førsteMeldekort.meldeperiode)
+            meldeperiodeRepo.lagre(andreMeldekort.meldeperiode)
+
+            meldekortRepo.lagre(førsteMeldekort)
+            meldekortRepo.lagre(andreMeldekort)
+
+            return listOf(andreMeldekort, førsteMeldekort)
+        }
+
+        @Test
+        fun `skal hente meldekort fra perioder som kan innsendes`() {
+            withMigratedDb(runIsolated = true) { helper ->
+                val (sisteMeldekort, forrigeMeldekort) = lagToMeldekort(
+                    helper,
+                    Periode(
+                        fraOgMed = LocalDate.of(2025, 1, 6),
+                        tilOgMed = LocalDate.of(2025, 1, 19),
+                    ),
+                )
+
+                val repo = helper.meldekortPostgresRepo
+
+                val sisteMeldekortFraDb = repo.hentSisteMeldekort(sisteMeldekort.fnr)
+                val alleMeldekortFraDb = repo.hentAlleMeldekort(sisteMeldekort.fnr)
+
+                sisteMeldekortFraDb shouldBe sisteMeldekort
+                alleMeldekortFraDb shouldBe listOf(sisteMeldekort, forrigeMeldekort)
+            }
+        }
+
+        @Test
+        fun `skal hente forrige meldekort når det nyeste ikke er klart til innsending`() {
+            withMigratedDb(runIsolated = true) { helper ->
+                val (sisteMeldekort, forrigeMeldekort) = lagToMeldekort(
+                    helper,
+                    ObjectMother.periode(LocalDate.now().minusDays(14)),
+                )
+
+                val repo = helper.meldekortPostgresRepo
+
+                val sisteMeldekortFraDb = repo.hentSisteMeldekort(sisteMeldekort.fnr)
+                val alleMeldekortFraDb = repo.hentAlleMeldekort(sisteMeldekort.fnr)
+
+                sisteMeldekortFraDb shouldBe forrigeMeldekort
+                alleMeldekortFraDb shouldBe listOf(forrigeMeldekort)
+            }
+        }
+
+        @Test
+        fun `skal ikke hente noen meldekort når ingen er klare til innsending`() {
+            withMigratedDb(runIsolated = true) { helper ->
+                val (sisteMeldekort) = lagToMeldekort(
+                    helper,
+                    ObjectMother.periode(LocalDate.now()),
+                )
+
+                val repo = helper.meldekortPostgresRepo
+
+                val sisteMeldekortFraDb = repo.hentSisteMeldekort(sisteMeldekort.fnr)
+                val alleMeldekortFraDb = repo.hentAlleMeldekort(sisteMeldekort.fnr)
+
+                sisteMeldekortFraDb shouldBe null
+                alleMeldekortFraDb shouldBe emptyList()
             }
         }
     }

@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.domene
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.meldekort.DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -38,6 +39,10 @@ data class MeldekortDagFraBruker(
 ) : IMeldekortDag
 
 fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
+    require(meldeperiode.periode.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING).isBefore(nå().toLocalDate())) {
+        "Kan ikke sende meldekort før $DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING dager før slutten av meldeperioden"
+    }
+
     val maksAntallDager = meldeperiode.maksAntallDagerForPeriode
     val antallDagerRegistrert = kommando.dager.count { it.status != MeldekortDagStatus.IKKE_REGISTRERT }
 

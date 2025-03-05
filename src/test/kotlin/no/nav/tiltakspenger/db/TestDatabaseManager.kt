@@ -2,15 +2,16 @@ package no.nav.tiltakspenger.db
 
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.util.date.getTimeMillis
-import kotliquery.queryOf
 import kotliquery.sessionOf
 import mu.KotlinLogging
+import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.output.MigrateResult
 import org.testcontainers.containers.PostgreSQLContainer
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import javax.sql.DataSource
+import kotlin.concurrent.read
 import kotlin.concurrent.write
 
 /**
@@ -60,6 +61,11 @@ internal class TestDatabaseManager {
             if (runIsolated) {
                 lock.write {
                     cleanDatabase()
+                    test(TestDataHelper(dataSource))
+                }
+            } else {
+                lock.read {
+                    test(TestDataHelper(dataSource))
                 }
             }
         } finally {
@@ -72,12 +78,12 @@ internal class TestDatabaseManager {
 
     private fun cleanDatabase() {
         sessionOf(dataSource).run(
-            queryOf(
+            sqlQuery(
                 """
                 TRUNCATE
-                  meldekort_bruker
+                  meldekort_bruker,
                   meldeperiode
-                """.trimIndent(),
+                """,
             ).asUpdate,
         )
     }

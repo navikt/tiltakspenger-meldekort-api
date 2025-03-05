@@ -8,9 +8,11 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.meldekort.DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
@@ -222,12 +224,13 @@ class MeldekortPostgresRepo(
                             mk.*
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.fnr = :fnr
-                        where mp.id = mk.meldeperiode_id
+                        where mp.id = mk.meldeperiode_id and mp.til_og_med <= :mindate
                         order by fra_og_med desc, versjon desc
                         limit :limit
                     """,
                     "fnr" to fnr.verdi,
                     "limit" to limit,
+                    "mindate" to nå().toLocalDate().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING),
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }

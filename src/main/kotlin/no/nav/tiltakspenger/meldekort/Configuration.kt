@@ -13,6 +13,8 @@ enum class Profile {
     PROD,
 }
 
+const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 3L
+
 object Configuration {
     private val defaultProperties =
         ConfigurationMap(
