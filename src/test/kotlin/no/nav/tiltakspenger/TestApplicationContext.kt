@@ -1,8 +1,9 @@
 package no.nav.tiltakspenger
 
-import mu.KotlinLogging
+import no.nav.tiltakspenger.fakes.MeldekortRepoFake
+import no.nav.tiltakspenger.fakes.MeldeperiodeRepoFake
 import no.nav.tiltakspenger.fakes.TexasFake
-import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
+import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 
 /**
@@ -11,28 +12,11 @@ import no.nav.tiltakspenger.meldekort.context.ApplicationContext
  * Bruk service-funksjoner og hjelpemetoder for å legge til data.
  */
 class TestApplicationContext : ApplicationContext() {
-    private val log = KotlinLogging.logger {}
+    override val texasHttpClient = TexasFake()
 
-    override val texasHttpClient: TexasHttpClient = TexasFake()
+    override val tmsVarselClient = TmsVarselClientFake()
 
-    // val brukersMeldekortRepo: BrukersMeldekortRepo = MeldekortFake()
+    override val meldekortRepo = MeldekortRepoFake()
 
-    // TODO: Dette må kanskje lages. Lag nye fakes om det trengs i tester!
-//    val meldekortService: MeldekortService by lazy {
-//        MeldekortServiceImpl(meldekortRepo = meldekortRepo)
-//    }
-//
-//    open val saksbehandlingClient by lazy {
-//        SaksbehandlingClientImpl(
-//            baseUrl = Configuration.saksbehandlingApiUrl,
-//            getToken = { texasHttpClient.getSaksbehandlingApiToken() },
-//        )
-//    }
-//
-//    val sendMeldekortService: SendMeldekortService by lazy {
-//        SendMeldekortService(
-//            meldekortService = meldekortService,
-//            saksbehandlingClient = saksbehandlingClient,
-//        )
-//    }
+    override val meldeperiodeRepo = MeldeperiodeRepoFake()
 }

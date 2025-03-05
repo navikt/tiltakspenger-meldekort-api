@@ -5,6 +5,7 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
@@ -59,3 +60,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         varselId = null,
     )
 }
+
+const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
+
+fun senesteTilOgMedDatoForInnsending() = LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)

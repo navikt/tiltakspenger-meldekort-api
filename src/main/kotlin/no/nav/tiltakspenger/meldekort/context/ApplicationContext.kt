@@ -61,7 +61,7 @@ open class ApplicationContext {
             sessionFactory = sessionFactory,
         )
     }
-    val meldekortService: MeldekortService by lazy {
+    open val meldekortService: MeldekortService by lazy {
         MeldekortService(
             meldekortRepo = meldekortRepo,
         )

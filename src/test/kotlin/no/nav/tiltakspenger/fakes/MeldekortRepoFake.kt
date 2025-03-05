@@ -1,0 +1,91 @@
+package no.nav.tiltakspenger.fakes
+
+import arrow.atomic.Atomic
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
+import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
+import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
+import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
+import java.time.LocalDateTime
+
+class MeldekortRepoFake : MeldekortRepo {
+    private val data = Atomic(mutableMapOf<MeldekortId, Meldekort>())
+
+    override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
+        data.get()[meldekort.id] = meldekort
+    }
+
+    override fun lagreFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
+        val meldekort = data.get()[lagreKommando.id]
+
+        requireNotNull(meldekort) { "Kan ikke lagre meldekort fra bruker - meldekortet finnes ikke" }
+
+        data.get()[meldekort.id] = meldekort.copy(
+            dager = lagreKommando.dager.map { it.tilMeldekortDag() },
+            mottatt = lagreKommando.mottatt,
+        )
+    }
+
+    override fun oppdater(meldekort: Meldekort, sessionContext: SessionContext?) {
+        data.get()[meldekort.id] = meldekort
+    }
+
+    override fun hentForMeldekortId(meldekortId: MeldekortId, fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+        return data.get()[meldekortId]
+    }
+
+    override fun hentMeldekortForMeldeperiodeId(
+        meldeperiodeId: MeldeperiodeId,
+        sessionContext: SessionContext?,
+    ): Meldekort? {
+        return data.get().values.find { it.meldeperiode.id == meldeperiodeId }
+    }
+
+    override fun hentMeldekortForMeldeperiodeKjedeId(
+        meldeperiodeKjedeId: MeldeperiodeKjedeId,
+        sessionContext: SessionContext?,
+    ): Meldekort? {
+        return data.get().values.find { it.meldeperiode.kjedeId == meldeperiodeKjedeId }
+    }
+
+    override fun hentSisteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+        return data.get().values.sortedByDescending { it.meldeperiode.periode.fraOgMed }.find { it.fnr == fnr }
+    }
+
+    override fun hentAlleMeldekort(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
+        return data.get().values.sortedByDescending { it.meldeperiode.periode.fraOgMed }.filter { it.fnr == fnr }
+    }
+
+    override fun hentUsendteMeldekort(sessionContext: SessionContext?): List<Meldekort> {
+        TODO("Not yet implemented")
+    }
+
+    override fun markerSendtTilSaksbehandling(
+        id: MeldekortId,
+        sendtTidspunkt: LocalDateTime,
+        sessionContext: SessionContext?,
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun markerJournalført(
+        meldekortId: MeldekortId,
+        journalpostId: JournalpostId,
+        tidspunkt: LocalDateTime,
+        sessionContext: SessionContext?,
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+        TODO("Not yet implemented")
+    }
+
+    override fun hentMottatteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+        TODO("Not yet implemented")
+    }
+}

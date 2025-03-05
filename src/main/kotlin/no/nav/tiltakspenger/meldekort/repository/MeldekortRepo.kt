@@ -2,6 +2,8 @@ package no.nav.tiltakspenger.meldekort.repository
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
@@ -15,7 +17,7 @@ interface MeldekortRepo {
     )
 
     fun lagreFraBruker(
-        meldekort: LagreMeldekortFraBrukerKommando,
+        lagreKommando: LagreMeldekortFraBrukerKommando,
         sessionContext: SessionContext? = null,
     )
 
@@ -31,12 +33,12 @@ interface MeldekortRepo {
     ): Meldekort?
 
     fun hentMeldekortForMeldeperiodeId(
-        meldeperiodeId: String,
+        meldeperiodeId: MeldeperiodeId,
         sessionContext: SessionContext? = null,
     ): Meldekort?
 
     fun hentMeldekortForMeldeperiodeKjedeId(
-        meldeperiodeKjedeId: String,
+        meldeperiodeKjedeId: MeldeperiodeKjedeId,
         sessionContext: SessionContext? = null,
     ): Meldekort?
 

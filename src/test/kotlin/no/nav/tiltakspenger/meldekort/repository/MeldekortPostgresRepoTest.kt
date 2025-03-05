@@ -115,6 +115,7 @@ class MeldekortPostgresRepoTest {
             withMigratedDb { helper ->
                 val (sisteMeldekort, forrigeMeldekort) = lagOgPersisterToMeldekort(
                     helper,
+                    // TODO: kan vi mocke system-clock elns for å teste litt mer spesifikt på datoer?
                     ObjectMother.periode(LocalDate.now().minusDays(14)),
                 )
 

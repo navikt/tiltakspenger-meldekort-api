@@ -7,16 +7,16 @@ import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
+import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
-import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
-import no.nav.tiltakspenger.meldekort.DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
+import no.nav.tiltakspenger.meldekort.domene.senesteTilOgMedDatoForInnsending
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
@@ -63,7 +63,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun lagreFraBruker(meldekort: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
+    override fun lagreFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -73,9 +73,9 @@ class MeldekortPostgresRepo(
                         dager = to_jsonb(:dager::jsonb)
                     where id = :id
                     """,
-                    "id" to meldekort.id.toString(),
-                    "mottatt" to meldekort.mottatt,
-                    "dager" to meldekort.dager.toDbJson(),
+                    "id" to lagreKommando.id.toString(),
+                    "mottatt" to lagreKommando.mottatt,
+                    "dager" to lagreKommando.dager.toDbJson(),
                 ).asUpdate,
             )
         }
@@ -99,7 +99,7 @@ class MeldekortPostgresRepo(
 
     /** TODO jah: Denne må returnere en liste dersom vi støtter flere innsender på samme meldeperiode */
     override fun hentMeldekortForMeldeperiodeId(
-        meldeperiodeId: String,
+        meldeperiodeId: MeldeperiodeId,
         sessionContext: SessionContext?,
     ): Meldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -121,7 +121,7 @@ class MeldekortPostgresRepo(
 
     /** TODO jah: Denne må returnere en liste dersom vi støtter flere innsender på samme meldeperiode */
     override fun hentMeldekortForMeldeperiodeKjedeId(
-        meldeperiodeKjedeId: String,
+        meldeperiodeKjedeId: MeldeperiodeKjedeId,
         sessionContext: SessionContext?,
     ): Meldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -134,7 +134,7 @@ class MeldekortPostgresRepo(
                     join meldeperiode mp on mk.meldeperiode_id = mp.id
                     where mp.kjede_id = :kjede_id
                     """,
-                    "kjede_id" to meldeperiodeKjedeId,
+                    "kjede_id" to meldeperiodeKjedeId.verdi,
                 ).map { row ->
                     fromRow(row, session)
                 }.asSingle,
@@ -224,13 +224,13 @@ class MeldekortPostgresRepo(
                             mk.*
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.fnr = :fnr
-                        where mp.id = mk.meldeperiode_id and mp.til_og_med <= :mindate
+                        where mp.id = mk.meldeperiode_id and mp.til_og_med <= :maks_til_og_med
                         order by fra_og_med desc, versjon desc
                         limit :limit
                     """,
                     "fnr" to fnr.verdi,
                     "limit" to limit,
-                    "mindate" to nå().toLocalDate().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING),
+                    "maks_til_og_med" to senesteTilOgMedDatoForInnsending(),
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }
