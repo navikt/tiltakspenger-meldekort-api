@@ -5,6 +5,7 @@ import no.nav.tiltakspenger.libs.auth.core.EntraIdSystemtokenClient
 import no.nav.tiltakspenger.libs.auth.core.EntraIdSystemtokenHttpClient
 import no.nav.tiltakspenger.libs.kafka.Producer
 import no.nav.tiltakspenger.libs.kafka.config.KafkaConfigImpl
+import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
@@ -35,7 +36,7 @@ open class ApplicationContext {
     open val jdbcUrl by lazy { Configuration.database() }
     open val dataSource by lazy { DataSourceSetup.createDatasource(jdbcUrl) }
     open val sessionCounter by lazy { SessionCounter(log) }
-    open val sessionFactory: PostgresSessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
+    open val sessionFactory: SessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
 
     open val texasHttpClient: TexasHttpClient by lazy { TexasHttpClientImpl() }
 
@@ -53,12 +54,12 @@ open class ApplicationContext {
 
     open val meldekortRepo: MeldekortRepo by lazy {
         MeldekortPostgresRepo(
-            sessionFactory = sessionFactory,
+            sessionFactory = sessionFactory as PostgresSessionFactory,
         )
     }
     open val meldeperiodeRepo: MeldeperiodeRepo by lazy {
         MeldeperiodePostgresRepo(
-            sessionFactory = sessionFactory,
+            sessionFactory = sessionFactory as PostgresSessionFactory,
         )
     }
     open val meldekortService: MeldekortService by lazy {
