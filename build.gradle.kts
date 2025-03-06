@@ -121,7 +121,7 @@ dependencies {
     testApi("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
     testApi("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
 
-    api("io.kotest.extensions:kotest-assertions-arrow:1.4.0")
+    api("io.kotest.extensions:kotest-assertions-arrow:2.0.0")
 }
 
 spotless {
