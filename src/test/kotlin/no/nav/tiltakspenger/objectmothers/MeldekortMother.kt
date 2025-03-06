@@ -1,5 +1,7 @@
 package no.nav.tiltakspenger.objectmothers
 
+import no.nav.tiltakspenger.fakes.TEXAS_FAKE_FNR
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
@@ -18,8 +20,9 @@ interface MeldekortMother {
         saksnummer: String? = Math.random().toString(),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         varselId: VarselId? = null,
+        fnr: Fnr = Fnr.fromString(TEXAS_FAKE_FNR),
     ): Meldekort {
-        val meldeperiode = ObjectMother.meldeperiode(periode, saksnummer)
+        val meldeperiode = ObjectMother.meldeperiode(periode = periode, saksnummer = saksnummer, fnr = fnr)
 
         return Meldekort(
             id = MeldekortId.random(),

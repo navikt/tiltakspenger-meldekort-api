@@ -171,11 +171,31 @@ class MeldekortPostgresRepo(
         return this.hentMeldekortForBruker(fnr, 1, sessionContext).firstOrNull()
     }
 
-    override fun hentAlleMeldekort(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        select
+                            mk.*
+                        from meldekort_bruker mk
+                        join meldeperiode mp on mp.fnr = :fnr
+                        where mp.id = mk.meldeperiode_id and mk.mottatt is null and mp.til_og_med <= :maks_til_og_med
+                        order by fra_og_med, versjon desc
+                        limit 1
+                    """,
+                    "fnr" to fnr.verdi,
+                    "maks_til_og_med" to senesteTilOgMedDatoForInnsending(),
+                ).map { row -> fromRow(row, session) }.asSingle,
+            )
+        }
+    }
+
+    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
         return this.hentMeldekortForBruker(fnr, 100, sessionContext)
     }
 
-    override fun hentUsendteMeldekort(sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(

@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.objectmothers
 
 import kotlinx.datetime.DayOfWeek
+import no.nav.tiltakspenger.fakes.TEXAS_FAKE_FNR
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
@@ -13,6 +14,7 @@ interface MeldeperiodeMother {
     fun meldeperiode(
         periode: Periode = ObjectMother.periode(),
         saksnummer: String? = Math.random().toString(),
+        fnr: Fnr = Fnr.fromString(TEXAS_FAKE_FNR),
     ): Meldeperiode {
         return Meldeperiode(
             id = MeldeperiodeId.random(),
@@ -20,7 +22,7 @@ interface MeldeperiodeMother {
             versjon = 1,
             sakId = SakId.random(),
             saksnummer = saksnummer,
-            fnr = Fnr.fromString("11111111111"),
+            fnr = fnr,
             periode = periode,
             opprettet = nå(),
             maksAntallDagerForPeriode = periode.antallDager.toInt(),

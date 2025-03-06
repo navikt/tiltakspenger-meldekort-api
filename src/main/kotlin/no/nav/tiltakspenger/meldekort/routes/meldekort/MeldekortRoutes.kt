@@ -95,8 +95,10 @@ internal fun Route.meldekortRoutes(
             return@get
         }
 
-        get("siste") {
-            val meldekort = meldekortService.hentSisteMeldekort(call.fnr())
+        get("neste") {
+            val fnr = call.fnr()
+
+            val meldekort = meldekortService.hentNesteMeldekortForUtfylling(fnr) ?: meldekortService.hentSisteMeldekort(fnr)
             if (meldekort == null) {
                 call.respond(HttpStatusCode.NotFound)
                 return@get

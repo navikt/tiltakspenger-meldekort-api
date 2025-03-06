@@ -47,12 +47,17 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     ): Meldekort?
 
-    fun hentAlleMeldekort(
+    fun hentNesteMeldekortTilUtfylling(
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): Meldekort?
+
+    fun hentAlleMeldekortForBruker(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): List<Meldekort>
 
-    fun hentUsendteMeldekort(sessionContext: SessionContext? = null): List<Meldekort>
+    fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext? = null): List<Meldekort>
 
     fun markerSendtTilSaksbehandling(
         id: MeldekortId,

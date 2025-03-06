@@ -37,12 +37,16 @@ class MeldekortService(
         return meldekortRepo.hentSisteMeldekort(fnr)
     }
 
+    fun hentNesteMeldekortForUtfylling(fnr: Fnr): Meldekort? {
+        return meldekortRepo.hentNesteMeldekortTilUtfylling(fnr)
+    }
+
     fun hentAlleMeldekort(fnr: Fnr): List<Meldekort> {
-        return meldekortRepo.hentAlleMeldekort(fnr)
+        return meldekortRepo.hentAlleMeldekortForBruker(fnr)
     }
 
     fun hentMeldekortSomSkalSendesTilSaksbehandling(): List<Meldekort> {
-        return meldekortRepo.hentUsendteMeldekort()
+        return meldekortRepo.hentMeldekortForSendingTilSaksbehandling()
     }
 
     fun markerSendtTilSaksbehandling(

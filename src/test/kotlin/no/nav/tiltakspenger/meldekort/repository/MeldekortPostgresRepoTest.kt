@@ -70,80 +70,182 @@ class MeldekortPostgresRepoTest {
 
     @Nested
     inner class HentMeldekortTilBruker {
-        private fun lagOgPersisterToMeldekort(helper: TestDataHelper, førstePeriode: Periode): List<Meldekort> {
-            val førsteMeldekort = ObjectMother.meldekort(
-                mottatt = førstePeriode.tilOgMed.atTime(0, 0),
-                periode = førstePeriode,
-            )
-
-            val andreMeldekort = ObjectMother.meldekort(
-                mottatt = null,
-                periode = Periode(
-                    fraOgMed = førstePeriode.fraOgMed.plusDays(14),
-                    tilOgMed = førstePeriode.tilOgMed.plusDays(14),
-                ),
-            )
-
-            lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
-
-            return listOf(andreMeldekort, førsteMeldekort)
-        }
-
         @Test
-        fun `skal hente meldekort fra perioder som kan innsendes`() {
+        fun `skal hente meldekort som kan utfylles og tidligere innsendt meldekort`() {
             withMigratedDb { helper ->
-                val (sisteMeldekort, forrigeMeldekort) = lagOgPersisterToMeldekort(
-                    helper,
-                    Periode(
-                        fraOgMed = LocalDate.of(2025, 1, 6),
-                        tilOgMed = LocalDate.of(2025, 1, 19),
+                val førstePeriode = Periode(
+                    fraOgMed = LocalDate.of(2025, 1, 6),
+                    tilOgMed = LocalDate.of(2025, 1, 19),
+                )
+
+                val førsteMeldekort = ObjectMother.meldekort(
+                    mottatt = førstePeriode.tilOgMed.atTime(0, 0),
+                    periode = førstePeriode,
+                )
+
+                val andreMeldekort = ObjectMother.meldekort(
+                    mottatt = null,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusDays(14),
+                        tilOgMed = førstePeriode.tilOgMed.plusDays(14),
                     ),
                 )
 
+                lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
+
                 val repo = helper.meldekortPostgresRepo
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekort(sisteMeldekort.fnr)
-                val alleMeldekortFraDb = repo.hentAlleMeldekort(sisteMeldekort.fnr)
+                val fnr = førsteMeldekort.fnr
 
-                sisteMeldekortFraDb shouldBe sisteMeldekort
-                alleMeldekortFraDb shouldBe listOf(sisteMeldekort, forrigeMeldekort)
+                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
+                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
+
+                sisteMeldekortFraDb shouldBe andreMeldekort
+                nesteMeldekortFraDb shouldBe andreMeldekort
+                alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
             }
         }
 
         @Test
-        fun `skal hente forrige meldekort når det nyeste ikke er klart til innsending`() {
+        fun `skal hente forrige meldekort når det nyeste ikke er klart til utfylling`() {
             withMigratedDb { helper ->
-                val (sisteMeldekort, forrigeMeldekort) = lagOgPersisterToMeldekort(
-                    helper,
-                    // TODO: kan vi mocke system-clock elns for å teste litt mer spesifikt på datoer?
-                    ObjectMother.periode(LocalDate.now().minusDays(14)),
+                val førstePeriode = ObjectMother.periode(LocalDate.now().minusWeeks(2))
+
+                val førsteMeldekort = ObjectMother.meldekort(
+                    mottatt = null,
+                    periode = førstePeriode,
                 )
+
+                val andreMeldekort = ObjectMother.meldekort(
+                    mottatt = null,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
+                    ),
+                )
+
+                lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
 
                 val repo = helper.meldekortPostgresRepo
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekort(sisteMeldekort.fnr)
-                val alleMeldekortFraDb = repo.hentAlleMeldekort(sisteMeldekort.fnr)
+                val fnr = førsteMeldekort.fnr
 
-                sisteMeldekortFraDb shouldBe forrigeMeldekort
-                alleMeldekortFraDb shouldBe listOf(forrigeMeldekort)
+                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
+                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
+
+                sisteMeldekortFraDb shouldBe førsteMeldekort
+                nesteMeldekortFraDb shouldBe førsteMeldekort
+                alleMeldekortFraDb shouldBe listOf(førsteMeldekort)
             }
         }
 
         @Test
-        fun `skal ikke hente noen meldekort når ingen er klare til innsending`() {
+        fun `skal ikke hente noen meldekort når ingen er klare til utfylling`() {
             withMigratedDb { helper ->
-                val (sisteMeldekort) = lagOgPersisterToMeldekort(
-                    helper,
-                    ObjectMother.periode(LocalDate.now()),
+                val førstePeriode = ObjectMother.periode(LocalDate.now())
+
+                val førsteMeldekort = ObjectMother.meldekort(
+                    mottatt = null,
+                    periode = førstePeriode,
                 )
+
+                val andreMeldekort = ObjectMother.meldekort(
+                    mottatt = null,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
+                    ),
+                )
+
+                lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
 
                 val repo = helper.meldekortPostgresRepo
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekort(sisteMeldekort.fnr)
-                val alleMeldekortFraDb = repo.hentAlleMeldekort(sisteMeldekort.fnr)
+                val fnr = førsteMeldekort.fnr
+
+                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
+                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
                 sisteMeldekortFraDb shouldBe null
+                nesteMeldekortFraDb shouldBe null
                 alleMeldekortFraDb shouldBe emptyList()
+            }
+        }
+
+        @Test
+        fun `skal ikke hente meldekort til utfylling når alle er mottatt`() {
+            withMigratedDb { helper ->
+                val førstePeriode = Periode(
+                    fraOgMed = LocalDate.of(2025, 1, 6),
+                    tilOgMed = LocalDate.of(2025, 1, 19),
+                )
+
+                val førsteMeldekort = ObjectMother.meldekort(
+                    mottatt = nå().minusWeeks(2),
+                    periode = førstePeriode,
+                )
+
+                val andreMeldekort = ObjectMother.meldekort(
+                    mottatt = nå(),
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
+                    ),
+                )
+
+                lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
+
+                val repo = helper.meldekortPostgresRepo
+
+                val fnr = førsteMeldekort.fnr
+
+                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
+                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
+
+                sisteMeldekortFraDb shouldBe andreMeldekort
+                nesteMeldekortFraDb shouldBe null
+                alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
+            }
+        }
+
+        @Test
+        fun `skal hente det eldste meldekortet som neste når flere er klare til utfylling`() {
+            withMigratedDb { helper ->
+                val førstePeriode = Periode(
+                    fraOgMed = LocalDate.of(2025, 1, 6),
+                    tilOgMed = LocalDate.of(2025, 1, 19),
+                )
+
+                val førsteMeldekort = ObjectMother.meldekort(
+                    mottatt = null,
+                    periode = førstePeriode,
+                )
+
+                val andreMeldekort = ObjectMother.meldekort(
+                    mottatt = null,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
+                    ),
+                )
+
+                lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
+
+                val repo = helper.meldekortPostgresRepo
+
+                val fnr = førsteMeldekort.fnr
+
+                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
+                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
+
+                sisteMeldekortFraDb shouldBe andreMeldekort
+                nesteMeldekortFraDb shouldBe førsteMeldekort
+                alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
             }
         }
     }

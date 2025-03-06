@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
+import no.nav.tiltakspenger.meldekort.domene.senesteTilOgMedDatoForInnsending
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.LocalDateTime
 
@@ -20,9 +21,9 @@ class MeldekortRepoFake : MeldekortRepo {
     }
 
     override fun lagreFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
-        val meldekort = data.get()[lagreKommando.id]
+        val meldekort = hentForMeldekortId(lagreKommando.id, lagreKommando.fnr, sessionContext)
 
-        requireNotNull(meldekort) { "Kan ikke lagre meldekort fra bruker - meldekortet finnes ikke" }
+        requireNotNull(meldekort) { "Kan ikke lagre meldekort ${lagreKommando.id} fra bruker ${lagreKommando.fnr} - meldekortet finnes ikke" }
 
         data.get()[meldekort.id] = meldekort.copy(
             dager = lagreKommando.dager.map { it.tilMeldekortDag() },
@@ -35,7 +36,7 @@ class MeldekortRepoFake : MeldekortRepo {
     }
 
     override fun hentForMeldekortId(meldekortId: MeldekortId, fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
-        return data.get()[meldekortId]
+        return data.get()[meldekortId]?.let { if (it.fnr == fnr) it else null }
     }
 
     override fun hentMeldekortForMeldeperiodeId(
@@ -53,14 +54,24 @@ class MeldekortRepoFake : MeldekortRepo {
     }
 
     override fun hentSisteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
-        return data.get().values.sortedByDescending { it.meldeperiode.periode.fraOgMed }.find { it.fnr == fnr }
+        return data.get().values
+            .filter { it.fnr == fnr && it.meldeperiode.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() }
+            .maxByOrNull { it.meldeperiode.periode.fraOgMed }
     }
 
-    override fun hentAlleMeldekort(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
-        return data.get().values.sortedByDescending { it.meldeperiode.periode.fraOgMed }.filter { it.fnr == fnr }
+    override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+        return data.get().values
+            .filter { it.fnr == fnr && it.meldeperiode.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() && it.mottatt == null }
+            .minByOrNull { it.meldeperiode.periode.fraOgMed }
     }
 
-    override fun hentUsendteMeldekort(sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
+        return data.get().values
+            .filter { it.fnr == fnr }
+            .sortedByDescending { it.meldeperiode.periode.fraOgMed }
+    }
+
+    override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
         TODO("Not yet implemented")
     }
 
