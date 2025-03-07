@@ -4,8 +4,9 @@ sqlInstances:
   tier: db-f1-micro
 ingress:
   url: https://tiltakspenger-meldekort-api.intern.dev.nav.no
-cluster: dev-gcp
-replicas: 1
+replicas:
+  min: 1
+  max: 2
 kafka-pool: "nav-dev"
 outboundExternalUrls:
   dokarkiv: dokarkiv-q2.dev-fss-pub.nais.io

@@ -1,0 +1,12 @@
+sqlInstances:
+  diskAutoresize: true
+  pointInTimeRecovery: true
+  tier: db-custom-1-3840
+ingress:
+  url: https://tiltakspenger-meldekort-api.intern.nav.no
+replicas:
+  min: 2
+  max: 4
+kafka-pool: "nav-prod"
+outboundExternalUrls:
+  dokarkiv: dokarkiv.prod-fss-pub.nais.io
