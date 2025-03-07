@@ -42,7 +42,7 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     ): Meldekort?
 
-    fun hentSisteMeldekort(
+    fun hentSisteMeldekortForBruker(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): Meldekort?

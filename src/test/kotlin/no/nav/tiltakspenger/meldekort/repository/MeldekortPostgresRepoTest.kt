@@ -97,7 +97,7 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
@@ -131,7 +131,7 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
@@ -165,7 +165,7 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
@@ -202,7 +202,7 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
@@ -239,7 +239,7 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekort(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 

@@ -53,7 +53,7 @@ class MeldekortRepoFake : MeldekortRepo {
         return data.get().values.find { it.meldeperiode.kjedeId == meldeperiodeKjedeId }
     }
 
-    override fun hentSisteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+    override fun hentSisteMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
         return data.get().values
             .filter { it.fnr == fnr && it.meldeperiode.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() }
             .maxByOrNull { it.meldeperiode.periode.fraOgMed }

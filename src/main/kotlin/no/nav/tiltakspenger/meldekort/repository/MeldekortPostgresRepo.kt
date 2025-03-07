@@ -167,10 +167,12 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentSisteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+    /** Henter siste meldekort som kan utfylles eller er utfylt av bruker */
+    override fun hentSisteMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
         return this.hentMeldekortForBruker(fnr, 1, sessionContext).firstOrNull()
     }
 
+    /** Henter neste meldekort som kan utfylles av bruker */
     override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
@@ -191,6 +193,7 @@ class MeldekortPostgresRepo(
         }
     }
 
+    /** Henter alle meldekort som kan utfylles eller er utfylt */
     override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
         return this.hentMeldekortForBruker(fnr, 100, sessionContext)
     }
