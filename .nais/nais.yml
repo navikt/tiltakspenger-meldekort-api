@@ -11,8 +11,10 @@ spec:
   image: {{ image }}
   port: 8080
   replicas:
-    min: {{ replicas }}
-    max: {{ replicas }}
+  {{#with replicas}}
+    min: {{ replicas.min }}
+    max: {{ replicas.max }}
+  {{/#with}}
   ingresses:
     - {{ ingress.url }}
   liveness:
@@ -56,9 +58,6 @@ spec:
       rules:
         - application: tiltakspenger-meldekort
         - application: tiltakspenger-saksbehandling-api
-        - application: tokenx-token-generator
-          namespace: aura
-          cluster: dev-gcp
   observability:
     autoInstrumentation:
       enabled: true
