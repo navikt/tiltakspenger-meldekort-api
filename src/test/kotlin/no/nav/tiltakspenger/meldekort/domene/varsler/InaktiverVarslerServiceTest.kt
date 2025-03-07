@@ -34,7 +34,7 @@ class InaktiverVarslerServiceTest {
         service.inaktiverVarslerForMottatteMeldekort()
 
         verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify { meldekortRepo.oppdater(meldekort.copy(varselId = null)) }
+        verify { meldekortRepo.oppdater(meldekort.copy(erVarselInaktivert = true)) }
     }
 
     @Test

@@ -77,6 +77,7 @@ internal fun start(
         listOf { correlationId ->
             applicationContext.sendMeldekortService.sendMeldekort(correlationId)
             applicationContext.journalførMeldekortService.journalførNyeMeldekort()
+            applicationContext.sendVarslerService.sendVarselForMeldekort()
             applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort()
         },
     )

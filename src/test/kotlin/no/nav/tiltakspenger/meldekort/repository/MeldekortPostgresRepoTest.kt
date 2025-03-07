@@ -251,6 +251,47 @@ class MeldekortPostgresRepoTest {
     }
 
     @Nested
+    inner class HentDeSomIkkeHarBlittVarsletFor {
+        @Test
+        fun `alle matcher kriteriene`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort1 = ObjectMother.meldekort(mottatt = null, varselId = null, erVarselInaktivert = false)
+                val meldekort2 = ObjectMother.meldekort(mottatt = null, varselId = null, erVarselInaktivert = false)
+
+                lagreMeldekort(helper, meldekort1, meldekort2)
+
+                val result = repo.hentDeSomIkkeHarBlittVarsletFor()
+
+                result.size shouldBe 2
+
+                result[0].id shouldBe meldekort1.id
+                result[1].id shouldBe meldekort2.id
+            }
+        }
+
+        @Test
+        fun `henter bare ut relevante meldekort`() {
+            withMigratedDb { helper ->
+                val meldekortRepo = helper.meldekortPostgresRepo
+                val meldekort1 = ObjectMother.meldekort(mottatt = null, varselId = null, erVarselInaktivert = false)
+                val meldekort2 = ObjectMother.meldekort(mottatt = null, varselId = VarselId("Varsel-meldekort2"), erVarselInaktivert = false)
+                val meldekort3 = ObjectMother.meldekort(mottatt = null, varselId = VarselId("Varsel-meldekort3"), erVarselInaktivert = true)
+                val meldekort4 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = VarselId("Varsel-meldekort4"), erVarselInaktivert = true)
+
+                lagreMeldekort(helper, meldekort1, meldekort2, meldekort3, meldekort4)
+
+                val result = meldekortRepo.hentDeSomIkkeHarBlittVarsletFor()
+
+                result.size shouldBe 2
+
+                result[0].id shouldBe meldekort1.id
+                result[1].id shouldBe meldekort2.id
+            }
+        }
+    }
+
+    @Nested
     inner class HentMottatteSomDetVarslesFor {
         @Test
         fun `alle matcher kriteriene`() {
@@ -276,10 +317,11 @@ class MeldekortPostgresRepoTest {
                 val meldekortRepo = helper.meldekortPostgresRepo
                 val meldekort1 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = VarselId("varsel1"))
                 val meldekort2 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = VarselId("varsel2"))
-                val meldekort3 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = null)
-                val meldekort4 = ObjectMother.meldekort(mottatt = null, varselId = VarselId("varsel4"))
+                val meldekort3 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = VarselId("varsel4"), erVarselInaktivert = true)
+                val meldekort4 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = null)
+                val meldekort5 = ObjectMother.meldekort(mottatt = null, varselId = VarselId("varsel4"))
 
-                lagreMeldekort(helper, meldekort1, meldekort2, meldekort3, meldekort4)
+                lagreMeldekort(helper, meldekort1, meldekort2, meldekort3, meldekort4, meldekort5)
 
                 val result = meldekortRepo.hentMottatteSomDetVarslesFor()
 

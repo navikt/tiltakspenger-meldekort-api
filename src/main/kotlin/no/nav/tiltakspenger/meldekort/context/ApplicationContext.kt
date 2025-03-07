@@ -21,6 +21,7 @@ import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalførMeldekortService
 import no.nav.tiltakspenger.meldekort.domene.varsler.InaktiverVarslerService
+import no.nav.tiltakspenger.meldekort.domene.varsler.SendVarslerService
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
@@ -73,7 +74,6 @@ open class ApplicationContext {
             meldeperiodeRepo = meldeperiodeRepo,
             meldekortRepo = meldekortService.meldekortRepo,
             sessionFactory = sessionFactory,
-            tmsVarselClient = tmsVarselClient,
         )
     }
 
@@ -101,6 +101,13 @@ open class ApplicationContext {
 
     open val inaktiverVarslerService: InaktiverVarslerService by lazy {
         InaktiverVarslerService(
+            meldekortRepo = meldekortRepo,
+            tmsVarselClient = tmsVarselClient,
+        )
+    }
+
+    open val sendVarslerService: SendVarslerService by lazy {
+        SendVarslerService(
             meldekortRepo = meldekortRepo,
             tmsVarselClient = tmsVarselClient,
         )
