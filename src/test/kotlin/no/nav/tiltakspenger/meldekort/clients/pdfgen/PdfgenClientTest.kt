@@ -1,7 +1,6 @@
 package no.nav.tiltakspenger.meldekort.clients.pdfgen
 
-import io.kotest.assertions.arrow.core.shouldBeLeft
-import io.kotest.assertions.arrow.core.shouldBeRight
+import arrow.core.left
 import io.kotest.matchers.shouldBe
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -11,6 +10,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.meldekort.clients.httpClientGeneric
+import no.nav.tiltakspenger.meldekort.domene.journalføring.KunneIkkeGenererePdf
 import no.nav.tiltakspenger.meldekort.domene.journalføring.PdfA
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
@@ -45,7 +45,7 @@ class PdfgenClientTest {
             val pdf = resp.getOrNull()?.pdf
 
             pdf?.toBase64() shouldBe PdfA(pdfContent).toBase64()
-            resp.shouldBeRight()
+            resp.getOrNull()!!
         }
 
         @Test
@@ -53,7 +53,7 @@ class PdfgenClientTest {
             val mockEngine = createMockEngine(ByteArray(0), HttpStatusCode.NotFound, ContentType.Application.Json)
             val pdfgenClient = createPdfgenClient(mockEngine)
 
-            pdfgenClient.genererPdf(ObjectMother.meldekort()).shouldBeLeft()
+            pdfgenClient.genererPdf(ObjectMother.meldekort()) shouldBe KunneIkkeGenererePdf.left()
         }
     }
 }
