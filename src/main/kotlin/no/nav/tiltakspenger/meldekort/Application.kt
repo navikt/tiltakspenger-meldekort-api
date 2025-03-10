@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
+import no.nav.tiltakspenger.meldekort.Configuration.applicationProfile
 import no.nav.tiltakspenger.meldekort.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.jobber.TaskExecutor
@@ -75,10 +76,13 @@ internal fun start(
         runCheckFactory = runCheckFactory,
         tasks =
         listOf { correlationId ->
-            applicationContext.sendMeldekortService.sendMeldekort(correlationId)
-            applicationContext.journalførMeldekortService.journalførNyeMeldekort()
-            applicationContext.sendVarslerService.sendVarselForMeldekort()
-            applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort()
+            // TODO: fjern før faktisk prodsetting
+            if (applicationProfile() != Profile.PROD) {
+                applicationContext.sendMeldekortService.sendMeldekort(correlationId)
+                applicationContext.journalførMeldekortService.journalførNyeMeldekort()
+                applicationContext.sendVarslerService.sendVarselForMeldekort()
+                applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort()
+            }
         },
     )
 
