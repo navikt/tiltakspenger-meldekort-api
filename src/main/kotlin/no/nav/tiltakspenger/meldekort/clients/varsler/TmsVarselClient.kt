@@ -4,6 +4,6 @@ import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 
 interface TmsVarselClient {
-    fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: String)
-    fun inaktiverVarsel(varselId: VarselId): Boolean
+    fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: VarselId)
+    fun inaktiverVarsel(varselId: VarselId)
 }

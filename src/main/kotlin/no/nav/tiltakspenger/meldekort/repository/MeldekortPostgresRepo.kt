@@ -313,15 +313,17 @@ class MeldekortPostgresRepo(
     override fun hentDeSomIkkeHarBlittVarsletFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
-                queryOf(
-                    //language=sql
+                sqlQuery(
                     """
-                    select * from meldekort_bruker
-                    where mottatt is null
-                    and varsel_inaktivert is false
+                    select * from meldekort_bruker mk
+                    join meldeperiode mp on mp.id = mk.meldeperiode_id
+                    where mp.til_og_med <= :maks_til_og_med
+                    and mk.mottatt is null
+                    and mk.varsel_inaktivert is false
                     limit :limit
-                    """.trimIndent(),
-                    mapOf("limit" to limit),
+                    """,
+                    "limit" to limit,
+                    "maks_til_og_med" to senesteTilOgMedDatoForInnsending(),
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }

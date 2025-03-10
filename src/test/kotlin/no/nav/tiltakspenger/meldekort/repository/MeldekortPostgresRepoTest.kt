@@ -256,8 +256,27 @@ class MeldekortPostgresRepoTest {
         fun `alle matcher kriteriene`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort1 = ObjectMother.meldekort(mottatt = null, varselId = null, erVarselInaktivert = false)
-                val meldekort2 = ObjectMother.meldekort(mottatt = null, varselId = null, erVarselInaktivert = false)
+
+                val førstePeriode = Periode(
+                    fraOgMed = LocalDate.of(2025, 1, 6),
+                    tilOgMed = LocalDate.of(2025, 1, 19),
+                )
+
+                val meldekort1 = ObjectMother.meldekort(
+                    mottatt = null,
+                    varselId = null,
+                    erVarselInaktivert = false,
+                    periode = førstePeriode,
+                )
+                val meldekort2 = ObjectMother.meldekort(
+                    mottatt = null,
+                    varselId = null,
+                    erVarselInaktivert = false,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
+                    ),
+                )
 
                 lagreMeldekort(helper, meldekort1, meldekort2)
 
@@ -274,10 +293,45 @@ class MeldekortPostgresRepoTest {
         fun `henter bare ut relevante meldekort`() {
             withMigratedDb { helper ->
                 val meldekortRepo = helper.meldekortPostgresRepo
-                val meldekort1 = ObjectMother.meldekort(mottatt = null, varselId = null, erVarselInaktivert = false)
-                val meldekort2 = ObjectMother.meldekort(mottatt = null, varselId = VarselId("Varsel-meldekort2"), erVarselInaktivert = false)
-                val meldekort3 = ObjectMother.meldekort(mottatt = null, varselId = VarselId("Varsel-meldekort3"), erVarselInaktivert = true)
-                val meldekort4 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = VarselId("Varsel-meldekort4"), erVarselInaktivert = true)
+
+                val førstePeriode = Periode(
+                    fraOgMed = LocalDate.of(2025, 1, 6),
+                    tilOgMed = LocalDate.of(2025, 1, 19),
+                )
+
+                val meldekort1 = ObjectMother.meldekort(
+                    mottatt = null,
+                    varselId = null,
+                    erVarselInaktivert = false,
+                    periode = førstePeriode,
+                )
+                val meldekort2 = ObjectMother.meldekort(
+                    mottatt = null,
+                    varselId = VarselId("Varsel-meldekort2"),
+                    erVarselInaktivert = false,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
+                    ),
+                )
+                val meldekort3 = ObjectMother.meldekort(
+                    mottatt = null,
+                    varselId = VarselId("Varsel-meldekort3"),
+                    erVarselInaktivert = true,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(4),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(4),
+                    ),
+                )
+                val meldekort4 = ObjectMother.meldekort(
+                    mottatt = LocalDateTime.now(),
+                    varselId = VarselId("Varsel-meldekort4"),
+                    erVarselInaktivert = true,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(6),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(6),
+                    ),
+                )
 
                 lagreMeldekort(helper, meldekort1, meldekort2, meldekort3, meldekort4)
 
@@ -317,7 +371,11 @@ class MeldekortPostgresRepoTest {
                 val meldekortRepo = helper.meldekortPostgresRepo
                 val meldekort1 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = VarselId("varsel1"))
                 val meldekort2 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = VarselId("varsel2"))
-                val meldekort3 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = VarselId("varsel4"), erVarselInaktivert = true)
+                val meldekort3 = ObjectMother.meldekort(
+                    mottatt = LocalDateTime.now(),
+                    varselId = VarselId("varsel4"),
+                    erVarselInaktivert = true,
+                )
                 val meldekort4 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = null)
                 val meldekort5 = ObjectMother.meldekort(mottatt = null, varselId = VarselId("varsel4"))
 

@@ -14,17 +14,18 @@ class InaktiverVarslerService(
     fun inaktiverVarslerForMottatteMeldekort() {
         Either.catch {
             val mottatteMeldekort = meldekortRepo.hentMottatteSomDetVarslesFor()
-            log.info { "Fant ${mottatteMeldekort.size} mottatte meldekort som det varsles for" }
+            log.debug { "Fant ${mottatteMeldekort.size} mottatte meldekort som det varsles for" }
 
             mottatteMeldekort.forEach { meldekort ->
                 meldekort.varselId?.let { varselId ->
                     log.info { "Inaktiverer varsel for meldekort med id ${meldekort.id} varselId=$varselId" }
-                    val inaktivert = tmsVarselClient.inaktiverVarsel(varselId)
-                    if (!inaktivert) {
-                        log.error { "Kunne ikke inaktivere varsel for meldekort med id ${meldekort.id} varselId=$varselId, prøver igjen neste jobbkjøring" }
-                    } else {
-                        log.info { "Varsel inaktivert for meldekort med id ${meldekort.id} varselId=$varselId" }
+
+                    Either.catch {
+                        tmsVarselClient.inaktiverVarsel(varselId)
                         meldekortRepo.oppdater(meldekort.copy(erVarselInaktivert = true))
+                        log.info { "Varsel inaktivert for meldekort med id ${meldekort.id} varselId=$varselId" }
+                    }.onLeft {
+                        log.error(it) { "Kunne ikke inaktivere varsel for meldekort med id ${meldekort.id} varselId=$varselId, prøver igjen neste jobbkjøring" }
                     }
                 }
             }

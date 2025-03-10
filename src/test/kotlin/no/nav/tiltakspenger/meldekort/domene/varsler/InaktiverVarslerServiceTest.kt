@@ -29,7 +29,6 @@ class InaktiverVarslerServiceTest {
         val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
 
         every { meldekortRepo.hentMottatteSomDetVarslesFor() } returns listOf(meldekort)
-        every { tmsVarselClient.inaktiverVarsel(varselId) } returns true
 
         service.inaktiverVarslerForMottatteMeldekort()
 
@@ -43,7 +42,6 @@ class InaktiverVarslerServiceTest {
         val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
 
         every { meldekortRepo.hentMottatteSomDetVarslesFor() } returns listOf(meldekort)
-        every { tmsVarselClient.inaktiverVarsel(varselId) } returns false
 
         service.inaktiverVarslerForMottatteMeldekort()
 

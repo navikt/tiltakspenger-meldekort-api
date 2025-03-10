@@ -5,7 +5,6 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
-import java.util.UUID
 
 class SendVarslerService(
     private val meldekortRepo: MeldekortRepo,
@@ -15,14 +14,19 @@ class SendVarslerService(
 
     fun sendVarselForMeldekort() {
         Either.catch {
-            val meldkortUtenVarsel = meldekortRepo.hentDeSomIkkeHarBlittVarsletFor()
-            log.info { "Fant ${meldkortUtenVarsel.size} meldekort det skal opprettes varsler for" }
+            val meldekortUtenVarsel = meldekortRepo.hentDeSomIkkeHarBlittVarsletFor()
+            log.debug { "Fant ${meldekortUtenVarsel.size} meldekort det skal opprettes varsler for" }
 
-            meldkortUtenVarsel.forEach { meldekort ->
-                val varselId = UUID.randomUUID().toString()
+            meldekortUtenVarsel.forEach { meldekort ->
+                val varselId = VarselId.random()
                 log.info { "Oppretter varsel $varselId for meldekort ${meldekort.id}" }
-                meldekortRepo.oppdater(meldekort.copy(varselId = VarselId(varselId)))
-                tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId = varselId)
+
+                Either.catch {
+                    tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId = varselId)
+                    meldekortRepo.oppdater(meldekort.copy(varselId = varselId))
+                }.onLeft {
+                    log.error(it) { "Feil under sending av varsel for meldekort ${meldekort.id} / varsel id $varselId" }
+                }
             }
         }.onLeft {
             log.error(it) { "Ukjent feil skjedde under opprettelse av varsler for meldekort" }
