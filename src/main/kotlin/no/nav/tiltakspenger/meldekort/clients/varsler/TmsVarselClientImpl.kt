@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.kafka.Producer
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
+import no.nav.tms.varsel.action.EksternKanal
 import no.nav.tms.varsel.action.Sensitivitet
 import no.nav.tms.varsel.action.Tekst
 import no.nav.tms.varsel.action.Varseltype
@@ -44,6 +45,9 @@ class TmsVarselClientImpl(
             this.ident = meldekort.fnr.verdi
             this.sensitivitet = Sensitivitet.Substantial
             this.link = meldekortFrontendUrl
+            this.eksternVarsling {
+                preferertKanal = EksternKanal.SMS
+            }
             this.tekster += Tekst(
                 spraakkode = "nb",
                 default = true,
