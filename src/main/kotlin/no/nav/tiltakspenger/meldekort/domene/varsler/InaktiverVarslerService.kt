@@ -19,12 +19,13 @@ class InaktiverVarslerService(
             mottatteMeldekort.forEach { meldekort ->
                 meldekort.varselId?.let { varselId ->
                     log.info { "Inaktiverer varsel for meldekort med id ${meldekort.id} varselId=$varselId" }
-                    val inaktivert = tmsVarselClient.inaktiverVarsel(varselId)
-                    if (!inaktivert) {
-                        log.error { "Kunne ikke inaktivere varsel for meldekort med id ${meldekort.id} varselId=$varselId, prøver igjen neste jobbkjøring" }
-                    } else {
+
+                    Either.catch {
+                        tmsVarselClient.inaktiverVarsel(varselId)
+                        meldekortRepo.oppdater(meldekort.copy(erVarselInaktivert = true))
                         log.info { "Varsel inaktivert for meldekort med id ${meldekort.id} varselId=$varselId" }
-                        meldekortRepo.oppdater(meldekort.copy(varselId = null))
+                    }.onLeft {
+                        log.error(it) { "Kunne ikke inaktivere varsel for meldekort med id ${meldekort.id} varselId=$varselId, prøver igjen neste jobbkjøring" }
                     }
                 }
             }

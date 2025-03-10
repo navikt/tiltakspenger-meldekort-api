@@ -7,12 +7,11 @@ import no.nav.tiltakspenger.meldekort.domene.VarselId
 class TmsVarselClientFake : TmsVarselClient {
     private val logger = KotlinLogging.logger {}
 
-    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: String) {
+    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: VarselId) {
         logger.info { "Sender (ikke) event $varselId for meldekort ${meldekort.id}" }
     }
 
-    override fun inaktiverVarsel(varselId: VarselId): Boolean {
+    override fun inaktiverVarsel(varselId: VarselId) {
         logger.info { "Inaktiverer (ikke) varsel $varselId" }
-        return true
     }
 }

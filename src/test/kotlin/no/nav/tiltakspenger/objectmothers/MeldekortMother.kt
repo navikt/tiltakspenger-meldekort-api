@@ -21,6 +21,7 @@ interface MeldekortMother {
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         varselId: VarselId? = null,
         fnr: Fnr = Fnr.fromString(TEXAS_FAKE_FNR),
+        erVarselInaktivert: Boolean = false,
     ): Meldekort {
         val meldeperiode = ObjectMother.meldeperiode(periode = periode, saksnummer = saksnummer, fnr = fnr)
 
@@ -38,6 +39,7 @@ interface MeldekortMother {
             journalpostId = null,
             journalføringstidspunkt = null,
             varselId = varselId,
+            erVarselInaktivert = erVarselInaktivert,
         )
     }
 }

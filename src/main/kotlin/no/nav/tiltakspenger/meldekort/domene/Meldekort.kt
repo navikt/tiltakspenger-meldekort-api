@@ -27,6 +27,7 @@ data class Meldekort(
     val journalpostId: JournalpostId?,
     val journalføringstidspunkt: LocalDateTime?,
     val varselId: VarselId? = null,
+    val erVarselInaktivert: Boolean = false,
 ) {
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
@@ -58,6 +59,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         journalpostId = null,
         journalføringstidspunkt = null,
         varselId = null,
+        erVarselInaktivert = false,
     )
 }
 

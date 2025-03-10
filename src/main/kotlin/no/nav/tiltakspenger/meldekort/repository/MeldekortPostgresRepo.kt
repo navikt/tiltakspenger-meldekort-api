@@ -38,7 +38,8 @@ class MeldekortPostgresRepo(
                         dager,
                         journalpost_id,
                         journalføringstidspunkt,
-                        varsel_id
+                        varsel_id,
+                        varsel_inaktivert
                     ) values (
                         :id,
                         :meldeperiode_id,
@@ -47,7 +48,8 @@ class MeldekortPostgresRepo(
                         to_jsonb(:dager::jsonb),
                         :journalpost_id,
                         :tidspunkt,
-                        :varsel_id
+                        :varsel_id,
+                        :erVarselInaktivert
                     )
                 """,
                     "id" to meldekort.id.toString(),
@@ -58,6 +60,7 @@ class MeldekortPostgresRepo(
                     "journalpost_id" to meldekort.journalpostId?.toString(),
                     "tidspunkt" to meldekort.journalføringstidspunkt,
                     "varsel_id" to meldekort.varselId?.toString(),
+                    "erVarselInaktivert" to meldekort.erVarselInaktivert,
                 ).asUpdate,
             )
         }
@@ -87,11 +90,13 @@ class MeldekortPostgresRepo(
                 sqlQuery(
                     """
                     update meldekort_bruker set 
-                        varsel_id = :varsel_id
+                        varsel_id = :varsel_id,
+                        varsel_inaktivert = :varsel_inaktivert
                     where id = :id
                 """,
                     "id" to meldekort.id.toString(),
                     "varsel_id" to meldekort.varselId?.toString(),
+                    "varsel_inaktivert" to meldekort.erVarselInaktivert,
                 ).asUpdate,
             )
         }
@@ -305,6 +310,24 @@ class MeldekortPostgresRepo(
             )
         }
 
+    override fun hentDeSomIkkeHarBlittVarsletFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    select * from meldekort_bruker mk
+                    join meldeperiode mp on mp.id = mk.meldeperiode_id
+                    where mp.til_og_med <= :maks_til_og_med
+                    and mk.mottatt is null
+                    and mk.varsel_inaktivert is false
+                    limit :limit
+                    """,
+                    "limit" to limit,
+                    "maks_til_og_med" to senesteTilOgMedDatoForInnsending(),
+                ).map { row -> fromRow(row, session) }.asList,
+            )
+        }
+    }
     override fun hentMottatteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
@@ -314,6 +337,7 @@ class MeldekortPostgresRepo(
                     select * from meldekort_bruker
                     where mottatt is not null 
                     and varsel_id is not null
+                    and varsel_inaktivert is false
                     limit :limit
                     """.trimIndent(),
                     mapOf("limit" to limit),
@@ -343,6 +367,7 @@ class MeldekortPostgresRepo(
                 journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
                 journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
                 varselId = row.stringOrNull("varsel_id")?.let { VarselId(it) },
+                erVarselInaktivert = row.boolean("varsel_inaktivert"),
             )
         }
     }
