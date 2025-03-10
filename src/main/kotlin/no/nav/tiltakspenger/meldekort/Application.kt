@@ -76,7 +76,7 @@ internal fun start(
         runCheckFactory = runCheckFactory,
         tasks =
         listOf { correlationId ->
-            // TODO: fjern før faktisk prodsetting
+            // TODO: fjern før faktisk prodsetting. Ikke enable før vi har sørget for at den forrige brukeren vår ikke spammes med gamle meldekort! :D
             if (applicationProfile() != Profile.PROD) {
                 applicationContext.sendMeldekortService.sendMeldekort(correlationId)
                 applicationContext.journalførMeldekortService.journalførNyeMeldekort()
