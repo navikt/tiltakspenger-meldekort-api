@@ -19,8 +19,8 @@ import kotlin.time.toJavaDuration
 class SaksbehandlingClientImpl(
     baseUrl: String,
     val getToken: suspend () -> AccessToken,
-    connectTimeout: Duration = 1.seconds,
-    private val timeout: Duration = 1.seconds,
+    connectTimeout: Duration = 10.seconds,
+    private val timeout: Duration = 10.seconds,
 ) : SaksbehandlingClient {
 
     private val saksbehandlingApiMeldekortUri = URI.create("$baseUrl/meldekort/motta")
