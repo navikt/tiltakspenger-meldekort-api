@@ -120,8 +120,8 @@ class MeldekortPostgresRepo(
     }
 
     /** TODO jah: Denne må returnere en liste dersom vi støtter flere innsender på samme meldeperiode */
-    override fun hentMeldekortForMeldeperiodeKjedeId(
-        meldeperiodeKjedeId: MeldeperiodeKjedeId,
+    override fun hentMeldekortForKjedeId(
+        kjedeId: MeldeperiodeKjedeId,
         sessionContext: SessionContext?,
     ): Meldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -134,7 +134,7 @@ class MeldekortPostgresRepo(
                     join meldeperiode mp on mk.meldeperiode_id = mp.id
                     where mp.kjede_id = :kjede_id
                     """,
-                    "kjede_id" to meldeperiodeKjedeId.verdi,
+                    "kjede_id" to kjedeId.verdi,
                 ).map { row ->
                     fromRow(row, session)
                 }.asSingle,

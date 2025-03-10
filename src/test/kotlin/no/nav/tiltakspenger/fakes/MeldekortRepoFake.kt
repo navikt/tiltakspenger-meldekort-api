@@ -46,11 +46,11 @@ class MeldekortRepoFake : MeldekortRepo {
         return data.get().values.find { it.meldeperiode.id == meldeperiodeId }
     }
 
-    override fun hentMeldekortForMeldeperiodeKjedeId(
-        meldeperiodeKjedeId: MeldeperiodeKjedeId,
+    override fun hentMeldekortForKjedeId(
+        kjedeId: MeldeperiodeKjedeId,
         sessionContext: SessionContext?,
     ): Meldekort? {
-        return data.get().values.find { it.meldeperiode.kjedeId == meldeperiodeKjedeId }
+        return data.get().values.find { it.meldeperiode.kjedeId == kjedeId }
     }
 
     override fun hentSisteMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
