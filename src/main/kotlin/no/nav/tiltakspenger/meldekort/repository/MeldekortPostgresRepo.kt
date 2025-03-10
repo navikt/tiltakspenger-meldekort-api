@@ -319,6 +319,7 @@ class MeldekortPostgresRepo(
                     join meldeperiode mp on mp.id = mk.meldeperiode_id
                     where mp.til_og_med <= :maks_til_og_med
                     and mk.mottatt is null
+                    and mk.varsel_id is null
                     and mk.varsel_inaktivert is false
                     limit :limit
                     """,
