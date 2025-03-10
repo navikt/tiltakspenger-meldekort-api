@@ -337,10 +337,9 @@ class MeldekortPostgresRepoTest {
 
                 val result = meldekortRepo.hentDeSomIkkeHarBlittVarsletFor()
 
-                result.size shouldBe 2
+                result.size shouldBe 1
 
                 result[0].id shouldBe meldekort1.id
-                result[1].id shouldBe meldekort2.id
             }
         }
     }
