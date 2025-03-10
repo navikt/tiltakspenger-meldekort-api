@@ -46,7 +46,7 @@ fun MeldeperiodeDTO.tilMeldeperiode(): Either<UgyldigMeldeperiode, Meldeperiode>
     return Either.catch {
         Meldeperiode(
             id = MeldeperiodeId.fromString(this.id),
-            kjedeId = MeldeperiodeKjedeId(this.meldeperiodeKjedeId),
+            kjedeId = MeldeperiodeKjedeId(this.kjedeId),
             versjon = this.versjon,
             sakId = SakId.fromString(this.sakId),
             saksnummer = this.saksnummer,

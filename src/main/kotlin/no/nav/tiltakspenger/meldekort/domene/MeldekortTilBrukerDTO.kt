@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 data class MeldekortTilBrukerDTO(
     val id: String,
     val meldeperiodeId: String,
-    val meldeperiodeKjedeId: String,
+    val kjedeId: String,
     val versjon: Int,
     val fraOgMed: LocalDate,
     val tilOgMed: LocalDate,
@@ -26,7 +26,7 @@ fun Meldekort.tilBrukerDTO(): MeldekortTilBrukerDTO {
     return MeldekortTilBrukerDTO(
         id = this.id.toString(),
         meldeperiodeId = this.meldeperiode.id.toString(),
-        meldeperiodeKjedeId = this.meldeperiode.kjedeId.toString(),
+        kjedeId = this.meldeperiode.kjedeId.toString(),
         versjon = this.meldeperiode.versjon,
         fraOgMed = this.periode.fraOgMed,
         tilOgMed = this.periode.tilOgMed,
