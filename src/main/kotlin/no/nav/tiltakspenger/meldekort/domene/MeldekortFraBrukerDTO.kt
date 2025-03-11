@@ -40,7 +40,7 @@ data class MeldekortDagFraBruker(
 }
 
 fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
-    require(!meldeperiode.periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())) {
+    require(!periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())) {
         "Meldekortet er ikke klart for innsending fra bruker"
     }
 

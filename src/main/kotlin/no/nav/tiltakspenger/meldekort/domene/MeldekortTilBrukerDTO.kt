@@ -14,6 +14,7 @@ data class MeldekortTilBrukerDTO(
     val maksAntallDager: Int,
     val innsendt: LocalDateTime?,
     val dager: List<MeldekortDagTilBruker>,
+    val kanSendes: Boolean,
 )
 
 data class MeldekortDagTilBruker(
@@ -24,21 +25,22 @@ data class MeldekortDagTilBruker(
 
 fun Meldekort.tilBrukerDTO(): MeldekortTilBrukerDTO {
     return MeldekortTilBrukerDTO(
-        id = this.id.toString(),
-        meldeperiodeId = this.meldeperiode.id.toString(),
-        kjedeId = this.meldeperiode.kjedeId.toString(),
-        versjon = this.meldeperiode.versjon,
-        fraOgMed = this.periode.fraOgMed,
-        tilOgMed = this.periode.tilOgMed,
-        status = this.status,
-        maksAntallDager = this.meldeperiode.maksAntallDagerForPeriode,
-        innsendt = this.mottatt,
-        dager = this.dager.map { dag ->
+        id = id.toString(),
+        meldeperiodeId = meldeperiode.id.toString(),
+        kjedeId = meldeperiode.kjedeId.toString(),
+        versjon = meldeperiode.versjon,
+        fraOgMed = periode.fraOgMed,
+        tilOgMed = periode.tilOgMed,
+        status = status,
+        maksAntallDager = meldeperiode.maksAntallDagerForPeriode,
+        innsendt = mottatt,
+        dager = dager.map { dag ->
             MeldekortDagTilBruker(
                 dag = dag.dag,
                 harRett = meldeperiode.girRett[dag.dag] == true,
                 status = dag.status,
             )
         },
+        kanSendes = this.kanSendes(),
     )
 }

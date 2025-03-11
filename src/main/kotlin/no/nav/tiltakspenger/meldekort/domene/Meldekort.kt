@@ -42,6 +42,8 @@ data class Meldekort(
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden (id=$id)" }
         require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett (id=$id)" }
     }
+
+    fun kanSendes() = !periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())
 }
 
 fun Meldeperiode.tilTomtMeldekort(): Meldekort {
