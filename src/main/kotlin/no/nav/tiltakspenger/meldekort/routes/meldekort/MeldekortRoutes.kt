@@ -52,14 +52,19 @@ internal fun Route.meldekortRoutes(
 
             meldeperiodeService.lagreFraSaksbehandling(meldeperiodeDto).onLeft {
                 when (it) {
+                    FeilVedMottakAvMeldeperiode.MeldeperiodeFinnesUtenDiff -> call.respond(
+                        message = "Meldeperioden var allerede lagret med samme data",
+                        status = HttpStatusCode.OK,
+                    )
+
+                    FeilVedMottakAvMeldeperiode.MeldeperiodeFinnesMedDiff -> call.respond(
+                        message = "Meldeperioden var allerede lagret med andre data",
+                        status = HttpStatusCode.Conflict,
+                    )
+
                     FeilVedMottakAvMeldeperiode.UgyldigMeldeperiode -> call.respond(
                         message = "Ugyldig meldeperiode",
                         status = HttpStatusCode.BadRequest,
-                    )
-
-                    FeilVedMottakAvMeldeperiode.MeldeperiodeFinnes -> call.respond(
-                        message = "Meldeperioden finnes allerede",
-                        status = HttpStatusCode.Conflict,
                     )
 
                     FeilVedMottakAvMeldeperiode.LagringFeilet -> call.respond(

@@ -74,20 +74,6 @@ class DokarkivClientTest {
         }
 
         @Test
-        fun `skal ikke ferdigstille uten saksnummer, men blir opprettet - returnerer journalpostid`() = runTest {
-            val dokarkivClient = createDokarkivClient(svarIkkeFerdigstilt, HttpStatusCode.Created)
-            val meldekort = ObjectMother.meldekort(saksnummer = null)
-
-            val resp = dokarkivClient.journalførMeldekort(
-                request = meldekort.toJournalpostDokument(pdfOgJson = PdfOgJson(PdfA("pdf".toByteArray()), meldekort.toBrevMeldekortDTO())),
-                meldekort = meldekort,
-                callId = CorrelationId.generate(),
-            )
-
-            resp.toString() shouldBe journalpostId
-        }
-
-        @Test
         fun `ved 409 Conflict returneres journalPostId`() = runTest {
             val dokarkivClient = createDokarkivClient(svarIkkeFerdigstilt, HttpStatusCode.Conflict)
             val meldekort = ObjectMother.meldekort()

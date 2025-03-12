@@ -17,7 +17,7 @@ interface MeldekortMother {
     fun meldekort(
         periode: Periode = ObjectMother.periode(),
         mottatt: LocalDateTime? = nå(),
-        saksnummer: String? = Math.random().toString(),
+        saksnummer: String = Math.random().toString(),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         varselId: VarselId? = null,
         fnr: Fnr = Fnr.fromString(TEXAS_FAKE_FNR),

@@ -25,7 +25,7 @@ data class Meldeperiode(
     val kjedeId: MeldeperiodeKjedeId,
     val versjon: Int,
     val sakId: SakId,
-    val saksnummer: String?,
+    val saksnummer: String,
     val fnr: Fnr,
     val periode: Periode,
     val opprettet: LocalDateTime,

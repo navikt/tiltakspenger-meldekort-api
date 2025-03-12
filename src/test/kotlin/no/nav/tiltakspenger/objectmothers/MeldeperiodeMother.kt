@@ -7,26 +7,62 @@ import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 interface MeldeperiodeMother {
     fun meldeperiode(
+        id: MeldeperiodeId = MeldeperiodeId.random(),
         periode: Periode = ObjectMother.periode(),
-        saksnummer: String? = Math.random().toString(),
+        saksnummer: String = Math.random().toString(),
+        sakId: SakId = SakId.random(),
         fnr: Fnr = Fnr.fromString(TEXAS_FAKE_FNR),
+        versjon: Int = 1,
+        opprettet: LocalDateTime = nå(),
+        girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
     ): Meldeperiode {
         return Meldeperiode(
-            id = MeldeperiodeId.random(),
-            kjedeId = MeldeperiodeKjedeId.fraPeriode(periode),
-            versjon = 1,
-            sakId = SakId.random(),
-            saksnummer = saksnummer,
-            fnr = fnr,
+            id = id,
             periode = periode,
-            opprettet = nå(),
+            saksnummer = saksnummer,
+            sakId = sakId,
+            fnr = fnr,
+            kjedeId = MeldeperiodeKjedeId.fraPeriode(periode),
+            versjon = versjon,
+            opprettet = opprettet,
             maksAntallDagerForPeriode = periode.antallDager.toInt(),
-            girRett = periode.tilDager().associateWith { value -> listOf(value.dayOfWeek).none { it == DayOfWeek.SATURDAY || it == DayOfWeek.SUNDAY } },
+            girRett = girRett,
         )
     }
+
+    fun meldeperiodeDto(
+        id: String = MeldeperiodeId.random().toString(),
+        periode: Periode = ObjectMother.periode(),
+        saksnummer: String = Math.random().toString(),
+        sakId: String = SakId.random().toString(),
+        fnr: String = TEXAS_FAKE_FNR,
+        versjon: Int = 1,
+        opprettet: LocalDateTime = nå(),
+        girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
+    ): MeldeperiodeDTO {
+        return MeldeperiodeDTO(
+            id = id,
+            kjedeId = MeldeperiodeKjedeId.fraPeriode(periode).toString(),
+            saksnummer = saksnummer,
+            sakId = sakId,
+            fnr = fnr,
+            versjon = versjon,
+            opprettet = opprettet,
+            girRett = girRett,
+            fraOgMed = periode.fraOgMed,
+            tilOgMed = periode.tilOgMed,
+            antallDagerForPeriode = periode.antallDager.toInt(),
+        )
+    }
+
+    private fun Periode.tilGirRett(): Map<LocalDate, Boolean> = tilDager()
+        .associateWith { value -> listOf(value.dayOfWeek).none { it == DayOfWeek.SATURDAY || it == DayOfWeek.SUNDAY } }
 }

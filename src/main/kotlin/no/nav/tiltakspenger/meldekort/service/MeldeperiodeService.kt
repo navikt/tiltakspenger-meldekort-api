@@ -27,8 +27,13 @@ class MeldeperiodeService(
         }
 
         meldeperiodeRepo.hentForId(meldeperiode.id)?.also {
-            logger.error { "Meldeperioden ${it.id} finnes allerede" }
-            return FeilVedMottakAvMeldeperiode.MeldeperiodeFinnes.left()
+            if (it == meldeperiode) {
+                logger.info { "Meldeperioden ${it.id} finnes allerede" }
+                return FeilVedMottakAvMeldeperiode.MeldeperiodeFinnesUtenDiff.left()
+            }
+
+            logger.error { "Meldeperioden ${it.id} finnes allerede med andre data!" }
+            return FeilVedMottakAvMeldeperiode.MeldeperiodeFinnesMedDiff.left()
         }
 
         val meldekort = if (meldeperiode.harRettIPerioden) meldeperiode.tilTomtMeldekort() else null
@@ -55,6 +60,7 @@ class MeldeperiodeService(
 
 sealed interface FeilVedMottakAvMeldeperiode {
     data object UgyldigMeldeperiode : FeilVedMottakAvMeldeperiode
-    data object MeldeperiodeFinnes : FeilVedMottakAvMeldeperiode
+    data object MeldeperiodeFinnesUtenDiff : FeilVedMottakAvMeldeperiode
+    data object MeldeperiodeFinnesMedDiff : FeilVedMottakAvMeldeperiode
     data object LagringFeilet : FeilVedMottakAvMeldeperiode
 }

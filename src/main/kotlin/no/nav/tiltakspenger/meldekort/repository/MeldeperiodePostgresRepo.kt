@@ -122,7 +122,7 @@ internal class MeldeperiodePostgresRepo(
                 ),
                 maksAntallDagerForPeriode = row.int("maks_antall_dager_for_periode"),
                 girRett = row.string("gir_rett").fromDbJsonToGirRett(),
-                saksnummer = row.stringOrNull("saksnummer"),
+                saksnummer = row.string("saksnummer"),
             )
         }
 
