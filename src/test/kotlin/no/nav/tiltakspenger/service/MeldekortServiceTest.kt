@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.service
 
-import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -30,6 +30,8 @@ class MeldekortServiceTest {
         return meldekort
     }
 
+    private val gyldigPeriode = ObjectMother.periode(LocalDate.of(2025, 1, 1))
+
     private fun lagMeldekortFraBrukerKommando(meldekort: Meldekort, fnr: Fnr = meldekort.fnr): LagreMeldekortFraBrukerKommando {
         return LagreMeldekortFraBrukerKommando(
             id = meldekort.id,
@@ -50,7 +52,7 @@ class MeldekortServiceTest {
         val meldekortRepo = tac.meldekortRepo
         val meldekortService = tac.meldekortService
 
-        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.of(2025, 1, 1)))
+        val meldekort = lagMeldekort(tac, gyldigPeriode)
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
         meldekortService.lagreMeldekortFraBruker(lagreKommando)
@@ -70,7 +72,7 @@ class MeldekortServiceTest {
         val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now()))
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-        shouldThrow<IllegalArgumentException> {
+        shouldThrowWithMessage<IllegalArgumentException>("Meldekortet er ikke klart for innsending fra bruker") {
             meldekortService.lagreMeldekortFraBruker(lagreKommando)
         }
     }
@@ -80,10 +82,10 @@ class MeldekortServiceTest {
         val tac = TestApplicationContext()
         val meldekortService = tac.meldekortService
 
-        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now()))
-        val lagreKommando = lagMeldekortFraBrukerKommando(meldekort, fnr = Fnr.fromString("12345678901"))
+        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.of(2025, 1, 1)))
+        val lagreKommando = lagMeldekortFraBrukerKommando(meldekort, fnr = Fnr.fromString("11111111111"))
 
-        shouldThrow<IllegalArgumentException> {
+        shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} finnes ikke for bruker 11111111111") {
             meldekortService.lagreMeldekortFraBruker(lagreKommando)
         }
     }
@@ -96,7 +98,7 @@ class MeldekortServiceTest {
         val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now()), nå())
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-        shouldThrow<IllegalArgumentException> {
+        shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt") {
             meldekortService.lagreMeldekortFraBruker(lagreKommando)
         }
     }

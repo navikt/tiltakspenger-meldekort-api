@@ -4,7 +4,7 @@ import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TokenIntrospectionResponse
 
-const val TEXAS_FAKE_FNR = "12345678901"
+const val TEXAS_FAKE_FNR = "12345678911"
 
 class TexasFake : TexasHttpClient {
     override suspend fun introspectToken(accessToken: String, identityProvider: String): TokenIntrospectionResponse {
