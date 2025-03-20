@@ -76,7 +76,7 @@ class TexasHttpClientImpl(
             val jsonResponse = httpResponse.body()
             val status = httpResponse.statusCode()
             if (status != 200) {
-                sikkerlogg.error("Fikk ikke validert token. Status: $status. jsonResponse: $jsonResponse. uri: $uri.")
+                sikkerlogg.error { "Fikk ikke validert token. Status: $status. jsonResponse: $jsonResponse. uri: $uri." }
                 throw RuntimeException("Fikk ikke validert token. Status: $status. uri: $uri. Se sikkerlogg for detaljer.")
             }
             Either.catch {
@@ -113,20 +113,20 @@ class TexasHttpClientImpl(
                 val tokenResponseError = try {
                     deserialize<TokenResponse.Error>(jsonResponse)
                 } catch (e: Exception) {
-                    sikkerlogg.error("Kunne ikke parse error JSON: $jsonResponse")
+                    sikkerlogg.error { "Kunne ikke parse error JSON: $jsonResponse" }
 
                     TokenResponse.Error(
                         error = "Kunne ikke parse feil-response",
                         errorDescription = e.toString(),
                     )
                 }
-                sikkerlogg.error(
+                sikkerlogg.error {
                     """ 
                     Fikk ikke hentet systemtoken. Status: $status.
                     error: ${tokenResponseError.error}
                     errordescription: ${tokenResponseError.errorDescription} . uri: $uri 
-                """,
-                )
+                """
+                }
                 throw RuntimeException("Fikk ikke hentet systemtoken. Status: $status. uri: $uri. Se sikkerlogg for detaljer.")
             }
             Either.catch {

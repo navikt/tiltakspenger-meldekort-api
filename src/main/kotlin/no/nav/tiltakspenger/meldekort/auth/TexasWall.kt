@@ -1,12 +1,12 @@
 package no.nav.tiltakspenger.meldekort.auth
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.PipelineCall
 import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.response.respond
 import io.ktor.util.AttributeKey
-import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.clients.TokenIntrospectionResponse

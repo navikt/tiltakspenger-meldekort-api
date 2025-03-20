@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.start
 

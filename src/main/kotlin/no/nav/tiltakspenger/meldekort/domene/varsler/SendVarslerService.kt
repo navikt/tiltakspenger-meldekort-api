@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.domene.varsler
 
 import arrow.core.Either
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo

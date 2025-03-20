@@ -1,9 +1,9 @@
 package no.nav.tiltakspenger.db
 
 import com.zaxxer.hikari.HikariDataSource
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.util.date.getTimeMillis
 import kotliquery.sessionOf
-import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.output.MigrateResult

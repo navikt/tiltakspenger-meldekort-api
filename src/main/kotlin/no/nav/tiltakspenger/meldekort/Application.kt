@@ -2,12 +2,12 @@ package no.nav.tiltakspenger.meldekort
 
 import arrow.core.Either
 import arrow.core.right
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.AttributeKey
-import mu.KLogger
-import mu.KotlinLogging
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
