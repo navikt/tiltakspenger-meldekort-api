@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.service
 
 import arrow.core.Either
 import arrow.core.getOrElse
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient

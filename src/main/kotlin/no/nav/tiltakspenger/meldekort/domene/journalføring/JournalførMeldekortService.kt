@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.domene.journalføring
 
 import arrow.core.Either
 import arrow.core.getOrElse
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.logging.sikkerlogg

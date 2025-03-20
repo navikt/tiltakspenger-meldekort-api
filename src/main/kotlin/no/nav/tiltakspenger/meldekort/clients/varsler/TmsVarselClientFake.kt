@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.clients.varsler
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 
