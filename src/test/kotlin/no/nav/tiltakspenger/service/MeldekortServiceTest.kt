@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
@@ -35,7 +36,7 @@ class MeldekortServiceTest {
     private fun lagMeldekortFraBrukerKommando(meldekort: Meldekort, fnr: Fnr = meldekort.fnr): LagreMeldekortFraBrukerKommando {
         return LagreMeldekortFraBrukerKommando(
             id = meldekort.id,
-            mottatt = nå(),
+            mottatt = nå(fixedClock),
             fnr = fnr,
             dager = meldekort.dager.map {
                 MeldekortDagFraBruker(
@@ -95,7 +96,7 @@ class MeldekortServiceTest {
         val tac = TestApplicationContext()
         val meldekortService = tac.meldekortService
 
-        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now()), nå())
+        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now()), nå(fixedClock))
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
         shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt") {

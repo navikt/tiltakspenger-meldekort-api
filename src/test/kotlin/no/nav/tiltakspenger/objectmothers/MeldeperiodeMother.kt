@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -21,7 +22,7 @@ interface MeldeperiodeMother {
         sakId: SakId = SakId.random(),
         fnr: Fnr = Fnr.fromString(TEXAS_FAKE_FNR),
         versjon: Int = 1,
-        opprettet: LocalDateTime = nå(),
+        opprettet: LocalDateTime = nå(fixedClock),
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
     ): Meldeperiode {
         return Meldeperiode(
@@ -45,7 +46,7 @@ interface MeldeperiodeMother {
         sakId: String = SakId.random().toString(),
         fnr: String = TEXAS_FAKE_FNR,
         versjon: Int = 1,
-        opprettet: LocalDateTime = nå(),
+        opprettet: LocalDateTime = nå(fixedClock),
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
     ): MeldeperiodeDTO {
         return MeldeperiodeDTO(
