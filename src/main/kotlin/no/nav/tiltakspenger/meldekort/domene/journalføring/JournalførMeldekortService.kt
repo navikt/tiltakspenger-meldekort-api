@@ -10,11 +10,13 @@ import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.toJournalpostDokument
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
+import java.time.Clock
 
 class JournalførMeldekortService(
     private val meldekortRepo: MeldekortRepo,
     private val pdfgenClient: PdfgenClient,
     private val dokarkivClient: DokarkivClient,
+    private val clock: Clock,
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -35,7 +37,7 @@ class JournalførMeldekortService(
                         callId = CorrelationId.generate(),
                     )
                     log.info { "Meldekort journalført. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}. JournalpostId: $journalpostId" }
-                    meldekortRepo.markerJournalført(meldekort.id, journalpostId, nå())
+                    meldekortRepo.markerJournalført(meldekort.id, journalpostId, nå(clock))
                     log.info { "Meldekort markert som journalført. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}. JournalpostId: $journalpostId" }
                 }.onLeft {
                     log.error(it) { "Ukjent feil skjedde under generering av brev og journalføring av meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }

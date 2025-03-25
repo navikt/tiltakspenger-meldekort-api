@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.repository
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
@@ -32,7 +33,7 @@ class MeldekortPostgresRepoTest {
         fun `lagres og kan hentes ut`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort(mottatt = nå(), varselId = VarselId("varsel1"))
+                val meldekort = ObjectMother.meldekort(mottatt = nå(fixedClock), varselId = VarselId("varsel1"))
 
                 lagreMeldekort(helper, meldekort)
 
@@ -184,12 +185,12 @@ class MeldekortPostgresRepoTest {
                 )
 
                 val førsteMeldekort = ObjectMother.meldekort(
-                    mottatt = nå().minusWeeks(2),
+                    mottatt = nå(fixedClock).minusWeeks(2),
                     periode = førstePeriode,
                 )
 
                 val andreMeldekort = ObjectMother.meldekort(
-                    mottatt = nå(),
+                    mottatt = nå(fixedClock),
                     periode = Periode(
                         fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
                         tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),

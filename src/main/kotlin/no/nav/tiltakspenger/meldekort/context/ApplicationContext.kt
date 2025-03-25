@@ -29,9 +29,10 @@ import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
 import no.nav.tiltakspenger.meldekort.service.SendMeldekortService
+import java.time.Clock
 
 @Suppress("unused")
-open class ApplicationContext {
+open class ApplicationContext(val clock: Clock) {
     private val log = KotlinLogging.logger {}
 
     open val jdbcUrl by lazy { Configuration.database() }
@@ -96,6 +97,7 @@ open class ApplicationContext {
             meldekortRepo = meldekortRepo,
             pdfgenClient = pdfgenClient,
             dokarkivClient = dokarkivClient,
+            clock = clock,
         )
     }
 

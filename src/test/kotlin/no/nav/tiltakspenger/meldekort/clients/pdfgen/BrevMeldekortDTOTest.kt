@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.clients.pdfgen
 
 import BrevMeldekortDTO
 import io.kotest.matchers.shouldBe
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -54,7 +55,7 @@ class BrevMeldekortDTOTest {
 
         @Test
         fun `statuser for dagene blir riktig formatert`() {
-            val mandagDenneUken = nå().toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val mandagDenneUken = nå(fixedClock).toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             // Linked map for å sikre at rekkefølgen er som forventet
             val statusMap = linkedMapOf(
                 mandagDenneUken to MeldekortDagStatus.DELTATT,

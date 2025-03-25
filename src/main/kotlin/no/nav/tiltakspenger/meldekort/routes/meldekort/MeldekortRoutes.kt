@@ -24,6 +24,7 @@ import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvMeldeperiode
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
+import java.time.Clock
 
 val logger = KotlinLogging.logger {}
 
@@ -31,6 +32,7 @@ internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     meldeperiodeService: MeldeperiodeService,
     texasHttpClient: TexasHttpClient,
+    clock: Clock,
 ) {
     // Kalles fra saksbehandling-api (sender meldeperiodene til meldekort-api)
     route("/meldekort", HttpMethod.Post) {
@@ -123,7 +125,7 @@ internal fun Route.meldekortRoutes(
         post("send-inn") {
             val lagreFraBrukerKommando = Either.catch {
                 deserialize<MeldekortFraBrukerDTO>(call.receiveText())
-                    .tilLagreKommando(call.fnr())
+                    .tilLagreKommando(call.fnr(), clock)
             }.getOrElse {
                 with("Feil ved parsing av innsendt meldekort fra bruker") {
                     logger.error { this }

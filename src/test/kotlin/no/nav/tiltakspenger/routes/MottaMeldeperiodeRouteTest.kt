@@ -50,6 +50,7 @@ class MottaMeldeperiodeRouteTest {
                             meldekortService = tac.meldekortService,
                             meldeperiodeService = tac.meldeperiodeService,
                             texasHttpClient = tac.texasHttpClient,
+                            clock = tac.clock,
                         )
                     }
                 }
@@ -80,6 +81,7 @@ class MottaMeldeperiodeRouteTest {
                             meldekortService = tac.meldekortService,
                             meldeperiodeService = tac.meldeperiodeService,
                             texasHttpClient = tac.texasHttpClient,
+                            clock = tac.clock,
                         )
                     }
                 }
@@ -116,6 +118,7 @@ class MottaMeldeperiodeRouteTest {
                             meldekortService = tac.meldekortService,
                             meldeperiodeService = tac.meldeperiodeService,
                             texasHttpClient = tac.texasHttpClient,
+                            clock = tac.clock,
                         )
                     }
                 }
