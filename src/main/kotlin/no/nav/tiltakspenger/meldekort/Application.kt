@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
+import no.nav.tiltakspenger.libs.periodisering.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.Configuration.applicationProfile
 import no.nav.tiltakspenger.meldekort.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
@@ -35,7 +36,7 @@ internal fun start(
     port: Int = httpPort(),
     isNais: Boolean = Configuration.isNais(),
     applicationContext: ApplicationContext = ApplicationContext(
-        clock = Clock.systemUTC(),
+        clock = Clock.system(zoneIdOslo),
     ),
 ) {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
