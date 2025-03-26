@@ -14,7 +14,6 @@ import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.periodisering.zoneIdOslo
-import no.nav.tiltakspenger.meldekort.Configuration.applicationProfile
 import no.nav.tiltakspenger.meldekort.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.jobber.TaskExecutor
@@ -81,13 +80,9 @@ internal fun start(
         tasks =
         listOf { correlationId ->
             applicationContext.sendMeldekortService.sendMeldekort(correlationId)
-
-            // TODO: Enable disse før vi tar inn nye brukere
-            if (applicationProfile() != Profile.PROD) {
-                applicationContext.journalførMeldekortService.journalførNyeMeldekort()
-                applicationContext.sendVarslerService.sendVarselForMeldekort()
-                applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort()
-            }
+            applicationContext.journalførMeldekortService.journalførNyeMeldekort()
+            applicationContext.sendVarslerService.sendVarselForMeldekort()
+            applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort()
         },
     )
 
