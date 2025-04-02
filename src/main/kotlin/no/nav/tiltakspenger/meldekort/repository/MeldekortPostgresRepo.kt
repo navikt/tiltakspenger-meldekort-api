@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
@@ -17,15 +18,17 @@ import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.domene.senesteTilOgMedDatoForInnsending
+import java.time.Clock
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
 
 class MeldekortPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
+    private val clock: Clock,
 ) : MeldekortRepo {
 
-    override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
+    override fun opprett(meldekort: Meldekort, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -66,6 +69,22 @@ class MeldekortPostgresRepo(
         }
     }
 
+    override fun deaktiver(meldekortId: MeldekortId, sessionContext: SessionContext?) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update meldekort_bruker set
+                        deaktivert = :deaktivert
+                    where id = :id
+                    """,
+                    "id" to meldekortId.toString(),
+                    "deaktivert" to nå(clock),
+                ).asUpdate,
+            )
+        }
+    }
+
     override fun lagreFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
@@ -75,6 +94,7 @@ class MeldekortPostgresRepo(
                         mottatt = :mottatt,
                         dager = to_jsonb(:dager::jsonb)
                     where id = :id
+                        
                     """,
                     "id" to lagreKommando.id.toString(),
                     "mottatt" to lagreKommando.mottatt,
@@ -102,33 +122,11 @@ class MeldekortPostgresRepo(
         }
     }
 
-    /** TODO jah: Denne må returnere en liste dersom vi støtter flere innsender på samme meldeperiode */
-    override fun hentMeldekortForMeldeperiodeId(
-        meldeperiodeId: MeldeperiodeId,
-        sessionContext: SessionContext?,
-    ): Meldekort? {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                        select
-                            *
-                        from meldekort_bruker
-                        where meldeperiode_id = :meldeperiode_id
-                    """,
-                    "meldeperiode_id" to meldeperiodeId,
-                ).map { row ->
-                    fromRow(row, session)
-                }.asSingle,
-            )
-        }
-    }
-
-    /** TODO jah: Denne må returnere en liste dersom vi støtter flere innsender på samme meldeperiode */
     override fun hentMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
         sessionContext: SessionContext?,
-    ): Meldekort? {
+    ): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -138,11 +136,14 @@ class MeldekortPostgresRepo(
                     from meldekort_bruker mk
                     join meldeperiode mp on mk.meldeperiode_id = mp.id
                     where mp.kjede_id = :kjede_id
+                        and mp.fnr = :fnr
+                    order by mp.versjon
                     """,
                     "kjede_id" to kjedeId.verdi,
+                    "fnr" to fnr.verdi,
                 ).map { row ->
                     fromRow(row, session)
-                }.asSingle,
+                }.asList,
             )
         }
     }
@@ -187,7 +188,10 @@ class MeldekortPostgresRepo(
                             mk.*
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.fnr = :fnr
-                        where mp.id = mk.meldeperiode_id and mk.mottatt is null and mp.til_og_med <= :maks_til_og_med
+                        where mp.id = mk.meldeperiode_id
+                            and mk.mottatt is null
+                            and mk.deaktivert is null
+                            and mp.til_og_med <= :maks_til_og_med
                         order by fra_og_med, versjon desc
                         limit 1
                     """,
@@ -208,10 +212,12 @@ class MeldekortPostgresRepo(
             session.run(
                 sqlQuery(
                     """ 
-                        select * from meldekort_bruker
+                        select
+                            *
+                        from meldekort_bruker
                         where sendt_til_saksbehandling is null
-                        and journalpost_id is not null
-                        and mottatt is not null
+                            and journalpost_id is not null
+                            and mottatt is not null
                     """,
                 )
                     .map { row -> fromRow(row, session) }.asList,
@@ -252,7 +258,9 @@ class MeldekortPostgresRepo(
                             mk.*
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.fnr = :fnr
-                        where mp.id = mk.meldeperiode_id and mp.til_og_med <= :maks_til_og_med
+                        where mp.id = mk.meldeperiode_id
+                            and mp.til_og_med <= :maks_til_og_med
+                            and mk.deaktivert is null
                         order by fra_og_med desc, versjon desc
                         limit :limit
                     """,
@@ -329,16 +337,17 @@ class MeldekortPostgresRepo(
             )
         }
     }
-    override fun hentMottatteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+
+    override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 queryOf(
                     //language=sql
                     """
                     select * from meldekort_bruker
-                    where mottatt is not null 
-                    and varsel_id is not null
-                    and varsel_inaktivert is false
+                    where (mottatt is not null or deaktivert is not null) 
+                        and varsel_id is not null
+                        and varsel_inaktivert is false
                     limit :limit
                     """.trimIndent(),
                     mapOf("limit" to limit),
@@ -363,6 +372,7 @@ class MeldekortPostgresRepo(
                 id = id,
                 meldeperiode = meldeperiode,
                 mottatt = row.localDateTimeOrNull("mottatt"),
+                deaktivert = row.localDateTimeOrNull("deaktivert"),
                 sakId = SakId.fromString(row.string("sak_id")),
                 dager = row.string("dager").toMeldekortDager(),
                 journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },

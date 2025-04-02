@@ -21,7 +21,11 @@ class MeldekortService(
         }
 
         require(meldekort.mottatt == null) {
-            "Meldekort med id $meldekortId er allerede mottatt"
+            "Meldekort med id $meldekortId er allerede mottatt (${meldekort.mottatt})"
+        }
+
+        require(meldekort.deaktivert == null) {
+            "Meldekort med id $meldekortId er deaktivert (${meldekort.deaktivert})"
         }
 
         meldekort.validerLagring(kommando).also {

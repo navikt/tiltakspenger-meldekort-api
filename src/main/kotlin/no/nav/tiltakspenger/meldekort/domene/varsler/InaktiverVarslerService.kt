@@ -13,7 +13,7 @@ class InaktiverVarslerService(
 
     fun inaktiverVarslerForMottatteMeldekort() {
         Either.catch {
-            val mottatteMeldekort = meldekortRepo.hentMottatteSomDetVarslesFor()
+            val mottatteMeldekort = meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor()
             log.debug { "Fant ${mottatteMeldekort.size} mottatte meldekort som det varsles for" }
 
             mottatteMeldekort.forEach { meldekort ->

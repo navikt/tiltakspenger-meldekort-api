@@ -8,7 +8,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
+import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilMeldeperiode
+import no.nav.tiltakspenger.meldekort.domene.tilNyMeldekortVersjon
 import no.nav.tiltakspenger.meldekort.domene.tilTomtMeldekort
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
@@ -36,15 +39,21 @@ class MeldeperiodeService(
             return FeilVedMottakAvMeldeperiode.MeldeperiodeFinnesMedDiff.left()
         }
 
-        val meldekort = if (meldeperiode.harRettIPerioden) meldeperiode.tilTomtMeldekort() else null
+        val eksisterendeMeldekort = hentEksisterendeMeldekort(meldeperiode)
+
+        val meldekort = lagEllerOppdaterMeldekort(meldeperiode, eksisterendeMeldekort)
 
         Either.catch {
             sessionFactory.withTransactionContext { tx ->
                 meldeperiodeRepo.lagre(meldeperiode, tx)
                 logger.info { "Lagret meldeperiode ${meldeperiode.id}" }
                 meldekort?.also {
-                    meldekortRepo.lagre(it, tx)
+                    meldekortRepo.opprett(it, tx)
                     logger.info { "Lagret brukers meldekort ${meldekort.id}" }
+                }
+                eksisterendeMeldekort.forEach {
+                    meldekortRepo.deaktiver(it.id)
+                    logger.info { "Deaktiverte meldekortet ${it.id}" }
                 }
             }
         }.mapLeft {
@@ -55,6 +64,25 @@ class MeldeperiodeService(
             return FeilVedMottakAvMeldeperiode.LagringFeilet.left()
         }
         return Unit.right()
+    }
+
+    private fun lagEllerOppdaterMeldekort(
+        meldeperiode: Meldeperiode,
+        eksisterendeMeldekort: List<Meldekort>,
+    ): Meldekort? {
+        if (!meldeperiode.harRettIPerioden) {
+            return null
+        }
+
+        return eksisterendeMeldekort.lastOrNull()?.let { forrigeMeldekort ->
+            meldeperiode.tilNyMeldekortVersjon(forrigeMeldekort)
+        } ?: meldeperiode.tilTomtMeldekort()
+    }
+
+    /** Henter aktive meldekort på samme meldeperiode */
+    private fun hentEksisterendeMeldekort(meldeperiode: Meldeperiode): List<Meldekort> {
+        return meldekortRepo.hentMeldekortForKjedeId(meldeperiode.kjedeId, meldeperiode.fnr)
+            .filter { it.deaktivert == null && it.mottatt == null }
     }
 }
 

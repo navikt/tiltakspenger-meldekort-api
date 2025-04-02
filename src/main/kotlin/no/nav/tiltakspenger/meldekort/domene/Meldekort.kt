@@ -15,11 +15,13 @@ import java.time.LocalDateTime
  * Se også BrukersMeldekort i tiltakspenger-saksbehandling-api.
  *
  * @param id Unik identifikator for denne utfyllingen/innsendingen. Eies av meldekort-api.
+ * @param deaktivert settes dersom meldeperioden har fått en ny versjon (pga revurdering), og forrige meldekort-versjon ikke er mottatt fra bruker
  * @param mottatt Tidspunktet mottatt fra bruker
  * @param dager Et innslag per dag i meldeperioden. Må være sortert.
  */
 data class Meldekort(
     val id: MeldekortId,
+    val deaktivert: LocalDateTime?,
     val mottatt: LocalDateTime?,
     val meldeperiode: Meldeperiode,
     val sakId: SakId,
@@ -50,6 +52,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
     return Meldekort(
         id = MeldekortId.random(),
         mottatt = null,
+        deaktivert = null,
         meldeperiode = this,
         sakId = this.sakId,
         dager = this.girRett.map {
@@ -62,6 +65,13 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         journalføringstidspunkt = null,
         varselId = null,
         erVarselInaktivert = false,
+    )
+}
+
+fun Meldeperiode.tilNyMeldekortVersjon(forrigeMeldekort: Meldekort): Meldekort {
+    return forrigeMeldekort.copy(
+        id = MeldekortId.random(),
+        meldeperiode = this,
     )
 }
 

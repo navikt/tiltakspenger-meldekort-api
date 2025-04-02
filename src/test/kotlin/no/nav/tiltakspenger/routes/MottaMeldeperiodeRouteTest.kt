@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.routes
 
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.setBody
@@ -21,6 +22,7 @@ import no.nav.tiltakspenger.meldekort.domene.tilMeldeperiode
 import no.nav.tiltakspenger.meldekort.routes.jacksonSerialization
 import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
 import no.nav.tiltakspenger.objectmothers.ObjectMother
+import no.nav.tiltakspenger.objectmothers.ObjectMother.lagreMeldekortFraBrukerKommando
 import org.junit.jupiter.api.Test
 
 class MottaMeldeperiodeRouteTest {
@@ -34,6 +36,26 @@ class MottaMeldeperiodeRouteTest {
         setBody(serialize(dto))
     }
 
+    private fun medMeldekortRoutes(context: TestApplicationContext, block: suspend ApplicationTestBuilder.() -> Unit) {
+        runTest {
+            testApplication {
+                application {
+                    jacksonSerialization()
+                    routing {
+                        meldekortRoutes(
+                            meldekortService = context.meldekortService,
+                            meldeperiodeService = context.meldeperiodeService,
+                            texasHttpClient = context.texasHttpClient,
+                            clock = context.clock,
+                        )
+                    }
+                }
+
+                block()
+            }
+        }
+    }
+
     @Test
     fun `Skal lagre meldeperioden og opprette meldekort`() {
         val tac = TestApplicationContext()
@@ -41,26 +63,88 @@ class MottaMeldeperiodeRouteTest {
         val dto = ObjectMother.meldeperiodeDto()
         val id = MeldeperiodeId.fromString(dto.id)
 
-        runTest {
-            testApplication {
-                application {
-                    jacksonSerialization()
-                    routing {
-                        meldekortRoutes(
-                            meldekortService = tac.meldekortService,
-                            meldeperiodeService = tac.meldeperiodeService,
-                            texasHttpClient = tac.texasHttpClient,
-                            clock = tac.clock,
-                        )
-                    }
-                }
+        medMeldekortRoutes(tac) {
+            mottaMeldeperiodeRequest(dto).apply {
+                status shouldBe HttpStatusCode.OK
 
-                mottaMeldeperiodeRequest(dto).apply {
-                    status shouldBe HttpStatusCode.OK
+                tac.meldeperiodeRepo.hentForId(id) shouldBe dto.tilMeldeperiode().getOrFail()
+            }
+        }
+    }
 
-                    tac.meldeperiodeRepo.hentForId(id) shouldBe dto.tilMeldeperiode().getOrFail()
-                    tac.meldekortRepo.hentMeldekortForMeldeperiodeId(id).shouldNotBeNull()
-                }
+    @Test
+    fun `Skal opprette nytt meldekort og deaktivere forrige ved ny meldeperiode-versjon`() {
+        val tac = TestApplicationContext()
+
+        val dtoFørste = ObjectMother.meldeperiodeDto()
+        val meldeperiodeFørste = dtoFørste.tilMeldeperiode().getOrFail()
+
+        val dtoAndre = dtoFørste.copy(
+            id = MeldeperiodeId.random().toString(),
+            versjon = 2,
+        )
+        val meldeperiodeAndre = dtoAndre.tilMeldeperiode().getOrFail()
+
+        medMeldekortRoutes(tac) {
+            mottaMeldeperiodeRequest(dtoFørste).apply {
+                status shouldBe HttpStatusCode.OK
+
+                tac.meldeperiodeRepo.hentForId(meldeperiodeFørste.id) shouldBe meldeperiodeFørste
+            }
+
+            mottaMeldeperiodeRequest(dtoAndre).apply {
+                status shouldBe HttpStatusCode.OK
+
+                tac.meldeperiodeRepo.hentForId(meldeperiodeAndre.id) shouldBe meldeperiodeAndre
+
+                val (førsteMeldekort, andreMeldekort) =
+                    tac.meldekortRepo.hentMeldekortForKjedeId(meldeperiodeAndre.kjedeId, meldeperiodeAndre.fnr)
+
+                førsteMeldekort.deaktivert.shouldNotBeNull()
+                andreMeldekort.deaktivert.shouldBeNull()
+            }
+        }
+    }
+
+    @Test
+    fun `Skal opprette nytt meldekort og ikke deaktivere meldekort som er mottatt`() {
+        val tac = TestApplicationContext()
+
+        val dtoFørste = ObjectMother.meldeperiodeDto()
+        val meldeperiodeFørste = dtoFørste.tilMeldeperiode().getOrFail()
+
+        val dtoAndre = dtoFørste.copy(
+            id = MeldeperiodeId.random().toString(),
+            versjon = 2,
+        )
+        val meldeperiodeAndre = dtoAndre.tilMeldeperiode().getOrFail()
+
+        medMeldekortRoutes(tac) {
+            mottaMeldeperiodeRequest(dtoFørste).apply {
+                status shouldBe HttpStatusCode.OK
+
+                tac.meldeperiodeRepo.hentForId(meldeperiodeFørste.id) shouldBe meldeperiodeFørste
+
+                val meldekort =
+                    tac.meldekortRepo.hentMeldekortForKjedeId(meldeperiodeFørste.kjedeId, meldeperiodeFørste.fnr)
+                        .first()
+
+                val lagreKommando =
+                    lagreMeldekortFraBrukerKommando(meldeperiode = meldeperiodeFørste, meldekortId = meldekort.id)
+
+                tac.meldekortRepo.lagreFraBruker(lagreKommando)
+            }
+
+            mottaMeldeperiodeRequest(dtoAndre).apply {
+                status shouldBe HttpStatusCode.OK
+
+                tac.meldeperiodeRepo.hentForId(meldeperiodeAndre.id) shouldBe meldeperiodeAndre
+
+                val (førsteMeldekort, andreMeldekort) =
+                    tac.meldekortRepo.hentMeldekortForKjedeId(meldeperiodeAndre.kjedeId, meldeperiodeAndre.fnr)
+
+                førsteMeldekort.deaktivert.shouldBeNull()
+                andreMeldekort.deaktivert.shouldBeNull()
             }
         }
     }
@@ -72,30 +156,15 @@ class MottaMeldeperiodeRouteTest {
         val dto = ObjectMother.meldeperiodeDto()
         val id = MeldeperiodeId.fromString(dto.id)
 
-        runTest {
-            testApplication {
-                application {
-                    jacksonSerialization()
-                    routing {
-                        meldekortRoutes(
-                            meldekortService = tac.meldekortService,
-                            meldeperiodeService = tac.meldeperiodeService,
-                            texasHttpClient = tac.texasHttpClient,
-                            clock = tac.clock,
-                        )
-                    }
-                }
+        medMeldekortRoutes(tac) {
+            mottaMeldeperiodeRequest(dto).apply {
+                status shouldBe HttpStatusCode.OK
+            }
 
-                mottaMeldeperiodeRequest(dto).apply {
-                    status shouldBe HttpStatusCode.OK
-                }
+            mottaMeldeperiodeRequest(dto).apply {
+                status shouldBe HttpStatusCode.OK
 
-                mottaMeldeperiodeRequest(dto).apply {
-                    status shouldBe HttpStatusCode.OK
-
-                    tac.meldeperiodeRepo.hentForId(id) shouldBe dto.tilMeldeperiode().getOrFail()
-                    tac.meldekortRepo.hentMeldekortForMeldeperiodeId(id).shouldNotBeNull()
-                }
+                tac.meldeperiodeRepo.hentForId(id) shouldBe dto.tilMeldeperiode().getOrFail()
             }
         }
     }
@@ -109,34 +178,18 @@ class MottaMeldeperiodeRouteTest {
 
         val dtoMedDiff = dto.copy(opprettet = dto.opprettet.minusDays(1))
 
-        runTest {
-            testApplication {
-                application {
-                    jacksonSerialization()
-                    routing {
-                        meldekortRoutes(
-                            meldekortService = tac.meldekortService,
-                            meldeperiodeService = tac.meldeperiodeService,
-                            texasHttpClient = tac.texasHttpClient,
-                            clock = tac.clock,
-                        )
-                    }
-                }
+        medMeldekortRoutes(tac) {
+            mottaMeldeperiodeRequest(dto).apply {
+                status shouldBe HttpStatusCode.OK
+            }
 
-                mottaMeldeperiodeRequest(dto).apply {
-                    status shouldBe HttpStatusCode.OK
-                }
+            mottaMeldeperiodeRequest(dtoMedDiff).apply {
+                status shouldBe HttpStatusCode.Conflict
 
-                mottaMeldeperiodeRequest(dtoMedDiff).apply {
-                    status shouldBe HttpStatusCode.Conflict
+                val meldeperiode = tac.meldeperiodeRepo.hentForId(id)!!
 
-                    val meldeperiode = tac.meldeperiodeRepo.hentForId(id)!!
-
-                    meldeperiode shouldBe dto.tilMeldeperiode().getOrFail()
-                    meldeperiode.opprettet shouldBe dto.opprettet
-
-                    tac.meldekortRepo.hentMeldekortForMeldeperiodeId(id).shouldNotBeNull()
-                }
+                meldeperiode shouldBe dto.tilMeldeperiode().getOrFail()
+                meldeperiode.opprettet shouldBe dto.opprettet
             }
         }
     }

@@ -3,21 +3,33 @@ package no.nav.tiltakspenger.fakes
 import arrow.atomic.Atomic
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
-import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.domene.senesteTilOgMedDatoForInnsending
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
+import java.time.Clock
 import java.time.LocalDateTime
 
-class MeldekortRepoFake : MeldekortRepo {
+class MeldekortRepoFake(
+    private val clock: Clock,
+) : MeldekortRepo {
     private val data = Atomic(mutableMapOf<MeldekortId, Meldekort>())
 
-    override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
+    override fun opprett(meldekort: Meldekort, sessionContext: SessionContext?) {
         data.get()[meldekort.id] = meldekort
+    }
+
+    override fun deaktiver(meldekortId: MeldekortId, sessionContext: SessionContext?) {
+        val meldekort = data.get()[meldekortId]
+        requireNotNull(meldekort) {
+            "Kan ikke deaktivere meldekort $meldekortId - meldekortet finnes ikke"
+        }
+
+        data.get()[meldekortId] = meldekort.copy(deaktivert = nå(clock))
     }
 
     override fun lagreFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
@@ -39,18 +51,12 @@ class MeldekortRepoFake : MeldekortRepo {
         return data.get()[meldekortId]?.let { if (it.fnr == fnr) it else null }
     }
 
-    override fun hentMeldekortForMeldeperiodeId(
-        meldeperiodeId: MeldeperiodeId,
-        sessionContext: SessionContext?,
-    ): Meldekort? {
-        return data.get().values.find { it.meldeperiode.id == meldeperiodeId }
-    }
-
     override fun hentMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
         sessionContext: SessionContext?,
-    ): Meldekort? {
-        return data.get().values.find { it.meldeperiode.kjedeId == kjedeId }
+    ): List<Meldekort> {
+        return data.get().values.filter { it.fnr == fnr && it.meldeperiode.kjedeId == kjedeId }
     }
 
     override fun hentSisteMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
@@ -100,7 +106,7 @@ class MeldekortRepoFake : MeldekortRepo {
         TODO("Not yet implemented")
     }
 
-    override fun hentMottatteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
         TODO("Not yet implemented")
     }
 }

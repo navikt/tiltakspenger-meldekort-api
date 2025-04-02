@@ -48,10 +48,10 @@ class NesteMeldekortRouteTest {
         )
 
         tac.meldeperiodeRepo.lagre(førsteMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(førsteMeldekort)
+        tac.meldekortRepo.opprett(førsteMeldekort)
 
         tac.meldeperiodeRepo.lagre(andreMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(andreMeldekort)
+        tac.meldekortRepo.opprett(andreMeldekort)
 
         runTest {
             testApplication {
@@ -104,10 +104,10 @@ class NesteMeldekortRouteTest {
         )
 
         tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(innsendtMeldekort)
+        tac.meldekortRepo.opprett(innsendtMeldekort)
 
         tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(ikkeKlartMeldekort)
+        tac.meldekortRepo.opprett(ikkeKlartMeldekort)
 
         runTest {
             testApplication {
@@ -150,7 +150,7 @@ class NesteMeldekortRouteTest {
         )
 
         tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(ikkeKlartMeldekort)
+        tac.meldekortRepo.opprett(ikkeKlartMeldekort)
 
         runTest {
             testApplication {

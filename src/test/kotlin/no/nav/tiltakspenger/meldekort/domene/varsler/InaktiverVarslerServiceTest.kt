@@ -28,7 +28,7 @@ class InaktiverVarslerServiceTest {
         val varselId = VarselId("varsel1")
         val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
 
-        every { meldekortRepo.hentMottatteSomDetVarslesFor() } returns listOf(meldekort)
+        every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort)
 
         service.inaktiverVarslerForMottatteMeldekort()
 
@@ -41,12 +41,12 @@ class InaktiverVarslerServiceTest {
         val varselId = VarselId("varsel1")
         val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
 
-        every { meldekortRepo.hentMottatteSomDetVarslesFor() } returns listOf(meldekort)
+        every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort)
 
         service.inaktiverVarslerForMottatteMeldekort()
 
         verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify(exactly = 0) { meldekortRepo.lagre(any()) }
+        verify(exactly = 0) { meldekortRepo.opprett(any()) }
     }
 
     @Test
@@ -54,12 +54,12 @@ class InaktiverVarslerServiceTest {
         val varselId = VarselId("varsel1")
         val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
 
-        every { meldekortRepo.hentMottatteSomDetVarslesFor() } returns listOf(meldekort)
+        every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort)
         every { tmsVarselClient.inaktiverVarsel(varselId) } throws RuntimeException("Feil")
 
         service.inaktiverVarslerForMottatteMeldekort()
 
         verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify(exactly = 0) { meldekortRepo.lagre(any()) }
+        verify(exactly = 0) { meldekortRepo.opprett(any()) }
     }
 }

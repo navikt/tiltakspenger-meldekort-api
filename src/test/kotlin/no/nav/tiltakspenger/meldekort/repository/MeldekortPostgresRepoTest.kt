@@ -23,7 +23,7 @@ class MeldekortPostgresRepoTest {
 
         meldekort.forEach {
             meldeperiodeRepo.lagre(it.meldeperiode)
-            meldekortRepo.lagre(it)
+            meldekortRepo.opprett(it)
         }
     }
 
@@ -356,7 +356,7 @@ class MeldekortPostgresRepoTest {
 
                 lagreMeldekort(helper, meldekort1, meldekort2)
 
-                val result = repo.hentMottatteSomDetVarslesFor()
+                val result = repo.hentMottatteEllerDeaktiverteSomDetVarslesFor()
 
                 result.size shouldBe 2
 
@@ -381,7 +381,7 @@ class MeldekortPostgresRepoTest {
 
                 lagreMeldekort(helper, meldekort1, meldekort2, meldekort3, meldekort4, meldekort5)
 
-                val result = meldekortRepo.hentMottatteSomDetVarslesFor()
+                val result = meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor()
 
                 result.size shouldBe 2
 

@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.repository
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
-import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
@@ -11,8 +10,13 @@ import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
 interface MeldekortRepo {
-    fun lagre(
+    fun opprett(
         meldekort: Meldekort,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun deaktiver(
+        meldekortId: MeldekortId,
         sessionContext: SessionContext? = null,
     )
 
@@ -32,15 +36,11 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     ): Meldekort?
 
-    fun hentMeldekortForMeldeperiodeId(
-        meldeperiodeId: MeldeperiodeId,
-        sessionContext: SessionContext? = null,
-    ): Meldekort?
-
     fun hentMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): Meldekort?
+    ): List<Meldekort>
 
     fun hentSisteMeldekortForBruker(
         fnr: Fnr,
@@ -75,5 +75,6 @@ interface MeldekortRepo {
     fun hentDeSomSkalJournalføres(limit: Int = 10, sessionContext: SessionContext? = null): List<Meldekort>
 
     fun hentDeSomIkkeHarBlittVarsletFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
-    fun hentMottatteSomDetVarslesFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
+
+    fun hentMottatteEllerDeaktiverteSomDetVarslesFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
 }

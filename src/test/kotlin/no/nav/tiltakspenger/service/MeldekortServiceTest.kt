@@ -26,7 +26,7 @@ class MeldekortServiceTest {
             mottatt = mottatt,
         )
         meldeperiodeRepo.lagre(meldekort.meldeperiode)
-        meldekortRepo.lagre(meldekort)
+        meldekortRepo.opprett(meldekort)
 
         return meldekort
     }
@@ -95,11 +95,12 @@ class MeldekortServiceTest {
     fun `Kan ikke lagre meldekort fra bruker som allerede er mottatt`() {
         val tac = TestApplicationContext()
         val meldekortService = tac.meldekortService
+        val mottatt = nå(fixedClock)
 
-        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now()), nå(fixedClock))
+        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now()), mottatt)
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-        shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt") {
+        shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt ($mottatt)") {
             meldekortService.lagreMeldekortFraBruker(lagreKommando)
         }
     }
