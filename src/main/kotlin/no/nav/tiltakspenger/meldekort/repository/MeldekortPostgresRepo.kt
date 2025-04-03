@@ -69,17 +69,19 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun deaktiver(meldekortId: MeldekortId, sessionContext: SessionContext?) {
+    override fun deaktiver(meldekortId: MeldekortId, deaktiverVarsel: Boolean, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
                     """
                     update meldekort_bruker set
-                        deaktivert = :deaktivert
+                        deaktivert = :deaktivert,
+                        varsel_inaktivert = :varsel_inaktivert
                     where id = :id
                     """,
                     "id" to meldekortId.toString(),
                     "deaktivert" to nå(clock),
+                    "varsel_inaktivert" to !deaktiverVarsel,
                 ).asUpdate,
             )
         }
@@ -327,6 +329,7 @@ class MeldekortPostgresRepo(
                     join meldeperiode mp on mp.id = mk.meldeperiode_id
                     where mp.til_og_med <= :maks_til_og_med
                     and mk.mottatt is null
+                    and mk.deaktivert is null
                     and mk.varsel_id is null
                     and mk.varsel_inaktivert is false
                     limit :limit

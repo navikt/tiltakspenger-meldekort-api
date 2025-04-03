@@ -11,7 +11,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilMeldeperiode
-import no.nav.tiltakspenger.meldekort.domene.tilNyMeldekortVersjon
+import no.nav.tiltakspenger.meldekort.domene.tilOppdatertMeldekort
 import no.nav.tiltakspenger.meldekort.domene.tilTomtMeldekort
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
@@ -39,9 +39,9 @@ class MeldeperiodeService(
             return FeilVedMottakAvMeldeperiode.MeldeperiodeFinnesMedDiff.left()
         }
 
-        val eksisterendeMeldekort = hentEksisterendeMeldekort(meldeperiode)
+        val eksisterendeMeldekort = hentAktiveMeldekort(meldeperiode)
 
-        val meldekort = lagEllerOppdaterMeldekort(meldeperiode, eksisterendeMeldekort)
+        val meldekort = lagMeldekort(meldeperiode, eksisterendeMeldekort)
 
         Either.catch {
             sessionFactory.withTransactionContext { tx ->
@@ -52,7 +52,11 @@ class MeldeperiodeService(
                     logger.info { "Lagret brukers meldekort ${meldekort.id}" }
                 }
                 eksisterendeMeldekort.forEach {
-                    meldekortRepo.deaktiver(it.id)
+                    /** Deaktiverer varsel for tidligere meldekort dersom det ikke har blitt generert et nytt meldekort,
+                     *  dvs det ikke er rett til tp i den nye versjonen av meldeperioden.
+                     *  Varselet gjenbrukes av nytt meldekort hvis det fortsatt er rett i perioden.
+                     * */
+                    meldekortRepo.deaktiver(it.id, meldekort == null)
                     logger.info { "Deaktiverte meldekortet ${it.id}" }
                 }
             }
@@ -66,7 +70,7 @@ class MeldeperiodeService(
         return Unit.right()
     }
 
-    private fun lagEllerOppdaterMeldekort(
+    private fun lagMeldekort(
         meldeperiode: Meldeperiode,
         eksisterendeMeldekort: List<Meldekort>,
     ): Meldekort? {
@@ -75,12 +79,11 @@ class MeldeperiodeService(
         }
 
         return eksisterendeMeldekort.lastOrNull()?.let { forrigeMeldekort ->
-            meldeperiode.tilNyMeldekortVersjon(forrigeMeldekort)
+            meldeperiode.tilOppdatertMeldekort(forrigeMeldekort)
         } ?: meldeperiode.tilTomtMeldekort()
     }
 
-    /** Henter aktive meldekort på samme meldeperiode */
-    private fun hentEksisterendeMeldekort(meldeperiode: Meldeperiode): List<Meldekort> {
+    private fun hentAktiveMeldekort(meldeperiode: Meldeperiode): List<Meldekort> {
         return meldekortRepo.hentMeldekortForKjedeId(meldeperiode.kjedeId, meldeperiode.fnr)
             .filter { it.deaktivert == null && it.mottatt == null }
     }

@@ -68,7 +68,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
     )
 }
 
-fun Meldeperiode.tilNyMeldekortVersjon(forrigeMeldekort: Meldekort): Meldekort {
+fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
     return forrigeMeldekort.copy(
         id = MeldekortId.random(),
         meldeperiode = this,

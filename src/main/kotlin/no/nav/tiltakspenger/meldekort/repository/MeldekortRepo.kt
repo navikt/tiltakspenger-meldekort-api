@@ -17,6 +17,7 @@ interface MeldekortRepo {
 
     fun deaktiver(
         meldekortId: MeldekortId,
+        deaktiverVarsel: Boolean,
         sessionContext: SessionContext? = null,
     )
 

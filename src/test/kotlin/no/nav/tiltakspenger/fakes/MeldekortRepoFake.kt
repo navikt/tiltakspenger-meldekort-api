@@ -23,13 +23,17 @@ class MeldekortRepoFake(
         data.get()[meldekort.id] = meldekort
     }
 
-    override fun deaktiver(meldekortId: MeldekortId, sessionContext: SessionContext?) {
+    override fun deaktiver(
+        meldekortId: MeldekortId,
+        deaktiverVarsel: Boolean,
+        sessionContext: SessionContext?,
+    ) {
         val meldekort = data.get()[meldekortId]
         requireNotNull(meldekort) {
             "Kan ikke deaktivere meldekort $meldekortId - meldekortet finnes ikke"
         }
 
-        data.get()[meldekortId] = meldekort.copy(deaktivert = nå(clock))
+        data.get()[meldekortId] = meldekort.copy(deaktivert = nå(clock), erVarselInaktivert = !deaktiverVarsel)
     }
 
     override fun lagreFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
@@ -106,7 +110,10 @@ class MeldekortRepoFake(
         TODO("Not yet implemented")
     }
 
-    override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
+        limit: Int,
+        sessionContext: SessionContext?,
+    ): List<Meldekort> {
         TODO("Not yet implemented")
     }
 }
