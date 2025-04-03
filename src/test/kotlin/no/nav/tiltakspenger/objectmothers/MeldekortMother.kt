@@ -23,12 +23,14 @@ interface MeldekortMother {
         mottatt: LocalDateTime? = nå(fixedClock),
         deaktivert: LocalDateTime? = null,
         saksnummer: String = Math.random().toString(),
+        sakId: SakId = SakId.random(),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         varselId: VarselId? = null,
         fnr: Fnr = Fnr.fromString(TEXAS_FAKE_FNR),
         erVarselInaktivert: Boolean = false,
     ): Meldekort {
-        val meldeperiode = ObjectMother.meldeperiode(periode = periode, saksnummer = saksnummer, fnr = fnr)
+        val meldeperiode =
+            ObjectMother.meldeperiode(periode = periode, saksnummer = saksnummer, sakId = sakId, fnr = fnr)
 
         return Meldekort(
             id = MeldekortId.random(),

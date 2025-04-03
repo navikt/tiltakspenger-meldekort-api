@@ -63,22 +63,29 @@ class MeldekortRepoFake(
         return data.get().values.filter { it.fnr == fnr && it.meldeperiode.kjedeId == kjedeId }
     }
 
-    override fun hentSisteMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
-        return data.get().values
-            .filter { it.fnr == fnr && it.meldeperiode.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() }
-            .maxByOrNull { it.meldeperiode.periode.fraOgMed }
+    override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+        return data.get().values.filter {
+            it.fnr == fnr && it.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() && it.deaktivert == null && it.mottatt == null
+        }
+            .sortedWith(compareBy<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
+            .firstOrNull()
     }
 
-    override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
-        return data.get().values
-            .filter { it.fnr == fnr && it.meldeperiode.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() && it.mottatt == null }
-            .minByOrNull { it.meldeperiode.periode.fraOgMed }
+    override fun hentSisteMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+        return hentMeldekortForBruker(fnr).firstOrNull()
     }
 
     override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
-        return data.get().values
-            .filter { it.fnr == fnr }
-            .sortedByDescending { it.meldeperiode.periode.fraOgMed }
+        return hentMeldekortForBruker(fnr)
+    }
+
+    private fun hentMeldekortForBruker(
+        fnr: Fnr,
+    ): List<Meldekort> {
+        return data.get().values.filter {
+            it.fnr == fnr && it.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() && it.deaktivert == null
+        }
+            .sortedWith(compareByDescending<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
     }
 
     override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
