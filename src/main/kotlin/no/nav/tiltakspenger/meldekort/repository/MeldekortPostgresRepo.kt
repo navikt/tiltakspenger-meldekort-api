@@ -8,7 +8,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
-import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
@@ -376,7 +375,6 @@ class MeldekortPostgresRepo(
                 meldeperiode = meldeperiode,
                 mottatt = row.localDateTimeOrNull("mottatt"),
                 deaktivert = row.localDateTimeOrNull("deaktivert"),
-                sakId = SakId.fromString(row.string("sak_id")),
                 dager = row.string("dager").toMeldekortDager(),
                 journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
                 journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),

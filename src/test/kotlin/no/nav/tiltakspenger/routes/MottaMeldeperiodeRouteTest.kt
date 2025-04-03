@@ -47,6 +47,51 @@ class MottaMeldeperiodeRouteTest {
     }
 
     @Test
+    fun `Skal håndtere duplikate requests for lagring av meldeperiode og returnere ok`() {
+        val tac = TestApplicationContext()
+
+        val dto = ObjectMother.meldeperiodeDto()
+        val id = MeldeperiodeId.fromString(dto.id)
+
+        testMedMeldekortRoutes(tac) {
+            mottaMeldeperiodeRequest(dto).apply {
+                status shouldBe HttpStatusCode.OK
+            }
+
+            mottaMeldeperiodeRequest(dto).apply {
+                status shouldBe HttpStatusCode.OK
+
+                tac.meldeperiodeRepo.hentForId(id) shouldBe dto.tilMeldeperiode().getOrFail()
+            }
+        }
+    }
+
+    @Test
+    fun `Skal håndtere requests for lagring av samme meldeperiode med ulike data og returnere 409`() {
+        val tac = TestApplicationContext()
+
+        val dto = ObjectMother.meldeperiodeDto()
+        val id = MeldeperiodeId.fromString(dto.id)
+
+        val dtoMedDiff = dto.copy(opprettet = dto.opprettet.minusDays(1))
+
+        testMedMeldekortRoutes(tac) {
+            mottaMeldeperiodeRequest(dto).apply {
+                status shouldBe HttpStatusCode.OK
+            }
+
+            mottaMeldeperiodeRequest(dtoMedDiff).apply {
+                status shouldBe HttpStatusCode.Conflict
+
+                val meldeperiode = tac.meldeperiodeRepo.hentForId(id)!!
+
+                meldeperiode shouldBe dto.tilMeldeperiode().getOrFail()
+                meldeperiode.opprettet shouldBe dto.opprettet
+            }
+        }
+    }
+
+    @Test
     fun `Skal opprette nytt meldekort og deaktivere forrige ved ny meldeperiode-versjon`() {
         val tac = TestApplicationContext()
 
@@ -121,52 +166,9 @@ class MottaMeldeperiodeRouteTest {
                     tac.meldekortRepo.hentMeldekortForKjedeId(meldeperiodeAndre.kjedeId, meldeperiodeAndre.fnr)
 
                 førsteMeldekort.deaktivert shouldBe null
+
                 andreMeldekort.deaktivert shouldBe null
-            }
-        }
-    }
-
-    @Test
-    fun `Skal håndtere duplikate requests for lagring av meldeperiode og returnere ok`() {
-        val tac = TestApplicationContext()
-
-        val dto = ObjectMother.meldeperiodeDto()
-        val id = MeldeperiodeId.fromString(dto.id)
-
-        testMedMeldekortRoutes(tac) {
-            mottaMeldeperiodeRequest(dto).apply {
-                status shouldBe HttpStatusCode.OK
-            }
-
-            mottaMeldeperiodeRequest(dto).apply {
-                status shouldBe HttpStatusCode.OK
-
-                tac.meldeperiodeRepo.hentForId(id) shouldBe dto.tilMeldeperiode().getOrFail()
-            }
-        }
-    }
-
-    @Test
-    fun `Skal håndtere requests for lagring av samme meldeperiode med ulike data og returnere 409`() {
-        val tac = TestApplicationContext()
-
-        val dto = ObjectMother.meldeperiodeDto()
-        val id = MeldeperiodeId.fromString(dto.id)
-
-        val dtoMedDiff = dto.copy(opprettet = dto.opprettet.minusDays(1))
-
-        testMedMeldekortRoutes(tac) {
-            mottaMeldeperiodeRequest(dto).apply {
-                status shouldBe HttpStatusCode.OK
-            }
-
-            mottaMeldeperiodeRequest(dtoMedDiff).apply {
-                status shouldBe HttpStatusCode.Conflict
-
-                val meldeperiode = tac.meldeperiodeRepo.hentForId(id)!!
-
-                meldeperiode shouldBe dto.tilMeldeperiode().getOrFail()
-                meldeperiode.opprettet shouldBe dto.opprettet
+                førsteMeldekort.varselId shouldBe andreMeldekort.varselId
             }
         }
     }

@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.domene
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
-import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDate
@@ -24,13 +23,13 @@ data class Meldekort(
     val deaktivert: LocalDateTime?,
     val mottatt: LocalDateTime?,
     val meldeperiode: Meldeperiode,
-    val sakId: SakId,
     val dager: List<MeldekortDag>,
     val journalpostId: JournalpostId?,
     val journalføringstidspunkt: LocalDateTime?,
     val varselId: VarselId? = null,
     val erVarselInaktivert: Boolean = false,
 ) {
+    val sakId = meldeperiode.sakId
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
     val status: MeldekortStatus = if (mottatt == null) MeldekortStatus.KAN_UTFYLLES else MeldekortStatus.INNSENDT
@@ -51,10 +50,9 @@ data class Meldekort(
 fun Meldeperiode.tilTomtMeldekort(): Meldekort {
     return Meldekort(
         id = MeldekortId.random(),
+        meldeperiode = this,
         mottatt = null,
         deaktivert = null,
-        meldeperiode = this,
-        sakId = this.sakId,
         dager = this.girRett.map {
             MeldekortDag(
                 dag = it.key,
@@ -68,10 +66,22 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
     )
 }
 
+// TODO: etter hvert vil vi kanskje sende nytt varsel til bruker for oppdaterte meldekort
+// da må vi sette varselId til null her, slik at nytt varsel kan genereres for meldekortet
 fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
     return forrigeMeldekort.copy(
         id = MeldekortId.random(),
         meldeperiode = this,
+        mottatt = null,
+        deaktivert = null,
+        dager = forrigeMeldekort.dager.zip(this.girRett.values) { dag, harRett ->
+            MeldekortDag(
+                dag = dag.dag,
+                status = if (harRett) dag.status else MeldekortDagStatus.IKKE_REGISTRERT,
+            )
+        },
+        journalpostId = null,
+        journalføringstidspunkt = null,
     )
 }
 

@@ -36,7 +36,6 @@ interface MeldekortMother {
             id = MeldekortId.random(),
             mottatt = mottatt,
             meldeperiode = meldeperiode,
-            sakId = SakId.random(),
             dager = meldeperiode.girRett.map { (dag, _) ->
                 MeldekortDag(
                     dag = dag,
