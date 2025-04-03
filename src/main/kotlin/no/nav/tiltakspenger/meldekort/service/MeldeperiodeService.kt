@@ -49,11 +49,12 @@ class MeldeperiodeService(
                 meldeperiodeRepo.lagre(meldeperiode, tx)
                 logger.info { "Lagret meldeperiode ${meldeperiode.id}" }
                 aktiveMeldekort.forEach {
-                    /** Deaktiverer varsel for tidligere meldekort dersom det ikke har blitt generert et nytt meldekort,
+                    /** Deaktiverer varselet for tidligere meldekort dersom det ikke har blitt generert et nytt meldekort,
                      *  dvs det ikke er rett til tp i den nye versjonen av meldeperioden.
-                     *  Varselet gjenbrukes av evt nytt meldekort
+                     *
+                     *  Dersom nytt meldekort ble opprettet skal varselet fortsatt være aktivt for dette
                      * */
-                    meldekortRepo.deaktiver(it.id, nyttMeldekort == null)
+                    meldekortRepo.deaktiver(it.id, deaktiverVarsel = nyttMeldekort == null)
                     logger.info { "Deaktiverte meldekortet ${it.id}" }
                 }
                 nyttMeldekort?.also {

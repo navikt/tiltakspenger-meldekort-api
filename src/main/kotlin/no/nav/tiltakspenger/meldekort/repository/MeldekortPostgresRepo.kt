@@ -95,7 +95,6 @@ class MeldekortPostgresRepo(
                         mottatt = :mottatt,
                         dager = to_jsonb(:dager::jsonb)
                     where id = :id
-                        
                     """,
                     "id" to lagreKommando.id.toString(),
                     "mottatt" to lagreKommando.mottatt,
