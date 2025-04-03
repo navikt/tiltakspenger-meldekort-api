@@ -8,22 +8,28 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.contentType
 import io.ktor.http.path
-import io.ktor.server.routing.routing
-import io.ktor.server.testing.testApplication
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.util.url
-import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.TestApplicationContext
+import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
-import no.nav.tiltakspenger.meldekort.routes.jacksonSerialization
-import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
 import no.nav.tiltakspenger.objectmothers.ObjectMother
+import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class NesteMeldekortRouteTest {
+
+    private suspend fun ApplicationTestBuilder.nesteMeldekortRequest() = defaultRequest(
+        HttpMethod.Get,
+        url {
+            protocol = URLProtocol.HTTPS
+            path("/meldekort/bruker/neste")
+        },
+    )
 
     @Test
     fun `hent neste meldekort for utfylling`() {
@@ -48,38 +54,19 @@ class NesteMeldekortRouteTest {
         )
 
         tac.meldeperiodeRepo.lagre(førsteMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(førsteMeldekort)
+        tac.meldekortRepo.opprett(førsteMeldekort)
 
         tac.meldeperiodeRepo.lagre(andreMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(andreMeldekort)
+        tac.meldekortRepo.opprett(andreMeldekort)
 
-        runTest {
-            testApplication {
-                application {
-                    jacksonSerialization()
-                    routing {
-                        meldekortRoutes(
-                            meldekortService = tac.meldekortService,
-                            meldeperiodeService = tac.meldeperiodeService,
-                            texasHttpClient = tac.texasHttpClient,
-                            clock = tac.clock,
-                        )
-                    }
-                }
-                defaultRequest(
-                    HttpMethod.Get,
-                    url {
-                        protocol = URLProtocol.HTTPS
-                        path("/meldekort/bruker/neste")
-                    },
-                ).apply {
-                    val meldekortFraBody = deserialize<MeldekortTilBrukerDTO>(bodyAsText())
+        testMedMeldekortRoutes(tac) {
+            nesteMeldekortRequest().apply {
+                val meldekortFraBody = deserialize<MeldekortTilBrukerDTO>(bodyAsText())
 
-                    status shouldBe HttpStatusCode.OK
-                    contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
+                status shouldBe HttpStatusCode.OK
+                contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
 
-                    meldekortFraBody shouldBe førsteMeldekort.tilBrukerDTO()
-                }
+                meldekortFraBody shouldBe førsteMeldekort.tilBrukerDTO()
             }
         }
     }
@@ -104,38 +91,19 @@ class NesteMeldekortRouteTest {
         )
 
         tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(innsendtMeldekort)
+        tac.meldekortRepo.opprett(innsendtMeldekort)
 
         tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(ikkeKlartMeldekort)
+        tac.meldekortRepo.opprett(ikkeKlartMeldekort)
 
-        runTest {
-            testApplication {
-                application {
-                    jacksonSerialization()
-                    routing {
-                        meldekortRoutes(
-                            meldekortService = tac.meldekortService,
-                            meldeperiodeService = tac.meldeperiodeService,
-                            texasHttpClient = tac.texasHttpClient,
-                            clock = tac.clock,
-                        )
-                    }
-                }
-                defaultRequest(
-                    HttpMethod.Get,
-                    url {
-                        protocol = URLProtocol.HTTPS
-                        path("/meldekort/bruker/neste")
-                    },
-                ).apply {
-                    val meldekortFraBody = deserialize<MeldekortTilBrukerDTO>(bodyAsText())
+        testMedMeldekortRoutes(tac) {
+            nesteMeldekortRequest().apply {
+                val meldekortFraBody = deserialize<MeldekortTilBrukerDTO>(bodyAsText())
 
-                    status shouldBe HttpStatusCode.OK
-                    contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
+                status shouldBe HttpStatusCode.OK
+                contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
 
-                    meldekortFraBody shouldBe innsendtMeldekort.tilBrukerDTO()
-                }
+                meldekortFraBody shouldBe innsendtMeldekort.tilBrukerDTO()
             }
         }
     }
@@ -150,31 +118,71 @@ class NesteMeldekortRouteTest {
         )
 
         tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
-        tac.meldekortRepo.lagre(ikkeKlartMeldekort)
+        tac.meldekortRepo.opprett(ikkeKlartMeldekort)
 
-        runTest {
-            testApplication {
-                application {
-                    jacksonSerialization()
-                    routing {
-                        meldekortRoutes(
-                            meldekortService = tac.meldekortService,
-                            meldeperiodeService = tac.meldeperiodeService,
-                            texasHttpClient = tac.texasHttpClient,
-                            clock = tac.clock,
-                        )
-                    }
-                }
-                defaultRequest(
-                    HttpMethod.Get,
-                    url {
-                        protocol = URLProtocol.HTTPS
-                        path("/meldekort/bruker/neste")
-                    },
-                ).apply {
-                    status shouldBe HttpStatusCode.NotFound
-                    bodyAsText() shouldBe ""
-                }
+        testMedMeldekortRoutes(tac) {
+            nesteMeldekortRequest().apply {
+                status shouldBe HttpStatusCode.NotFound
+                bodyAsText() shouldBe ""
+            }
+        }
+    }
+
+    @Test
+    fun `skal hente siste versjon av meldekort for en periode med flere versjoner`() {
+        val tac = TestApplicationContext()
+        val meldeperiodeService = tac.meldeperiodeService
+
+        val periode = Periode(
+            fraOgMed = LocalDate.of(2025, 1, 6),
+            tilOgMed = LocalDate.of(2025, 1, 19),
+        )
+
+        val førsteDto = meldeperiodeDto(
+            periode = periode,
+        )
+        val andreDto = førsteDto.copy(id = MeldeperiodeId.random().toString(), versjon = 2)
+
+        meldeperiodeService.lagreFraSaksbehandling(førsteDto)
+        meldeperiodeService.lagreFraSaksbehandling(andreDto)
+
+        testMedMeldekortRoutes(tac) {
+            nesteMeldekortRequest().apply {
+                val meldekort = deserialize<MeldekortTilBrukerDTO>(bodyAsText())
+
+                status shouldBe HttpStatusCode.OK
+
+                meldekort.meldeperiodeId shouldBe andreDto.id
+                meldekort.versjon shouldBe 2
+            }
+        }
+    }
+
+    @Test
+    fun `skal ikke hente deaktivert meldekort`() {
+        val tac = TestApplicationContext()
+        val meldeperiodeService = tac.meldeperiodeService
+
+        val periode = Periode(
+            fraOgMed = LocalDate.of(2025, 1, 6),
+            tilOgMed = LocalDate.of(2025, 1, 19),
+        )
+
+        val førsteDto = meldeperiodeDto(
+            periode = periode,
+        )
+        val andreDto = førsteDto.copy(
+            id = MeldeperiodeId.random().toString(),
+            versjon = 2,
+            girRett = periode.tilDager().associateWith { false },
+        )
+
+        meldeperiodeService.lagreFraSaksbehandling(førsteDto)
+        meldeperiodeService.lagreFraSaksbehandling(andreDto)
+
+        testMedMeldekortRoutes(tac) {
+            nesteMeldekortRequest().apply {
+                status shouldBe HttpStatusCode.NotFound
             }
         }
     }

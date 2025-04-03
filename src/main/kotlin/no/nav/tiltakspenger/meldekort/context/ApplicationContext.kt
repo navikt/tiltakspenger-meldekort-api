@@ -57,6 +57,7 @@ open class ApplicationContext(val clock: Clock) {
     open val meldekortRepo: MeldekortRepo by lazy {
         MeldekortPostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
+            clock = clock,
         )
     }
     open val meldeperiodeRepo: MeldeperiodeRepo by lazy {

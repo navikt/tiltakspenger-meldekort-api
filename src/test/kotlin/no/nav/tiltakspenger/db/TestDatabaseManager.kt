@@ -8,6 +8,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.output.MigrateResult
 import org.testcontainers.containers.PostgreSQLContainer
+import java.time.Clock
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import javax.sql.DataSource
@@ -17,7 +18,7 @@ import kotlin.concurrent.write
 /**
  * Lånt fra tiltakspenger-saksbehandling-api
  */
-internal class TestDatabaseManager {
+internal class TestDatabaseManager(private val clock: Clock) {
 
     private val log = KotlinLogging.logger {}
 
@@ -61,11 +62,11 @@ internal class TestDatabaseManager {
             if (runIsolated) {
                 lock.write {
                     cleanDatabase()
-                    test(TestDataHelper(dataSource))
+                    test(TestDataHelper(dataSource, clock))
                 }
             } else {
                 lock.read {
-                    test(TestDataHelper(dataSource))
+                    test(TestDataHelper(dataSource, clock))
                 }
             }
         } finally {

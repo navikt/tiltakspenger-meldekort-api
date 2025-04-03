@@ -21,7 +21,7 @@ class TestApplicationContext(clock: Clock = TikkendeKlokke()) : ApplicationConte
 
     override val tmsVarselClient = TmsVarselClientFake()
 
-    override val meldekortRepo = MeldekortRepoFake()
+    override val meldekortRepo = MeldekortRepoFake(clock)
 
     override val meldeperiodeRepo = MeldeperiodeRepoFake()
 }
