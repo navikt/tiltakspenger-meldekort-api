@@ -13,6 +13,9 @@ enum class Profile {
     PROD,
 }
 
+private const val APPLICATION_NAME = "tiltakspenger-meldekort-api"
+const val KAFKA_CONSUMER_GROUP_ID = "$APPLICATION_NAME-consumer"
+
 object Configuration {
     private val defaultProperties =
         ConfigurationMap(
@@ -36,6 +39,7 @@ object Configuration {
                 "PDFGEN_URL" to "http://host.docker.internal:8081",
                 "KAFKA_CREDSTORE_PASSWORD" to System.getenv("KAFKA_CREDSTORE_PASSWORD"),
                 "VARSEL_HENDELSE_TOPIC" to "min-side.aapen-brukervarsel-v1",
+                "IDENTHENDELSE_TOPIC" to "tpts.identhendelse-v1",
             ),
         )
 
@@ -134,6 +138,8 @@ object Configuration {
     val dokarkivScope: String by lazy { config()[Key("DOKARKIV_SCOPE", stringType)] }
     val pdfgenUrl: String by lazy { config()[Key("PDFGEN_URL", stringType)] }
     val varselHendelseTopic: String by lazy { config()[Key("VARSEL_HENDELSE_TOPIC", stringType)] }
+
+    val identhendelseTopic: String by lazy { config()[Key("IDENTHENDELSE_TOPIC", stringType)] }
 
     val meldekortFrontendUrl: String by lazy { config()[Key("MELDEKORT_FRONTEND_URL", stringType)] }
 

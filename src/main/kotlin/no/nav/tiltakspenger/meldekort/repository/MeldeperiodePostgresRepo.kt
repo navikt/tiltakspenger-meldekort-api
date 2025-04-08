@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.repository
 import com.fasterxml.jackson.core.type.TypeReference
 import kotliquery.Row
 import kotliquery.Session
+import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
@@ -81,6 +82,20 @@ internal class MeldeperiodePostgresRepo(
                     "select * from meldeperiode where kjede_id = :kjede_id",
                     "kjede_id" to kjedeId,
                 ).map { row -> fromRow(row) }.asSingle,
+            )
+        }
+    }
+
+    override fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr, sessionContext: SessionContext?) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                queryOf(
+                    """update meldeperiode set fnr = :nytt_fnr where fnr = :gammelt_fnr""",
+                    mapOf(
+                        "nytt_fnr" to nyttFnr.verdi,
+                        "gammelt_fnr" to gammeltFnr.verdi,
+                    ),
+                ).asUpdate,
             )
         }
     }

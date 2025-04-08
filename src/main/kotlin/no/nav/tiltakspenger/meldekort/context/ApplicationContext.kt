@@ -22,6 +22,8 @@ import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalførMeldekortService
 import no.nav.tiltakspenger.meldekort.domene.varsler.InaktiverVarslerService
 import no.nav.tiltakspenger.meldekort.domene.varsler.SendVarslerService
+import no.nav.tiltakspenger.meldekort.identhendelse.IdenthendelseConsumer
+import no.nav.tiltakspenger.meldekort.identhendelse.IdenthendelseService
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
@@ -132,6 +134,19 @@ open class ApplicationContext(val clock: Clock) {
             baseUrl = Configuration.azureOpenidConfigTokenEndpoint,
             clientId = Configuration.azureClientId,
             clientSecret = Configuration.azureClientSecret,
+        )
+    }
+
+    open val identhendelseService: IdenthendelseService by lazy {
+        IdenthendelseService(
+            meldeperiodeRepo = meldeperiodeRepo,
+        )
+    }
+
+    open val identhendelseConsumer by lazy {
+        IdenthendelseConsumer(
+            identhendelseService = identhendelseService,
+            topic = Configuration.identhendelseTopic,
         )
     }
 }
