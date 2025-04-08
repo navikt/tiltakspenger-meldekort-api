@@ -86,6 +86,13 @@ internal fun start(
         },
     )
 
+    if (Configuration.isNais()) {
+        val consumers = listOf(
+            applicationContext.identhendelseConsumer,
+        )
+        consumers.forEach { it.run() }
+    }
+
     Runtime.getRuntime().addShutdownHook(
         Thread {
             server.application.attributes.put(isReadyKey, false)

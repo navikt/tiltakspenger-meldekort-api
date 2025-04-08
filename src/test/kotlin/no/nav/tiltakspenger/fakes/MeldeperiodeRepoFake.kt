@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.fakes
 
 import arrow.atomic.Atomic
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
@@ -20,5 +21,14 @@ class MeldeperiodeRepoFake : MeldeperiodeRepo {
 
     override fun hentForKjedeId(kjedeId: MeldeperiodeKjedeId, sessionContext: SessionContext?): Meldeperiode? {
         return data.get().values.find { it.kjedeId == kjedeId }
+    }
+
+    override fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr, sessionContext: SessionContext?) {
+        val meldeperiode = data.get().values.find { it.fnr == gammeltFnr }
+        meldeperiode?.let {
+            data.get()[it.id] = it.copy(
+                fnr = nyttFnr,
+            )
+        }
     }
 }
