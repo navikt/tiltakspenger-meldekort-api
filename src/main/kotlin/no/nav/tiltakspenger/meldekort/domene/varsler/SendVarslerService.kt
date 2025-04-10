@@ -14,7 +14,7 @@ class SendVarslerService(
 
     fun sendVarselForMeldekort() {
         Either.catch {
-            val meldekortUtenVarsel = meldekortRepo.hentDeSomIkkeHarBlittVarsletFor()
+            val meldekortUtenVarsel = meldekortRepo.hentMeldekortDetSkalVarslesFor()
             log.debug { "Fant ${meldekortUtenVarsel.size} meldekort det skal opprettes varsler for" }
 
             meldekortUtenVarsel.forEach { meldekort ->

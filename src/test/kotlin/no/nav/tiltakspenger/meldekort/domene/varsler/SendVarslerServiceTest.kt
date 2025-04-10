@@ -6,6 +6,8 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
@@ -30,7 +32,7 @@ class SendVarslerServiceTest {
         val meldekort = ObjectMother.meldekort()
         val varselId = slot<VarselId>()
 
-        every { meldekortRepo.hentDeSomIkkeHarBlittVarsletFor() } returns listOf(meldekort)
+        every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns listOf(meldekort)
         justRun { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, capture(varselId)) }
 
         service.sendVarselForMeldekort()
@@ -42,12 +44,12 @@ class SendVarslerServiceTest {
 
     @Test
     fun `oppretter varsler for flere meldekort`() {
-        val meldekort1 = ObjectMother.meldekort()
-        val meldekort2 = ObjectMother.meldekort()
-        val meldekort3 = ObjectMother.meldekort()
+        val meldekort1 = ObjectMother.meldekort(fnr = Fnr.random())
+        val meldekort2 = ObjectMother.meldekort(fnr = Fnr.random())
+        val meldekort3 = ObjectMother.meldekort(fnr = Fnr.random())
         val meldekortList = listOf(meldekort1, meldekort2, meldekort3)
 
-        every { meldekortRepo.hentDeSomIkkeHarBlittVarsletFor() } returns meldekortList
+        every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns meldekortList
         justRun { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) }
 
         service.sendVarselForMeldekort()

@@ -318,19 +318,39 @@ class MeldekortPostgresRepo(
             )
         }
 
-    override fun hentDeSomIkkeHarBlittVarsletFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentMeldekortDetSkalVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
                     """
-                    select * from meldekort_bruker mk
-                    join meldeperiode mp on mp.id = mk.meldeperiode_id
-                    where mp.til_og_med <= :maks_til_og_med
-                    and mk.mottatt is null
-                    and mk.deaktivert is null
-                    and mk.varsel_id is null
-                    and mk.varsel_inaktivert is false
-                    limit :limit
+                        WITH sendt_varsel_ikke_mottatt AS (
+                            SELECT mp.fnr AS fnr_med_varsel
+                            FROM meldekort_bruker mk
+                                     JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
+                            WHERE mp.til_og_med <= :maks_til_og_med
+                              AND mk.mottatt IS NULL
+                              AND mk.deaktivert IS NULL
+                              AND mk.varsel_id IS NOT NULL
+                              AND mk.varsel_inaktivert IS FALSE
+                        ),
+                             meldekort_sortert_paa_fra_og_med AS (
+                                 SELECT
+                                     mk.*,
+                                     mp.fnr,
+                                     ROW_NUMBER() OVER (PARTITION BY mp.fnr ORDER BY mp.fra_og_med) AS radnummer
+                                 FROM meldekort_bruker mk
+                                          JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
+                                 WHERE mp.til_og_med <= :maks_til_og_med
+                                   AND mk.mottatt IS NULL
+                                   AND mk.deaktivert IS NULL
+                                   AND mk.varsel_id IS NULL
+                                   AND mk.varsel_inaktivert IS FALSE
+                                   AND mp.fnr NOT IN (SELECT fnr_med_varsel FROM sendt_varsel_ikke_mottatt)
+                             )
+                        SELECT *
+                        FROM meldekort_sortert_paa_fra_og_med
+                        WHERE radnummer = 1
+                        limit :limit
                     """,
                     "limit" to limit,
                     "maks_til_og_med" to senesteTilOgMedDatoForInnsending(),
