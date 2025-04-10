@@ -113,7 +113,7 @@ class MeldekortRepoFake(
         TODO("Not yet implemented")
     }
 
-    override fun hentDeSomIkkeHarBlittVarsletFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentMeldekortDetSkalVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
         TODO("Not yet implemented")
     }
 

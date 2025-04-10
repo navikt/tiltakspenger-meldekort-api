@@ -254,7 +254,7 @@ class MeldekortPostgresRepoTest {
     }
 
     @Nested
-    inner class HentDeSomIkkeHarBlittVarsletFor {
+    inner class HentMeldekortDetSkalVarslesFor {
         @Test
         fun `alle matcher kriteriene`() {
             withMigratedDb { helper ->
@@ -285,7 +285,7 @@ class MeldekortPostgresRepoTest {
 
                 lagreMeldekort(helper, meldekort1, meldekort2)
 
-                val result = repo.hentDeSomIkkeHarBlittVarsletFor()
+                val result = repo.hentMeldekortDetSkalVarslesFor().sortedBy { it.periode.fraOgMed }
 
                 result.size shouldBe 2
 
@@ -344,7 +344,7 @@ class MeldekortPostgresRepoTest {
 
                 lagreMeldekort(helper, meldekort1, meldekort2, meldekort3, meldekort4)
 
-                val result = meldekortRepo.hentDeSomIkkeHarBlittVarsletFor()
+                val result = meldekortRepo.hentMeldekortDetSkalVarslesFor()
 
                 result.size shouldBe 1
 
@@ -383,14 +383,14 @@ class MeldekortPostgresRepoTest {
 
                 lagreMeldekort(helper, meldekort1, meldekort2)
 
-                val result = repo.hentDeSomIkkeHarBlittVarsletFor()
+                val result = repo.hentMeldekortDetSkalVarslesFor()
 
                 result.size shouldBe 0
             }
         }
 
         @Test
-        fun `henter nye meldekort hvis forrige meldekort er mottatt`() {
+        fun `henter neste meldekort hvis forrige meldekort er mottatt`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
 
@@ -431,11 +431,10 @@ class MeldekortPostgresRepoTest {
 
                 lagreMeldekort(helper, meldekort1, meldekort2, meldekort3)
 
-                val result = repo.hentDeSomIkkeHarBlittVarsletFor()
+                val result = repo.hentMeldekortDetSkalVarslesFor()
 
-                result.size shouldBe 2
+                result.size shouldBe 1
                 result[0].id shouldBe meldekort2.id
-                result[1].id shouldBe meldekort3.id
             }
         }
     }
