@@ -3,8 +3,10 @@ package no.nav.tiltakspenger.meldekort.repository
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
@@ -264,12 +266,14 @@ class MeldekortPostgresRepoTest {
                 )
 
                 val meldekort1 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
                     mottatt = null,
                     varselId = null,
                     erVarselInaktivert = false,
                     periode = førstePeriode,
                 )
                 val meldekort2 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
                     mottatt = null,
                     varselId = null,
                     erVarselInaktivert = false,
@@ -301,12 +305,14 @@ class MeldekortPostgresRepoTest {
                 )
 
                 val meldekort1 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
                     mottatt = null,
                     varselId = null,
                     erVarselInaktivert = false,
                     periode = førstePeriode,
                 )
                 val meldekort2 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
                     mottatt = null,
                     varselId = VarselId("Varsel-meldekort2"),
                     erVarselInaktivert = false,
@@ -316,6 +322,7 @@ class MeldekortPostgresRepoTest {
                     ),
                 )
                 val meldekort3 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
                     mottatt = null,
                     varselId = VarselId("Varsel-meldekort3"),
                     erVarselInaktivert = true,
@@ -325,6 +332,7 @@ class MeldekortPostgresRepoTest {
                     ),
                 )
                 val meldekort4 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
                     mottatt = LocalDateTime.now(),
                     varselId = VarselId("Varsel-meldekort4"),
                     erVarselInaktivert = true,
@@ -341,6 +349,93 @@ class MeldekortPostgresRepoTest {
                 result.size shouldBe 1
 
                 result[0].id shouldBe meldekort1.id
+            }
+        }
+
+        @Test
+        fun `henter ikke meldekort hvis vi har sendt varsel for forrige meldekort som ikke er mottatt`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+
+                val fnr = Fnr.random()
+                val førstePeriode = Periode(
+                    fraOgMed = LocalDate.of(2025, 1, 6),
+                    tilOgMed = LocalDate.of(2025, 1, 19),
+                )
+
+                val meldekort1 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    mottatt = null,
+                    varselId = VarselId.random(),
+                    erVarselInaktivert = false,
+                    periode = førstePeriode,
+                )
+                val meldekort2 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    mottatt = null,
+                    varselId = null,
+                    erVarselInaktivert = false,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
+                    ),
+                )
+
+                lagreMeldekort(helper, meldekort1, meldekort2)
+
+                val result = repo.hentDeSomIkkeHarBlittVarsletFor()
+
+                result.size shouldBe 0
+            }
+        }
+
+        @Test
+        fun `henter nye meldekort hvis forrige meldekort er mottatt`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+
+                val fnr = Fnr.random()
+                val førstePeriode = Periode(
+                    fraOgMed = LocalDate.of(2025, 1, 6),
+                    tilOgMed = LocalDate.of(2025, 1, 19),
+                )
+
+                val meldekort1 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    mottatt = LocalDateTime.now(),
+                    varselId = VarselId.random(),
+                    erVarselInaktivert = true,
+                    periode = førstePeriode,
+                )
+                val meldekort2 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    mottatt = null,
+                    varselId = null,
+                    erVarselInaktivert = false,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
+                    ),
+                )
+
+                val meldekort3 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    mottatt = null,
+                    varselId = null,
+                    erVarselInaktivert = false,
+                    periode = Periode(
+                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(4),
+                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(4),
+                    ),
+                )
+
+                lagreMeldekort(helper, meldekort1, meldekort2, meldekort3)
+
+                val result = repo.hentDeSomIkkeHarBlittVarsletFor()
+
+                result.size shouldBe 2
+                result[0].id shouldBe meldekort2.id
+                result[1].id shouldBe meldekort3.id
             }
         }
     }

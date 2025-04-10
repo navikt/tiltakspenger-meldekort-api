@@ -323,13 +323,24 @@ class MeldekortPostgresRepo(
             session.run(
                 sqlQuery(
                     """
+                    WITH sendt_varsel_ikke_mottatt AS (
+                        select mp.fnr as fnr_med_varsel
+                        from meldekort_bruker mk
+                          join meldeperiode mp on mp.id = mk.meldeperiode_id
+                        where mp.til_og_med <= :maks_til_og_med
+                          and mk.mottatt is null
+                          and mk.deaktivert is null
+                          and mk.varsel_id is not null
+                          and mk.varsel_inaktivert is false
+                    )
                     select * from meldekort_bruker mk
-                    join meldeperiode mp on mp.id = mk.meldeperiode_id
+                      join meldeperiode mp on mp.id = mk.meldeperiode_id
                     where mp.til_og_med <= :maks_til_og_med
-                    and mk.mottatt is null
-                    and mk.deaktivert is null
-                    and mk.varsel_id is null
-                    and mk.varsel_inaktivert is false
+                      and mk.mottatt is null
+                      and mk.deaktivert is null
+                      and mk.varsel_id is null
+                      and mk.varsel_inaktivert is false
+                      and mp.fnr not in (select fnr_med_varsel from sendt_varsel_ikke_mottatt)
                     limit :limit
                     """,
                     "limit" to limit,
