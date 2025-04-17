@@ -49,7 +49,7 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:8.1")
     implementation("org.jetbrains:annotations:26.0.2")
     implementation("com.natpryce:konfig:1.6.10.0")
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.6")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.7")
 
     // Felles libs
     implementation("com.github.navikt.tiltakspenger-libs:auth-core:$felleslibVersion")
