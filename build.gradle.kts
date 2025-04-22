@@ -40,7 +40,7 @@ application {
 
 dependencies {
     // <3
-    implementation("io.arrow-kt:arrow-core:2.0.1")
+    implementation("io.arrow-kt:arrow-core:2.1.0")
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
