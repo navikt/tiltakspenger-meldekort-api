@@ -21,9 +21,6 @@ private data class MeldekortDagDbJson(
         FRAVÆR_ANNET,
         IKKE_DELTATT,
         IKKE_REGISTRERT,
-
-        // TODO: Kan fjerne denne
-        IKKE_RETT_TIL_TILTAKSPENGER,
     }
 
     fun toDomain(): MeldekortDag {
@@ -36,7 +33,6 @@ private data class MeldekortDagDbJson(
                 MeldekortDagDbStatus.FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_ANNET
                 MeldekortDagDbStatus.IKKE_DELTATT -> MeldekortDagStatus.IKKE_DELTATT
                 MeldekortDagDbStatus.IKKE_REGISTRERT -> MeldekortDagStatus.IKKE_REGISTRERT
-                MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagStatus.IKKE_REGISTRERT
             },
         )
     }
