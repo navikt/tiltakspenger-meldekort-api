@@ -23,11 +23,12 @@ fun Meldekort.toSaksbehandlingMeldekortDTO(): BrukerutfyltMeldekortDTO {
 fun List<MeldekortDag>.toSaksbehandlingDTO(): Map<LocalDate, Status> {
     return this.associate { dag ->
         dag.dag to when (dag.status) {
-            MeldekortDagStatus.DELTATT -> Status.DELTATT
+            MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET -> Status.DELTATT
+            MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> Status.DELTATT
             MeldekortDagStatus.FRAVÆR_SYK -> Status.FRAVÆR_SYK
             MeldekortDagStatus.FRAVÆR_SYKT_BARN -> Status.FRAVÆR_SYKT_BARN
-            MeldekortDagStatus.FRAVÆR_ANNET -> Status.FRAVÆR_ANNET
-            MeldekortDagStatus.IKKE_DELTATT -> Status.IKKE_DELTATT
+            MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> Status.FRAVÆR_ANNET
+            MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> Status.IKKE_DELTATT
             MeldekortDagStatus.IKKE_REGISTRERT -> Status.IKKE_REGISTRERT
         }
     }

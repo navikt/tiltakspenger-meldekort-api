@@ -15,11 +15,12 @@ private data class MeldekortDagDbJson(
 ) {
     @Suppress("EnumEntryName")
     enum class MeldekortDagDbStatus {
-        DELTATT,
+        DELTATT_UTEN_LØNN_I_TILTAKET,
+        DELTATT_MED_LØNN_I_TILTAKET,
         FRAVÆR_SYK,
         FRAVÆR_SYKT_BARN,
-        FRAVÆR_ANNET,
-        IKKE_DELTATT,
+        FRAVÆR_VELFERD_GODKJENT_AV_NAV,
+        FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV,
         IKKE_REGISTRERT,
     }
 
@@ -27,11 +28,12 @@ private data class MeldekortDagDbJson(
         return MeldekortDag(
             dag = dag,
             status = when (status) {
-                MeldekortDagDbStatus.DELTATT -> MeldekortDagStatus.DELTATT
+                MeldekortDagDbStatus.DELTATT_UTEN_LØNN_I_TILTAKET -> MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET
+                MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagDbStatus.FRAVÆR_SYK -> MeldekortDagStatus.FRAVÆR_SYK
                 MeldekortDagDbStatus.FRAVÆR_SYKT_BARN -> MeldekortDagStatus.FRAVÆR_SYKT_BARN
-                MeldekortDagDbStatus.FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_ANNET
-                MeldekortDagDbStatus.IKKE_DELTATT -> MeldekortDagStatus.IKKE_DELTATT
+                MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
+                MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
                 MeldekortDagDbStatus.IKKE_REGISTRERT -> MeldekortDagStatus.IKKE_REGISTRERT
             },
         )
@@ -43,11 +45,12 @@ fun List<IMeldekortDag>.toDbJson(): String {
         MeldekortDagDbJson(
             dag = dag.dag,
             status = when (dag.status) {
-                MeldekortDagStatus.DELTATT -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT
+                MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_UTEN_LØNN_I_TILTAKET
+                MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagStatus.FRAVÆR_SYK -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYK
                 MeldekortDagStatus.FRAVÆR_SYKT_BARN -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYKT_BARN
-                MeldekortDagStatus.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_ANNET
-                MeldekortDagStatus.IKKE_DELTATT -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_DELTATT
+                MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
+                MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
                 MeldekortDagStatus.IKKE_REGISTRERT -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_REGISTRERT
             },
         )

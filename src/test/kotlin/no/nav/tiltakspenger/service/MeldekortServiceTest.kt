@@ -41,7 +41,7 @@ class MeldekortServiceTest {
             dager = meldekort.dager.map {
                 MeldekortDagFraBruker(
                     dag = it.dag,
-                    status = if (meldekort.meldeperiode.girRett[it.dag] == true) MeldekortDagStatus.DELTATT else MeldekortDagStatus.IKKE_REGISTRERT,
+                    status = if (meldekort.meldeperiode.girRett[it.dag] == true) MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatus.IKKE_REGISTRERT,
                 )
             },
         )

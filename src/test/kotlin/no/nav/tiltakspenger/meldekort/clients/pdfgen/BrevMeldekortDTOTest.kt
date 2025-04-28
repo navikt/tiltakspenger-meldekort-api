@@ -58,18 +58,18 @@ class BrevMeldekortDTOTest {
             val mandagDenneUken = nå(fixedClock).toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             // Linked map for å sikre at rekkefølgen er som forventet
             val statusMap = linkedMapOf(
-                mandagDenneUken to MeldekortDagStatus.DELTATT,
-                mandagDenneUken.plusDays(1) to MeldekortDagStatus.IKKE_DELTATT,
+                mandagDenneUken to MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET,
+                mandagDenneUken.plusDays(1) to MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV,
                 mandagDenneUken.plusDays(2) to MeldekortDagStatus.FRAVÆR_SYK,
                 mandagDenneUken.plusDays(3) to MeldekortDagStatus.FRAVÆR_SYKT_BARN,
-                mandagDenneUken.plusDays(4) to MeldekortDagStatus.FRAVÆR_ANNET,
+                mandagDenneUken.plusDays(4) to MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV,
                 mandagDenneUken.plusDays(5) to MeldekortDagStatus.IKKE_REGISTRERT,
                 mandagDenneUken.plusDays(6) to MeldekortDagStatus.IKKE_REGISTRERT,
-                mandagDenneUken.plusDays(7) to MeldekortDagStatus.DELTATT,
-                mandagDenneUken.plusDays(8) to MeldekortDagStatus.DELTATT,
-                mandagDenneUken.plusDays(9) to MeldekortDagStatus.DELTATT,
-                mandagDenneUken.plusDays(10) to MeldekortDagStatus.DELTATT,
-                mandagDenneUken.plusDays(11) to MeldekortDagStatus.DELTATT,
+                mandagDenneUken.plusDays(7) to MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET,
+                mandagDenneUken.plusDays(8) to MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET,
+                mandagDenneUken.plusDays(9) to MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET,
+                mandagDenneUken.plusDays(10) to MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET,
+                mandagDenneUken.plusDays(11) to MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET,
                 mandagDenneUken.plusDays(12) to MeldekortDagStatus.IKKE_REGISTRERT,
                 mandagDenneUken.plusDays(13) to MeldekortDagStatus.IKKE_REGISTRERT,
             )
