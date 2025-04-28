@@ -10,8 +10,9 @@ import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDagFraBruker
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import java.time.LocalDate
@@ -54,10 +55,10 @@ interface MeldekortMother {
         meldeperiode: Meldeperiode,
         meldekortId: MeldekortId = MeldekortId.random(),
         mottatt: LocalDateTime = nå(fixedClock),
-        dager: List<MeldekortDagFraBruker> = meldeperiode.girRett.map { (dag, _) ->
-            MeldekortDagFraBruker(
+        dager: List<MeldekortDagFraBrukerDTO> = meldeperiode.girRett.map { (dag, _) ->
+            MeldekortDagFraBrukerDTO(
                 dag = dag,
-                status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatus.IKKE_REGISTRERT,
+                status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_REGISTRERT,
             )
         },
     ): LagreMeldekortFraBrukerKommando {

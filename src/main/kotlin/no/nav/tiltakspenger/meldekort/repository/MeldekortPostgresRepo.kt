@@ -58,7 +58,7 @@ class MeldekortPostgresRepo(
                     "meldeperiode_id" to meldekort.meldeperiode.id.toString(),
                     "sak_id" to meldekort.sakId.toString(),
                     "mottatt" to meldekort.mottatt,
-                    "dager" to meldekort.dager.toDbJson(),
+                    "dager" to meldekort.dager.tilMeldekortDagDbJson(),
                     "journalpost_id" to meldekort.journalpostId?.toString(),
                     "tidspunkt" to meldekort.journalføringstidspunkt,
                     "varsel_id" to meldekort.varselId?.toString(),
@@ -98,7 +98,7 @@ class MeldekortPostgresRepo(
                     """,
                     "id" to lagreKommando.id.toString(),
                     "mottatt" to lagreKommando.mottatt,
-                    "dager" to lagreKommando.dager.toDbJson(),
+                    "dager" to lagreKommando.dager.tilMeldekortDagFraBrukerDbJson(),
                 ).asUpdate,
             )
         }

@@ -16,15 +16,15 @@ data class MeldekortTilBrukerDTO(
     val status: MeldekortStatus,
     val maksAntallDager: Int,
     val innsendt: LocalDateTime?,
-    val dager: List<MeldekortDagTilBruker>,
+    val dager: List<MeldekortDagTilBrukerDTO>,
     val kanSendes: Boolean,
 )
 
-data class MeldekortDagTilBruker(
-    override val dag: LocalDate,
-    override val status: MeldekortDagStatus,
+data class MeldekortDagTilBrukerDTO(
+    val dag: LocalDate,
+    val status: MeldekortDagStatusDTO,
     val harRett: Boolean,
-) : IMeldekortDag
+)
 
 fun Meldekort.tilBrukerDTO(): MeldekortTilBrukerDTO {
     return MeldekortTilBrukerDTO(
@@ -40,10 +40,10 @@ fun Meldekort.tilBrukerDTO(): MeldekortTilBrukerDTO {
         maksAntallDager = meldeperiode.maksAntallDagerForPeriode,
         innsendt = mottatt,
         dager = dager.map { dag ->
-            MeldekortDagTilBruker(
+            MeldekortDagTilBrukerDTO(
                 dag = dag.dag,
                 harRett = meldeperiode.girRett[dag.dag] == true,
-                status = dag.status,
+                status = dag.status.tilDTO(),
             )
         },
         kanSendes = this.kanSendes(),

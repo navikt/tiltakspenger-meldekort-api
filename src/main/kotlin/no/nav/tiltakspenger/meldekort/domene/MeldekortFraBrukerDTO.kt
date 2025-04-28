@@ -15,13 +15,13 @@ import java.time.LocalDateTime
 data class LagreMeldekortFraBrukerKommando(
     val id: MeldekortId,
     val fnr: Fnr,
-    val dager: List<MeldekortDagFraBruker>,
+    val dager: List<MeldekortDagFraBrukerDTO>,
     val mottatt: LocalDateTime,
 )
 
 data class MeldekortFraBrukerDTO(
     val id: String,
-    val dager: List<MeldekortDagFraBruker>,
+    val dager: List<MeldekortDagFraBrukerDTO>,
 ) {
     fun tilLagreKommando(fnr: Fnr, clock: Clock): LagreMeldekortFraBrukerKommando {
         return LagreMeldekortFraBrukerKommando(
@@ -33,11 +33,14 @@ data class MeldekortFraBrukerDTO(
     }
 }
 
-data class MeldekortDagFraBruker(
-    override val dag: LocalDate,
-    override val status: MeldekortDagStatus,
-) : IMeldekortDag {
-    fun tilMeldekortDag(): MeldekortDag = MeldekortDag(dag = dag, status = status)
+data class MeldekortDagFraBrukerDTO(
+    val dag: LocalDate,
+    val status: MeldekortDagStatusDTO,
+) {
+    fun tilMeldekortDag(): MeldekortDag = MeldekortDag(
+        dag = dag,
+        status = status.tilMeldekortDagStatus(),
+    )
 }
 
 fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
@@ -45,7 +48,7 @@ fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
         "Meldekortet er ikke klart for innsending fra bruker"
     }
 
-    val antallDagerRegistrert = kommando.dager.count { it.status != MeldekortDagStatus.IKKE_REGISTRERT }
+    val antallDagerRegistrert = kommando.dager.count { it.status != MeldekortDagStatusDTO.IKKE_REGISTRERT }
 
     require(antallDagerRegistrert > 0) {
         "Meldekortet må ha minst en dag med registrering"
@@ -58,7 +61,7 @@ fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
     }
 
     val harRegistrerteDagerUtenRett = kommando.dager.any {
-        it.status != MeldekortDagStatus.IKKE_REGISTRERT && meldeperiode.girRett[it.dag] == false
+        it.status != MeldekortDagStatusDTO.IKKE_REGISTRERT && meldeperiode.girRett[it.dag] == false
     }
 
     require(!harRegistrerteDagerUtenRett) {

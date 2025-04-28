@@ -24,7 +24,7 @@ fun List<MeldekortDag>.toSaksbehandlingDTO(): Map<LocalDate, Status> {
     return this.associate { dag ->
         dag.dag to when (dag.status) {
             MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET -> Status.DELTATT
-            MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> Status.DELTATT
+            MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> throw IllegalStateException("Deltatt med lønn er ikke implementert ennå")
             MeldekortDagStatus.FRAVÆR_SYK -> Status.FRAVÆR_SYK
             MeldekortDagStatus.FRAVÆR_SYKT_BARN -> Status.FRAVÆR_SYKT_BARN
             MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> Status.FRAVÆR_ANNET

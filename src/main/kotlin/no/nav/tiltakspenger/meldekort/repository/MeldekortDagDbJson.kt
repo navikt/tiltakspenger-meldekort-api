@@ -4,9 +4,10 @@ import arrow.core.NonEmptyList
 import arrow.core.toNonEmptyListOrNull
 import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
-import no.nav.tiltakspenger.meldekort.domene.IMeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
 import java.time.LocalDate
 
 private data class MeldekortDagDbJson(
@@ -40,7 +41,7 @@ private data class MeldekortDagDbJson(
     }
 }
 
-fun List<IMeldekortDag>.toDbJson(): String {
+fun List<MeldekortDag>.tilMeldekortDagDbJson(): String {
     return this.map { dag ->
         MeldekortDagDbJson(
             dag = dag.dag,
@@ -52,6 +53,23 @@ fun List<IMeldekortDag>.toDbJson(): String {
                 MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
                 MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
                 MeldekortDagStatus.IKKE_REGISTRERT -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_REGISTRERT
+            },
+        )
+    }.let { serialize(it) }
+}
+
+fun List<MeldekortDagFraBrukerDTO>.tilMeldekortDagFraBrukerDbJson(): String {
+    return this.map { dag ->
+        MeldekortDagDbJson(
+            dag = dag.dag,
+            status = when (dag.status) {
+                MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_UTEN_LØNN_I_TILTAKET
+                MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET
+                MeldekortDagStatusDTO.FRAVÆR_SYK -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYK
+                MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYKT_BARN
+                MeldekortDagStatusDTO.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
+                MeldekortDagStatusDTO.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
+                MeldekortDagStatusDTO.IKKE_REGISTRERT -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_REGISTRERT
             },
         )
     }.let { serialize(it) }
