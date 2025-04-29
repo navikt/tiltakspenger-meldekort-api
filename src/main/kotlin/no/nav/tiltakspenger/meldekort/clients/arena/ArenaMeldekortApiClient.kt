@@ -24,11 +24,9 @@ class ArenaMeldekortApiClient(
 
     suspend fun hentPersonStatus(brukerToken: String): Either<ArenaMeldekortApiFeil, PersonStatusResponse> {
         return Either.catch {
-            val token = texasClient.exchangeToken(brukerToken, audience)
-
             val response = httpClient.get("$baseUrl/person/status") {
                 accept(ContentType.Application.Json)
-                bearerAuth(token = token.token)
+                bearerAuth(token = brukerToken)
             }
 
             val status = response.status
