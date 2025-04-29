@@ -22,7 +22,6 @@ import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortApiClient
 import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
-import no.nav.tiltakspenger.meldekort.routes.bearerToken
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvMeldeperiode
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
@@ -37,29 +36,6 @@ internal fun Route.meldekortRoutes(
     texasClient: TexasClient,
     clock: Clock,
 ) {
-    route("/arenatest") {
-        install(TexasWallBrukerToken) {
-            client = texasClient
-        }
-
-        get("personstatus") {
-            val token = call.bearerToken()
-
-            if (token == null) {
-                logger.error { "Fant ikke token" }
-                return@get call.respond(HttpStatusCode.Unauthorized)
-            }
-
-            val personstatus = arenaMeldekortApiClient.hentPersonStatus(token)
-
-            personstatus.onRight {
-                call.respond(message = "Personstatus returned $it", status = HttpStatusCode.OK)
-            }.onLeft {
-                call.respond(message = "Oh noes", status = HttpStatusCode.InternalServerError)
-            }
-        }
-    }
-
     // Kalles fra saksbehandling-api (sender meldeperiodene til meldekort-api)
     route("/meldekort", HttpMethod.Post) {
         install(TexasWallSystemToken) {
