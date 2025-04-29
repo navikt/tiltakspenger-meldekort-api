@@ -45,7 +45,8 @@ internal fun Application.meldekortApi(
         meldekortRoutes(
             meldekortService = applicationContext.meldekortService,
             meldeperiodeService = applicationContext.meldeperiodeService,
-            texasHttpClient = applicationContext.texasHttpClient,
+            arenaMeldekortApiClient = applicationContext.arenaMeldekortApiClient,
+            texasClient = applicationContext.texasClient,
             clock = applicationContext.clock,
         )
     }

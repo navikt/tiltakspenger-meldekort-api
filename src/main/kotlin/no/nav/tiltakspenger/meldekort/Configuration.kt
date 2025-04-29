@@ -31,6 +31,7 @@ object Configuration {
                 "DOKARKIV_URL" to "http://host.docker.internal:8091",
                 "NAIS_TOKEN_ENDPOINT" to System.getenv("NAIS_TOKEN_ENDPOINT"),
                 "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to System.getenv("NAIS_TOKEN_INTROSPECTION_ENDPOINT"),
+                "NAIS_TOKEN_EXCHANGE_ENDPOINT" to System.getenv("NAIS_TOKEN_EXCHANGE_ENDPOINT"),
                 "ELECTOR_PATH" to System.getenv("ELECTOR_PATH"),
                 "KAFKA_BROKERS" to System.getenv("KAFKA_BROKERS"),
                 "KAFKA_TRUSTSTORE_PATH" to System.getenv("KAFKA_TRUSTSTORE_PATH"),
@@ -54,6 +55,8 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "https://www.nav.no/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "api://prod-gcp.tpts.tiltakspenger-pdfgen/.default",
                 "PDFGEN_URL" to "http://tiltakspenger-pdfgen",
+                "ARENA_MELDEKORT_API_URL" to "https://meldekort-api.nav.no/meldekort/meldekort-api",
+                "ARENA_MELDEKORT_API_AUDIENCE" to "api://prod-gcp.meldekort.meldekort-api/.default",
             ),
         )
 
@@ -68,6 +71,8 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "https://www.ansatt.dev.nav.no/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "api://dev-gcp.tpts.tiltakspenger-pdfgen/.default",
                 "PDFGEN_URL" to "http://tiltakspenger-pdfgen",
+                "ARENA_MELDEKORT_API_URL" to "https://meldekort-api-q2.intern.dev.nav.no/meldekort/meldekort-api",
+                "ARENA_MELDEKORT_API_AUDIENCE" to "api://dev-gcp.meldekort.meldekort-api-q2/.default",
             ),
         )
 
@@ -86,6 +91,7 @@ object Configuration {
                 "DB_JDBC_URL" to "jdbc:postgresql://localhost:5435/meldekort?user=postgres&password=test",
                 "NAIS_TOKEN_ENDPOINT" to "http://localhost:7164/api/v1/token",
                 "NAIS_TOKEN_INTROSPECTION_ENDPOINT" to "http://localhost:7164/api/v1/introspect",
+                "NAIS_TOKEN_EXCHANGE_ENDPOINT" to "http://localhost:7164/api/v1/token/exchange",
                 "KAFKA_BROKERS" to "",
                 "KAFKA_TRUSTSTORE_PATH" to "",
                 "KAFKA_KEYSTORE_PATH" to "",
@@ -93,6 +99,8 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "http://localhost:2223/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "localhost",
                 "PDFGEN_URL" to "http://host.docker.internal:8081",
+                "ARENA_MELDEKORT_API_URL" to "http://host.docker.internal:8091/meldekort/meldekort-api",
+                "ARENA_MELDEKORT_API_AUDIENCE" to "arena-meldekort-api",
             ),
         )
 
@@ -125,6 +133,7 @@ object Configuration {
             ),
         ]
     }
+    val naisTokenExchangeEndpoint: String by lazy { config()[Key("NAIS_TOKEN_EXCHANGE_ENDPOINT", stringType)] }
 
     /** Samme som hvis man gjør en get til AZURE_APP_WELL_KNOWN_URL og plukker ut 'token_endpoint' */
     val azureOpenidConfigTokenEndpoint: String by lazy { config()[Key("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT", stringType)] }
@@ -142,6 +151,9 @@ object Configuration {
     val identhendelseTopic: String by lazy { config()[Key("IDENTHENDELSE_TOPIC", stringType)] }
 
     val meldekortFrontendUrl: String by lazy { config()[Key("MELDEKORT_FRONTEND_URL", stringType)] }
+
+    val arenaMeldekortApiUrl: String by lazy { config()[Key("ARENA_MELDEKORT_API_URL", stringType)] }
+    val arenaMeldekortApiAudience: String by lazy { config()[Key("ARENA_MELDEKORT_API_AUDIENCE", stringType)] }
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 

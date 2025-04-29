@@ -8,12 +8,12 @@ import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.response.respond
 import io.ktor.util.AttributeKey
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
-import no.nav.tiltakspenger.meldekort.clients.TokenIntrospectionResponse
+import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
+import no.nav.tiltakspenger.meldekort.clients.texas.TexasIntrospectionResponse
 import no.nav.tiltakspenger.meldekort.routes.bearerToken
 
 class AuthPluginConfiguration(
-    var client: TexasHttpClient? = null,
+    var client: TexasClient? = null,
 )
 
 private val fnrAttributeKey = AttributeKey<Fnr>("fnr")
@@ -22,7 +22,7 @@ val log = KotlinLogging.logger("TexasWall")
 
 private suspend fun validateAndGetClaims(
     call: PipelineCall,
-    introspectToken: suspend (token: String) -> TokenIntrospectionResponse,
+    introspectToken: suspend (token: String) -> TexasIntrospectionResponse,
 ): Map<String, Any?>? {
     val token = call.bearerToken()
     if (token == null) {
