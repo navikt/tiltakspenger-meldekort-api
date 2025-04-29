@@ -45,9 +45,10 @@ class TexasClientImpl(
     }
 
     override suspend fun getSystemToken(audienceTarget: String, identityProvider: String): AccessToken {
+        val target = audienceTarget.replace(':', '.')
         val texasTokenRequest = TexasTokenRequest(
             identityProvider = identityProvider,
-            target = audienceTarget,
+            target = "api://$target/.default",
         )
 
         try {
