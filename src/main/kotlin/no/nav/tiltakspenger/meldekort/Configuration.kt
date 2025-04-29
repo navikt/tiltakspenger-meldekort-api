@@ -55,7 +55,7 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "https://www.nav.no/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "api://prod-gcp.tpts.tiltakspenger-pdfgen/.default",
                 "PDFGEN_URL" to "http://tiltakspenger-pdfgen",
-                "ARENA_MELDEKORT_API_URL" to "https://meldekort-api.nav.no/meldekort/meldekort-api",
+                "ARENA_MELDEKORT_API_URL" to "https://meldekort-api.nav.no/meldekort/meldekort-api/api",
                 "ARENA_MELDEKORT_API_AUDIENCE" to "prod-gcp:meldekort:meldekort-api",
             ),
         )
@@ -71,7 +71,7 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "https://www.ansatt.dev.nav.no/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "api://dev-gcp.tpts.tiltakspenger-pdfgen/.default",
                 "PDFGEN_URL" to "http://tiltakspenger-pdfgen",
-                "ARENA_MELDEKORT_API_URL" to "https://meldekort-api-q2.intern.dev.nav.no/meldekort/meldekort-api",
+                "ARENA_MELDEKORT_API_URL" to "https://meldekort-api-q2.intern.dev.nav.no/meldekort/meldekort-api/api",
                 "ARENA_MELDEKORT_API_AUDIENCE" to "dev-gcp:meldekort:meldekort-api-q2",
             ),
         )
@@ -99,7 +99,7 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "http://localhost:2223/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "localhost",
                 "PDFGEN_URL" to "http://host.docker.internal:8081",
-                "ARENA_MELDEKORT_API_URL" to "http://host.docker.internal:8091/meldekort/meldekort-api",
+                "ARENA_MELDEKORT_API_URL" to "http://host.docker.internal:8091/meldekort/meldekort-api/api",
                 "ARENA_MELDEKORT_API_AUDIENCE" to "arena-meldekort-api",
             ),
         )
