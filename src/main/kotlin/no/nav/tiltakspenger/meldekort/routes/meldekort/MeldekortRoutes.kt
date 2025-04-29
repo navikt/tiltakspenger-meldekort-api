@@ -37,6 +37,29 @@ internal fun Route.meldekortRoutes(
     texasClient: TexasClient,
     clock: Clock,
 ) {
+    route("/arenatest") {
+        install(TexasWallBrukerToken) {
+            client = texasClient
+        }
+
+        get("personstatus") {
+            val token = call.bearerToken()
+
+            if (token == null) {
+                logger.error { "Fant ikke token" }
+                return@get call.respond(HttpStatusCode.Unauthorized)
+            }
+
+            val personstatus = arenaMeldekortApiClient.hentPersonStatus(token)
+
+            personstatus.onRight {
+                call.respond(message = "Personstatus returned $it", status = HttpStatusCode.OK)
+            }.onLeft {
+                call.respond(message = "Oh noes", status = HttpStatusCode.InternalServerError)
+            }
+        }
+    }
+
     // Kalles fra saksbehandling-api (sender meldeperiodene til meldekort-api)
     route("/meldekort", HttpMethod.Post) {
         install(TexasWallSystemToken) {
@@ -106,23 +129,9 @@ internal fun Route.meldekortRoutes(
         }
 
         get("neste") {
-            val token = call.bearerToken()
-
-            if (token == null) {
-                logger.error { "Fant ikke token" }
-            } else {
-                val personstatus = arenaMeldekortApiClient.hentPersonStatus(token)
-                personstatus.onRight {
-                    logger.info { "Personstatus returned $it" }
-                }.onLeft {
-                    logger.error { "Personstatus feilet" }
-                }
-            }
-
             val fnr = call.fnr()
 
-            val meldekort =
-                meldekortService.hentNesteMeldekortForUtfylling(fnr) ?: meldekortService.hentSisteMeldekort(fnr)
+            val meldekort = meldekortService.hentNesteMeldekortForUtfylling(fnr) ?: meldekortService.hentSisteMeldekort(fnr)
             if (meldekort == null) {
                 call.respond(HttpStatusCode.NotFound)
                 return@get
