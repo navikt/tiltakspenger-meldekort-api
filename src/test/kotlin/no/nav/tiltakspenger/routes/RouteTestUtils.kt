@@ -43,7 +43,6 @@ fun testMedMeldekortRoutes(context: TestApplicationContext, block: suspend Appli
                         meldeperiodeService = context.meldeperiodeService,
                         texasClient = context.texasClient,
                         clock = context.clock,
-                        arenaMeldekortApiClient = context.arenaMeldekortApiClient,
                     )
                 }
             }

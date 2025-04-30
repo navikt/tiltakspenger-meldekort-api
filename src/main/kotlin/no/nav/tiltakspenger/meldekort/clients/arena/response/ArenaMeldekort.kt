@@ -8,8 +8,8 @@ data class ArenaMeldekort(
     val meldeperiode: ArenaMeldeperiode,
     val meldegruppe: String,
     val kortStatus: String,
-    val bruttoBelop: Double,
-    val erForskuddsPeriode: Boolean,
-    val mottattDato: LocalDate,
+    val bruttoBelop: Double?,
+    val erForskuddsPeriode: Boolean?,
+    val mottattDato: LocalDate?,
     val korrigerbart: Boolean,
 )

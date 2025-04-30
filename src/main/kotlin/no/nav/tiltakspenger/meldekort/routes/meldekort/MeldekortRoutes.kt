@@ -18,7 +18,6 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnr
-import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortApiClient
 import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
@@ -32,7 +31,6 @@ val logger = KotlinLogging.logger {}
 internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     meldeperiodeService: MeldeperiodeService,
-    arenaMeldekortApiClient: ArenaMeldekortApiClient,
     texasClient: TexasClient,
     clock: Clock,
 ) {

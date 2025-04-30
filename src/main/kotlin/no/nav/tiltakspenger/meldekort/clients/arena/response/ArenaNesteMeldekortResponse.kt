@@ -7,9 +7,9 @@ data class ArenaNesteMeldekortResponse(
     val meldeform: String,
     val meldekort: List<ArenaMeldekort>,
     val etterregistrerteMeldekort: List<ArenaMeldekort>,
-    val fravaer: List<ArenaFravaerPeriode>,
-    val id: String,
-    val antallGjenstaaendeFeriedager: Long,
+    val fravaer: List<ArenaFravaerPeriode>?,
+    val id: String?,
+    val antallGjenstaaendeFeriedager: Long?,
 )
 
 data class ArenaFravaerPeriode(
