@@ -41,7 +41,7 @@ fun testMedMeldekortRoutes(context: TestApplicationContext, block: suspend Appli
                     meldekortRoutes(
                         meldekortService = context.meldekortService,
                         meldeperiodeService = context.meldeperiodeService,
-                        texasHttpClient = context.texasHttpClient,
+                        texasClient = context.texasClient,
                         clock = context.clock,
                     )
                 }

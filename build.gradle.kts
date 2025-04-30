@@ -52,12 +52,11 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.7")
 
     // Felles libs
-    implementation("com.github.navikt.tiltakspenger-libs:auth-core:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:auth-ktor:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:jobber:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:json:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:kafka:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:logging:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:meldekort-dtos:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:periodisering:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
@@ -94,6 +93,10 @@ dependencies {
 
     implementation("io.ktor:ktor-utils:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+
+    // Auth
+    api("com.auth0:java-jwt:4.5.0")
+    api("com.auth0:jwks-rsa:0.22.1")
 
     // Test
     testImplementation(platform("org.junit:junit-bom:5.12.2"))

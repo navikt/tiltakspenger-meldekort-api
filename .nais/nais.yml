@@ -58,6 +58,9 @@ spec:
       rules:
         - application: tiltakspenger-meldekort
         - application: tiltakspenger-saksbehandling-api
+        - application: tokenx-token-generator
+          namespace: nais
+          cluster: dev-gcp
   observability:
     autoInstrumentation:
       enabled: true

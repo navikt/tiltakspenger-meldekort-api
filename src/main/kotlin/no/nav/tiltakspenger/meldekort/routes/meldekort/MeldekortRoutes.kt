@@ -18,7 +18,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
 import no.nav.tiltakspenger.meldekort.auth.fnr
-import no.nav.tiltakspenger.meldekort.clients.TexasHttpClient
+import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvMeldeperiode
@@ -31,13 +31,13 @@ val logger = KotlinLogging.logger {}
 internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     meldeperiodeService: MeldeperiodeService,
-    texasHttpClient: TexasHttpClient,
+    texasClient: TexasClient,
     clock: Clock,
 ) {
     // Kalles fra saksbehandling-api (sender meldeperiodene til meldekort-api)
     route("/meldekort", HttpMethod.Post) {
         install(TexasWallSystemToken) {
-            client = texasHttpClient
+            client = texasClient
         }
 
         handle {
@@ -83,7 +83,7 @@ internal fun Route.meldekortRoutes(
     // Endepunkter som kalles fra brukers meldekort-frontend
     route("/meldekort/bruker") {
         install(TexasWallBrukerToken) {
-            client = texasHttpClient
+            client = texasClient
         }
 
         get("meldekort/{meldekortId}") {

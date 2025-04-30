@@ -17,7 +17,7 @@ import java.time.Clock
 class TestApplicationContext(clock: Clock = TikkendeKlokke()) : ApplicationContext(clock) {
     override val sessionFactory: TestSessionFactory = TestSessionFactory()
 
-    override val texasHttpClient = TexasFake()
+    override val texasClient = TexasFake()
 
     override val tmsVarselClient = TmsVarselClientFake()
 
