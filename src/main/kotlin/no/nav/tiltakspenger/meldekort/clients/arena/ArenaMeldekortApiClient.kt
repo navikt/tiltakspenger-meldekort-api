@@ -12,6 +12,7 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
 import no.nav.tiltakspenger.meldekort.clients.arena.response.ArenaMeldekort
 import no.nav.tiltakspenger.meldekort.clients.arena.response.ArenaMeldekortStatusResponse
 import no.nav.tiltakspenger.meldekort.clients.arena.response.ArenaNesteMeldekortResponse
@@ -43,7 +44,11 @@ class ArenaMeldekortApiClient(
         path: String,
     ): Either<ArenaMeldekortApiFeil, ResponseType> {
         return Either.catch {
-            val token = texasClient.exchangeToken(brukerToken, audience).token
+            val token = texasClient.exchangeToken(
+                brukerToken,
+                audience,
+                TexasIdentityProvider.TOKENX,
+            ).token
 
             val response = httpClient.get("$baseUrl/$path") {
                 accept(ContentType.Application.Json)

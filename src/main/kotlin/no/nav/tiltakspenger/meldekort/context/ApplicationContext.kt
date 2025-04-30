@@ -1,8 +1,6 @@
 package no.nav.tiltakspenger.meldekort.context
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.auth.core.EntraIdSystemtokenClient
-import no.nav.tiltakspenger.libs.auth.core.EntraIdSystemtokenHttpClient
 import no.nav.tiltakspenger.libs.kafka.Producer
 import no.nav.tiltakspenger.libs.kafka.config.KafkaConfigImpl
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
@@ -10,6 +8,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFacto
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.Profile
+import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortApiClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
@@ -92,7 +91,10 @@ open class ApplicationContext(val clock: Clock) {
         SaksbehandlingClientImpl(
             baseUrl = Configuration.saksbehandlingApiUrl,
             getToken = {
-                texasClient.getSystemToken(Configuration.saksbehandlingApiAudience)
+                texasClient.getSystemToken(
+                    Configuration.saksbehandlingApiAudience,
+                    TexasIdentityProvider.AZUREAD,
+                )
             },
         )
     }
@@ -130,20 +132,17 @@ open class ApplicationContext(val clock: Clock) {
     open val dokarkivClient by lazy {
         DokarkivClient(
             baseUrl = Configuration.dokarkivUrl,
-            getToken = { entraIdSystemtokenClient.getSystemtoken(Configuration.dokarkivScope) },
+            getToken = {
+                texasClient.getSystemToken(
+                    Configuration.dokarkivScope,
+                    TexasIdentityProvider.AZUREAD,
+                )
+            },
         )
     }
 
     open val pdfgenClient by lazy {
         PdfgenClient()
-    }
-
-    open val entraIdSystemtokenClient: EntraIdSystemtokenClient by lazy {
-        EntraIdSystemtokenHttpClient(
-            baseUrl = Configuration.azureOpenidConfigTokenEndpoint,
-            clientId = Configuration.azureClientId,
-            clientSecret = Configuration.azureClientSecret,
-        )
     }
 
     open val identhendelseService: IdenthendelseService by lazy {

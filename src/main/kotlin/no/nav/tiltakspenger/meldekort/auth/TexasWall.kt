@@ -57,7 +57,8 @@ val TexasWallBrukerToken = createRouteScopedPlugin(
     pluginConfig.apply {
         onCall { call ->
             val tokenClaims =
-                validateAndGetClaims(call, { token -> client.introspectToken(token, "tokenx") }) ?: return@onCall
+                validateAndGetClaims(call, { token -> client.introspectToken(token, TexasIdentityProvider.TOKENX) })
+                    ?: return@onCall
 
             val fnrString = tokenClaims["pid"]?.toString()
             if (fnrString == null) {
@@ -81,7 +82,8 @@ val TexasWallSystemToken = createRouteScopedPlugin(
 
     pluginConfig.apply {
         onCall { call ->
-            validateAndGetClaims(call, { token -> client.introspectToken(token, "azuread") }) ?: return@onCall
+            validateAndGetClaims(call, { token -> client.introspectToken(token, TexasIdentityProvider.AZUREAD) })
+                ?: return@onCall
         }
     }
 }

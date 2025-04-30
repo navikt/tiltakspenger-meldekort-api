@@ -11,6 +11,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
+import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
 import no.nav.tiltakspenger.meldekort.clients.httpClientApache
 
 class TexasClientImpl(
@@ -21,7 +22,7 @@ class TexasClientImpl(
 ) : TexasClient {
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun introspectToken(token: String, identityProvider: String): TexasIntrospectionResponse {
+    override suspend fun introspectToken(token: String, identityProvider: TexasIdentityProvider): TexasIntrospectionResponse {
         val texasIntrospectionRequest = TexasIntrospectionRequest(
             identityProvider = identityProvider,
             token = token,
@@ -44,7 +45,7 @@ class TexasClientImpl(
         }
     }
 
-    override suspend fun getSystemToken(audienceTarget: String, identityProvider: String): AccessToken {
+    override suspend fun getSystemToken(audienceTarget: String, identityProvider: TexasIdentityProvider): AccessToken {
         val target = audienceTarget.replace(':', '.')
         val texasTokenRequest = TexasTokenRequest(
             identityProvider = identityProvider,
@@ -72,7 +73,7 @@ class TexasClientImpl(
     override suspend fun exchangeToken(
         userToken: String,
         audienceTarget: String,
-        identityProvider: String,
+        identityProvider: TexasIdentityProvider,
     ): AccessToken {
         val texasExchangeTokenRequest = TexasExchangeTokenRequest(
             identityProvider = identityProvider,
