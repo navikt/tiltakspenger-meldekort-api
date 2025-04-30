@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.auth
 
-enum class TexasIdentityProvider(val identityProvider: String) {
+enum class TexasIdentityProvider(val value: String) {
     AZUREAD("azuread"),
     TOKENX("tokenx"),
     MASKINPORTEN("maskinporten"),

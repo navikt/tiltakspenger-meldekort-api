@@ -24,7 +24,7 @@ class TexasClientImpl(
 
     override suspend fun introspectToken(token: String, identityProvider: TexasIdentityProvider): TexasIntrospectionResponse {
         val texasIntrospectionRequest = TexasIntrospectionRequest(
-            identityProvider = identityProvider,
+            identityProvider = identityProvider.value,
             token = token,
         )
 
@@ -48,7 +48,7 @@ class TexasClientImpl(
     override suspend fun getSystemToken(audienceTarget: String, identityProvider: TexasIdentityProvider): AccessToken {
         val target = audienceTarget.replace(':', '.')
         val texasTokenRequest = TexasTokenRequest(
-            identityProvider = identityProvider,
+            identityProvider = identityProvider.value,
             target = "api://$target/.default",
         )
 
@@ -76,7 +76,7 @@ class TexasClientImpl(
         identityProvider: TexasIdentityProvider,
     ): AccessToken {
         val texasExchangeTokenRequest = TexasExchangeTokenRequest(
-            identityProvider = identityProvider,
+            identityProvider = identityProvider.value,
             target = audienceTarget,
             userToken = userToken,
         )

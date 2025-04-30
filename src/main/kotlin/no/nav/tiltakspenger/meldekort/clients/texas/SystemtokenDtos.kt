@@ -2,16 +2,15 @@ package no.nav.tiltakspenger.meldekort.clients.texas
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.tiltakspenger.libs.common.AccessToken
-import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
 import java.time.Instant
 
 data class TexasTokenRequest(
-    @JsonProperty("identity_provider") val identityProvider: TexasIdentityProvider,
+    @JsonProperty("identity_provider") val identityProvider: String,
     val target: String,
 )
 
 data class TexasExchangeTokenRequest(
-    @JsonProperty("identity_provider") val identityProvider: TexasIdentityProvider,
+    @JsonProperty("identity_provider") val identityProvider: String,
     val target: String,
     @JsonProperty("user_token") val userToken: String,
 )
