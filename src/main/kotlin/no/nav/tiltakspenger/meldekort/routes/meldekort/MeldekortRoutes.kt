@@ -9,8 +9,10 @@ import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortFraBrukerRoute
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.meldeperioderFraSaksbehandlingRoute
+import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
+import no.nav.tiltakspenger.meldekort.service.SakService
 import java.time.Clock
 
 val logger = KotlinLogging.logger {}
@@ -18,6 +20,7 @@ val logger = KotlinLogging.logger {}
 internal fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     meldeperiodeService: MeldeperiodeService,
+    sakService: SakService,
     texasClient: TexasClient,
     clock: Clock,
 ) {
@@ -28,6 +31,7 @@ internal fun Route.meldekortRoutes(
         }
 
         meldeperioderFraSaksbehandlingRoute(meldeperiodeService)
+        sakFraSaksbehandlingRoute(sakService)
     }
 
     // Endepunkter som kalles fra brukers meldekort-frontend

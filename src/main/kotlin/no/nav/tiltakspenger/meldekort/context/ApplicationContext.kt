@@ -28,8 +28,11 @@ import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
+import no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.SakRepo
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
+import no.nav.tiltakspenger.meldekort.service.SakService
 import no.nav.tiltakspenger.meldekort.service.SendMeldekortService
 import java.time.Clock
 
@@ -73,6 +76,12 @@ open class ApplicationContext(val clock: Clock) {
             sessionFactory = sessionFactory as PostgresSessionFactory,
         )
     }
+    open val sakRepo: SakRepo by lazy {
+        SakPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
+
     open val meldekortService: MeldekortService by lazy {
         MeldekortService(
             meldekortRepo = meldekortRepo,
@@ -83,6 +92,13 @@ open class ApplicationContext(val clock: Clock) {
         MeldeperiodeService(
             meldeperiodeRepo = meldeperiodeRepo,
             meldekortRepo = meldekortService.meldekortRepo,
+            sessionFactory = sessionFactory,
+        )
+    }
+
+    val sakService: SakService by lazy {
+        SakService(
+            sakRepo = sakRepo,
             sessionFactory = sessionFactory,
         )
     }

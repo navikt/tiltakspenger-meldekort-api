@@ -2,6 +2,7 @@ package no.nav.tiltakspenger
 
 import no.nav.tiltakspenger.fakes.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.MeldeperiodeRepoFake
+import no.nav.tiltakspenger.fakes.SakRepoFake
 import no.nav.tiltakspenger.fakes.TexasFake
 import no.nav.tiltakspenger.libs.common.TestSessionFactory
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
@@ -24,4 +25,6 @@ class TestApplicationContext(clock: Clock = TikkendeKlokke()) : ApplicationConte
     override val meldekortRepo = MeldekortRepoFake(clock)
 
     override val meldeperiodeRepo = MeldeperiodeRepoFake()
+
+    override val sakRepo = SakRepoFake()
 }

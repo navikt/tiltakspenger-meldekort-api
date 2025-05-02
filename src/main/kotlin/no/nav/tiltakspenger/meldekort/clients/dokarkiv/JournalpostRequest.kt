@@ -6,7 +6,7 @@ import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.journalføring.PdfOgJson
 import java.time.LocalDateTime
 
-enum class Tema(val value: String) {
+enum class JournalpostTema(val value: String) {
     TILTAKSPENGER(INDIVIDSTONAD),
 }
 
@@ -15,13 +15,13 @@ const val MELDEKORT_BREVKODE = "NAV 00-10.02"
 
 data class JournalpostRequest(
     val tittel: String,
-    val journalpostType: JournalPostType = JournalPostType.INNGAAENDE,
-    val tema: String = Tema.TILTAKSPENGER.value,
+    val journalpostType: JournalpostType = JournalpostType.INNGAAENDE,
+    val tema: String = JournalpostTema.TILTAKSPENGER.value,
     val kanal: String = "NAV_NO",
     val journalfoerendeEnhet: String?,
-    val avsenderMottaker: AvsenderMottaker,
-    val bruker: Bruker,
-    val sak: Sak?,
+    val avsenderMottaker: JournalpostAvsenderMottaker,
+    val bruker: JournalpostBruker,
+    val sak: JournalpostSak?,
     val datoMottatt: LocalDateTime,
     val dokumenter: List<JournalpostDokument>,
     val eksternReferanseId: String,
@@ -39,20 +39,20 @@ fun Meldekort.toJournalpostDokument(
         tittel = tittel,
         journalfoerendeEnhet = journalforendeEnhet,
         datoMottatt = this.mottatt ?: LocalDateTime.now(),
-        avsenderMottaker = AvsenderMottaker(id = fnr.verdi),
-        bruker = Bruker(id = fnr.verdi),
-        sak = this.meldeperiode.saksnummer?.let {
-            Sak(fagsakId = it)
+        avsenderMottaker = JournalpostAvsenderMottaker(id = fnr.verdi),
+        bruker = JournalpostBruker(id = fnr.verdi),
+        sak = this.meldeperiode.saksnummer.let {
+            JournalpostSak(fagsakId = it)
         },
         dokumenter = listOf(
             JournalpostDokument(
                 tittel = tittel,
                 brevkode = MELDEKORT_BREVKODE,
                 dokumentvarianter = listOf(
-                    DokumentVariant.ArkivPDF(
+                    JournalpostDokumentVariant.ArkivPDF(
                         fysiskDokument = pdfOgJson.pdfAsBase64(),
                     ),
-                    DokumentVariant.OriginalJson(
+                    JournalpostDokumentVariant.OriginalJson(
                         fysiskDokument = pdfOgJson.jsonAsBase64(),
                     ),
                 ),
@@ -72,17 +72,17 @@ private fun Meldekort.lagTittel(): String {
     return "$tittel for uke $uke1 - $uke2 ($fra - $til) elektronisk mottatt av Nav"
 }
 
-data class AvsenderMottaker(
+data class JournalpostAvsenderMottaker(
     val id: String,
     val idType: String = "FNR",
 )
 
-data class Bruker(
+data class JournalpostBruker(
     val id: String,
     val idType: String = "FNR",
 )
 
-data class Sak(
+data class JournalpostSak(
     val fagsakId: String,
     val fagsaksystem: String = "TILTAKSPENGER",
     val sakstype: String = "FAGSAK",
@@ -91,10 +91,10 @@ data class Sak(
 data class JournalpostDokument(
     val tittel: String,
     val brevkode: String?,
-    val dokumentvarianter: List<DokumentVariant>,
+    val dokumentvarianter: List<JournalpostDokumentVariant>,
 )
 
-sealed class DokumentVariant {
+sealed class JournalpostDokumentVariant {
     abstract val filtype: String
     abstract val fysiskDokument: String
     abstract val variantformat: String
@@ -102,7 +102,7 @@ sealed class DokumentVariant {
 
     data class ArkivPDF(
         override val fysiskDokument: String,
-    ) : DokumentVariant() {
+    ) : JournalpostDokumentVariant() {
         override val filtype: String = "PDFA"
         override val variantformat: String = "ARKIV"
         override val filnavn: String = "meldekort.pdf"
@@ -110,14 +110,14 @@ sealed class DokumentVariant {
 
     data class OriginalJson(
         override val fysiskDokument: String,
-    ) : DokumentVariant() {
+    ) : JournalpostDokumentVariant() {
         override val filtype: String = "JSON"
         override val variantformat: String = "ORIGINAL"
         override val filnavn: String = "meldekort.json"
     }
 }
 
-enum class JournalPostType(val type: String) {
+enum class JournalpostType(val type: String) {
     INNGAAENDE("INNGAAENDE"),
     UTGAAENDE("UTGAAENDE"),
 }
