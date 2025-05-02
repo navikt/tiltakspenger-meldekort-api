@@ -24,7 +24,7 @@ class MottaMeldeperiodeRouteTest {
         HttpMethod.Post,
         url {
             protocol = URLProtocol.HTTPS
-            path("/meldekort")
+            path("/saksbehandling/meldeperiode")
         },
     ) {
         setBody(serialize(dto))

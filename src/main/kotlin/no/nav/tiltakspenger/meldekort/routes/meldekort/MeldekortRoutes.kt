@@ -1,27 +1,14 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
-import arrow.core.Either
-import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.request.receiveText
-import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import no.nav.tiltakspenger.libs.common.MeldekortId
-import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
-import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
-import no.nav.tiltakspenger.meldekort.auth.fnr
 import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
-import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
-import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
-import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvMeldeperiode
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortFraBrukerRoute
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes
+import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.meldeperioderFraSaksbehandlingRoute
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
 import java.time.Clock
@@ -34,50 +21,13 @@ internal fun Route.meldekortRoutes(
     texasClient: TexasClient,
     clock: Clock,
 ) {
-    // Kalles fra saksbehandling-api (sender meldeperiodene til meldekort-api)
-    route("/meldekort", HttpMethod.Post) {
+    // Endepunkter som kalles fra saksbehandling-api
+    route("/saksbehandling") {
         install(TexasWallSystemToken) {
             client = texasClient
         }
 
-        handle {
-            val meldeperiodeDto = Either.catch {
-                deserialize<MeldeperiodeDTO>(call.receiveText())
-            }.getOrElse {
-                with("Feil ved parsing av meldeperiode fra saksbehandling-api") {
-                    logger.error { this }
-                    sikkerlogg.error(it) { this }
-                    call.respond(message = this, status = HttpStatusCode.BadRequest)
-                }
-                return@handle
-            }
-
-            meldeperiodeService.lagreFraSaksbehandling(meldeperiodeDto).onLeft {
-                when (it) {
-                    FeilVedMottakAvMeldeperiode.MeldeperiodeFinnesUtenDiff -> call.respond(
-                        message = "Meldeperioden var allerede lagret med samme data",
-                        status = HttpStatusCode.OK,
-                    )
-
-                    FeilVedMottakAvMeldeperiode.MeldeperiodeFinnesMedDiff -> call.respond(
-                        message = "Meldeperioden var allerede lagret med andre data",
-                        status = HttpStatusCode.Conflict,
-                    )
-
-                    FeilVedMottakAvMeldeperiode.UgyldigMeldeperiode -> call.respond(
-                        message = "Ugyldig meldeperiode",
-                        status = HttpStatusCode.BadRequest,
-                    )
-
-                    FeilVedMottakAvMeldeperiode.LagringFeilet -> call.respond(
-                        message = "Lagring av meldeperiode feilet",
-                        status = HttpStatusCode.InternalServerError,
-                    )
-                }
-            }.onRight {
-                call.respond(message = "Meldeperiode lagret", status = HttpStatusCode.OK)
-            }
-        }
+        meldeperioderFraSaksbehandlingRoute(meldeperiodeService)
     }
 
     // Endepunkter som kalles fra brukers meldekort-frontend
@@ -86,68 +36,7 @@ internal fun Route.meldekortRoutes(
             client = texasClient
         }
 
-        get("meldekort/{meldekortId}") {
-            val meldekortId = call.parameters["meldekortId"]?.let { MeldekortId.fromString(it) }
-            if (meldekortId == null) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
-
-            meldekortService.hentForMeldekortId(meldekortId, call.fnr())?.also {
-                call.respond(it.tilBrukerDTO())
-                return@get
-            }
-
-            call.respond(HttpStatusCode.NotFound)
-            return@get
-        }
-
-        get("neste") {
-            val fnr = call.fnr()
-
-            val meldekort = meldekortService.hentNesteMeldekortForUtfylling(fnr) ?: meldekortService.hentSisteMeldekort(fnr)
-            if (meldekort == null) {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
-
-            call.respond(meldekort.tilBrukerDTO())
-        }
-
-        get("alle") {
-            val alleMeldekort = meldekortService.hentAlleMeldekort(call.fnr()).map {
-                it.tilBrukerDTO()
-            }
-
-            call.respond(alleMeldekort)
-        }
-
-        post("send-inn") {
-            val lagreFraBrukerKommando = Either.catch {
-                deserialize<MeldekortFraBrukerDTO>(call.receiveText())
-                    .tilLagreKommando(call.fnr(), clock)
-            }.getOrElse {
-                with("Feil ved parsing av innsendt meldekort fra bruker") {
-                    logger.error { this }
-                    sikkerlogg.error(it) { "$this - ${it.message}" }
-                }
-                call.respond(HttpStatusCode.BadRequest)
-                return@post
-            }
-
-            Either.catch {
-                meldekortService.lagreMeldekortFraBruker(
-                    kommando = lagreFraBrukerKommando,
-                )
-            }.onLeft {
-                with("Feil ved lagring av innsendt meldekort fra bruker") {
-                    logger.error { "Feil ved lagring av innsendt meldekort med id ${lagreFraBrukerKommando.id}" }
-                    sikkerlogg.error(it) { "$this - ${it.message}" }
-                }
-                call.respond(HttpStatusCode.InternalServerError)
-            }.onRight {
-                call.respond(HttpStatusCode.OK)
-            }
-        }
+        meldekortTilBrukerRoutes(meldekortService)
+        meldekortFraBrukerRoute(meldekortService, clock)
     }
 }
