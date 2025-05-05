@@ -77,10 +77,10 @@ class BrevMeldekortDTOTest {
             val meldekort = ObjectMother.meldekort(statusMap = statusMap)
             val serialized = meldekort.toBrevMeldekortDTO()
             val deserialized = deserialize<BrevMeldekortDTO>(serialized)
-            val statusList = statusMap.entries.toList()
+            val statusList = statusMap.entries.toList().map { it.value.tilBrevMeldekortStatusDTO() }
 
             deserialized.dager.forEachIndexed { index, brevMeldekortDagDTO ->
-                val expectedStatus = statusList[index].value
+                val expectedStatus = statusList[index]
                 brevMeldekortDagDTO.status shouldBe expectedStatus
             }
         }
