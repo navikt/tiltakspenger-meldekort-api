@@ -49,7 +49,7 @@ fun Route.meldekortRoutes(
         meldekortFraBrukerRoute(meldekortService, clock)
     }
 
-    get("/arenatest/:fnr") {
+    get("/arenatest/{fnr}") {
         val fnr = Fnr.fromString(call.parameters["fnr"]!!)
         logger.info { "Henter meldekort fra arena for fnr $fnr" }
 
