@@ -25,7 +25,7 @@ fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     meldeperiodeService: MeldeperiodeService,
     sakService: SakService,
-    arenaMeldekortService: ArenaMeldekortServiceClient,
+    arenaMeldekortClient: ArenaMeldekortServiceClient,
     texasClient: TexasClient,
     clock: Clock,
 ) {
@@ -53,8 +53,8 @@ fun Route.meldekortRoutes(
         val fnr = Fnr.fromString(call.parameters["fnr"]!!)
         logger.info { "Henter meldekort fra arena for fnr $fnr" }
 
-        val nesteMeldekort = arenaMeldekortService.hentNesteMeldekort(fnr)
-        val forrigeMeldekort = arenaMeldekortService.hentHistoriskeMeldekort(fnr)
+        val nesteMeldekort = arenaMeldekortClient.hentNesteMeldekort(fnr)
+        val forrigeMeldekort = arenaMeldekortClient.hentHistoriskeMeldekort(fnr)
 
         call.respond(listOf(nesteMeldekort, forrigeMeldekort))
     }
