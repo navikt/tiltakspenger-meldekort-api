@@ -15,8 +15,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
-import no.nav.tiltakspenger.meldekort.clients.arena.response.ArenaMeldekort
-import no.nav.tiltakspenger.meldekort.clients.arena.response.ArenaNesteMeldekortResponse
 import no.nav.tiltakspenger.meldekort.clients.httpClientWithRetry
 import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 
@@ -28,14 +26,14 @@ class ArenaMeldekortServiceClient(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    suspend fun hentNesteMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaNesteMeldekortResponse> {
+    suspend fun hentNesteMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse> {
         return request(fnr, "/meldekortservice/api/v2/meldekort")
     }
 
     suspend fun hentHistoriskeMeldekort(
         fnr: Fnr,
         antallMeldeperioder: Int = 10,
-    ): Either<ArenaMeldekortServiceFeil, List<ArenaMeldekort>> {
+    ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse> {
         return request(fnr, "/meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder")
     }
 

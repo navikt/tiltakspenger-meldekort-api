@@ -53,8 +53,8 @@ fun Route.meldekortRoutes(
         val fnr = Fnr.fromString(call.parameters["fnr"]!!)
         logger.info { "Henter meldekort fra arena for fnr $fnr" }
 
-        val nesteMeldekort = arenaMeldekortClient.hentNesteMeldekort(fnr)
-        val forrigeMeldekort = arenaMeldekortClient.hentHistoriskeMeldekort(fnr)
+        val nesteMeldekort = arenaMeldekortClient.hentNesteMeldekort(fnr).getOrNull()
+        val forrigeMeldekort = arenaMeldekortClient.hentHistoriskeMeldekort(fnr).getOrNull()
 
         call.respond(listOf(nesteMeldekort, forrigeMeldekort))
     }
