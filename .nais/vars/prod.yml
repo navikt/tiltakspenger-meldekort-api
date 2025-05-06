@@ -11,5 +11,5 @@ kafka-pool: "nav-prod"
 outboundExternalUrls:
   dokarkiv: dokarkiv.prod-fss-pub.nais.io
   arenaMeldekortService: meldekortservice.prod-fss-pub.nais.io
-arenaMeldekortService: meldekortservice
+arenaMeldekortServiceApp: meldekortservice
 naisEnv: prod
