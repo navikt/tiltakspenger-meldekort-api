@@ -1,10 +1,14 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import io.ktor.server.routing.route
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
+import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortServiceClient
 import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortFraBrukerRoute
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes
@@ -21,6 +25,7 @@ fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     meldeperiodeService: MeldeperiodeService,
     sakService: SakService,
+    arenaMeldekortService: ArenaMeldekortServiceClient,
     texasClient: TexasClient,
     clock: Clock,
 ) {
@@ -42,5 +47,15 @@ fun Route.meldekortRoutes(
 
         meldekortTilBrukerRoutes(meldekortService)
         meldekortFraBrukerRoute(meldekortService, clock)
+    }
+
+    get("/arenatest/:fnr") {
+        val fnr = Fnr.fromString(call.parameters["fnr"]!!)
+        logger.info { "Henter meldekort fra arena for fnr $fnr" }
+
+        val nesteMeldekort = arenaMeldekortService.hentNesteMeldekort(fnr)
+        val forrigeMeldekort = arenaMeldekortService.hentHistoriskeMeldekort(fnr)
+
+        call.respond(listOf(nesteMeldekort, forrigeMeldekort))
     }
 }
