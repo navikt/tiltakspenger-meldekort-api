@@ -11,8 +11,8 @@ import io.ktor.http.path
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.util.url
 import no.nav.tiltakspenger.TestApplicationContext
-import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO

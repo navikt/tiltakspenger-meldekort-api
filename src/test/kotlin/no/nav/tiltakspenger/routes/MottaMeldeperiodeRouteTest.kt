@@ -10,10 +10,10 @@ import io.ktor.http.path
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.util.url
 import no.nav.tiltakspenger.TestApplicationContext
-import no.nav.tiltakspenger.libs.common.MeldeperiodeId
 import no.nav.tiltakspenger.libs.common.getOrFail
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.meldekort.domene.tilMeldeperiode
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.lagreMeldekortFraBrukerKommando
