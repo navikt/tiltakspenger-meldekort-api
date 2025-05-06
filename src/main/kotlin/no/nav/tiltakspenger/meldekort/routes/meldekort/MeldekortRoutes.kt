@@ -17,7 +17,7 @@ import java.time.Clock
 
 val logger = KotlinLogging.logger {}
 
-internal fun Route.meldekortRoutes(
+fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     meldeperiodeService: MeldeperiodeService,
     sakService: SakService,

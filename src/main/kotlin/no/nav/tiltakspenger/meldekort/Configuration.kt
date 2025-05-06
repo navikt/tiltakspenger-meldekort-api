@@ -47,8 +47,8 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "https://www.nav.no/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "api://prod-gcp.tpts.tiltakspenger-pdfgen/.default",
                 "PDFGEN_URL" to "http://tiltakspenger-pdfgen",
-                "ARENA_MELDEKORT_API_URL" to "http://meldekort.meldekort-api/meldekort/meldekort-api/api",
-                "ARENA_MELDEKORT_API_AUDIENCE" to "prod-gcp:meldekort:meldekort-api",
+                "ARENA_MELDEKORTSERVICE_URL" to "https://meldekortservice.prod-fss-pub.nais.io",
+                "ARENA_MELDEKORTSERVICE_AUDIENCE" to "prod-fss:meldekort:meldekortservice",
             ),
         )
 
@@ -63,8 +63,8 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "https://www.ansatt.dev.nav.no/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "api://dev-gcp.tpts.tiltakspenger-pdfgen/.default",
                 "PDFGEN_URL" to "http://tiltakspenger-pdfgen",
-                "ARENA_MELDEKORT_API_URL" to "http://meldekort.meldekort-api-q2/meldekort/meldekort-api/api",
-                "ARENA_MELDEKORT_API_AUDIENCE" to "dev-gcp:meldekort:meldekort-api-q2",
+                "ARENA_MELDEKORTSERVICE_URL" to "https://meldekortservice-q2.dev-fss-pub.nais.io",
+                "ARENA_MELDEKORTSERVICE_AUDIENCE" to "dev-fss:meldekort:meldekortservice-q2",
             ),
         )
 
@@ -89,8 +89,8 @@ object Configuration {
                 "MELDEKORT_FRONTEND_URL" to "http://localhost:2223/tiltakspenger/meldekort",
                 "PDFGEN_SCOPE" to "localhost",
                 "PDFGEN_URL" to "http://host.docker.internal:8081",
-                "ARENA_MELDEKORT_API_URL" to "http://host.docker.internal:8091/meldekort/meldekort-api/api",
-                "ARENA_MELDEKORT_API_AUDIENCE" to "arena-meldekort-api",
+                "ARENA_MELDEKORTSERVICE_URL" to "http://host.docker.internal:8091",
+                "ARENA_MELDEKORTSERVICE_AUDIENCE" to "meldekortservice",
             ),
         )
 
@@ -137,8 +137,8 @@ object Configuration {
 
     val meldekortFrontendUrl: String by lazy { config()[Key("MELDEKORT_FRONTEND_URL", stringType)] }
 
-    val arenaMeldekortApiUrl: String by lazy { config()[Key("ARENA_MELDEKORT_API_URL", stringType)] }
-    val arenaMeldekortApiAudience: String by lazy { config()[Key("ARENA_MELDEKORT_API_AUDIENCE", stringType)] }
+    val arenaMeldekortServiceUrl: String by lazy { config()[Key("ARENA_MELDEKORTSERVICE_URL", stringType)] }
+    val arenaMeldekortServiceAudience: String by lazy { config()[Key("ARENA_MELDEKORTSERVICE_AUDIENCE", stringType)] }
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 

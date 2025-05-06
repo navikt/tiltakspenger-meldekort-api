@@ -30,7 +30,7 @@ fun main() {
     start(log = log)
 }
 
-internal fun start(
+fun start(
     log: KLogger,
     port: Int = httpPort(),
     isNais: Boolean = Configuration.isNais(),

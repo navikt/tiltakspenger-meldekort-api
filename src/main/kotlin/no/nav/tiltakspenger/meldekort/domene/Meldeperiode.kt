@@ -5,10 +5,10 @@ import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.MeldeperiodeId
-import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import java.time.LocalDate
 import java.time.LocalDateTime

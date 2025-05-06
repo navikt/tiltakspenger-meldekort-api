@@ -52,10 +52,12 @@ spec:
       rules:
         - application: tiltakspenger-saksbehandling-api
         - application: tiltakspenger-pdfgen
-        - application: {{ arenaMeldekortApiApp }}
+        - application: {{ arenaMeldekortServiceApp }}
           namespace: meldekort
+          cluster: {{ naisEnv }}-fss
       external:
         - host: {{outboundExternalUrls.dokarkiv}}
+        - host: {{outboundExternalUrls.arenaMeldekortService}}
     inbound:
       rules:
         - application: tiltakspenger-meldekort

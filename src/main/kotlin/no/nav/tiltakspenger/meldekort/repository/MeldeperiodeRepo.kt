@@ -1,8 +1,8 @@
 package no.nav.tiltakspenger.meldekort.repository
 
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.MeldeperiodeId
-import no.nav.tiltakspenger.libs.common.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 

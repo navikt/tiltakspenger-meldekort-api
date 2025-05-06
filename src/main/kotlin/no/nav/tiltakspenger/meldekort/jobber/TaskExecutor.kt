@@ -20,7 +20,7 @@ import kotlin.time.toJavaDuration
  * Generisk task executor som kjører tasks med gitt intervall.
  * Tanken er at den kan brukes til å kjøre tasks som sender meldekort, etc.
  */
-internal class TaskExecutor(
+class TaskExecutor(
     private val stoppableJob: StoppableJob,
 ) : StoppableJob by stoppableJob {
     companion object {

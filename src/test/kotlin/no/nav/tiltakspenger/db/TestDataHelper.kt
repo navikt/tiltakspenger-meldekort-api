@@ -9,7 +9,7 @@ import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
 import java.time.Clock
 import javax.sql.DataSource
 
-internal class TestDataHelper(
+class TestDataHelper(
     dataSource: DataSource,
     clock: Clock,
 ) {
@@ -23,6 +23,6 @@ internal class TestDataHelper(
 /**
  * @param runIsolated Tømmer databasen før denne testen for kjøre i isolasjon. Brukes når man gjør operasjoner på tvers av saker.
  */
-internal fun withMigratedDb(runIsolated: Boolean = true, clock: Clock = fixedClock, test: (TestDataHelper) -> Unit) {
+fun withMigratedDb(runIsolated: Boolean = true, clock: Clock = fixedClock, test: (TestDataHelper) -> Unit) {
     TestDatabaseManager(clock).withMigratedDb(runIsolated, test)
 }

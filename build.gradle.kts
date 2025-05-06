@@ -6,7 +6,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "3.1.3"
 val mockkVersion = "1.14.2"
-val felleslibVersion = "0.0.448"
+val felleslibVersion = "0.0.459"
 val kotestVersion = "5.9.1"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.1.1"
@@ -57,6 +57,7 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:json:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:kafka:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:logging:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:meldekort:${felleslibVersion}")
     implementation("com.github.navikt.tiltakspenger-libs:meldekort-dtos:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:periodisering:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")

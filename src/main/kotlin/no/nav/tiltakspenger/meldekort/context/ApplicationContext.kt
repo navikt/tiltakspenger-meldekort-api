@@ -9,7 +9,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.Profile
 import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
-import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortApiClient
+import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortServiceClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
@@ -174,11 +174,11 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    open val arenaMeldekortApiClient by lazy {
-        ArenaMeldekortApiClient(
+    open val arenaMeldekortServiceClient by lazy {
+        ArenaMeldekortServiceClient(
             texasClient = texasClient,
-            baseUrl = Configuration.arenaMeldekortApiUrl,
-            audience = Configuration.arenaMeldekortApiAudience,
+            baseUrl = Configuration.arenaMeldekortServiceUrl,
+            audience = Configuration.arenaMeldekortServiceAudience,
         )
     }
 }

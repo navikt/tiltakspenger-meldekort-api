@@ -20,7 +20,7 @@ import org.slf4j.event.Level
 
 const val CALL_ID_MDC_KEY = "call-id"
 
-internal fun Application.meldekortApi(
+fun Application.meldekortApi(
     applicationContext: ApplicationContext,
 ) {
     install(CallId) {

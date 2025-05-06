@@ -10,16 +10,17 @@ import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
 import no.nav.tiltakspenger.meldekort.clients.arena.response.ArenaMeldekort
-import no.nav.tiltakspenger.meldekort.clients.arena.response.ArenaMeldekortStatusResponse
 import no.nav.tiltakspenger.meldekort.clients.arena.response.ArenaNesteMeldekortResponse
 import no.nav.tiltakspenger.meldekort.clients.httpClientWithRetry
 import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 
-class ArenaMeldekortApiClient(
+class ArenaMeldekortServiceClient(
     private val baseUrl: String,
     private val audience: String,
     private val texasClient: TexasClient,
@@ -27,50 +28,46 @@ class ArenaMeldekortApiClient(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    suspend fun hentMeldekortstatus(brukerToken: String): Either<ArenaMeldekortApiFeil, ArenaMeldekortStatusResponse> {
-        return request(brukerToken, "/person/meldekortstatus")
+    suspend fun hentNesteMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaNesteMeldekortResponse> {
+        return request(fnr, "/meldekortservice/api/v2/meldekort")
     }
 
-    suspend fun hentNesteMeldekort(brukerToken: String): Either<ArenaMeldekortApiFeil, ArenaNesteMeldekortResponse> {
-        return request(brukerToken, "/person/meldekort")
-    }
-
-    suspend fun hentHistoriskeMeldekort(brukerToken: String): Either<ArenaMeldekortApiFeil, List<ArenaMeldekort>> {
-        return request(brukerToken, "/person/historiskemeldekort")
+    suspend fun hentHistoriskeMeldekort(
+        fnr: Fnr,
+        antallMeldeperioder: Int = 10,
+    ): Either<ArenaMeldekortServiceFeil, List<ArenaMeldekort>> {
+        return request(fnr, "/meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder")
     }
 
     private suspend inline fun <reified ResponseType> request(
-        brukerToken: String,
+        fnr: Fnr,
         path: String,
-    ): Either<ArenaMeldekortApiFeil, ResponseType> {
+    ): Either<ArenaMeldekortServiceFeil, ResponseType> {
         return Either.catch {
-            val token = texasClient.exchangeToken(
-                brukerToken,
-                audience,
-                TexasIdentityProvider.TOKENX,
-            ).token
+            val token = texasClient.getSystemToken(audience, TexasIdentityProvider.AZUREAD)
 
             val response = httpClient.get("$baseUrl/$path") {
                 accept(ContentType.Application.Json)
-                bearerAuth(token)
+                bearerAuth(token.token)
+                header("ident", fnr.verdi)
             }
 
             val status = response.status
 
             if (status != HttpStatusCode.OK) {
                 logger.error { "Feil-response ved kall til meldekort-api - $status" }
-                return ArenaMeldekortApiFeil.FeilResponse(status).left()
+                return ArenaMeldekortServiceFeil.FeilResponse(status).left()
             }
 
             return response.body<ResponseType>().right()
         }.getOrElse {
-            logger.error(it) { "Ukjent feil ved request fra arena meldekort-api - ${it.message}" }
-            ArenaMeldekortApiFeil.UkjentFeil.left()
+            logger.error(it) { "Ukjent feil ved request fra arena meldekortservice - ${it.message}" }
+            ArenaMeldekortServiceFeil.UkjentFeil.left()
         }
     }
 }
 
-sealed interface ArenaMeldekortApiFeil {
-    data class FeilResponse(val status: HttpStatusCode) : ArenaMeldekortApiFeil
-    data object UkjentFeil : ArenaMeldekortApiFeil
+sealed interface ArenaMeldekortServiceFeil {
+    data class FeilResponse(val status: HttpStatusCode) : ArenaMeldekortServiceFeil
+    data object UkjentFeil : ArenaMeldekortServiceFeil
 }

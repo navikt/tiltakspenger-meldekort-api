@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
  * swagger: https://dokarkiv-q2.dev.intern.nav.no/swagger-ui/index.html#/
  */
 const val INDIVIDSTONAD = "IND"
-internal const val DOKARKIV_PATH = "rest/journalpostapi/v1/journalpost"
+const val DOKARKIV_PATH = "rest/journalpostapi/v1/journalpost"
 
 class DokarkivClient(
     private val client: HttpClient = httpClientWithRetry(timeout = 30L),

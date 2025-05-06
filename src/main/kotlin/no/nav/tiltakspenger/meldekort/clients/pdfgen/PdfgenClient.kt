@@ -24,7 +24,7 @@ import no.nav.tiltakspenger.meldekort.domene.journalføring.PdfOgJson
 import toBrevMeldekortDTO
 import java.util.UUID
 
-internal const val PDFGEN_PATH = "api/v1/genpdf/tpts"
+const val PDFGEN_PATH = "api/v1/genpdf/tpts"
 
 /**
  * Konverterer domene til JSON som sendes til https://github.com/navikt/tiltakspenger-pdfgen for å generere PDF.

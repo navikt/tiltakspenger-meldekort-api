@@ -18,7 +18,7 @@ import kotlin.concurrent.write
 /**
  * Lånt fra tiltakspenger-saksbehandling-api
  */
-internal class TestDatabaseManager(private val clock: Clock) {
+class TestDatabaseManager(private val clock: Clock) {
 
     private val log = KotlinLogging.logger {}
 
