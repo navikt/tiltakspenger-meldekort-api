@@ -10,3 +10,4 @@ replicas:
 kafka-pool: "nav-dev"
 outboundExternalUrls:
   dokarkiv: dokarkiv-q2.dev-fss-pub.nais.io
+arenaMeldekortApiApp: meldekort-api-q2

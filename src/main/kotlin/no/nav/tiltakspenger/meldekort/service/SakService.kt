@@ -33,7 +33,7 @@ class SakService(
                 }
                 return Unit.right()
             }.mapLeft {
-                with("Lagring av sak feilet for $sakId") {
+                with("Oppdatering av sak feilet for $sakId") {
                     logger.error { this }
                     sikkerlogg.error(it) { this }
                 }
