@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.fakes
 
 import arrow.atomic.Atomic
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.Sak
@@ -25,6 +26,13 @@ class SakRepoFake : SakRepo {
 
     override fun hent(
         id: SakId,
+        sessionContext: SessionContext?,
+    ): Sak? {
+        TODO("Not yet implemented")
+    }
+
+    override fun hent(
+        fnr: Fnr,
         sessionContext: SessionContext?,
     ): Sak? {
         TODO("Not yet implemented")

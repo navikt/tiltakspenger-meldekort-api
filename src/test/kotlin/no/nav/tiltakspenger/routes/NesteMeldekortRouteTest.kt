@@ -15,7 +15,7 @@ import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
-import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import org.junit.jupiter.api.Test
@@ -66,7 +66,7 @@ class NesteMeldekortRouteTest {
                 status shouldBe HttpStatusCode.OK
                 contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
 
-                meldekortFraBody shouldBe førsteMeldekort.tilBrukerDTO()
+                meldekortFraBody shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO()
             }
         }
     }
@@ -103,7 +103,7 @@ class NesteMeldekortRouteTest {
                 status shouldBe HttpStatusCode.OK
                 contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
 
-                meldekortFraBody shouldBe innsendtMeldekort.tilBrukerDTO()
+                meldekortFraBody shouldBe innsendtMeldekort.tilMeldekortTilBrukerDTO()
             }
         }
     }

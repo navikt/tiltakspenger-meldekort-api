@@ -11,7 +11,12 @@ data class ArenaMeldekortResponse(
     val meldekortListe: List<ArenaMeldekort>? = null,
     val antallGjenstaaendeFeriedager: Int? = 0,
     val fravaerListe: List<ArenaFravaerType>? = null,
-)
+) {
+
+    fun harTiltakspengerMeldekort(): Boolean {
+        return meldekortListe?.any { it.hoyesteMeldegruppe == TILTAKSPENGER_MELDEGRUPPE } ?: false
+    }
+}
 
 data class ArenaMeldekort(
     val meldekortId: Long,
@@ -31,3 +36,5 @@ data class ArenaFravaerType(
     val tilDato: LocalDate,
     val type: String,
 )
+
+private const val TILTAKSPENGER_MELDEGRUPPE = "INDIV"

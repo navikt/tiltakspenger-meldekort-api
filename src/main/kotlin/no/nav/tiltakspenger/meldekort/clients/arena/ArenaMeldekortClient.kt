@@ -13,36 +13,34 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
 import no.nav.tiltakspenger.meldekort.clients.httpClientWithRetry
-import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 
-class ArenaMeldekortServiceClient(
+class ArenaMeldekortClient(
     private val baseUrl: String,
-    private val audience: String,
-    private val texasClient: TexasClient,
+    private val getToken: suspend () -> AccessToken,
     private val httpClient: HttpClient = httpClientWithRetry(),
 ) {
     private val logger = KotlinLogging.logger {}
 
-    suspend fun hentNesteMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse> {
+    suspend fun hentMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
         return request(fnr, "/meldekortservice/api/v2/meldekort")
     }
 
     suspend fun hentHistoriskeMeldekort(
         fnr: Fnr,
         antallMeldeperioder: Int = 10,
-    ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse> {
+    ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
         return request(fnr, "/meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder")
     }
 
-    private suspend inline fun <reified ResponseType> request(
+    private suspend fun request(
         fnr: Fnr,
         path: String,
-    ): Either<ArenaMeldekortServiceFeil, ResponseType> {
+    ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
         return Either.catch {
-            val token = texasClient.getSystemToken(audience, TexasIdentityProvider.AZUREAD)
+            val token = getToken()
 
             val response = httpClient.get("$baseUrl/$path") {
                 accept(ContentType.Application.Json)
@@ -52,14 +50,18 @@ class ArenaMeldekortServiceClient(
 
             val status = response.status
 
-            if (status != HttpStatusCode.OK) {
-                logger.error { "Feil-response ved kall til meldekort-api - $status" }
-                return ArenaMeldekortServiceFeil.FeilResponse(status).left()
+            if (status == HttpStatusCode.OK) {
+                return response.body<ArenaMeldekortResponse>().right()
             }
 
-            return response.body<ResponseType>().right()
+            if (status == HttpStatusCode.NoContent) {
+                return null.right()
+            }
+
+            logger.warn { "Feil-response ved kall til meldekort-api - $status" }
+            return ArenaMeldekortServiceFeil.FeilResponse(status).left()
         }.getOrElse {
-            logger.error(it) { "Ukjent feil ved request fra arena meldekortservice - ${it.message}" }
+            logger.warn(it) { "Ukjent feil ved request fra arena meldekortservice - ${it.message}" }
             ArenaMeldekortServiceFeil.UkjentFeil.left()
         }
     }

@@ -4,9 +4,11 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.periodisering.PeriodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
+import no.nav.tiltakspenger.meldekort.domene.Sak
 import no.nav.tiltakspenger.meldekort.domene.tilSak
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
 
@@ -15,6 +17,10 @@ class SakService(
     private val sessionFactory: SessionFactory,
 ) {
     private val logger = KotlinLogging.logger {}
+
+    fun hentSak(fnr: Fnr): Sak? {
+        return sakRepo.hent(fnr)
+    }
 
     fun lagreFraSaksbehandling(sakDTO: SakDTO): Either<FeilVedMottakAvSak, Unit> {
         val sak = sakDTO.tilSak()

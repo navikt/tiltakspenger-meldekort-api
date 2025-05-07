@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.Sak
@@ -17,6 +18,11 @@ interface SakRepo {
 
     fun hent(
         id: SakId,
+        sessionContext: SessionContext? = null,
+    ): Sak?
+
+    fun hent(
+        fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): Sak?
 }

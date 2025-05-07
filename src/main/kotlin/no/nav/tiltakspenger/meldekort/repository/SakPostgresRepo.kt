@@ -64,6 +64,20 @@ class SakPostgresRepo(
         }
     }
 
+    override fun hent(
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Sak? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    "select * from sak where fnr = :fnr",
+                    "fnr" to fnr.verdi,
+                ).map { row -> fromRow(row) }.asSingle,
+            )
+        }
+    }
+
     companion object {
         private fun fromRow(row: Row): Sak {
             return Sak(
