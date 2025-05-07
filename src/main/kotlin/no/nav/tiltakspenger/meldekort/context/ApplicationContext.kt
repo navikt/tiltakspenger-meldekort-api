@@ -191,6 +191,7 @@ open class ApplicationContext(val clock: Clock) {
     open val arenaMeldekortStatusService by lazy {
         ArenaMeldekortStatusService(
             arenaMeldekortClient = arenaMeldekortClient,
+            sakRepo = sakRepo,
         )
     }
 

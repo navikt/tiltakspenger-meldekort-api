@@ -5,7 +5,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
 import no.nav.tiltakspenger.libs.jobber.StoppableJob
 import no.nav.tiltakspenger.libs.jobber.startStoppableJob
@@ -26,7 +25,7 @@ class TaskExecutor(
     companion object {
         fun startJob(
             runCheckFactory: RunCheckFactory,
-            tasks: List<suspend (CorrelationId) -> Unit>,
+            tasks: List<suspend () -> Any?>,
             initialDelay: Duration = 1.minutes,
             intervall: Duration = 10.seconds,
         ): TaskExecutor {
@@ -48,7 +47,7 @@ class TaskExecutor(
                             CoroutineScope(Dispatchers.IO).launch {
                                 // Vi ønsker ikke at en task skal spenne ben for andre tasks.
                                 Either.catch {
-                                    it(correlationId)
+                                    it()
                                 }.mapLeft {
                                     logger.error(it) { "Feil ved kjøring av task. correlationId: $correlationId" }
                                 }

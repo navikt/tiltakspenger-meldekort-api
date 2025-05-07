@@ -5,7 +5,6 @@ import arrow.core.left
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.future.await
 import no.nav.tiltakspenger.libs.common.AccessToken
-import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
@@ -32,7 +31,7 @@ class SaksbehandlingClientImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun sendMeldekort(meldekort: Meldekort, correlationId: CorrelationId): Either<SaksbehandlingApiError, Unit> {
+    override suspend fun sendMeldekort(meldekort: Meldekort): Either<SaksbehandlingApiError, Unit> {
         val jsonPayload = serialize(meldekort.toSaksbehandlingMeldekortDTO())
 
         return Either.catch {

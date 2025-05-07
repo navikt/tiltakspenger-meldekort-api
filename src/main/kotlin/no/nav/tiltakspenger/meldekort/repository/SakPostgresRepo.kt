@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
 
 class SakPostgresRepo(
@@ -43,11 +44,22 @@ class SakPostgresRepo(
         }
     }
 
-    override fun oppdater(
-        sak: Sak,
+    override fun oppdaterArenaStatus(
+        id: SakId,
+        arenaStatus: ArenaMeldekortStatus,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update sak set arena_meldekort_status = :arena_meldekort_status where id = :id
+                    """,
+                    "id" to id.toString(),
+                    "arena_meldekort_status" to arenaStatus.tilDb(),
+                ).asUpdate,
+            )
+        }
     }
 
     override fun hent(
@@ -74,6 +86,17 @@ class SakPostgresRepo(
                     "select * from sak where fnr = :fnr",
                     "fnr" to fnr.verdi,
                 ).map { row -> fromRow(row) }.asSingle,
+            )
+        }
+    }
+
+    override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    "select * from sak where arena_meldekort_status = :ukjent_status",
+                    "ukjent_status" to ArenaMeldekortStatus.UKJENT.tilDb(),
+                ).map { row -> fromRow(row) }.asList,
             )
         }
     }

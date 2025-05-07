@@ -3,7 +3,6 @@ package no.nav.tiltakspenger.meldekort.service
 import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
 import java.time.LocalDateTime
@@ -16,15 +15,13 @@ class SendMeldekortService(
     private val logger = KotlinLogging.logger {}
 
     /** Ment å kalles fra en jobb - sender alle usendte meldekort til saksbehandling. */
-    suspend fun sendMeldekort(
-        correlationId: CorrelationId,
-    ) {
+    suspend fun sendMeldekort() {
         Either.catch {
             meldekortService.hentMeldekortSomSkalSendesTilSaksbehandling().forEach { meldekort ->
                 logger.info { "Sender meldekort med id ${meldekort.id}" }
 
                 Either.catch {
-                    saksbehandlingClient.sendMeldekort(meldekort, correlationId).getOrElse {
+                    saksbehandlingClient.sendMeldekort(meldekort).getOrElse {
                         logger.warn { "Feil under sending av meldekort med id: ${meldekort.id} til SaksbehandlingApi" }
                         return@forEach
                     }
