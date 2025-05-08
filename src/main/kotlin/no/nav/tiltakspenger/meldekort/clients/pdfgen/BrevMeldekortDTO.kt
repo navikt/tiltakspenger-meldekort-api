@@ -10,7 +10,7 @@ import no.nav.tiltakspenger.meldekort.domene.Meldekort
 /**
  * DTO for å serialisere meldekort til brev (PDF). Datoer formateres her fordi vi ikke bruker tid på å opprette hjelpemetoder i pdfgen-core per nå
  */
-class BrevMeldekortDTO(
+data class BrevMeldekortDTO(
     val id: String,
     val fnr: String,
     val periode: PeriodeDTO,

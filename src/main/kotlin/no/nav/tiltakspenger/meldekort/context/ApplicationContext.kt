@@ -9,7 +9,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.Profile
 import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
-import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortServiceClient
+import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
@@ -30,6 +30,8 @@ import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
+import no.nav.tiltakspenger.meldekort.service.ArenaMeldekortStatusService
+import no.nav.tiltakspenger.meldekort.service.BrukerService
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
 import no.nav.tiltakspenger.meldekort.service.SakService
@@ -174,11 +176,30 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    open val arenaMeldekortServiceClient by lazy {
-        ArenaMeldekortServiceClient(
-            texasClient = texasClient,
+    open val arenaMeldekortClient by lazy {
+        ArenaMeldekortClient(
             baseUrl = Configuration.arenaMeldekortServiceUrl,
-            audience = Configuration.arenaMeldekortServiceAudience,
+            getToken = {
+                texasClient.getSystemToken(
+                    Configuration.arenaMeldekortServiceAudience,
+                    TexasIdentityProvider.AZUREAD,
+                )
+            },
+        )
+    }
+
+    open val arenaMeldekortStatusService by lazy {
+        ArenaMeldekortStatusService(
+            arenaMeldekortClient = arenaMeldekortClient,
+            sakRepo = sakRepo,
+        )
+    }
+
+    open val brukerService by lazy {
+        BrukerService(
+            meldekortService = meldekortService,
+            sakService = sakService,
+            arenaMeldekortStatusService = arenaMeldekortStatusService,
         )
     }
 }

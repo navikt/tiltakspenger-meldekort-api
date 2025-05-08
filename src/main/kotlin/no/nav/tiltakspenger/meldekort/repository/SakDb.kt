@@ -1,7 +1,8 @@
 package no.nav.tiltakspenger.meldekort.repository
 
-import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
+import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Innvilgelsesperioder
 
@@ -37,4 +38,7 @@ fun Innvilgelsesperioder.tilDb(): String = serialize(
     },
 )
 
-fun String.tilInnvilgelsesperioder(): Innvilgelsesperioder = deserialize<Innvilgelsesperioder>(this)
+fun String.tilInnvilgelsesperioder(): Innvilgelsesperioder {
+    val perioder = deserializeList<Periode>(this)
+    return Innvilgelsesperioder(perioder)
+}

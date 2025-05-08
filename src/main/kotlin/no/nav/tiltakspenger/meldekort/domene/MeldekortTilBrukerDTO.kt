@@ -26,7 +26,7 @@ data class MeldekortDagTilBrukerDTO(
     val harRett: Boolean,
 )
 
-fun Meldekort.tilBrukerDTO(): MeldekortTilBrukerDTO {
+fun Meldekort.tilMeldekortTilBrukerDTO(): MeldekortTilBrukerDTO {
     return MeldekortTilBrukerDTO(
         id = id.toString(),
         meldeperiodeId = meldeperiode.id.toString(),

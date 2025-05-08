@@ -77,13 +77,13 @@ fun start(
     TaskExecutor.startJob(
         initialDelay = if (isNais) 1.minutes else 1.seconds,
         runCheckFactory = runCheckFactory,
-        tasks =
-        listOf { correlationId ->
-            applicationContext.sendMeldekortService.sendMeldekort(correlationId)
-            applicationContext.journalførMeldekortService.journalførNyeMeldekort()
-            applicationContext.sendVarslerService.sendVarselForMeldekort()
-            applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort()
-        },
+        tasks = listOf<suspend () -> Any?>(
+            { applicationContext.sendMeldekortService.sendMeldekort() },
+            { applicationContext.journalførMeldekortService.journalførNyeMeldekort() },
+            { applicationContext.sendVarslerService.sendVarselForMeldekort() },
+            { applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort() },
+            { applicationContext.arenaMeldekortStatusService.oppdaterArenaMeldekortStatusForSaker() },
+        ),
     )
 
     if (Configuration.isNais()) {

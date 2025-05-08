@@ -46,6 +46,7 @@ fun Application.meldekortApi(
             meldekortService = applicationContext.meldekortService,
             meldeperiodeService = applicationContext.meldeperiodeService,
             sakService = applicationContext.sakService,
+            brukerService = applicationContext.brukerService,
             texasClient = applicationContext.texasClient,
             clock = applicationContext.clock,
         )

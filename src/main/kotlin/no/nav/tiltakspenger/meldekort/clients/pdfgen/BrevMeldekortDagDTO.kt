@@ -4,7 +4,7 @@ import no.nav.tiltakspenger.meldekort.clients.utils.toNorskUkedagOgDatoUtenÅr
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 
-class BrevMeldekortDagDTO(
+data class BrevMeldekortDagDTO(
     val dag: String,
     val status: BrevMeldekortStatusDTO,
 )

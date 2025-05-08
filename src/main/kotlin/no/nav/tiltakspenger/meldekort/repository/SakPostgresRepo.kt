@@ -6,11 +6,13 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
 
 class SakPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
 ) : SakRepo {
+
     override fun lagre(
         sak: Sak,
         sessionContext: SessionContext?,
@@ -29,7 +31,7 @@ class SakPostgresRepo(
                         :id,
                         :saksnummer,
                         :fnr,
-                        :innvilgelsesperioder,
+                        to_jsonb(:innvilgelsesperioder::jsonb),
                         :arena_meldekort_status                        
                     )
                     """,
@@ -43,11 +45,44 @@ class SakPostgresRepo(
         }
     }
 
+    /** Oppdaterer fnr og innvilgelsesperioder på en sak */
     override fun oppdater(
         sak: Sak,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update sak set 
+                        fnr = :fnr,
+                        innvilgelsesperioder = to_jsonb(:innvilgelsesperioder::jsonb)
+                    where id = :id
+                    """,
+                    "id" to sak.id.toString(),
+                    "fnr" to sak.fnr.verdi,
+                    "innvilgelsesperioder" to sak.innvilgelsesperioder.tilDb(),
+                ).asUpdate,
+            )
+        }
+    }
+
+    override fun oppdaterArenaStatus(
+        id: SakId,
+        arenaStatus: ArenaMeldekortStatus,
+        sessionContext: SessionContext?,
+    ) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update sak set arena_meldekort_status = :arena_meldekort_status where id = :id
+                    """,
+                    "id" to id.toString(),
+                    "arena_meldekort_status" to arenaStatus.tilDb(),
+                ).asUpdate,
+            )
+        }
     }
 
     override fun hent(
@@ -60,6 +95,31 @@ class SakPostgresRepo(
                     "select * from sak where id = :id",
                     "id" to id.toString(),
                 ).map { row -> fromRow(row) }.asSingle,
+            )
+        }
+    }
+
+    override fun hent(
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Sak? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    "select * from sak where fnr = :fnr",
+                    "fnr" to fnr.verdi,
+                ).map { row -> fromRow(row) }.asSingle,
+            )
+        }
+    }
+
+    override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    "select * from sak where arena_meldekort_status = :ukjent_status",
+                    "ukjent_status" to ArenaMeldekortStatus.UKJENT.tilDb(),
+                ).map { row -> fromRow(row) }.asList,
             )
         }
     }
