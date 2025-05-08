@@ -18,6 +18,13 @@ class SakRepoFake : SakRepo {
         TODO("Not yet implemented")
     }
 
+    override fun oppdater(
+        sak: Sak,
+        sessionContext: SessionContext?,
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override fun oppdaterArenaStatus(
         id: SakId,
         arenaStatus: ArenaMeldekortStatus,

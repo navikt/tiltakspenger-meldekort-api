@@ -12,6 +12,7 @@ import no.nav.tiltakspenger.meldekort.domene.Sak
 class SakPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
 ) : SakRepo {
+
     override fun lagre(
         sak: Sak,
         sessionContext: SessionContext?,
@@ -39,6 +40,28 @@ class SakPostgresRepo(
                     "fnr" to sak.fnr.verdi,
                     "innvilgelsesperioder" to sak.innvilgelsesperioder.tilDb(),
                     "arena_meldekort_status" to sak.arenaMeldekortStatus.tilDb(),
+                ).asUpdate,
+            )
+        }
+    }
+
+    /** Oppdaterer fnr og innvilgelsesperioder på en sak */
+    override fun oppdater(
+        sak: Sak,
+        sessionContext: SessionContext?,
+    ) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update sak set 
+                        fnr = :fnr,
+                        innvilgelsesperioder = to_jsonb(:innvilgelsesperioder::jsonb)
+                    where id = :id
+                    """,
+                    "id" to sak.id.toString(),
+                    "fnr" to sak.fnr.verdi,
+                    "innvilgelsesperioder" to sak.innvilgelsesperioder.tilDb(),
                 ).asUpdate,
             )
         }

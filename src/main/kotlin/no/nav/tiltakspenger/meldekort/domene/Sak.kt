@@ -11,6 +11,10 @@ data class Sak(
     val id: SakId,
     val saksnummer: String,
     val fnr: Fnr,
+    /** TODO abn: denne skal brukes for å beregne når første meldekort kan sendes og vise det til bruker
+     *  (for innvilgelsesperioder som ikke har fått generert første meldeperide ennå)
+     *  Er ikke 100% sikker på denne løsningen, men lar den ligge her så lenge :D
+     */
     val innvilgelsesperioder: Innvilgelsesperioder,
     val arenaMeldekortStatus: ArenaMeldekortStatus,
 ) {

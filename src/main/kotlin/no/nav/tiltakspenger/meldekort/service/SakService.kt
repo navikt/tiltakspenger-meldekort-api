@@ -27,14 +27,16 @@ class SakService(
         val sakId = sak.id
 
         sakRepo.hent(sakId)?.also { eksisterendeSak ->
-            if (eksisterendeSak == sak) {
+            val nySakMedArenaStatus = sak.copy(arenaMeldekortStatus = eksisterendeSak.arenaMeldekortStatus)
+
+            if (nySakMedArenaStatus == eksisterendeSak) {
                 logger.info { "Sak $sakId er allerede lagret" }
                 return FeilVedMottakAvSak.FinnesUtenDiff.left()
             }
 
             Either.catch {
                 sessionFactory.withTransactionContext { tx ->
-                    sakRepo.lagre(sak, tx)
+                    sakRepo.oppdater(sak, tx)
                     logger.info { "Oppdaterte sak $sakId" }
                 }
                 return Unit.right()

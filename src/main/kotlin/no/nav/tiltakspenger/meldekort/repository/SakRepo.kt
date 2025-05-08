@@ -12,6 +12,11 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     )
 
+    fun oppdater(
+        sak: Sak,
+        sessionContext: SessionContext? = null,
+    )
+
     fun oppdaterArenaStatus(
         id: SakId,
         arenaStatus: ArenaMeldekortStatus,
