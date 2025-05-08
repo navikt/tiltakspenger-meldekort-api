@@ -8,8 +8,8 @@ data class ArenaMeldekortResponse(
     val fornavn: String,
     val maalformkode: String,
     val meldeform: String,
-    val meldekortListe: List<ArenaMeldekort>? = null,
     val antallGjenstaaendeFeriedager: Int? = 0,
+    val meldekortListe: List<ArenaMeldekort>? = null,
     val fravaerListe: List<ArenaFravaerType>? = null,
 ) {
 

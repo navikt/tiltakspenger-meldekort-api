@@ -25,14 +25,14 @@ class ArenaMeldekortClient(
     private val logger = KotlinLogging.logger {}
 
     suspend fun hentMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
-        return request(fnr, "/meldekortservice/api/v2/meldekort")
+        return request(fnr, "meldekortservice/api/v2/meldekort")
     }
 
     suspend fun hentHistoriskeMeldekort(
         fnr: Fnr,
         antallMeldeperioder: Int = 10,
     ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
-        return request(fnr, "/meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder")
+        return request(fnr, "meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder")
     }
 
     private suspend fun request(

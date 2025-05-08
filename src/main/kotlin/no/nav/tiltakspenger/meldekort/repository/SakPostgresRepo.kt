@@ -30,7 +30,7 @@ class SakPostgresRepo(
                         :id,
                         :saksnummer,
                         :fnr,
-                        :innvilgelsesperioder,
+                        to_jsonb(:innvilgelsesperioder::jsonb),
                         :arena_meldekort_status                        
                     )
                     """,
