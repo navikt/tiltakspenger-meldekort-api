@@ -11,6 +11,7 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import no.nav.tiltakspenger.libs.common.AccessToken
@@ -25,43 +26,58 @@ class ArenaMeldekortClient(
     private val logger = KotlinLogging.logger {}
 
     suspend fun hentMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
-        return request(fnr, "meldekortservice/api/v2/meldekort")
+        val response = request(fnr, "meldekortservice/api/v2/meldekort").getOrElse {
+            return it.left()
+        }
+
+        val status = response.status
+
+        if (status == HttpStatusCode.OK) {
+            return response.body<ArenaMeldekortResponse>().right()
+        }
+
+        if (status == HttpStatusCode.NoContent) {
+            return null.right()
+        }
+
+        logger.error { "Feil-response fra meldekortservice/meldekort - $status" }
+        return ArenaMeldekortServiceFeil.FeilResponse(status).left()
     }
 
     suspend fun hentHistoriskeMeldekort(
         fnr: Fnr,
         antallMeldeperioder: Int = 10,
     ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
-        return request(fnr, "meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder")
+        val response = request(fnr, "meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder").getOrElse {
+            return it.left()
+        }
+
+        val status = response.status
+
+        if (status == HttpStatusCode.OK) {
+            return response.body<ArenaMeldekortResponse>().right()
+        }
+
+        // historiskemeldekort returnerer 503-feil dersom brukeren ikke finnes.
+        // Vi kaller aldri denne uten å kalle /meldekort først, så velger å ikke bry oss om feilhåndtering her
+        logger.info { "Feil-response fra meldekortservice/historiskemeldekort (dette betyr antagelig at brukeren ikke finnes) - $status" }
+        return null.right()
     }
 
     private suspend fun request(
         fnr: Fnr,
         path: String,
-    ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
+    ): Either<ArenaMeldekortServiceFeil, HttpResponse> {
         return Either.catch {
             val token = getToken()
 
-            val response = httpClient.get("$baseUrl/$path") {
+            httpClient.get("$baseUrl/$path") {
                 accept(ContentType.Application.Json)
                 bearerAuth(token.token)
                 header("ident", fnr.verdi)
-            }
-
-            val status = response.status
-
-            if (status == HttpStatusCode.OK) {
-                return response.body<ArenaMeldekortResponse>().right()
-            }
-
-            if (status == HttpStatusCode.NoContent) {
-                return null.right()
-            }
-
-            logger.warn { "Feil-response ved kall til meldekort-api - $status" }
-            return ArenaMeldekortServiceFeil.FeilResponse(status).left()
+            }.right()
         }.getOrElse {
-            logger.warn(it) { "Ukjent feil ved request fra arena meldekortservice - ${it.message}" }
+            logger.error(it) { "Feil ved request til arena meldekortservice - ${it.message}" }
             ArenaMeldekortServiceFeil.UkjentFeil.left()
         }
     }
