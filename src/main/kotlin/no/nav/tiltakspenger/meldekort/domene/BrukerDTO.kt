@@ -33,13 +33,17 @@ fun ArenaMeldekortStatus.tilDTO(): ArenaMeldekortStatusDTO = when (this) {
     ArenaMeldekortStatus.HAR_IKKE_MELDEKORT -> ArenaMeldekortStatusDTO.HAR_IKKE_MELDEKORT
 }
 
-private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO.MedSak = BrukerDTO.MedSak(
-    nesteMeldekort = nesteMeldekort?.tilMeldekortTilBrukerDTO(),
-    sisteMeldekort = sisteMeldekort?.tilMeldekortTilBrukerDTO(),
-    // TODO: sett dato for neste meldekort som kan sendes
-    nesteInnsending = null,
-    arenaMeldekortStatus = sak.arenaMeldekortStatus.tilDTO(),
-)
+private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO.MedSak {
+    val nesteMeldekort = nesteMeldekort?.tilMeldekortTilBrukerDTO()
+
+    return BrukerDTO.MedSak(
+        nesteMeldekort = nesteMeldekort,
+        sisteMeldekort = sisteMeldekort?.tilMeldekortTilBrukerDTO(),
+        // TODO: sett dato for neste meldekort som kan sendes
+        nesteInnsending = null,
+        arenaMeldekortStatus = sak.arenaMeldekortStatus.tilDTO(),
+    )
+}
 
 private fun Bruker.UtenSak.tilBrukerDTO(): BrukerDTO.UtenSak = BrukerDTO.UtenSak(
     arenaMeldekortStatus = arenaMeldekortStatus.tilDTO(),

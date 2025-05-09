@@ -21,16 +21,18 @@ fun Route.meldekortTilBrukerRoutesV2(
         val fnr = call.fnr()
 
         val bruker = brukerService.hentBruker(fnr)
-        if (bruker is Bruker.UtenSak) {
-            return@get call.respond(HttpStatusCode.NoContent)
-        }
 
-        val alleMeldekort = meldekortService.hentAlleMeldekort(fnr)
+        val alleMeldekort = if (bruker is Bruker.MedSak) {
+            meldekortService.hentAlleMeldekort(fnr)
+                .map { it.tilMeldekortTilBrukerDTO() }
+        } else {
+            emptyList()
+        }
 
         call.respond(
             AlleMeldekortDTO(
-                meldekort = alleMeldekort.map { it.tilMeldekortTilBrukerDTO() },
                 bruker = bruker.tilBrukerDTO(),
+                meldekort = alleMeldekort,
             ),
         )
     }
