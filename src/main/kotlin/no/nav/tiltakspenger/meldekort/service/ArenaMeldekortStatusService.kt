@@ -42,7 +42,7 @@ class ArenaMeldekortStatusService(
         Either.catch {
             val saker = sakRepo.hentSakerUtenArenaStatus()
 
-            logger.info { "Fant ${saker.size} saker med ukjent arena status" }
+            logger.debug { "Fant ${saker.size} saker med ukjent arena status" }
 
             saker.forEach { sak ->
                 Either.catch {
