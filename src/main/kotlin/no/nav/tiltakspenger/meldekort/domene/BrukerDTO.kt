@@ -2,12 +2,24 @@ package no.nav.tiltakspenger.meldekort.domene
 
 import kotlinx.datetime.LocalDate
 
-data class BrukerDTO(
-    val nesteMeldekort: MeldekortTilBrukerDTO?,
-    val sisteMeldekort: MeldekortTilBrukerDTO?,
-    val nesteInnsending: LocalDate?,
-    val arenaMeldekortStatus: ArenaMeldekortStatusDTO,
-)
+sealed interface BrukerDTO {
+    val harSak: Boolean
+
+    data class MedSak(
+        val nesteMeldekort: MeldekortTilBrukerDTO?,
+        val sisteMeldekort: MeldekortTilBrukerDTO?,
+        val nesteInnsending: LocalDate?,
+        val arenaMeldekortStatus: ArenaMeldekortStatusDTO,
+    ) : BrukerDTO {
+        override val harSak = true
+    }
+
+    data class UtenSak(
+        val arenaMeldekortStatus: ArenaMeldekortStatusDTO,
+    ) : BrukerDTO {
+        override val harSak = false
+    }
+}
 
 enum class ArenaMeldekortStatusDTO {
     UKJENT,
@@ -21,7 +33,7 @@ fun ArenaMeldekortStatus.tilDTO(): ArenaMeldekortStatusDTO = when (this) {
     ArenaMeldekortStatus.HAR_IKKE_MELDEKORT -> ArenaMeldekortStatusDTO.HAR_IKKE_MELDEKORT
 }
 
-private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO = BrukerDTO(
+private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO.MedSak = BrukerDTO.MedSak(
     nesteMeldekort = nesteMeldekort?.tilMeldekortTilBrukerDTO(),
     sisteMeldekort = sisteMeldekort?.tilMeldekortTilBrukerDTO(),
     // TODO: sett dato for neste meldekort som kan sendes
@@ -29,10 +41,7 @@ private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO = BrukerDTO(
     arenaMeldekortStatus = sak.arenaMeldekortStatus.tilDTO(),
 )
 
-private fun Bruker.UtenSak.tilBrukerDTO(): BrukerDTO = BrukerDTO(
-    nesteMeldekort = null,
-    sisteMeldekort = null,
-    nesteInnsending = null,
+private fun Bruker.UtenSak.tilBrukerDTO(): BrukerDTO.UtenSak = BrukerDTO.UtenSak(
     arenaMeldekortStatus = arenaMeldekortStatus.tilDTO(),
 )
 

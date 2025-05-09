@@ -48,7 +48,7 @@ fun Route.meldekortRoutes(
     }
 
     // Endepunkter som kalles fra brukers meldekort-frontend
-    route("/brukerflate") {
+    route("/brukerfrontend") {
         install(TexasWallBrukerToken) {
             client = texasClient
         }
