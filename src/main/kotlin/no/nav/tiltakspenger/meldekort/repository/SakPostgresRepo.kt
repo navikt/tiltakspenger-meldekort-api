@@ -25,27 +25,27 @@ class SakPostgresRepo(
                         id,
                         saksnummer,
                         fnr,
-                        innvilgelsesperioder,
+                        meldeperioder,
                         arena_meldekort_status
                     ) values (
                         :id,
                         :saksnummer,
                         :fnr,
-                        to_jsonb(:innvilgelsesperioder::jsonb),
+                        to_jsonb(:meldeperioder::jsonb),
                         :arena_meldekort_status                        
                     )
                     """,
                     "id" to sak.id.toString(),
                     "saksnummer" to sak.saksnummer,
                     "fnr" to sak.fnr.verdi,
-                    "innvilgelsesperioder" to sak.innvilgelsesperioder.tilDb(),
+                    "meldeperioder" to sak.meldeperioder.tilDb(),
                     "arena_meldekort_status" to sak.arenaMeldekortStatus.tilDb(),
                 ).asUpdate,
             )
         }
     }
 
-    /** Oppdaterer fnr og innvilgelsesperioder på en sak */
+    /** Oppdaterer fnr og meldeperioder på en sak */
     override fun oppdater(
         sak: Sak,
         sessionContext: SessionContext?,
@@ -56,12 +56,12 @@ class SakPostgresRepo(
                     """
                     update sak set 
                         fnr = :fnr,
-                        innvilgelsesperioder = to_jsonb(:innvilgelsesperioder::jsonb)
+                        meldeperioder = to_jsonb(:meldeperioder::jsonb)
                     where id = :id
                     """,
                     "id" to sak.id.toString(),
                     "fnr" to sak.fnr.verdi,
-                    "innvilgelsesperioder" to sak.innvilgelsesperioder.tilDb(),
+                    "meldeperioder" to sak.meldeperioder.tilDb(),
                 ).asUpdate,
             )
         }
@@ -130,7 +130,7 @@ class SakPostgresRepo(
                 id = SakId.fromString(row.string("id")),
                 saksnummer = row.string("saksnummer"),
                 fnr = Fnr.fromString(row.string("fnr")),
-                innvilgelsesperioder = row.string("innvilgelsesperioder").tilInnvilgelsesperioder(),
+                meldeperioder = row.string("meldeperioder").tilMeldeperioderForSak(),
                 arenaMeldekortStatus = row.string("arena_meldekort_status").tilArenaMeldekortStatus(),
             )
         }

@@ -4,7 +4,7 @@ import no.nav.tiltakspenger.libs.json.deserializeList
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
-import no.nav.tiltakspenger.meldekort.domene.Innvilgelsesperioder
+import no.nav.tiltakspenger.meldekort.domene.MeldeperioderForSak
 
 private enum class ArenaMeldekortStatusDb {
     UKJENT,
@@ -29,7 +29,7 @@ private data class PeriodeDb(
     val tilOgMed: String,
 )
 
-fun Innvilgelsesperioder.tilDb(): String = serialize(
+fun MeldeperioderForSak.tilDb(): String = serialize(
     this.map {
         PeriodeDb(
             fraOgMed = it.fraOgMed.toString(),
@@ -38,7 +38,6 @@ fun Innvilgelsesperioder.tilDb(): String = serialize(
     },
 )
 
-fun String.tilInnvilgelsesperioder(): Innvilgelsesperioder {
-    val perioder = deserializeList<Periode>(this)
-    return Innvilgelsesperioder(perioder)
+fun String.tilMeldeperioderForSak(): MeldeperioderForSak {
+    return MeldeperioderForSak(deserializeList<Periode>(this))
 }

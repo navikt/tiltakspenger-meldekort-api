@@ -77,5 +77,5 @@ data class SakDTO(
     val fnr: String,
     val sakId: String,
     val saksnummer: String,
-    val innvilgelsesperioder: List<PeriodeDTO>,
+    val meldeperioder: List<PeriodeDTO>,
 )
