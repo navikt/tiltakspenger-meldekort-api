@@ -4,7 +4,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.service.SakDTO
-import java.time.LocalDate
 
 data class Sak(
     val id: SakId,
@@ -12,10 +11,7 @@ data class Sak(
     val fnr: Fnr,
     val meldeperioder: MeldeperioderForSak,
     val arenaMeldekortStatus: ArenaMeldekortStatus,
-) {
-
-    fun nesteMeldeperiode(): Periode? = meldeperioder.nesteMeldeperiode()
-}
+)
 
 /** Dette er alle periodene som det vil genereres meldekort fra for hele innvilgelsesperioden på denne saken
  *  Kun fraOgMed/tilOgMed datoene, inkluderer ikke hvilke dager som gir rett osv.
@@ -23,13 +19,7 @@ data class Sak(
  * */
 data class MeldeperioderForSak(
     val verdi: List<Periode>,
-) : List<Periode> by verdi {
-
-    fun nesteMeldeperiode(): Periode? {
-        val idag = LocalDate.now()
-        return this.find { it.tilOgMed > idag }
-    }
-}
+) : List<Periode> by verdi
 
 enum class ArenaMeldekortStatus {
     UKJENT,

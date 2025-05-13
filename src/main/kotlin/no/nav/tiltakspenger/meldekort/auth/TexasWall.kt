@@ -8,12 +8,12 @@ import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.response.respond
 import io.ktor.util.AttributeKey
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
-import no.nav.tiltakspenger.meldekort.clients.texas.TexasIntrospectionResponse
+import no.nav.tiltakspenger.meldekort.clients.texas.TokenClient
+import no.nav.tiltakspenger.meldekort.clients.texas.TokenIntrospectionResponse
 import no.nav.tiltakspenger.meldekort.routes.bearerToken
 
 class AuthPluginConfiguration(
-    var client: TexasClient? = null,
+    var client: TokenClient? = null,
 )
 
 private val fnrAttributeKey = AttributeKey<Fnr>("fnr")
@@ -22,7 +22,7 @@ val log = KotlinLogging.logger("TexasWall")
 
 private suspend fun validateAndGetClaims(
     call: PipelineCall,
-    introspectToken: suspend (token: String) -> TexasIntrospectionResponse,
+    introspectToken: suspend (token: String) -> TokenIntrospectionResponse,
 ): Map<String, Any?>? {
     val token = call.bearerToken()
     if (token == null) {
@@ -57,7 +57,7 @@ val TexasWallBrukerToken = createRouteScopedPlugin(
     pluginConfig.apply {
         onCall { call ->
             val tokenClaims =
-                validateAndGetClaims(call, { token -> client.introspectToken(token, TexasIdentityProvider.TOKENX) })
+                validateAndGetClaims(call, { token -> client.introspectToken(token, IdentityProvider.TOKENX) })
                     ?: return@onCall
 
             val fnrString = tokenClaims["pid"]?.toString()
@@ -82,7 +82,7 @@ val TexasWallSystemToken = createRouteScopedPlugin(
 
     pluginConfig.apply {
         onCall { call ->
-            validateAndGetClaims(call, { token -> client.introspectToken(token, TexasIdentityProvider.AZUREAD) })
+            validateAndGetClaims(call, { token -> client.introspectToken(token, IdentityProvider.AZUREAD) })
                 ?: return@onCall
         }
     }

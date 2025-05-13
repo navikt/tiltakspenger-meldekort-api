@@ -9,10 +9,12 @@ import java.time.temporal.TemporalAdjusters
 
 object ObjectMother :
     MeldekortMother,
-    MeldeperiodeMother {
+    MeldeperiodeMother,
+    SakMother {
     fun periode(fraSisteMandagFør: LocalDate = nå(fixedClock).toLocalDate()): Periode {
         return fraSisteMandagFør.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).let { mandag ->
             Periode(mandag, mandag.plusDays(13))
         }
     }
+    const val FAKE_FNR = "12345678911"
 }

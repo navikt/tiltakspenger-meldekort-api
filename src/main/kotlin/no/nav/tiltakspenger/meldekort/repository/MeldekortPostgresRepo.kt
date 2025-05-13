@@ -173,9 +173,25 @@ class MeldekortPostgresRepo(
         }
     }
 
-    /** Henter siste meldekort som kan utfylles eller er utfylt av bruker */
-    override fun hentSisteMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
-        return this.hentMeldekortForBruker(fnr, 1, sessionContext).firstOrNull()
+    /** Henter siste meldekort er utfylt av bruker */
+    override fun hentSisteUtfylteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        select
+                            mk.*
+                        from meldekort_bruker mk
+                        join meldeperiode mp on mp.fnr = :fnr
+                        where mp.id = mk.meldeperiode_id
+                            and mk.mottatt is not null
+                        order by mottatt desc
+                        limit 1
+                    """,
+                    "fnr" to fnr.verdi,
+                ).map { row -> fromRow(row, session) }.asSingle,
+            )
+        }
     }
 
     /** Henter neste meldekort som kan utfylles av bruker */

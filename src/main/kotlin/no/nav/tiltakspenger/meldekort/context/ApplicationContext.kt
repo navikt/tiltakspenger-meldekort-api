@@ -8,13 +8,13 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFacto
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.Profile
-import no.nav.tiltakspenger.meldekort.auth.TexasIdentityProvider
+import no.nav.tiltakspenger.meldekort.auth.IdentityProvider
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
-import no.nav.tiltakspenger.meldekort.clients.texas.TexasClientImpl
+import no.nav.tiltakspenger.meldekort.clients.texas.TokenClient
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
@@ -47,8 +47,8 @@ open class ApplicationContext(val clock: Clock) {
     open val sessionCounter by lazy { SessionCounter(log) }
     open val sessionFactory: SessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
 
-    open val texasClient: TexasClient by lazy {
-        TexasClientImpl(
+    open val tokenClient: TokenClient by lazy {
+        TexasClient(
             introspectionUrl = Configuration.naisTokenIntrospectionEndpoint,
             tokenUrl = Configuration.naisTokenEndpoint,
             tokenExchangeUrl = Configuration.naisTokenExchangeEndpoint,
@@ -109,9 +109,9 @@ open class ApplicationContext(val clock: Clock) {
         SaksbehandlingClientImpl(
             baseUrl = Configuration.saksbehandlingApiUrl,
             getToken = {
-                texasClient.getSystemToken(
+                tokenClient.getSystemToken(
                     Configuration.saksbehandlingApiAudience,
-                    TexasIdentityProvider.AZUREAD,
+                    IdentityProvider.AZUREAD,
                 )
             },
         )
@@ -151,9 +151,9 @@ open class ApplicationContext(val clock: Clock) {
         DokarkivClient(
             baseUrl = Configuration.dokarkivUrl,
             getToken = {
-                texasClient.getSystemToken(
+                tokenClient.getSystemToken(
                     Configuration.dokarkivScope,
-                    TexasIdentityProvider.AZUREAD,
+                    IdentityProvider.AZUREAD,
                 )
             },
         )
@@ -180,9 +180,9 @@ open class ApplicationContext(val clock: Clock) {
         ArenaMeldekortClient(
             baseUrl = Configuration.arenaMeldekortServiceUrl,
             getToken = {
-                texasClient.getSystemToken(
+                tokenClient.getSystemToken(
                     Configuration.arenaMeldekortServiceAudience,
-                    TexasIdentityProvider.AZUREAD,
+                    IdentityProvider.AZUREAD,
                 )
             },
         )

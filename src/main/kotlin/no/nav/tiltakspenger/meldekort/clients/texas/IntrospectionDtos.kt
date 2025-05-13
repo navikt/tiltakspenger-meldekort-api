@@ -5,12 +5,12 @@ import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class TexasIntrospectionRequest(
+data class TokenIntrospectionRequest(
     @JsonProperty("identity_provider") val identityProvider: String,
     val token: String,
 )
 
-data class TexasIntrospectionResponse(
+data class TokenIntrospectionResponse(
     val active: Boolean,
     @JsonInclude(JsonInclude.Include.NON_NULL) val error: String?,
     @JsonAnySetter @get:JsonAnyGetter val other: Map<String, Any?> = mutableMapOf(),

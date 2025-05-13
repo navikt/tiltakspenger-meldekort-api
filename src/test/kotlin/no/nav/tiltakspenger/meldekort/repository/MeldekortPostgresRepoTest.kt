@@ -100,11 +100,11 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
-                sisteMeldekortFraDb shouldBe andreMeldekort
+                sisteMeldekortFraDb shouldBe førsteMeldekort
                 nesteMeldekortFraDb shouldBe andreMeldekort
                 alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
             }
@@ -134,11 +134,11 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
-                sisteMeldekortFraDb shouldBe førsteMeldekort
+                sisteMeldekortFraDb shouldBe null
                 nesteMeldekortFraDb shouldBe førsteMeldekort
                 alleMeldekortFraDb shouldBe listOf(førsteMeldekort)
             }
@@ -168,7 +168,7 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
@@ -205,7 +205,7 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
@@ -242,11 +242,11 @@ class MeldekortPostgresRepoTest {
 
                 val fnr = førsteMeldekort.fnr
 
-                val sisteMeldekortFraDb = repo.hentSisteMeldekortForBruker(fnr)
+                val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
-                sisteMeldekortFraDb shouldBe andreMeldekort
+                sisteMeldekortFraDb shouldBe null
                 nesteMeldekortFraDb shouldBe førsteMeldekort
                 alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
             }

@@ -14,7 +14,7 @@ import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
-import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.BrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
@@ -27,7 +27,7 @@ class NesteMeldekortRouteTest {
         HttpMethod.Get,
         url {
             protocol = URLProtocol.HTTPS
-            path("/meldekort/bruker/neste")
+            path("/brukerfrontend/bruker")
         },
     )
 
@@ -40,18 +40,25 @@ class NesteMeldekortRouteTest {
             tilOgMed = LocalDate.of(2025, 1, 19),
         )
 
+        val andrePeriode = førstePeriode.plus14Dager()
+
+        val sak = ObjectMother.sak(
+            meldeperioder = listOf(førstePeriode, andrePeriode),
+        )
+
         val førsteMeldekort = ObjectMother.meldekort(
             mottatt = null,
             periode = førstePeriode,
+            sakId = sak.id,
         )
 
         val andreMeldekort = ObjectMother.meldekort(
             mottatt = null,
-            periode = Periode(
-                fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
-                tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
-            ),
+            periode = andrePeriode,
+            sakId = sak.id,
         )
+
+        tac.sakRepo.lagre(sak)
 
         tac.meldeperiodeRepo.lagre(førsteMeldekort.meldeperiode)
         tac.meldekortRepo.opprett(førsteMeldekort)
@@ -61,34 +68,42 @@ class NesteMeldekortRouteTest {
 
         testMedMeldekortRoutes(tac) {
             nesteMeldekortRequest().apply {
-                val meldekortFraBody = deserialize<MeldekortTilBrukerDTO>(bodyAsText())
+                val body = deserialize<BrukerDTO.MedSak>(bodyAsText())
 
                 status shouldBe HttpStatusCode.OK
                 contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
 
-                meldekortFraBody shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO()
+                body.nesteMeldekort shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO()
+                body.forrigeMeldekort shouldBe null
+                body.nesteMeldeperiode shouldBe ObjectMother.nesteMeldeperiodeDTO(andrePeriode)
             }
         }
     }
 
     @Test
-    fun `hent siste innsendte meldekort når ingen er klar til utfylling`() {
+    fun `hent forrige innsendte meldekort når ingen er klar til utfylling`() {
         val tac = TestApplicationContext()
 
         val førstePeriode = ObjectMother.periode(LocalDate.now().minusWeeks(2))
+        val andrePeriode = førstePeriode.plus14Dager()
+
+        val sak = ObjectMother.sak(
+            meldeperioder = listOf(førstePeriode, andrePeriode),
+        )
 
         val innsendtMeldekort = ObjectMother.meldekort(
+            sakId = sak.id,
             mottatt = førstePeriode.tilOgMed.atStartOfDay(),
             periode = førstePeriode,
         )
 
         val ikkeKlartMeldekort = ObjectMother.meldekort(
+            sakId = sak.id,
             mottatt = null,
-            periode = Periode(
-                fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
-                tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
-            ),
+            periode = andrePeriode,
         )
+
+        tac.sakRepo.lagre(sak)
 
         tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
         tac.meldekortRepo.opprett(innsendtMeldekort)
@@ -98,12 +113,14 @@ class NesteMeldekortRouteTest {
 
         testMedMeldekortRoutes(tac) {
             nesteMeldekortRequest().apply {
-                val meldekortFraBody = deserialize<MeldekortTilBrukerDTO>(bodyAsText())
+                val body = deserialize<BrukerDTO.MedSak>(bodyAsText())
 
                 status shouldBe HttpStatusCode.OK
                 contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
 
-                meldekortFraBody shouldBe innsendtMeldekort.tilMeldekortTilBrukerDTO()
+                body.nesteMeldekort shouldBe null
+                body.forrigeMeldekort shouldBe innsendtMeldekort.tilMeldekortTilBrukerDTO()
+                body.nesteMeldeperiode shouldBe ObjectMother.nesteMeldeperiodeDTO(andrePeriode)
             }
         }
     }
@@ -112,18 +129,29 @@ class NesteMeldekortRouteTest {
     fun `returner not found dersom ingen meldekort er klare til utfylling eller tidligere utfylt`() {
         val tac = TestApplicationContext()
 
+        val periode = ObjectMother.periode(LocalDate.now())
+
+        val sak = ObjectMother.sak(meldeperioder = listOf(periode))
+
         val ikkeKlartMeldekort = ObjectMother.meldekort(
             mottatt = null,
-            periode = ObjectMother.periode(LocalDate.now()),
+            periode = periode,
         )
+
+        tac.sakRepo.lagre(sak)
 
         tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
         tac.meldekortRepo.opprett(ikkeKlartMeldekort)
 
         testMedMeldekortRoutes(tac) {
             nesteMeldekortRequest().apply {
-                status shouldBe HttpStatusCode.NotFound
-                bodyAsText() shouldBe ""
+                val body = deserialize<BrukerDTO.MedSak>(bodyAsText())
+
+                status shouldBe HttpStatusCode.OK
+
+                body.nesteMeldekort shouldBe null
+                body.forrigeMeldekort shouldBe null
+                body.nesteMeldeperiode shouldBe ObjectMother.nesteMeldeperiodeDTO(periode)
             }
         }
     }
@@ -138,6 +166,9 @@ class NesteMeldekortRouteTest {
             tilOgMed = LocalDate.of(2025, 1, 19),
         )
 
+        val sak = ObjectMother.sak(meldeperioder = listOf(periode))
+        tac.sakRepo.lagre(sak)
+
         val førsteDto = meldeperiodeDto(
             periode = periode,
         )
@@ -148,12 +179,14 @@ class NesteMeldekortRouteTest {
 
         testMedMeldekortRoutes(tac) {
             nesteMeldekortRequest().apply {
-                val meldekort = deserialize<MeldekortTilBrukerDTO>(bodyAsText())
+                val body = deserialize<BrukerDTO.MedSak>(bodyAsText())
 
                 status shouldBe HttpStatusCode.OK
 
-                meldekort.meldeperiodeId shouldBe andreDto.id
-                meldekort.versjon shouldBe 2
+                body.nesteMeldekort!!.meldeperiodeId shouldBe andreDto.id
+                body.nesteMeldekort.versjon shouldBe 2
+                body.forrigeMeldekort shouldBe null
+                body.nesteMeldeperiode shouldBe null
             }
         }
     }
@@ -168,6 +201,9 @@ class NesteMeldekortRouteTest {
             tilOgMed = LocalDate.of(2025, 1, 19),
         )
 
+        val sak = ObjectMother.sak(meldeperioder = listOf(periode))
+        tac.sakRepo.lagre(sak)
+
         val førsteDto = meldeperiodeDto(
             periode = periode,
         )
@@ -178,11 +214,27 @@ class NesteMeldekortRouteTest {
         )
 
         meldeperiodeService.lagreFraSaksbehandling(førsteDto)
+
+        tac.sakService.lagreFraSaksbehandling(
+            ObjectMother.sakDTO(
+                fnr = sak.fnr.verdi,
+                sakId = sak.id.toString(),
+                saksnummer = sak.saksnummer,
+                meldeperioder = emptyList(),
+            ),
+        )
+
         meldeperiodeService.lagreFraSaksbehandling(andreDto)
 
         testMedMeldekortRoutes(tac) {
             nesteMeldekortRequest().apply {
-                status shouldBe HttpStatusCode.NotFound
+                val body = deserialize<BrukerDTO.MedSak>(bodyAsText())
+
+                status shouldBe HttpStatusCode.OK
+
+                body.nesteMeldekort shouldBe null
+                body.forrigeMeldekort shouldBe null
+                body.nesteMeldeperiode shouldBe null
             }
         }
     }

@@ -71,8 +71,11 @@ class MeldekortRepoFake(
             .firstOrNull()
     }
 
-    override fun hentSisteMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
-        return hentMeldekortForBruker(fnr).firstOrNull()
+    override fun hentSisteUtfylteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+        return hentMeldekortForBruker(fnr)
+            .filter { it.fnr == fnr && it.mottatt != null }
+            .sortedBy { it.mottatt }
+            .lastOrNull()
     }
 
     override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {

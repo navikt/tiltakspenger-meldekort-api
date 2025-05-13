@@ -21,7 +21,7 @@ class BrukerService(
 
     private fun hentBrukerMedSak(sak: Sak): Bruker.MedSak {
         val nesteMeldekort = meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)
-        val sisteMeldekort = meldekortService.hentSisteMeldekort(sak.fnr)
+        val sisteMeldekort = meldekortService.hentSisteUtfylteMeldekort(sak.fnr)
 
         return Bruker.MedSak(
             sak = sak,

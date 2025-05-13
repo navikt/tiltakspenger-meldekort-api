@@ -37,8 +37,8 @@ class MeldekortService(
         return meldekortRepo.hentForMeldekortId(id, fnr)
     }
 
-    fun hentSisteMeldekort(fnr: Fnr): Meldekort? {
-        return meldekortRepo.hentSisteMeldekortForBruker(fnr)
+    fun hentSisteUtfylteMeldekort(fnr: Fnr): Meldekort? {
+        return meldekortRepo.hentSisteUtfylteMeldekort(fnr)
     }
 
     fun hentNesteMeldekortForUtfylling(fnr: Fnr): Meldekort? {

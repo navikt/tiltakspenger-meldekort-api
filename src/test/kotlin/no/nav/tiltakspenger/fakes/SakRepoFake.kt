@@ -15,14 +15,17 @@ class SakRepoFake : SakRepo {
         sak: Sak,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
+        data.get()[sak.id] = sak
     }
 
     override fun oppdater(
         sak: Sak,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
+        data.get()[sak.id] = data.get()[sak.id]!!.copy(
+            fnr = sak.fnr,
+            meldeperioder = sak.meldeperioder,
+        )
     }
 
     override fun oppdaterArenaStatus(
@@ -30,24 +33,26 @@ class SakRepoFake : SakRepo {
         arenaStatus: ArenaMeldekortStatus,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
+        data.get()[id] = data.get()[id]!!.copy(
+            arenaMeldekortStatus = arenaStatus,
+        )
     }
 
     override fun hent(
         id: SakId,
         sessionContext: SessionContext?,
     ): Sak? {
-        TODO("Not yet implemented")
+        return data.get()[id]
     }
 
     override fun hent(
         fnr: Fnr,
         sessionContext: SessionContext?,
     ): Sak? {
-        TODO("Not yet implemented")
+        return data.get().values.find { it.fnr == fnr }
     }
 
     override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
-        TODO("Not yet implemented")
+        return data.get().values.filter { it.arenaMeldekortStatus == ArenaMeldekortStatus.UKJENT }
     }
 }

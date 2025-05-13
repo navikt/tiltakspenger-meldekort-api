@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.objectmothers
 
-import no.nav.tiltakspenger.fakes.TEXAS_FAKE_FNR
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
@@ -15,6 +14,7 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.VarselId
+import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -27,7 +27,7 @@ interface MeldekortMother {
         sakId: SakId = SakId.random(),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         varselId: VarselId? = null,
-        fnr: Fnr = Fnr.fromString(TEXAS_FAKE_FNR),
+        fnr: Fnr = Fnr.fromString(FAKE_FNR),
         erVarselInaktivert: Boolean = false,
     ): Meldekort {
         val meldeperiode =

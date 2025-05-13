@@ -42,7 +42,7 @@ fun ArenaMeldekortStatus.tilDTO(): ArenaMeldekortStatusDTO = when (this) {
 
 private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO.MedSak {
     val nesteMeldekort = nesteMeldekort?.tilMeldekortTilBrukerDTO()
-    val nesteMeldeperiode = sak.nesteMeldeperiode()?.let {
+    val nesteMeldeperiode = nesteMeldeperiode()?.let {
         NesteMeldeperiodeDTO(
             kanSendes = it.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING),
             periode = it.toDTO(),

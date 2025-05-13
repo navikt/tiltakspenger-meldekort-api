@@ -5,10 +5,9 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.route
 import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
 import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
-import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
+import no.nav.tiltakspenger.meldekort.clients.texas.TokenClient
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortFraBrukerRoute
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes
-import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutesV2
 import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.meldeperioderFraSaksbehandlingRoute
 import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute
 import no.nav.tiltakspenger.meldekort.service.BrukerService
@@ -24,36 +23,26 @@ fun Route.meldekortRoutes(
     meldeperiodeService: MeldeperiodeService,
     sakService: SakService,
     brukerService: BrukerService,
-    texasClient: TexasClient,
+    tokenClient: TokenClient,
     clock: Clock,
 ) {
     // Endepunkter som kalles fra saksbehandling-api
     route("/saksbehandling") {
         install(TexasWallSystemToken) {
-            client = texasClient
+            client = tokenClient
         }
 
         meldeperioderFraSaksbehandlingRoute(meldeperiodeService)
         sakFraSaksbehandlingRoute(sakService)
     }
 
-    // DEPRECATED, fjern når frontend er oppdatert
-    route("/meldekort/bruker") {
-        install(TexasWallBrukerToken) {
-            client = texasClient
-        }
-
-        meldekortTilBrukerRoutes(meldekortService)
-        meldekortFraBrukerRoute(meldekortService, clock)
-    }
-
     // Endepunkter som kalles fra brukers meldekort-frontend
     route("/brukerfrontend") {
         install(TexasWallBrukerToken) {
-            client = texasClient
+            client = tokenClient
         }
 
-        meldekortTilBrukerRoutesV2(meldekortService, brukerService)
+        meldekortTilBrukerRoutes(meldekortService, brukerService)
         meldekortFraBrukerRoute(meldekortService, clock)
     }
 }
