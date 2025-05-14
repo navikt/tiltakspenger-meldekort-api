@@ -5,7 +5,6 @@ import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.common.nå
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.toJournalpostDokument
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
@@ -44,8 +43,7 @@ class JournalførMeldekortService(
                 }
             }
         }.onLeft {
-            log.error(RuntimeException("Trigger stacktrace for enklere debug.")) { "Ukjent feil skjedde under journalføring av meldekort." }
-            sikkerlogg.error(it) { "Ukjent feil skjedde under journalføring av meldekort." }
+            log.error(it) { "Ukjent feil skjedde under journalføring av meldekort." }
         }
     }
 }

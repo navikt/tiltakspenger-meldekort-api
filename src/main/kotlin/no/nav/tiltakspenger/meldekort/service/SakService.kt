@@ -5,7 +5,6 @@ import arrow.core.left
 import arrow.core.right
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.periodisering.PeriodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.domene.Sak
@@ -42,8 +41,7 @@ class SakService(
                 return Unit.right()
             }.mapLeft {
                 with("Oppdatering av sak feilet for $sakId") {
-                    logger.error { this }
-                    sikkerlogg.error(it) { this }
+                    logger.error(it) { this }
                 }
                 return FeilVedMottakAvSak.OppdateringFeilet.left()
             }
@@ -56,8 +54,7 @@ class SakService(
             }
         }.mapLeft {
             with("Lagring av sak feilet for $sakId") {
-                logger.error { this }
-                sikkerlogg.error(it) { this }
+                logger.error(it) { this }
             }
             return FeilVedMottakAvSak.LagringFeilet.left()
         }

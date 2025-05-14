@@ -12,7 +12,6 @@ import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.periodisering.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
@@ -39,8 +38,7 @@ fun start(
     ),
 ) {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
-        log.error { "Uncaught exception logget i securelog" }
-        sikkerlogg.error(e) { e.message }
+        log.error(e) { e.message }
     }
 
     log.info { "starting server" }

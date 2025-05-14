@@ -8,7 +8,6 @@ import kotlinx.coroutines.launch
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
 import no.nav.tiltakspenger.libs.jobber.StoppableJob
 import no.nav.tiltakspenger.libs.jobber.startStoppableJob
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.routes.CALL_ID_MDC_KEY
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -36,7 +35,6 @@ class TaskExecutor(
                     initialDelay = initialDelay.toJavaDuration(),
                     intervall = intervall.toJavaDuration(),
                     logger = logger,
-                    sikkerLogg = sikkerlogg,
                     // Ref callIdMdc(CALL_ID_MDC_KEY) i MeldekortApi.kt
                     mdcCallIdKey = CALL_ID_MDC_KEY,
                     runJobCheck = listOf(runCheckFactory.leaderPod(), runCheckFactory.isReady()),

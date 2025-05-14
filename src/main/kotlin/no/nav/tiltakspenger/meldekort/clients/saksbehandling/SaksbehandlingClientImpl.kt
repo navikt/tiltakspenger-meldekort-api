@@ -6,7 +6,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.future.await
 import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.json.serialize
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import java.net.URI
 import java.net.http.HttpRequest
@@ -45,14 +45,14 @@ class SaksbehandlingClientImpl(
             if (status != 200) {
                 val melding = "Feil ved kall til tiltakspenger-saksbehandling-api - Status $status - Id: ${meldekort.id}"
                 logger.error { "$melding - Se sikkerlogg for detaljer." }
-                sikkerlogg.error { "$melding - Response: $responseBody - Payload: $jsonPayload" }
+                Sikkerlogg.error { "$melding - Response: $responseBody - Payload: $jsonPayload" }
                 return SaksbehandlingApiError.left()
             }
             Unit
         }.mapLeft {
             // Either.catch slipper igjennom CancellationException som er ønskelig.
             logger.error(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. Se sikkerlogg for detaljer." }
-            sikkerlogg.error(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. jsonPayload: $jsonPayload, uri: $saksbehandlingApiMeldekortUri" }
+            Sikkerlogg.error(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. jsonPayload: $jsonPayload, uri: $saksbehandlingApiMeldekortUri" }
             SaksbehandlingApiError
         }
     }
