@@ -11,11 +11,10 @@ import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvSak
-import no.nav.tiltakspenger.meldekort.service.SakDTO
-import no.nav.tiltakspenger.meldekort.service.SakService
+import no.nav.tiltakspenger.meldekort.service.LagreFraSaksbehandlingService
 
 fun Route.sakFraSaksbehandlingRoute(
-    sakService: SakService,
+    lagreFraSaksbehandlingService: LagreFraSaksbehandlingService,
 ) {
     val logger = KotlinLogging.logger {}
 
@@ -32,20 +31,25 @@ fun Route.sakFraSaksbehandlingRoute(
             return@post
         }
 
-        sakService.lagreFraSaksbehandling(sakDTO).onLeft {
+        lagreFraSaksbehandlingService.lagre(sakDTO).onLeft {
             when (it) {
                 FeilVedMottakAvSak.FinnesUtenDiff -> call.respond(
                     message = "Saken var allerede lagret med samme data",
                     status = HttpStatusCode.OK,
                 )
 
-                FeilVedMottakAvSak.LagringFeilet -> call.respond(
-                    message = "Lagring av sak feilet",
+                FeilVedMottakAvSak.MeldeperiodeFinnesMedDiff -> call.respond(
+                    message = "Meldeperiode var allerede lagret med andre data",
+                    status = HttpStatusCode.Conflict,
+                )
+
+                FeilVedMottakAvSak.OpprettSakFeilet -> call.respond(
+                    message = "Opprettelse av sak feilet",
                     status = HttpStatusCode.InternalServerError,
                 )
 
-                FeilVedMottakAvSak.OppdateringFeilet -> call.respond(
-                    message = "Oppdatering av eksisterende sak feilet",
+                FeilVedMottakAvSak.LagringFeilet -> call.respond(
+                    message = "Lagring av sak feilet",
                     status = HttpStatusCode.InternalServerError,
                 )
             }

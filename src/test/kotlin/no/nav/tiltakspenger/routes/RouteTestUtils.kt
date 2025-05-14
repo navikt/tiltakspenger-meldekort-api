@@ -40,8 +40,7 @@ fun testMedMeldekortRoutes(context: TestApplicationContext, block: suspend Appli
                 routing {
                     meldekortRoutes(
                         meldekortService = context.meldekortService,
-                        meldeperiodeService = context.meldeperiodeService,
-                        sakService = context.sakService,
+                        lagreFraSaksbehandlingService = context.lagreFraSaksbehandlingService,
                         brukerService = context.brukerService,
                         tokenClient = context.tokenClient,
                         clock = context.clock,

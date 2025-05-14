@@ -2,12 +2,10 @@ package no.nav.tiltakspenger.objectmothers
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
-import no.nav.tiltakspenger.libs.periodisering.Periode
-import no.nav.tiltakspenger.libs.periodisering.PeriodeDTO
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
-import no.nav.tiltakspenger.meldekort.domene.MeldeperioderForSak
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.Sak
-import no.nav.tiltakspenger.meldekort.service.SakDTO
+import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.SakDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 interface SakMother {
@@ -16,14 +14,14 @@ interface SakMother {
         id: SakId = SakId.random(),
         saksnummer: String = Math.random().toString(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
-        meldeperioder: List<Periode> = emptyList(),
+        meldeperioder: List<Meldeperiode> = emptyList(),
         arenaMeldekortStatus: ArenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
     ): Sak {
         return Sak(
             id = id,
             saksnummer = saksnummer,
             fnr = fnr,
-            meldeperioder = MeldeperioderForSak(meldeperioder),
+            meldeperioder = meldeperioder,
             arenaMeldekortStatus = arenaMeldekortStatus,
         )
     }
@@ -32,7 +30,7 @@ interface SakMother {
         sakId: String = SakId.random().toString(),
         saksnummer: String = Math.random().toString(),
         fnr: String = FAKE_FNR,
-        meldeperioder: List<PeriodeDTO> = emptyList(),
+        meldeperioder: List<SakDTO.MeldeperiodeDTO> = emptyList(),
     ): SakDTO {
         return SakDTO(
             fnr = fnr,

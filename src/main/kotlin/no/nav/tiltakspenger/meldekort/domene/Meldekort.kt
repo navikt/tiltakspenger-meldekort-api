@@ -32,7 +32,20 @@ data class Meldekort(
     val sakId = meldeperiode.sakId
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
-    val status: MeldekortStatus = if (mottatt == null) MeldekortStatus.KAN_UTFYLLES else MeldekortStatus.INNSENDT
+
+    val klarTilInnsending = !periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())
+
+    val status: MeldekortStatus = when {
+        mottatt != null -> MeldekortStatus.INNSENDT
+        deaktivert != null -> MeldekortStatus.DEAKTIVERT
+        klarTilInnsending -> MeldekortStatus.KAN_UTFYLLES
+        else -> MeldekortStatus.IKKE_KLAR
+    }
+
+    val kanSendes = when (status) {
+        MeldekortStatus.IKKE_KLAR -> periode.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+        else -> null
+    }
 
     init {
         dager.zipWithNext().forEach { (dag, nesteDag) ->
@@ -43,8 +56,6 @@ data class Meldekort(
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden (id=$id)" }
         require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett (id=$id)" }
     }
-
-    fun kanSendes() = !periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())
 }
 
 fun Meldeperiode.tilTomtMeldekort(): Meldekort {

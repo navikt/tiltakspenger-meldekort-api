@@ -123,6 +123,18 @@ class MeldeperiodePostgresRepo(
             )
         }
 
+        fun hentForSakId(
+            sakId: SakId,
+            session: Session,
+        ): List<Meldeperiode> {
+            return session.run(
+                sqlQuery(
+                    "select * from meldeperiode where sak_id = :sak_id",
+                    "sak_id" to sakId.toString(),
+                ).map { row -> fromRow(row) }.asList,
+            )
+        }
+
         private fun fromRow(row: Row): Meldeperiode {
             return Meldeperiode(
                 id = MeldeperiodeId.fromString(row.string("id")),

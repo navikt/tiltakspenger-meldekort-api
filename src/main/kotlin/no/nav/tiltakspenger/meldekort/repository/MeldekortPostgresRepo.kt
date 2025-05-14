@@ -207,12 +207,10 @@ class MeldekortPostgresRepo(
                         where mp.id = mk.meldeperiode_id
                             and mk.mottatt is null
                             and mk.deaktivert is null
-                            and mp.til_og_med <= :maks_til_og_med
                         order by fra_og_med, versjon desc
                         limit 1
                     """,
                     "fnr" to fnr.verdi,
-                    "maks_til_og_med" to senesteTilOgMedDatoForInnsending(),
                 ).map { row -> fromRow(row, session) }.asSingle,
             )
         }
@@ -375,7 +373,10 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
+        limit: Int,
+        sessionContext: SessionContext?,
+    ): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 queryOf(

@@ -32,13 +32,11 @@ import no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
 import no.nav.tiltakspenger.meldekort.service.ArenaMeldekortStatusService
 import no.nav.tiltakspenger.meldekort.service.BrukerService
+import no.nav.tiltakspenger.meldekort.service.LagreFraSaksbehandlingService
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
-import no.nav.tiltakspenger.meldekort.service.MeldeperiodeService
-import no.nav.tiltakspenger.meldekort.service.SakService
 import no.nav.tiltakspenger.meldekort.service.SendMeldekortService
 import java.time.Clock
 
-@Suppress("unused")
 open class ApplicationContext(val clock: Clock) {
     private val log = KotlinLogging.logger {}
 
@@ -87,21 +85,6 @@ open class ApplicationContext(val clock: Clock) {
     open val meldekortService: MeldekortService by lazy {
         MeldekortService(
             meldekortRepo = meldekortRepo,
-        )
-    }
-
-    val meldeperiodeService: MeldeperiodeService by lazy {
-        MeldeperiodeService(
-            meldeperiodeRepo = meldeperiodeRepo,
-            meldekortRepo = meldekortService.meldekortRepo,
-            sessionFactory = sessionFactory,
-        )
-    }
-
-    val sakService: SakService by lazy {
-        SakService(
-            sakRepo = sakRepo,
-            sessionFactory = sessionFactory,
         )
     }
 
@@ -198,8 +181,17 @@ open class ApplicationContext(val clock: Clock) {
     open val brukerService by lazy {
         BrukerService(
             meldekortService = meldekortService,
-            sakService = sakService,
+            sakRepo = sakRepo,
             arenaMeldekortStatusService = arenaMeldekortStatusService,
+        )
+    }
+
+    open val lagreFraSaksbehandlingService by lazy {
+        LagreFraSaksbehandlingService(
+            sakRepo = sakRepo,
+            meldeperiodeRepo = meldeperiodeRepo,
+            meldekortRepo = meldekortRepo,
+            sessionFactory = sessionFactory,
         )
     }
 }
