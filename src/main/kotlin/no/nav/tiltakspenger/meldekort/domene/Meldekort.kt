@@ -60,6 +60,12 @@ data class Meldekort(
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden (id=$id)" }
         require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett (id=$id)" }
     }
+
+    companion object {
+        const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
+
+        fun senesteTilOgMedDatoForInnsending() = LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+    }
 }
 
 fun Meldeperiode.tilTomtMeldekort(): Meldekort {
@@ -99,7 +105,3 @@ fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
         journalføringstidspunkt = null,
     )
 }
-
-const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
-
-fun senesteTilOgMedDatoForInnsending() = LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)

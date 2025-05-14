@@ -16,7 +16,6 @@ import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
-import no.nav.tiltakspenger.meldekort.domene.senesteTilOgMedDatoForInnsending
 import java.time.Clock
 import java.time.LocalDateTime
 
@@ -217,8 +216,31 @@ class MeldekortPostgresRepo(
     }
 
     /** Henter alle meldekort som kan utfylles eller er utfylt */
-    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
-        return this.hentMeldekortForBruker(fnr, 100, sessionContext)
+    override fun hentAlleMeldekortForBruker(
+        fnr: Fnr,
+        limit: Int,
+        sessionContext: SessionContext?,
+    ): List<Meldekort> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        select
+                            mk.*
+                        from meldekort_bruker mk
+                        join meldeperiode mp on mp.fnr = :fnr
+                        where mp.id = mk.meldeperiode_id
+                            and mp.til_og_med <= :maks_til_og_med
+                            and mk.deaktivert is null
+                        order by fra_og_med desc, versjon desc
+                        limit :limit
+                    """,
+                    "fnr" to fnr.verdi,
+                    "limit" to limit,
+                    "maks_til_og_med" to Meldekort.senesteTilOgMedDatoForInnsending(),
+                ).map { row -> fromRow(row, session) }.asList,
+            )
+        }
     }
 
     override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
@@ -255,33 +277,6 @@ class MeldekortPostgresRepo(
                     "id" to id.toString(),
                     "sendtTidspunkt" to sendtTidspunkt,
                 ).asUpdate,
-            )
-        }
-    }
-
-    private fun hentMeldekortForBruker(
-        fnr: Fnr,
-        limit: Int = 100,
-        sessionContext: SessionContext?,
-    ): List<Meldekort> {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                        select
-                            mk.*
-                        from meldekort_bruker mk
-                        join meldeperiode mp on mp.fnr = :fnr
-                        where mp.id = mk.meldeperiode_id
-                            and mp.til_og_med <= :maks_til_og_med
-                            and mk.deaktivert is null
-                        order by fra_og_med desc, versjon desc
-                        limit :limit
-                    """,
-                    "fnr" to fnr.verdi,
-                    "limit" to limit,
-                    "maks_til_og_med" to senesteTilOgMedDatoForInnsending(),
-                ).map { row -> fromRow(row, session) }.asList,
             )
         }
     }
@@ -367,7 +362,7 @@ class MeldekortPostgresRepo(
                         limit :limit
                     """,
                     "limit" to limit,
-                    "maks_til_og_med" to senesteTilOgMedDatoForInnsending(),
+                    "maks_til_og_med" to Meldekort.senesteTilOgMedDatoForInnsending(),
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }

@@ -55,6 +55,7 @@ interface MeldekortRepo {
 
     fun hentAlleMeldekortForBruker(
         fnr: Fnr,
+        limit: Int = 100,
         sessionContext: SessionContext? = null,
     ): List<Meldekort>
 
