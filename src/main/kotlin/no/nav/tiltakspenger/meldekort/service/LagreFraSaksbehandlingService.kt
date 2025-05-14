@@ -29,6 +29,7 @@ class LagreFraSaksbehandlingService(
         logger.info { "Mottok sak med id ${sakDTO.sakId} fra saksbehandling" }
 
         val sak = Either.catch { sakDTO.tilSak() }.getOrElse {
+            logger.error { "Kunne ikke opprette sak fra saksbehandling - $it" }
             return FeilVedMottakAvSak.OpprettSakFeilet.left()
         }
 

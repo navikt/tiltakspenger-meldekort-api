@@ -90,12 +90,12 @@ class SakPostgresRepo(
                 sqlQuery(
                     "select * from sak where id = :id",
                     "id" to id.toString(),
-                ).map { row -> fromRow(row, session) }.asSingle,
+                ).map { row -> fromRow(row, true, session) }.asSingle,
             )
         }
     }
 
-    override fun hent(
+    override fun hentTilBruker(
         fnr: Fnr,
         sessionContext: SessionContext?,
     ): Sak? {
@@ -104,7 +104,7 @@ class SakPostgresRepo(
                 sqlQuery(
                     "select * from sak where fnr = :fnr",
                     "fnr" to fnr.verdi,
-                ).map { row -> fromRow(row, session) }.asSingle,
+                ).map { row -> fromRow(row, false, session) }.asSingle,
             )
         }
     }
@@ -115,16 +115,17 @@ class SakPostgresRepo(
                 sqlQuery(
                     "select * from sak where arena_meldekort_status = :ukjent_status",
                     "ukjent_status" to ArenaMeldekortStatus.UKJENT.tilDb(),
-                ).map { row -> fromRow(row, session) }.asList,
+                ).map { row -> fromRow(row, false, session) }.asList,
             )
         }
     }
 
     companion object {
-        private fun fromRow(row: Row, session: Session): Sak {
+        private fun fromRow(row: Row, medMeldeperioder: Boolean, session: Session): Sak {
             val sakId = SakId.fromString(row.string("id"))
 
-            val meldeperioder = MeldeperiodePostgresRepo.hentForSakId(sakId, session)
+            val meldeperioder =
+                if (medMeldeperioder) MeldeperiodePostgresRepo.hentForSakId(sakId, session) else emptyList()
 
             return Sak(
                 id = sakId,

@@ -28,7 +28,7 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     ): Sak?
 
-    fun hent(
+    fun hentTilBruker(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): Sak?

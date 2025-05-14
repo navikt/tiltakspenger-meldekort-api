@@ -118,7 +118,10 @@ class MeldeperiodePostgresRepo(
         ): List<Meldeperiode> {
             return session.run(
                 sqlQuery(
-                    "select * from meldeperiode where sak_id = :sak_id",
+                    """
+                    select * from meldeperiode where sak_id = :sak_id
+                    order by fra_og_med, versjon
+                    """,
                     "sak_id" to sakId.toString(),
                 ).map { row -> fromRow(row) }.asList,
             )

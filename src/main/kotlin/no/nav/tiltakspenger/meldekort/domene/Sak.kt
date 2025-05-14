@@ -18,6 +18,14 @@ data class Sak(
     fun erLik(otherSak: Sak): Boolean {
         return this.copy(arenaMeldekortStatus = otherSak.arenaMeldekortStatus) == otherSak
     }
+
+    init {
+        meldeperioder.zipWithNext().forEach { (a, b) ->
+            require(a.periode.tilOgMed < b.periode.fraOgMed || (a.periode == b.periode && a.versjon < b.versjon)) {
+                "Meldeperioder må være sortert etter periode og versjon. Fikk $a før $b"
+            }
+        }
+    }
 }
 
 enum class ArenaMeldekortStatus {
@@ -46,11 +54,11 @@ fun SakDTO.tilSak(): Sak {
             maksAntallDagerForPeriode = it.antallDagerForPeriode,
             girRett = it.girRett,
         )
-    }
+    }.sortedWith(compareBy<Meldeperiode> { it.periode.fraOgMed }.thenBy { it.versjon })
 
     return Sak(
-        id = SakId.fromString(this.sakId),
-        fnr = Fnr.fromString(this.fnr),
+        id = sakId,
+        fnr = fnr,
         saksnummer = this.saksnummer,
         meldeperioder = meldeperioder,
         arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
