@@ -10,7 +10,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import no.nav.tiltakspenger.libs.common.AccessToken
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.auth.IdentityProvider
 import no.nav.tiltakspenger.meldekort.clients.httpClientApache
 
@@ -40,7 +40,7 @@ class TexasClient(
                 logger.error { "Kall for autentisering mot Texas feilet, responskode ${e.response.status}" }
             }
             logger.error { "Kall for autentisering mot Texas feilet, se sikker logg for detaljer" }
-            sikkerlogg.error(e) { "Kall for autentisering mot Texas feilet, melding: ${e.message}" }
+            Sikkerlogg.error(e) { "Kall for autentisering mot Texas feilet, melding: ${e.message}" }
             throw e
         }
     }
@@ -65,7 +65,7 @@ class TexasClient(
                 logger.error { "Kall for å hente token mot Texas feilet, responskode ${e.response.status}" }
             }
             logger.error { "Kall å hente token mot Texas feilet, se sikker logg for detaljer" }
-            sikkerlogg.error(e) { "Kall å hente token mot Texas feilet, melding: ${e.message}" }
+            Sikkerlogg.error(e) { "Kall å hente token mot Texas feilet, melding: ${e.message}" }
             throw e
         }
     }
@@ -93,7 +93,7 @@ class TexasClient(
                 logger.error { "Kall for å veksle token mot Texas feilet, responskode ${e.response.status}" }
             }
             logger.error { "Kall å veksle token mot Texas feilet, se sikker logg for detaljer" }
-            sikkerlogg.error(e) { "Kall å veksle token mot Texas feilet, melding: ${e.message}" }
+            Sikkerlogg.error(e) { "Kall å veksle token mot Texas feilet, melding: ${e.message}" }
             throw e
         }
     }

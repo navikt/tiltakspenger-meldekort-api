@@ -8,7 +8,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.auth.fnr
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.routes.meldekort.logger
@@ -26,7 +26,7 @@ fun Route.meldekortFraBrukerRoute(
         }.getOrElse {
             with("Feil ved parsing av innsendt meldekort fra bruker") {
                 logger.error { this }
-                sikkerlogg.error(it) { "$this - ${it.message}" }
+                Sikkerlogg.error(it) { "$this - ${it.message}" }
             }
             call.respond(HttpStatusCode.BadRequest)
             return@post
@@ -39,7 +39,7 @@ fun Route.meldekortFraBrukerRoute(
         }.onLeft {
             with("Feil ved lagring av innsendt meldekort fra bruker") {
                 logger.error { "Feil ved lagring av innsendt meldekort med id ${lagreFraBrukerKommando.id}" }
-                sikkerlogg.error(it) { "$this - ${it.message}" }
+                Sikkerlogg.error(it) { "$this - ${it.message}" }
             }
             call.respond(HttpStatusCode.InternalServerError)
         }.onRight {

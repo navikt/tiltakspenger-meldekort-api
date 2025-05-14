@@ -5,7 +5,6 @@ import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
@@ -64,8 +63,7 @@ class MeldeperiodeService(
             }
         }.mapLeft {
             with("Lagring av meldeperiode feilet for ${meldeperiode.id}") {
-                logger.error { this }
-                sikkerlogg.error(it) { this }
+                logger.error(it) { this }
             }
             return FeilVedMottakAvMeldeperiode.LagringFeilet.left()
         }

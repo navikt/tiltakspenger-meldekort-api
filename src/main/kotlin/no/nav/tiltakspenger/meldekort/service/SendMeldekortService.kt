@@ -3,7 +3,6 @@ package no.nav.tiltakspenger.meldekort.service
 import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -36,8 +35,7 @@ class SendMeldekortService(
                 }
             }
         }.onLeft {
-            logger.error(RuntimeException("Trigger stacktrace for enklere debug.")) { "Ukjent feil skjedde under sending av meldekort." }
-            sikkerlogg.error(it) { "Ukjent feil skjedde under sending av meldekort." }
+            logger.error(it) { "Ukjent feil skjedde under sending av meldekort." }
         }
     }
 }
