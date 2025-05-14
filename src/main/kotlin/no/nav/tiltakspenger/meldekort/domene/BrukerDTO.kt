@@ -1,16 +1,11 @@
 package no.nav.tiltakspenger.meldekort.domene
 
-import no.nav.tiltakspenger.libs.periodisering.PeriodeDTO
-import no.nav.tiltakspenger.libs.periodisering.toDTO
-import java.time.LocalDate
-
 sealed interface BrukerDTO {
     val harSak: Boolean
 
     data class MedSak(
         val nesteMeldekort: MeldekortTilBrukerDTO?,
         val forrigeMeldekort: MeldekortTilBrukerDTO?,
-        val nesteMeldeperiode: NesteMeldeperiodeDTO?,
         val arenaMeldekortStatus: ArenaMeldekortStatusDTO,
     ) : BrukerDTO {
         override val harSak = true
@@ -22,11 +17,6 @@ sealed interface BrukerDTO {
         override val harSak = false
     }
 }
-
-data class NesteMeldeperiodeDTO(
-    val kanSendes: LocalDate,
-    val periode: PeriodeDTO,
-)
 
 enum class ArenaMeldekortStatusDTO {
     UKJENT,
@@ -42,17 +32,10 @@ fun ArenaMeldekortStatus.tilDTO(): ArenaMeldekortStatusDTO = when (this) {
 
 private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO.MedSak {
     val nesteMeldekort = nesteMeldekort?.tilMeldekortTilBrukerDTO()
-    val nesteMeldeperiode = nesteMeldeperiode()?.let {
-        NesteMeldeperiodeDTO(
-            kanSendes = it.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING),
-            periode = it.toDTO(),
-        )
-    }
 
     return BrukerDTO.MedSak(
         nesteMeldekort = nesteMeldekort,
         forrigeMeldekort = sisteMeldekort?.tilMeldekortTilBrukerDTO(),
-        nesteMeldeperiode = nesteMeldeperiode,
         arenaMeldekortStatus = sak.arenaMeldekortStatus.tilDTO(),
     )
 }

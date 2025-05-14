@@ -45,7 +45,7 @@ class SakRepoFake : SakRepo {
         return data.get()[id]
     }
 
-    override fun hent(
+    override fun hentTilBruker(
         fnr: Fnr,
         sessionContext: SessionContext?,
     ): Sak? {

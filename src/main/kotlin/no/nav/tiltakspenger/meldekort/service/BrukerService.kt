@@ -3,14 +3,15 @@ package no.nav.tiltakspenger.meldekort.service
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.domene.Bruker
 import no.nav.tiltakspenger.meldekort.domene.Sak
+import no.nav.tiltakspenger.meldekort.repository.SakRepo
 
 class BrukerService(
     private val meldekortService: MeldekortService,
-    private val sakService: SakService,
+    private val sakRepo: SakRepo,
     private val arenaMeldekortStatusService: ArenaMeldekortStatusService,
 ) {
     suspend fun hentBruker(fnr: Fnr): Bruker {
-        val sak = sakService.hentSak(fnr)
+        val sak = sakRepo.hentTilBruker(fnr)
 
         return if (sak != null) {
             hentBrukerMedSak(sak)

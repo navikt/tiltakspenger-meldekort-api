@@ -32,7 +32,24 @@ data class Meldekort(
     val sakId = meldeperiode.sakId
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
-    val status: MeldekortStatus = if (mottatt == null) MeldekortStatus.KAN_UTFYLLES else MeldekortStatus.INNSENDT
+
+    val klarTilInnsending = !periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())
+
+    val status: MeldekortStatus = when {
+        mottatt != null -> MeldekortStatus.INNSENDT
+        deaktivert != null -> MeldekortStatus.DEAKTIVERT
+        klarTilInnsending -> MeldekortStatus.KAN_UTFYLLES
+        else -> MeldekortStatus.IKKE_KLAR
+    }
+
+    val kanSendes = when (status) {
+        MeldekortStatus.KAN_UTFYLLES,
+        MeldekortStatus.IKKE_KLAR,
+        -> periode.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+        MeldekortStatus.INNSENDT,
+        MeldekortStatus.DEAKTIVERT,
+        -> null
+    }
 
     init {
         dager.zipWithNext().forEach { (dag, nesteDag) ->
@@ -44,7 +61,11 @@ data class Meldekort(
         require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett (id=$id)" }
     }
 
-    fun kanSendes() = !periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())
+    companion object {
+        const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
+
+        fun senesteTilOgMedDatoForInnsending() = LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+    }
 }
 
 fun Meldeperiode.tilTomtMeldekort(): Meldekort {
@@ -84,7 +105,3 @@ fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
         journalføringstidspunkt = null,
     )
 }
-
-const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
-
-fun senesteTilOgMedDatoForInnsending() = LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)

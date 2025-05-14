@@ -9,7 +9,6 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
-import no.nav.tiltakspenger.meldekort.domene.senesteTilOgMedDatoForInnsending
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.Clock
 import java.time.LocalDateTime
@@ -65,29 +64,24 @@ class MeldekortRepoFake(
 
     override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
         return data.get().values.filter {
-            it.fnr == fnr && it.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() && it.deaktivert == null && it.mottatt == null
+            it.fnr == fnr && it.deaktivert == null && it.mottatt == null
         }
             .sortedWith(compareBy<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
             .firstOrNull()
     }
 
     override fun hentSisteUtfylteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
-        return hentMeldekortForBruker(fnr)
+        return data.get().values
             .filter { it.fnr == fnr && it.mottatt != null }
             .sortedBy { it.mottatt }
             .lastOrNull()
     }
 
-    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
-        return hentMeldekortForBruker(fnr)
-    }
-
-    private fun hentMeldekortForBruker(
-        fnr: Fnr,
-    ): List<Meldekort> {
-        return data.get().values.filter {
-            it.fnr == fnr && it.periode.tilOgMed <= senesteTilOgMedDatoForInnsending() && it.deaktivert == null
-        }
+    override fun hentAlleMeldekortForBruker(fnr: Fnr, limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+        return data.get().values
+            .filter {
+                it.fnr == fnr && it.periode.tilOgMed <= Meldekort.senesteTilOgMedDatoForInnsending() && it.deaktivert == null
+            }
             .sortedWith(compareByDescending<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
     }
 

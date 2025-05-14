@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -72,9 +73,9 @@ class MeldekortPostgresRepoTest {
     }
 
     @Nested
-    inner class HentMeldekortTilBruker {
+    inner class HentMeldekort {
         @Test
-        fun `skal hente meldekort som kan utfylles og tidligere innsendt meldekort`() {
+        fun `skal hente meldekort som kan utfylles og forrige innsendte meldekort`() {
             withMigratedDb { helper ->
                 val førstePeriode = Periode(
                     fraOgMed = LocalDate.of(2025, 1, 6),
@@ -88,10 +89,7 @@ class MeldekortPostgresRepoTest {
 
                 val andreMeldekort = ObjectMother.meldekort(
                     mottatt = null,
-                    periode = Periode(
-                        fraOgMed = førstePeriode.fraOgMed.plusDays(14),
-                        tilOgMed = førstePeriode.tilOgMed.plusDays(14),
-                    ),
+                    periode = førstePeriode.plus14Dager(),
                 )
 
                 lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
@@ -111,7 +109,7 @@ class MeldekortPostgresRepoTest {
         }
 
         @Test
-        fun `skal hente forrige meldekort når det nyeste ikke er klart til utfylling`() {
+        fun `skal hente første meldekort når det andre ikke er klart til utfylling`() {
             withMigratedDb { helper ->
                 val førstePeriode = ObjectMother.periode(LocalDate.now().minusWeeks(2))
 
@@ -122,10 +120,7 @@ class MeldekortPostgresRepoTest {
 
                 val andreMeldekort = ObjectMother.meldekort(
                     mottatt = null,
-                    periode = Periode(
-                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
-                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
-                    ),
+                    periode = førstePeriode.plus14Dager(),
                 )
 
                 lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
@@ -140,12 +135,13 @@ class MeldekortPostgresRepoTest {
 
                 sisteMeldekortFraDb shouldBe null
                 nesteMeldekortFraDb shouldBe førsteMeldekort
+                nesteMeldekortFraDb!!.status shouldBe MeldekortStatus.KAN_UTFYLLES
                 alleMeldekortFraDb shouldBe listOf(førsteMeldekort)
             }
         }
 
         @Test
-        fun `skal ikke hente noen meldekort når ingen er klare til utfylling`() {
+        fun `skal hente meldekort som ikke er klart til utfylling`() {
             withMigratedDb { helper ->
                 val førstePeriode = ObjectMother.periode(LocalDate.now())
 
@@ -173,7 +169,8 @@ class MeldekortPostgresRepoTest {
                 val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
                 sisteMeldekortFraDb shouldBe null
-                nesteMeldekortFraDb shouldBe null
+                nesteMeldekortFraDb shouldBe førsteMeldekort
+                nesteMeldekortFraDb!!.status shouldBe MeldekortStatus.IKKE_KLAR
                 alleMeldekortFraDb shouldBe emptyList()
             }
         }
@@ -216,7 +213,7 @@ class MeldekortPostgresRepoTest {
         }
 
         @Test
-        fun `skal hente det eldste meldekortet som neste når flere er klare til utfylling`() {
+        fun `skal hente det første meldekortet som neste når flere er klare til utfylling`() {
             withMigratedDb { helper ->
                 val førstePeriode = Periode(
                     fraOgMed = LocalDate.of(2025, 1, 6),
@@ -230,10 +227,7 @@ class MeldekortPostgresRepoTest {
 
                 val andreMeldekort = ObjectMother.meldekort(
                     mottatt = null,
-                    periode = Periode(
-                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
-                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
-                    ),
+                    periode = førstePeriode.plus14Dager(),
                 )
 
                 lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
@@ -277,10 +271,7 @@ class MeldekortPostgresRepoTest {
                     mottatt = null,
                     varselId = null,
                     erVarselInaktivert = false,
-                    periode = Periode(
-                        fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
-                        tilOgMed = førstePeriode.tilOgMed.plusWeeks(2),
-                    ),
+                    periode = førstePeriode.plus14Dager(),
                 )
 
                 lagreMeldekort(helper, meldekort1, meldekort2)

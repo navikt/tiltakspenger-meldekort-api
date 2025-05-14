@@ -1,0 +1,1 @@
+ALTER TABLE sak DROP COLUMN IF EXISTS meldeperioder

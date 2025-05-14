@@ -44,9 +44,8 @@ fun Application.meldekortApi(
 
         meldekortRoutes(
             meldekortService = applicationContext.meldekortService,
-            meldeperiodeService = applicationContext.meldeperiodeService,
-            sakService = applicationContext.sakService,
             brukerService = applicationContext.brukerService,
+            lagreFraSaksbehandlingService = applicationContext.lagreFraSaksbehandlingService,
             tokenClient = applicationContext.tokenClient,
             clock = applicationContext.clock,
         )
