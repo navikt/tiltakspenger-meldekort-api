@@ -1,14 +1,11 @@
 package no.nav.tiltakspenger.meldekort.domene
 
-import arrow.core.Either
-import arrow.core.right
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.SakDTO
-import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvSak
 
 data class Sak(
     val id: SakId,
@@ -29,7 +26,7 @@ enum class ArenaMeldekortStatus {
     HAR_IKKE_MELDEKORT,
 }
 
-fun SakDTO.tilSak(): Either<FeilVedMottakAvSak, Sak> {
+fun SakDTO.tilSak(): Sak {
     val sakId = SakId.fromString(this.sakId)
     val fnr = Fnr.fromString(this.fnr)
 
@@ -52,10 +49,10 @@ fun SakDTO.tilSak(): Either<FeilVedMottakAvSak, Sak> {
     }
 
     return Sak(
-        id = sakId,
-        fnr = fnr,
+        id = SakId.fromString(this.sakId),
+        fnr = Fnr.fromString(this.fnr),
         saksnummer = this.saksnummer,
         meldeperioder = meldeperioder,
         arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
-    ).right()
+    )
 }

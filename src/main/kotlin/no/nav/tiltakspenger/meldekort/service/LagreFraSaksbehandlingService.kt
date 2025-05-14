@@ -28,7 +28,7 @@ class LagreFraSaksbehandlingService(
     fun lagre(sakDTO: SakDTO): Either<FeilVedMottakAvSak, Unit> {
         logger.info { "Mottok sak med id ${sakDTO.sakId} fra saksbehandling" }
 
-        val sak = sakDTO.tilSak().getOrElse {
+        val sak = Either.catch { sakDTO.tilSak() }.getOrElse {
             return FeilVedMottakAvSak.OpprettSakFeilet.left()
         }
 

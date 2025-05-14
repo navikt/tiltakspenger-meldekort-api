@@ -43,8 +43,12 @@ data class Meldekort(
     }
 
     val kanSendes = when (status) {
-        MeldekortStatus.IKKE_KLAR -> periode.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
-        else -> null
+        MeldekortStatus.KAN_UTFYLLES,
+        MeldekortStatus.IKKE_KLAR,
+        -> periode.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+        MeldekortStatus.INNSENDT,
+        MeldekortStatus.DEAKTIVERT,
+        -> null
     }
 
     init {

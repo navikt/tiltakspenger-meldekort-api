@@ -75,17 +75,6 @@ class MeldeperiodePostgresRepo(
         }
     }
 
-    override fun hentForKjedeId(kjedeId: MeldeperiodeKjedeId, sessionContext: SessionContext?): Meldeperiode? {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    "select * from meldeperiode where kjede_id = :kjede_id",
-                    "kjede_id" to kjedeId,
-                ).map { row -> fromRow(row) }.asSingle,
-            )
-        }
-    }
-
     override fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
