@@ -54,7 +54,7 @@ fun SakDTO.tilSak(): Sak {
             maksAntallDagerForPeriode = it.antallDagerForPeriode,
             girRett = it.girRett,
         )
-    }.sortedWith(compareBy<Meldeperiode> { it.periode.fraOgMed }.thenBy { it.versjon })
+    }.sortedBy { it.periode.fraOgMed }
 
     return Sak(
         id = sakId,

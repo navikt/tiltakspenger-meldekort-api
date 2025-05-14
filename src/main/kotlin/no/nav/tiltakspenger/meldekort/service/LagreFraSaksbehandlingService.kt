@@ -26,7 +26,7 @@ class LagreFraSaksbehandlingService(
     private val logger = KotlinLogging.logger {}
 
     fun lagre(sakDTO: SakDTO): Either<FeilVedMottakAvSak, Unit> {
-        logger.info { "Mottok sak med id ${sakDTO.sakId} fra saksbehandling" }
+        logger.debug { "Mottok sak med id ${sakDTO.sakId} fra saksbehandling" }
 
         val sak = Either.catch { sakDTO.tilSak() }.getOrElse {
             logger.error { "Kunne ikke opprette sak fra saksbehandling - $it" }

@@ -119,8 +119,9 @@ class MeldeperiodePostgresRepo(
             return session.run(
                 sqlQuery(
                     """
-                    select * from meldeperiode where sak_id = :sak_id
-                    order by fra_og_med, versjon
+                    select distinct on (fra_og_med)
+                        * from meldeperiode where sak_id = :sak_id
+                    order by fra_og_med, versjon desc
                     """,
                     "sak_id" to sakId.toString(),
                 ).map { row -> fromRow(row) }.asList,
