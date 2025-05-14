@@ -50,11 +50,11 @@ class LagreFraSaksbehandlingService(
             }
 
             if (eksisterendeMeldeperiode == nyMeldeperiode) {
-                logger.info { "Meldeperioden $meldeperiodeId finnes allerede med samme data" }
+                logger.debug { "Meldeperioden $meldeperiodeId finnes allerede med samme data" }
                 return@filter false
             }
 
-            logger.error { "Meldeperioden $meldeperiodeId finnes allerede med andre data!" }
+            logger.error { "Meldeperioden $meldeperiodeId finnes allerede med andre data - Eksisterende: $eksisterendeMeldeperiode - Ny: $nyMeldeperiode" }
             return FeilVedMottakAvSak.MeldeperiodeFinnesMedDiff.left()
         }
 
@@ -94,7 +94,7 @@ class LagreFraSaksbehandlingService(
     }
 
     private fun lagreMeldeperiode(meldeperiode: Meldeperiode, tx: SessionContext) {
-        val eksisterendeMeldekort = meldekortRepo.hentMeldekortForKjedeId(meldeperiode.kjedeId, meldeperiode.fnr)
+        val eksisterendeMeldekort = meldekortRepo.hentMeldekortForKjedeId(meldeperiode.kjedeId, meldeperiode.fnr, tx)
         val aktiveMeldekort = eksisterendeMeldekort.filter { it.deaktivert == null && it.mottatt == null }
 
         val nyttMeldekort = lagMeldekort(meldeperiode, eksisterendeMeldekort.lastOrNull())
@@ -108,7 +108,7 @@ class LagreFraSaksbehandlingService(
              *
              *  Dersom nytt meldekort ble opprettet skal varselet fortsatt være aktivt for dette
              * */
-            meldekortRepo.deaktiver(it.id, deaktiverVarsel = nyttMeldekort == null)
+            meldekortRepo.deaktiver(it.id, deaktiverVarsel = nyttMeldekort == null, tx)
             logger.info { "Deaktiverte meldekortet ${it.id}" }
         }
 
