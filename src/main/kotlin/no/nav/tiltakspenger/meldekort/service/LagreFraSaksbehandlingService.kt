@@ -5,6 +5,7 @@ import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
@@ -15,7 +16,6 @@ import no.nav.tiltakspenger.meldekort.domene.tilTomtMeldekort
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
-import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.SakDTO
 
 class LagreFraSaksbehandlingService(
     private val sakRepo: SakRepo,
@@ -25,7 +25,7 @@ class LagreFraSaksbehandlingService(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun lagre(sakDTO: SakDTO): Either<FeilVedMottakAvSak, Unit> {
+    fun lagre(sakDTO: SakTilMeldekortApiDTO): Either<FeilVedMottakAvSak, Unit> {
         logger.debug { "Mottok sak med id ${sakDTO.sakId} fra saksbehandling" }
 
         val sak = Either.catch { sakDTO.tilSak() }.getOrElse {

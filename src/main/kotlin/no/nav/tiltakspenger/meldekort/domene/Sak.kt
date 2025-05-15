@@ -4,8 +4,8 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
-import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.SakDTO
 
 data class Sak(
     val id: SakId,
@@ -34,7 +34,7 @@ enum class ArenaMeldekortStatus {
     HAR_IKKE_MELDEKORT,
 }
 
-fun SakDTO.tilSak(): Sak {
+fun SakTilMeldekortApiDTO.tilSak(): Sak {
     val sakId = SakId.fromString(this.sakId)
     val fnr = Fnr.fromString(this.fnr)
 

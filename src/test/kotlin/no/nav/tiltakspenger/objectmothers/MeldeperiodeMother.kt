@@ -7,9 +7,9 @@ import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
-import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.SakDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -45,8 +45,8 @@ interface MeldeperiodeMother {
         versjon: Int = 1,
         opprettet: LocalDateTime = nå(fixedClock),
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
-    ): SakDTO.MeldeperiodeDTO {
-        return SakDTO.MeldeperiodeDTO(
+    ): SakTilMeldekortApiDTO.Meldeperiode {
+        return SakTilMeldekortApiDTO.Meldeperiode(
             id = id,
             kjedeId = MeldeperiodeKjedeId.fraPeriode(periode).toString(),
             versjon = versjon,

@@ -15,9 +15,9 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.tilSak
-import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.SakDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.lagreMeldekortFraBrukerKommando
 import org.junit.jupiter.api.Test
@@ -25,7 +25,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MottaSakerRouteTest {
-    private suspend fun ApplicationTestBuilder.mottaSakRequest(dto: SakDTO) = defaultRequest(
+    private suspend fun ApplicationTestBuilder.mottaSakRequest(dto: SakTilMeldekortApiDTO) = defaultRequest(
         HttpMethod.Post,
         url {
             protocol = URLProtocol.HTTPS

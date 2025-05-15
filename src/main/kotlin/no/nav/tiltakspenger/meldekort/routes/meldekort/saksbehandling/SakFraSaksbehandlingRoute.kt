@@ -9,7 +9,8 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.libs.logging.sikkerlogg
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
+import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvSak
 import no.nav.tiltakspenger.meldekort.service.LagreFraSaksbehandlingService
 
@@ -21,11 +22,11 @@ fun Route.sakFraSaksbehandlingRoute(
     // Tar i mot saker fra saksbehandling-api
     post("/sak") {
         val sakDTO = Either.catch {
-            deserialize<SakDTO>(call.receiveText())
+            deserialize<SakTilMeldekortApiDTO>(call.receiveText())
         }.getOrElse {
             with("Feil ved parsing av sak fra saksbehandling-api") {
                 logger.error { this }
-                sikkerlogg.error(it) { this }
+                Sikkerlogg.error(it) { this }
                 call.respond(message = this, status = HttpStatusCode.BadRequest)
             }
             return@post
