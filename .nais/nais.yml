@@ -24,8 +24,6 @@ spec:
   prometheus:
     enabled: true
     path: /metrics
-  secureLogs:
-    enabled: true
   tokenx:
     enabled: true
   azure:
