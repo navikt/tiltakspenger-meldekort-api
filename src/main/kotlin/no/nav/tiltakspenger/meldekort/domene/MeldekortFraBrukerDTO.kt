@@ -54,7 +54,7 @@ fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
         "Meldekortet må ha minst en dag med registrering"
     }
 
-    val maksAntallDager = meldeperiode.maksAntallDagerForPeriodeForValidering
+    val maksAntallDager = meldeperiode.maksAntallDagerForPeriode
 
     require(antallDagerRegistrert <= maksAntallDager) {
         "Antall registrerte dager ($antallDagerRegistrert) overskrider maks ($maksAntallDager)"
