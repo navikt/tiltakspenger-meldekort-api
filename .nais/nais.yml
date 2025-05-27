@@ -65,10 +65,10 @@ spec:
         - application: tokenx-token-generator
           namespace: nais
           cluster: dev-gcp
-        {{#each arenaMeldekortFrontend.envs}}
-          - application: {{ this.app }}
-            namespace: meldekort
-        {{/each}}
+      {{#each accessPolicyInbound.arenaMeldekortFrontend}}
+        - application: {{ this }}
+          namespace: meldekort
+      {{/each}}
   observability:
     autoInstrumentation:
       enabled: true
