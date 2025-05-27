@@ -14,6 +14,6 @@ outboundExternalUrls:
 arenaMeldekortServiceApp: meldekortservice-q2
 arenaMeldekortFrontend:
   envs:
-  - app: meldekort-frontend-q1
-  - app: meldekort-frontend-q2
+    - app: meldekort-frontend-q1
+    - app: meldekort-frontend-q2
 naisEnv: dev
