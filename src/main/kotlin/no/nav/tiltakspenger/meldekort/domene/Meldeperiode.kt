@@ -15,10 +15,6 @@ import java.time.LocalDateTime
  * @param kjedeId ULID/UUID som unikt identifiserer kjeden av meldeperioder for denne saken.
  * @param versjon Angir hvilken versjon meldeperioden dette er. Når vi får nye vedtak som påvirker en spesifikk meldeperiode, vil denne øke.
  */
-
-// Konstanten kan fjernes når vi har mulighet til å endre antall dager pr meldeperiode i saksbehandlingsløsningen
-const val MAKS_DAGER_MED_TILTAKSPENGER_FOR_PERIODE: Int = 10
-
 data class Meldeperiode(
     val id: MeldeperiodeId,
     val kjedeId: MeldeperiodeKjedeId,
@@ -32,7 +28,6 @@ data class Meldeperiode(
     val girRett: Map<LocalDate, Boolean>,
 ) {
     val harRettIPerioden = girRett.any { it.value }
-    val maksAntallDagerForPeriodeForValidering = maxOf(maksAntallDagerForPeriode, MAKS_DAGER_MED_TILTAKSPENGER_FOR_PERIODE)
 
     init {
         require(versjon >= 0) { "Versjon må være større eller lik 0" }
