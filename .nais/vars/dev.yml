@@ -12,4 +12,8 @@ outboundExternalUrls:
   dokarkiv: dokarkiv-q2.dev-fss-pub.nais.io
   arenaMeldekortService: meldekortservice-q2.dev-fss-pub.nais.io
 arenaMeldekortServiceApp: meldekortservice-q2
+accessPolicyInbound:
+  arenaMeldekortFrontend:
+    - meldekort-frontend-q1
+    - meldekort-frontend-q2
 naisEnv: dev
