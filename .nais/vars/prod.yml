@@ -12,4 +12,7 @@ outboundExternalUrls:
   dokarkiv: dokarkiv.prod-fss-pub.nais.io
   arenaMeldekortService: meldekortservice.prod-fss-pub.nais.io
 arenaMeldekortServiceApp: meldekortservice
+arenaMeldekortFrontend:
+  envs:
+    - app: meldekort-frontend
 naisEnv: prod
