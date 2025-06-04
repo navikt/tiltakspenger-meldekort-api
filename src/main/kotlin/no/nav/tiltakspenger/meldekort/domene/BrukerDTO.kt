@@ -13,6 +13,7 @@ sealed interface BrukerDTO {
 
     data class UtenSak(
         val arenaMeldekortStatus: ArenaMeldekortStatusDTO,
+        val harSoknadUnderBehandling: Boolean,
     ) : BrukerDTO {
         override val harSak = false
     }
@@ -42,6 +43,7 @@ private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO.MedSak {
 
 private fun Bruker.UtenSak.tilBrukerDTO(): BrukerDTO.UtenSak = BrukerDTO.UtenSak(
     arenaMeldekortStatus = arenaMeldekortStatus.tilDTO(),
+    harSoknadUnderBehandling = harSoknadUnderBehandling,
 )
 
 fun Bruker.tilBrukerDTO(): BrukerDTO = when (this) {

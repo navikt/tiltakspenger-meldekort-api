@@ -12,5 +12,6 @@ sealed interface Bruker {
     data class UtenSak(
         val fnr: Fnr,
         val arenaMeldekortStatus: ArenaMeldekortStatus,
+        val harSoknadUnderBehandling: Boolean,
     ) : Bruker
 }

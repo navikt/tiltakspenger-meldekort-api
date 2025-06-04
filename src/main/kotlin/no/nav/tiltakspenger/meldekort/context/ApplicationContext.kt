@@ -12,7 +12,7 @@ import no.nav.tiltakspenger.meldekort.auth.IdentityProvider
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
-import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
+import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
 import no.nav.tiltakspenger.meldekort.clients.texas.TexasClient
 import no.nav.tiltakspenger.meldekort.clients.texas.TokenClient
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
@@ -89,7 +89,7 @@ open class ApplicationContext(val clock: Clock) {
     }
 
     open val saksbehandlingClient by lazy {
-        SaksbehandlingClientImpl(
+        SaksbehandlingClient(
             baseUrl = Configuration.saksbehandlingApiUrl,
             getToken = {
                 tokenClient.getSystemToken(
@@ -183,6 +183,7 @@ open class ApplicationContext(val clock: Clock) {
             meldekortService = meldekortService,
             sakRepo = sakRepo,
             arenaMeldekortStatusService = arenaMeldekortStatusService,
+            saksbehandlingClient = saksbehandlingClient,
         )
     }
 
