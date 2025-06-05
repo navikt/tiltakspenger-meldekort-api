@@ -61,6 +61,7 @@ class MottaSakerRouteTest {
 
                 sak shouldBe sakDto.tilSak()
                 sak!!.meldeperioder.size shouldBe 2
+                sak.harSoknadUnderBehandling shouldBe false
 
                 tac.meldekortRepo.hentAlleMeldekortForBruker(sak.fnr).size shouldBe 2
             }

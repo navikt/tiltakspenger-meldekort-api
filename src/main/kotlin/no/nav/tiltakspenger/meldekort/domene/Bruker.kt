@@ -7,6 +7,7 @@ sealed interface Bruker {
         val sak: Sak,
         val nesteMeldekort: Meldekort?,
         val sisteMeldekort: Meldekort?,
+        val harSoknadUnderBehandling: Boolean,
     ) : Bruker
 
     data class UtenSak(

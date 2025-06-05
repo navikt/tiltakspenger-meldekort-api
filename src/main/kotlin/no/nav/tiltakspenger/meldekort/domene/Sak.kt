@@ -13,10 +13,14 @@ data class Sak(
     val fnr: Fnr,
     val meldeperioder: List<Meldeperiode>,
     val arenaMeldekortStatus: ArenaMeldekortStatus,
+    val harSoknadUnderBehandling: Boolean,
 ) {
 
     fun erLik(otherSak: Sak): Boolean {
-        return this.copy(arenaMeldekortStatus = otherSak.arenaMeldekortStatus) == otherSak
+        return this.copy(
+            arenaMeldekortStatus = otherSak.arenaMeldekortStatus,
+            harSoknadUnderBehandling = otherSak.harSoknadUnderBehandling,
+        ) == otherSak
     }
 
     init {
@@ -62,5 +66,6 @@ fun SakTilMeldekortApiDTO.tilSak(): Sak {
         saksnummer = this.saksnummer,
         meldeperioder = meldeperioder,
         arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
+        harSoknadUnderBehandling = harSoknadUnderBehandling,
     )
 }
