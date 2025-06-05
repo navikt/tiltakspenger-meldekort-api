@@ -5,7 +5,6 @@ import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
@@ -33,8 +32,6 @@ class LagreFraSaksbehandlingService(
             logger.error { "Kunne ikke opprette sak fra saksbehandling - $it" }
             return FeilVedMottakAvSak.OpprettSakFeilet.left()
         }
-        // logg kun for feilsøking, må fjernes før merge!
-        logger.info { "Mappet mottatt sak: ${objectMapper.writeValueAsString(sak)}" }
 
         val sakId = sak.id
         val eksisterendeSak = sakRepo.hent(sakId)

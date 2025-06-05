@@ -40,7 +40,7 @@ interface SakMother {
             sakId = sakId,
             saksnummer = saksnummer,
             meldeperioder = meldeperioder,
-            harSoknadUnderBehandling = false,
+            harSoknadUnderBehandling = harSoknadUnderBehandling,
         )
     }
 }
