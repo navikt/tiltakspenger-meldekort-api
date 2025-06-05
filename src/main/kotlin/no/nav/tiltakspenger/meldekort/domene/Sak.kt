@@ -17,10 +17,9 @@ data class Sak(
 ) {
 
     fun erLik(otherSak: Sak): Boolean {
-        return this.id == otherSak.id && this.saksnummer == otherSak.saksnummer &&
-            this.fnr == otherSak.fnr && this.meldeperioder == otherSak.meldeperioder &&
-            this.arenaMeldekortStatus == otherSak.arenaMeldekortStatus &&
-            this.harSoknadUnderBehandling == otherSak.harSoknadUnderBehandling
+        return this.copy(
+            arenaMeldekortStatus = otherSak.arenaMeldekortStatus,
+        ) == otherSak
     }
 
     init {
