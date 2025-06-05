@@ -26,24 +26,27 @@ class SakPostgresRepo(
                         id,
                         saksnummer,
                         fnr,
-                        arena_meldekort_status
+                        arena_meldekort_status,
+                        har_soknad_under_behandling
                     ) values (
                         :id,
                         :saksnummer,
                         :fnr,
-                        :arena_meldekort_status                        
+                        :arena_meldekort_status,
+                        :har_soknad_under_behandling
                     )
                     """,
                     "id" to sak.id.toString(),
                     "saksnummer" to sak.saksnummer,
                     "fnr" to sak.fnr.verdi,
                     "arena_meldekort_status" to sak.arenaMeldekortStatus.tilDb(),
+                    "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
                 ).asUpdate,
             )
         }
     }
 
-    /** Oppdaterer fnr på en sak */
+    /** Oppdaterer fnr og søknadsbehandlingstatus på en sak */
     override fun oppdater(
         sak: Sak,
         sessionContext: SessionContext?,
@@ -53,11 +56,13 @@ class SakPostgresRepo(
                 sqlQuery(
                     """
                     update sak set 
-                        fnr = :fnr
+                        fnr = :fnr,
+                        har_soknad_under_behandling = :har_soknad_under_behandling
                     where id = :id
                     """,
                     "id" to sak.id.toString(),
                     "fnr" to sak.fnr.verdi,
+                    "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
                 ).asUpdate,
             )
         }
@@ -133,6 +138,7 @@ class SakPostgresRepo(
                 fnr = Fnr.fromString(row.string("fnr")),
                 meldeperioder = meldeperioder,
                 arenaMeldekortStatus = row.string("arena_meldekort_status").tilArenaMeldekortStatus(),
+                harSoknadUnderBehandling = row.boolean("har_soknad_under_behandling"),
             )
         }
     }

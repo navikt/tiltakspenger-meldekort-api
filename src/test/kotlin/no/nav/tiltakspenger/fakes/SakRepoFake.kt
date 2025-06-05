@@ -25,6 +25,7 @@ class SakRepoFake : SakRepo {
         data.get()[sak.id] = data.get()[sak.id]!!.copy(
             fnr = sak.fnr,
             meldeperioder = sak.meldeperioder,
+            harSoknadUnderBehandling = sak.harSoknadUnderBehandling,
         )
     }
 

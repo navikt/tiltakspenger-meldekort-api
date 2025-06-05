@@ -61,8 +61,38 @@ class MottaSakerRouteTest {
 
                 sak shouldBe sakDto.tilSak()
                 sak!!.meldeperioder.size shouldBe 2
+                sak.harSoknadUnderBehandling shouldBe false
 
                 tac.meldekortRepo.hentAlleMeldekortForBruker(sak.fnr).size shouldBe 2
+            }
+        }
+    }
+
+    @Test
+    fun `Skal oppdatere sak hvis harSoknadUnderBehandling endres`() {
+        val tac = TestApplicationContext()
+
+        val lagretSak = ObjectMother.sak(harSoknadUnderBehandling = false)
+        tac.sakRepo.lagre(lagretSak)
+
+        val id = lagretSak.id
+        val sakDto = ObjectMother.sakDTO(
+            sakId = id.toString(),
+            saksnummer = lagretSak.saksnummer,
+            fnr = lagretSak.fnr.verdi,
+            meldeperioder = emptyList(),
+            harSoknadUnderBehandling = true,
+        )
+
+        testMedMeldekortRoutes(tac) {
+            mottaSakRequest(sakDto).apply {
+                status shouldBe HttpStatusCode.OK
+
+                val sak = tac.sakRepo.hent(id)
+
+                sak shouldBe sakDto.tilSak()
+                sak!!.meldeperioder.size shouldBe 0
+                sak.harSoknadUnderBehandling shouldBe true
             }
         }
     }

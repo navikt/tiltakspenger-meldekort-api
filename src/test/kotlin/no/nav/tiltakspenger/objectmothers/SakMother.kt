@@ -16,6 +16,7 @@ interface SakMother {
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
         meldeperioder: List<Meldeperiode> = emptyList(),
         arenaMeldekortStatus: ArenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
+        harSoknadUnderBehandling: Boolean = false,
     ): Sak {
         return Sak(
             id = id,
@@ -23,6 +24,7 @@ interface SakMother {
             fnr = fnr,
             meldeperioder = meldeperioder,
             arenaMeldekortStatus = arenaMeldekortStatus,
+            harSoknadUnderBehandling = harSoknadUnderBehandling,
         )
     }
 
@@ -31,12 +33,14 @@ interface SakMother {
         saksnummer: String = Math.random().toString(),
         fnr: String = FAKE_FNR,
         meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = emptyList(),
+        harSoknadUnderBehandling: Boolean = false,
     ): SakTilMeldekortApiDTO {
         return SakTilMeldekortApiDTO(
             fnr = fnr,
             sakId = sakId,
             saksnummer = saksnummer,
             meldeperioder = meldeperioder,
+            harSoknadUnderBehandling = harSoknadUnderBehandling,
         )
     }
 }

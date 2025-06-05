@@ -28,6 +28,7 @@ class BrukerService(
             sak = sak,
             nesteMeldekort = nesteMeldekort,
             sisteMeldekort = sisteMeldekort,
+            harSoknadUnderBehandling = sak.harSoknadUnderBehandling,
         )
     }
 

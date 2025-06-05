@@ -14,6 +14,8 @@ import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
+import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.BrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
@@ -85,6 +87,7 @@ class MeldekortBrukerRouteTest {
                 body.nesteMeldekort shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO()
                 body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.KAN_UTFYLLES
                 body.forrigeMeldekort shouldBe null
+                body.harSoknadUnderBehandling shouldBe false
             }
         }
     }
@@ -140,6 +143,8 @@ class MeldekortBrukerRouteTest {
 
                 body.forrigeMeldekort shouldBe innsendtMeldekort.tilMeldekortTilBrukerDTO()
                 body.forrigeMeldekort!!.status shouldBe MeldekortStatusDTO.INNSENDT
+
+                body.harSoknadUnderBehandling shouldBe false
             }
         }
     }
@@ -176,6 +181,31 @@ class MeldekortBrukerRouteTest {
                 body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
 
                 body.forrigeMeldekort shouldBe null
+            }
+        }
+    }
+
+    @Test
+    fun `har ingen meldekort, men søknad under behandling - harSoknadUnderBehandling er true`() {
+        val tac = TestApplicationContext()
+
+        val sak = ObjectMother.sak(
+            harSoknadUnderBehandling = true,
+            arenaMeldekortStatus = ArenaMeldekortStatus.HAR_IKKE_MELDEKORT,
+        )
+
+        tac.sakRepo.lagre(sak)
+
+        testMedMeldekortRoutes(tac) {
+            meldekortBrukerRequest().apply {
+                val body = deserialize<BrukerDTO.MedSak>(bodyAsText())
+
+                status shouldBe HttpStatusCode.OK
+
+                body.nesteMeldekort shouldBe null
+                body.forrigeMeldekort shouldBe null
+                body.arenaMeldekortStatus shouldBe ArenaMeldekortStatusDTO.HAR_IKKE_MELDEKORT
+                body.harSoknadUnderBehandling shouldBe true
             }
         }
     }
