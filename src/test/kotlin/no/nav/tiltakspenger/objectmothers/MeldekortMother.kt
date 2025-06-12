@@ -58,7 +58,7 @@ interface MeldekortMother {
         dager: List<MeldekortDagFraBrukerDTO> = meldeperiode.girRett.map { (dag, _) ->
             MeldekortDagFraBrukerDTO(
                 dag = dag,
-                status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_REGISTRERT,
+                status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_BESVART,
             )
         },
     ): LagreMeldekortFraBrukerKommando {

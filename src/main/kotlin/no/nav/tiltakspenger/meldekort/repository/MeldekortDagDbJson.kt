@@ -67,9 +67,9 @@ fun List<MeldekortDagFraBrukerDTO>.tilMeldekortDagFraBrukerDbJson(): String {
                 MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagStatusDTO.FRAVÆR_SYK -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYK
                 MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYKT_BARN
-                MeldekortDagStatusDTO.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
-                MeldekortDagStatusDTO.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
-                MeldekortDagStatusDTO.IKKE_REGISTRERT -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_REGISTRERT
+                MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
+                MeldekortDagStatusDTO.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
+                MeldekortDagStatusDTO.IKKE_BESVART -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_REGISTRERT
             },
         )
     }.let { serialize(it) }
