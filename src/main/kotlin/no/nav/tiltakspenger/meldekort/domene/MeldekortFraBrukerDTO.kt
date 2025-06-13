@@ -48,7 +48,7 @@ fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
         "Meldekortet er ikke klart for innsending fra bruker"
     }
 
-    val antallDagerRegistrert = kommando.dager.count { it.status != MeldekortDagStatusDTO.IKKE_REGISTRERT }
+    val antallDagerRegistrert = kommando.dager.count { it.status != MeldekortDagStatusDTO.IKKE_BESVART }
 
     require(antallDagerRegistrert > 0) {
         "Meldekortet må ha minst en dag med registrering"
@@ -61,7 +61,7 @@ fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
     }
 
     val harRegistrerteDagerUtenRett = kommando.dager.any {
-        it.status != MeldekortDagStatusDTO.IKKE_REGISTRERT && meldeperiode.girRett[it.dag] == false
+        it.status != MeldekortDagStatusDTO.IKKE_BESVART && meldeperiode.girRett[it.dag] == false
     }
 
     require(!harRegistrerteDagerUtenRett) {
