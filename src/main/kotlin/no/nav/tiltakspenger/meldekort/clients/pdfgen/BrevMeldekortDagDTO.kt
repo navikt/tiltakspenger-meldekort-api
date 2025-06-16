@@ -14,14 +14,8 @@ enum class BrevMeldekortStatusDTO {
     DELTATT_MED_LØNN_I_TILTAKET,
     FRAVÆR_SYK,
     FRAVÆR_SYKT_BARN,
-
-    // TODO jah: Rename til FRAVÆR_GODKJENT_AV_NAV her og i pdfgen
     FRAVÆR_GODKJENT_AV_NAV,
-
-    // TODO jah: Rename til FRAVÆR_ANNET her og i pdfgen
     FRAVÆR_ANNET,
-
-    // TODO jah: Rename til IKKE_BESVART her og i pdfgen.
     IKKE_BESVART,
 }
 
