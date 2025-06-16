@@ -16,13 +16,13 @@ enum class BrevMeldekortStatusDTO {
     FRAVÆR_SYKT_BARN,
 
     // TODO jah: Rename til FRAVÆR_GODKJENT_AV_NAV her og i pdfgen
-    FRAVÆR_VELFERD_GODKJENT_AV_NAV,
+    FRAVÆR_GODKJENT_AV_NAV,
 
     // TODO jah: Rename til FRAVÆR_ANNET her og i pdfgen
-    FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV,
+    FRAVÆR_ANNET,
 
     // TODO jah: Rename til IKKE_BESVART her og i pdfgen.
-    IKKE_REGISTRERT,
+    IKKE_BESVART,
 }
 
 fun MeldekortDagStatus.tilBrevMeldekortStatusDTO(): BrevMeldekortStatusDTO = when (this) {
@@ -30,9 +30,9 @@ fun MeldekortDagStatus.tilBrevMeldekortStatusDTO(): BrevMeldekortStatusDTO = whe
     MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> BrevMeldekortStatusDTO.DELTATT_MED_LØNN_I_TILTAKET
     MeldekortDagStatus.FRAVÆR_SYK -> BrevMeldekortStatusDTO.FRAVÆR_SYK
     MeldekortDagStatus.FRAVÆR_SYKT_BARN -> BrevMeldekortStatusDTO.FRAVÆR_SYKT_BARN
-    MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> BrevMeldekortStatusDTO.FRAVÆR_VELFERD_GODKJENT_AV_NAV
-    MeldekortDagStatus.FRAVÆR_ANNET -> BrevMeldekortStatusDTO.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
-    MeldekortDagStatus.IKKE_BESVART -> BrevMeldekortStatusDTO.IKKE_REGISTRERT
+    MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> BrevMeldekortStatusDTO.FRAVÆR_GODKJENT_AV_NAV
+    MeldekortDagStatus.FRAVÆR_ANNET -> BrevMeldekortStatusDTO.FRAVÆR_ANNET
+    MeldekortDagStatus.IKKE_BESVART -> BrevMeldekortStatusDTO.IKKE_BESVART
 }
 
 fun List<MeldekortDag>.tilBrevMeldekortDagDTO(): List<BrevMeldekortDagDTO> {
