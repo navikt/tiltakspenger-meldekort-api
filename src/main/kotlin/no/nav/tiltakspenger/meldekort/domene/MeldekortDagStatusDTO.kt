@@ -15,9 +15,9 @@ enum class MeldekortDagStatusDTO {
         DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET
         FRAVÆR_SYK -> MeldekortDagStatus.FRAVÆR_SYK
         FRAVÆR_SYKT_BARN -> MeldekortDagStatus.FRAVÆR_SYKT_BARN
-        FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
-        FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
-        IKKE_BESVART -> MeldekortDagStatus.IKKE_REGISTRERT
+        FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV
+        FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_ANNET
+        IKKE_BESVART -> MeldekortDagStatus.IKKE_BESVART
     }
 }
 
@@ -26,7 +26,7 @@ fun MeldekortDagStatus.tilDTO(): MeldekortDagStatusDTO = when (this) {
     MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> throw IllegalStateException("Deltatt med lønn er ikke implementert ennå")
     MeldekortDagStatus.FRAVÆR_SYK -> MeldekortDagStatusDTO.FRAVÆR_SYK
     MeldekortDagStatus.FRAVÆR_SYKT_BARN -> MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN
-    MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV
-    MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> MeldekortDagStatusDTO.FRAVÆR_ANNET
-    MeldekortDagStatus.IKKE_REGISTRERT -> MeldekortDagStatusDTO.IKKE_BESVART
+    MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV
+    MeldekortDagStatus.FRAVÆR_ANNET -> MeldekortDagStatusDTO.FRAVÆR_ANNET
+    MeldekortDagStatus.IKKE_BESVART -> MeldekortDagStatusDTO.IKKE_BESVART
 }

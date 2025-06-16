@@ -20,9 +20,9 @@ private data class MeldekortDagDbJson(
         DELTATT_MED_LØNN_I_TILTAKET,
         FRAVÆR_SYK,
         FRAVÆR_SYKT_BARN,
-        FRAVÆR_VELFERD_GODKJENT_AV_NAV,
-        FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV,
-        IKKE_REGISTRERT,
+        FRAVÆR_GODKJENT_AV_NAV,
+        FRAVÆR_ANNET,
+        IKKE_BESVART,
     }
 
     fun toDomain(): MeldekortDag {
@@ -33,9 +33,9 @@ private data class MeldekortDagDbJson(
                 MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagDbStatus.FRAVÆR_SYK -> MeldekortDagStatus.FRAVÆR_SYK
                 MeldekortDagDbStatus.FRAVÆR_SYKT_BARN -> MeldekortDagStatus.FRAVÆR_SYKT_BARN
-                MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
-                MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
-                MeldekortDagDbStatus.IKKE_REGISTRERT -> MeldekortDagStatus.IKKE_REGISTRERT
+                MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV
+                MeldekortDagDbStatus.FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_ANNET
+                MeldekortDagDbStatus.IKKE_BESVART -> MeldekortDagStatus.IKKE_BESVART
             },
         )
     }
@@ -50,9 +50,9 @@ fun List<MeldekortDag>.tilMeldekortDagDbJson(): String {
                 MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagStatus.FRAVÆR_SYK -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYK
                 MeldekortDagStatus.FRAVÆR_SYKT_BARN -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYKT_BARN
-                MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
-                MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
-                MeldekortDagStatus.IKKE_REGISTRERT -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_REGISTRERT
+                MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV
+                MeldekortDagStatus.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_ANNET
+                MeldekortDagStatus.IKKE_BESVART -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_BESVART
             },
         )
     }.let { serialize(it) }
@@ -67,9 +67,9 @@ fun List<MeldekortDagFraBrukerDTO>.tilMeldekortDagFraBrukerDbJson(): String {
                 MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagStatusDTO.FRAVÆR_SYK -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYK
                 MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYKT_BARN
-                MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV
-                MeldekortDagStatusDTO.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV
-                MeldekortDagStatusDTO.IKKE_BESVART -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_REGISTRERT
+                MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV
+                MeldekortDagStatusDTO.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_ANNET
+                MeldekortDagStatusDTO.IKKE_BESVART -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_BESVART
             },
         )
     }.let { serialize(it) }

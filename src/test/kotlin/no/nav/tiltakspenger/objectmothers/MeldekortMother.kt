@@ -40,7 +40,7 @@ interface MeldekortMother {
             dager = meldeperiode.girRett.map { (dag, _) ->
                 MeldekortDag(
                     dag = dag,
-                    status = statusMap[dag] ?: MeldekortDagStatus.IKKE_REGISTRERT,
+                    status = statusMap[dag] ?: MeldekortDagStatus.IKKE_BESVART,
                 )
             },
             journalpostId = null,

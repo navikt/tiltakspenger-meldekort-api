@@ -77,7 +77,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         dager = this.girRett.map {
             MeldekortDag(
                 dag = it.key,
-                status = MeldekortDagStatus.IKKE_REGISTRERT,
+                status = MeldekortDagStatus.IKKE_BESVART,
             )
         },
         journalpostId = null,
@@ -98,7 +98,7 @@ fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
         dager = forrigeMeldekort.dager.zip(this.girRett.values) { dag, harRett ->
             MeldekortDag(
                 dag = dag.dag,
-                status = if (harRett) dag.status else MeldekortDagStatus.IKKE_REGISTRERT,
+                status = if (harRett) dag.status else MeldekortDagStatus.IKKE_BESVART,
             )
         },
         journalpostId = null,

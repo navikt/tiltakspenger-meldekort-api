@@ -27,9 +27,12 @@ fun List<MeldekortDag>.toSaksbehandlingDTO(): Map<LocalDate, Status> {
             MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> throw IllegalStateException("Deltatt med lønn er ikke implementert ennå")
             MeldekortDagStatus.FRAVÆR_SYK -> Status.FRAVÆR_SYK
             MeldekortDagStatus.FRAVÆR_SYKT_BARN -> Status.FRAVÆR_SYKT_BARN
-            MeldekortDagStatus.FRAVÆR_VELFERD_GODKJENT_AV_NAV -> Status.FRAVÆR_ANNET
-            MeldekortDagStatus.FRAVÆR_VELFERD_IKKE_GODKJENT_AV_NAV -> Status.IKKE_DELTATT
-            MeldekortDagStatus.IKKE_REGISTRERT -> Status.IKKE_REGISTRERT
+            // TODO jah: Endre til FRAVÆR_GODKJENT_AV_NAV her og i saksbehandling-api (felles lib)
+            MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> Status.FRAVÆR_ANNET
+            // TODO jah: Endre til FRAVÆR_ANNET her og i saksbehandling-api (felles lib)
+            MeldekortDagStatus.FRAVÆR_ANNET -> Status.IKKE_DELTATT
+            // TODO jah: Endre til IKKE_BESVART her og i saksbehandling-api (felles lib)
+            MeldekortDagStatus.IKKE_BESVART -> Status.IKKE_REGISTRERT
         }
     }
 }
