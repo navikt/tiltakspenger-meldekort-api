@@ -23,16 +23,13 @@ fun Meldekort.toSaksbehandlingMeldekortDTO(): BrukerutfyltMeldekortDTO {
 fun List<MeldekortDag>.toSaksbehandlingDTO(): Map<LocalDate, Status> {
     return this.associate { dag ->
         dag.dag to when (dag.status) {
-            MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET -> Status.DELTATT
-            MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> throw IllegalStateException("Deltatt med lønn er ikke implementert ennå")
+            MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET -> Status.DELTATT_UTEN_LØNN_I_TILTAKET
+            MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> Status.DELTATT_MED_LØNN_I_TILTAKET
             MeldekortDagStatus.FRAVÆR_SYK -> Status.FRAVÆR_SYK
             MeldekortDagStatus.FRAVÆR_SYKT_BARN -> Status.FRAVÆR_SYKT_BARN
-            // TODO jah: Endre til FRAVÆR_GODKJENT_AV_NAV her og i saksbehandling-api (felles lib)
-            MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> Status.FRAVÆR_ANNET
-            // TODO jah: Endre til FRAVÆR_ANNET her og i saksbehandling-api (felles lib)
-            MeldekortDagStatus.FRAVÆR_ANNET -> Status.IKKE_DELTATT
-            // TODO jah: Endre til IKKE_BESVART her og i saksbehandling-api (felles lib)
-            MeldekortDagStatus.IKKE_BESVART -> Status.IKKE_REGISTRERT
+            MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> Status.FRAVÆR_GODKJENT_AV_NAV
+            MeldekortDagStatus.FRAVÆR_ANNET -> Status.FRAVÆR_ANNET
+            MeldekortDagStatus.IKKE_BESVART -> Status.IKKE_BESVART
         }
     }
 }
