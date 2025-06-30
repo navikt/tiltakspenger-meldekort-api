@@ -10,7 +10,7 @@ val felleslibVersion = "0.0.494"
 val kotestVersion = "5.9.1"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.1.1"
-val testContainersVersion = "1.21.2"
+val testContainersVersion = "1.21.3"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
