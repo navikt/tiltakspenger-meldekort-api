@@ -77,7 +77,7 @@ class ArenaMeldekortClient(
                 header("ident", fnr.verdi)
             }.right()
         }.getOrElse {
-            logger.error(it) { "Feil ved request til arena meldekortservice - ${it.message}" }
+            logger.warn(it) { "Feil ved request til arena meldekortservice - ${it.message}" }
             ArenaMeldekortServiceFeil.UkjentFeil.left()
         }
     }
