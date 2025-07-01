@@ -16,7 +16,7 @@ class ArenaMeldekortStatusService(
 
     suspend fun hentArenaMeldekortStatus(fnr: Fnr): ArenaMeldekortStatus {
         arenaMeldekortClient.hentMeldekort(fnr).onLeft {
-            logger.error { "Kunne ikke hente meldekort fra arena - $it" }
+            logger.warn { "Kunne ikke hente meldekort fra arena - $it" }
             return ArenaMeldekortStatus.UKJENT
         }.onRight {
             if (it == null) {
@@ -27,7 +27,7 @@ class ArenaMeldekortStatusService(
         }
 
         val historiskeMeldekort = arenaMeldekortClient.hentHistoriskeMeldekort(fnr).getOrElse {
-            logger.error { "Kunne ikke hente historiske meldekort fra arena - $it" }
+            logger.warn { "Kunne ikke hente historiske meldekort fra arena - $it" }
             return ArenaMeldekortStatus.UKJENT
         }
 
@@ -54,7 +54,7 @@ class ArenaMeldekortStatusService(
                         logger.warn { "Arena status for sak ${sak.id} er ukjent" }
                     }
                 }.onLeft {
-                    logger.error(it) { "Feil under oppdatering av arena meldekort status for sak ${sak.id}" }
+                    logger.warn(it) { "Feil under oppdatering av arena meldekort status for sak ${sak.id}" }
                 }
             }
         }.onLeft {

@@ -40,7 +40,7 @@ class ArenaMeldekortClient(
             return null.right()
         }
 
-        logger.error { "Feil-response fra meldekortservice/meldekort - $status" }
+        logger.warn { "Feil-response fra meldekortservice/meldekort - $status" }
         return ArenaMeldekortServiceFeil.FeilResponse(status).left()
     }
 
