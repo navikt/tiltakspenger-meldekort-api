@@ -23,7 +23,7 @@ enum class MeldekortDagStatusDTO {
 
 fun MeldekortDagStatus.tilDTO(): MeldekortDagStatusDTO = when (this) {
     MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET -> MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET
-    MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> throw IllegalStateException("Deltatt med lønn er ikke implementert ennå")
+    MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET
     MeldekortDagStatus.FRAVÆR_SYK -> MeldekortDagStatusDTO.FRAVÆR_SYK
     MeldekortDagStatus.FRAVÆR_SYKT_BARN -> MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN
     MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV
