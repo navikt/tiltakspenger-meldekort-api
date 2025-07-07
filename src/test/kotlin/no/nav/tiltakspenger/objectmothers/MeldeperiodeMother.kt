@@ -24,6 +24,7 @@ interface MeldeperiodeMother {
         versjon: Int = 1,
         opprettet: LocalDateTime = nå(fixedClock),
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
+        antallDagerForPeriode: Int = girRett.filter { it.value }.size,
     ): Meldeperiode {
         return Meldeperiode(
             id = id,
@@ -34,7 +35,7 @@ interface MeldeperiodeMother {
             kjedeId = MeldeperiodeKjedeId.fraPeriode(periode),
             versjon = versjon,
             opprettet = opprettet,
-            maksAntallDagerForPeriode = periode.antallDager.toInt(),
+            maksAntallDagerForPeriode = antallDagerForPeriode,
             girRett = girRett,
         )
     }
