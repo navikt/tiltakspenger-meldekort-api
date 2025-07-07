@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.objectmothers
 
-import kotlinx.datetime.DayOfWeek
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -11,6 +10,7 @@ import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -24,6 +24,7 @@ interface MeldeperiodeMother {
         versjon: Int = 1,
         opprettet: LocalDateTime = nå(fixedClock),
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
+        antallDagerForPeriode: Int = girRett.filter { it.value }.size,
     ): Meldeperiode {
         return Meldeperiode(
             id = id,
@@ -34,7 +35,7 @@ interface MeldeperiodeMother {
             kjedeId = MeldeperiodeKjedeId.fraPeriode(periode),
             versjon = versjon,
             opprettet = opprettet,
-            maksAntallDagerForPeriode = periode.antallDager.toInt(),
+            maksAntallDagerForPeriode = antallDagerForPeriode,
             girRett = girRett,
         )
     }
