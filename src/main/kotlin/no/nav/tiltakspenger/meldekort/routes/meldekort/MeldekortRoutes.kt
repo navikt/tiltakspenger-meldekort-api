@@ -1,11 +1,10 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.route
-import no.nav.tiltakspenger.meldekort.auth.TexasWallBrukerToken
-import no.nav.tiltakspenger.meldekort.auth.TexasWallSystemToken
-import no.nav.tiltakspenger.meldekort.clients.texas.TokenClient
+import no.nav.tiltakspenger.meldekort.auth.IdentityProvider
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortFraBrukerRoute
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute
@@ -20,25 +19,20 @@ fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     lagreFraSaksbehandlingService: LagreFraSaksbehandlingService,
     brukerService: BrukerService,
-    tokenClient: TokenClient,
     clock: Clock,
 ) {
     // Endepunkter som kalles fra saksbehandling-api
-    route("/saksbehandling") {
-        install(TexasWallSystemToken) {
-            client = tokenClient
+    authenticate(IdentityProvider.AZUREAD.value) {
+        route("/saksbehandling") {
+            sakFraSaksbehandlingRoute(lagreFraSaksbehandlingService)
         }
-
-        sakFraSaksbehandlingRoute(lagreFraSaksbehandlingService)
     }
 
     // Endepunkter som kalles fra brukers meldekort-frontend
-    route("/brukerfrontend") {
-        install(TexasWallBrukerToken) {
-            client = tokenClient
+    authenticate(IdentityProvider.TOKENX.value) {
+        route("/brukerfrontend") {
+            meldekortTilBrukerRoutes(meldekortService, brukerService)
+            meldekortFraBrukerRoute(meldekortService, clock)
         }
-
-        meldekortTilBrukerRoutes(meldekortService, brukerService)
-        meldekortFraBrukerRoute(meldekortService, clock)
     }
 }

@@ -32,6 +32,7 @@ class MeldekortBrukerRouteTest {
             protocol = URLProtocol.HTTPS
             path("/brukerfrontend/bruker")
         },
+        jwt = JwtGenerator().createJwtForUser(),
     )
 
     @Test
@@ -280,6 +281,31 @@ class MeldekortBrukerRouteTest {
 
                 body.nesteMeldekort shouldBe null
                 body.forrigeMeldekort shouldBe null
+            }
+        }
+    }
+
+    @Test
+    fun `request mangler token - returnerer Unauthorized`() {
+        val tac = TestApplicationContext()
+
+        val sak = ObjectMother.sak(
+            harSoknadUnderBehandling = true,
+            arenaMeldekortStatus = ArenaMeldekortStatus.HAR_IKKE_MELDEKORT,
+        )
+
+        tac.sakRepo.lagre(sak)
+
+        testMedMeldekortRoutes(tac) {
+            defaultRequest(
+                HttpMethod.Get,
+                url {
+                    protocol = URLProtocol.HTTPS
+                    path("/brukerfrontend/bruker")
+                },
+                jwt = null,
+            ).apply {
+                status shouldBe HttpStatusCode.Unauthorized
             }
         }
     }

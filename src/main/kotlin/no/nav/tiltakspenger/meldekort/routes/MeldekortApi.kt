@@ -7,6 +7,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.auth.authentication
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
@@ -14,6 +15,9 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.header
 import io.ktor.server.request.path
 import io.ktor.server.routing.routing
+import no.nav.tiltakspenger.meldekort.auth.IdentityProvider
+import no.nav.tiltakspenger.meldekort.auth.TexasAuthenticationProvider
+import no.nav.tiltakspenger.meldekort.clients.texas.TokenClient
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
 import org.slf4j.event.Level
@@ -39,6 +43,8 @@ fun Application.meldekortApi(
     }
     jacksonSerialization()
 
+    setupAuthentication(applicationContext.tokenClient)
+
     routing {
         healthRoutes()
 
@@ -46,7 +52,6 @@ fun Application.meldekortApi(
             meldekortService = applicationContext.meldekortService,
             brukerService = applicationContext.brukerService,
             lagreFraSaksbehandlingService = applicationContext.lagreFraSaksbehandlingService,
-            tokenClient = applicationContext.tokenClient,
             clock = applicationContext.clock,
         )
     }
@@ -59,5 +64,29 @@ fun Application.jacksonSerialization() {
             registerModule(JavaTimeModule())
             registerModule(KotlinModule.Builder().build())
         }
+    }
+}
+
+fun Application.setupAuthentication(tokenClient: TokenClient) {
+    authentication {
+        register(
+            TexasAuthenticationProvider(
+                TexasAuthenticationProvider.Config(
+                    name = IdentityProvider.TOKENX.value,
+                    tokenClient = tokenClient,
+                    identityProvider = IdentityProvider.TOKENX,
+                ),
+            ),
+        )
+
+        register(
+            TexasAuthenticationProvider(
+                TexasAuthenticationProvider.Config(
+                    name = IdentityProvider.AZUREAD.value,
+                    tokenClient = tokenClient,
+                    identityProvider = IdentityProvider.AZUREAD,
+                ),
+            ),
+        )
     }
 }
