@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.jacksonSerialization
 import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
+import no.nav.tiltakspenger.meldekort.routes.setupAuthentication
 
 suspend fun ApplicationTestBuilder.defaultRequest(
     method: HttpMethod,
@@ -37,12 +38,12 @@ fun testMedMeldekortRoutes(context: TestApplicationContext, block: suspend Appli
         testApplication {
             application {
                 jacksonSerialization()
+                setupAuthentication(context.tokenClient)
                 routing {
                     meldekortRoutes(
                         meldekortService = context.meldekortService,
                         lagreFraSaksbehandlingService = context.lagreFraSaksbehandlingService,
                         brukerService = context.brukerService,
-                        tokenClient = context.tokenClient,
                         clock = context.clock,
                     )
                 }

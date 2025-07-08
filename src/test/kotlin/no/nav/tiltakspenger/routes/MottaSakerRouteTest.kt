@@ -31,6 +31,7 @@ class MottaSakerRouteTest {
             protocol = URLProtocol.HTTPS
             path("/saksbehandling/sak")
         },
+        jwt = JwtGenerator().createJwtForSystembruker(),
     ) {
         setBody(serialize(dto))
     }
