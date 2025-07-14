@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val jvmVersion = JvmTarget.JVM_21
 val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
-val ktorVersion = "3.2.1"
+val ktorVersion = "3.2.2"
 val mockkVersion = "1.14.4"
 val felleslibVersion = "0.0.519"
 val kotestVersion = "5.9.1"
