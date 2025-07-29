@@ -72,3 +72,40 @@ fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
         "Meldekortet har registering på dager uten rett - $harRegistrerteDagerUtenRett"
     }
 }
+
+/**
+ * En variasjon av [validerLagring] som tar inn en liste med [MeldekortDag] i stedet for [LagreMeldekortFraBrukerKommando].
+ *
+ * TODO - Her burde vi slå sammen begge funksjonenen til 1 felles.
+ */
+fun Meldekort.validerLagring(nyeDager: List<MeldekortDag>) {
+    require(!periode.tilOgMed.isAfter(Meldekort.senesteTilOgMedDatoForInnsending())) {
+        "Meldekortet er ikke klart for innsending fra bruker"
+    }
+
+    val antallDagerRegistrert = nyeDager.count { it.status != MeldekortDagStatus.IKKE_BESVART }
+
+    require(antallDagerRegistrert > 0) {
+        "Meldekortet må ha minst en dag med registrering"
+    }
+
+    // TODO - må ikke denne kutte dager der brukeren ikke har rett?
+    // val forventetAntallDager = meldeperiode.maksAntallDagerForPeriode
+    val forventetAntallDager = nyeDager.map { meldeperiode.girRett[it.dag] }.count { it == true }
+
+    require(antallDagerRegistrert == forventetAntallDager) {
+        if (antallDagerRegistrert > forventetAntallDager) {
+            "Antall registrerte dager ($antallDagerRegistrert) overskrider maks ($forventetAntallDager)"
+        } else {
+            "Antall registrerte dager ($antallDagerRegistrert) er færre enn forventet antall registrerte dager ($forventetAntallDager)"
+        }
+    }
+
+    val harRegistrerteDagerUtenRett = nyeDager.any {
+        it.status != MeldekortDagStatus.IKKE_BESVART && meldeperiode.girRett[it.dag] == false
+    }
+
+    require(!harRegistrerteDagerUtenRett) {
+        "Meldekortet har registering på dager uten rett - $harRegistrerteDagerUtenRett"
+    }
+}
