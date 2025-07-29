@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.routes
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
@@ -19,6 +20,8 @@ import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.BrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -323,7 +326,6 @@ class MeldekortBrukerRouteTest {
         val lagreFraSaksbehandlingService = tac.lagreFraSaksbehandlingService
 
         val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
-
         val førsteDto = meldeperiodeDto(periode = periode)
 
         val sakDto = ObjectMother.sakDTO(meldeperioder = listOf(førsteDto))
@@ -332,11 +334,11 @@ class MeldekortBrukerRouteTest {
         testMedMeldekortRoutes(tac) {
             val alleMeldekort = this.alleBrukersMeldekort()
             verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort)
-            val eksisterendeMeldekortId = MeldekortId.fromString(
-                JSONObject(alleMeldekort.hentFørsteMeldekortFraAlleMeldekort()).get("id").toString(),
-            )
+            val førsteMeldekort = JSONObject(alleMeldekort.hentFørsteMeldekortFraAlleMeldekort())
+            val eksisterendeMeldekortId = MeldekortId.fromString(førsteMeldekort.get("id").toString())
+            val meldeperiodeId = førsteMeldekort.get("meldeperiodeId").toString()
 
-            val korrigerResponse = this.korrigerMeldekort(
+            val (korrigertMeldekort) = this.korrigerMeldekort(
                 meldekortId = eksisterendeMeldekortId.toString(),
                 dager = """
                         [
@@ -400,7 +402,84 @@ class MeldekortBrukerRouteTest {
                 """.trimIndent(),
             )
 
-            TODO("Hva har vi lyst til å verifisere her?")
+            korrigertMeldekort.id shouldNotBe eksisterendeMeldekortId
+            korrigertMeldekort.status shouldBe MeldekortStatusDTO.INNSENDT
+            korrigertMeldekort.meldeperiodeId shouldBe meldeperiodeId
+            korrigertMeldekort.fraOgMed shouldBe periode.fraOgMed
+            korrigertMeldekort.tilOgMed shouldBe periode.tilOgMed
+            korrigertMeldekort.dager.size shouldBe 14
+            korrigertMeldekort.dager shouldBe listOf(
+                MeldekortDagTilBrukerDTO(
+                    dag = 6.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 7.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 8.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.FRAVÆR_SYK,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 9.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 10.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 11.januar(2025),
+                    harRett = false,
+                    status = MeldekortDagStatusDTO.IKKE_BESVART,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 12.januar(2025),
+                    harRett = false,
+                    status = MeldekortDagStatusDTO.IKKE_BESVART,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 13.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.FRAVÆR_ANNET,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 14.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 15.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 16.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.FRAVÆR_SYK,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 17.januar(2025),
+                    harRett = true,
+                    status = MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 18.januar(2025),
+                    harRett = false,
+                    status = MeldekortDagStatusDTO.IKKE_BESVART,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 19.januar(2025),
+                    harRett = false,
+                    status = MeldekortDagStatusDTO.IKKE_BESVART,
+                ),
+            )
         }
     }
 }
