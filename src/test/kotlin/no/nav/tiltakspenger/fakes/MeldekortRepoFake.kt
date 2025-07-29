@@ -86,7 +86,7 @@ class MeldekortRepoFake(
     }
 
     override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 
     override fun markerSendtTilSaksbehandling(
@@ -94,7 +94,6 @@ class MeldekortRepoFake(
         sendtTidspunkt: LocalDateTime,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun markerJournalført(
@@ -103,21 +102,20 @@ class MeldekortRepoFake(
         tidspunkt: LocalDateTime,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 
     override fun hentMeldekortDetSkalVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 
     override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
         limit: Int,
         sessionContext: SessionContext?,
     ): List<Meldekort> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 }

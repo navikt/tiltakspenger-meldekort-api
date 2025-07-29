@@ -164,6 +164,7 @@ class MeldekortPostgresRepo(
                     and mp.fnr = :fnr
                     """,
                     "id" to meldekortId.toString(),
+                    // hvorfor trenger vi fnr her? Er det ikke nok at man benytter seg av samme meldekortId? Er ikke denne unik?
                     "fnr" to fnr.verdi,
                 ).map { row ->
                     fromRow(row, session)

@@ -6,14 +6,19 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
+import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.routes.meldekort.logger
+import no.nav.tiltakspenger.meldekort.service.KorrigerMeldekortCommand
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import java.time.Clock
+import java.time.LocalDate
 
 fun Route.meldekortFraBrukerRoute(
     meldekortService: MeldekortService,
@@ -45,5 +50,32 @@ fun Route.meldekortFraBrukerRoute(
         }.onRight {
             call.respond(HttpStatusCode.OK)
         }
+    }
+
+    data class KorrigertDag(
+        val dato: LocalDate,
+        val status: MeldekortDagStatus,
+    )
+
+    patch("/{meldekortId}/korriger") {
+        val meldekortId = MeldekortId.fromString(call.parameters["meldekortId"]!!)
+        val korrigerteDagerBody = deserialize<List<KorrigertDag>>(call.receiveText())
+
+        meldekortService.korriger(
+            KorrigerMeldekortCommand(
+                meldekortId = meldekortId,
+                fnr = call.fnr(),
+                korrigerteDager = korrigerteDagerBody.map {
+                    MeldekortDag(dag = it.dato, status = it.status)
+                },
+            ),
+        ).fold(
+            ifLeft = {
+                TODO("Implementer feilmelding")
+            },
+            ifRight = {
+                call.respond(HttpStatusCode.OK, it.tilMeldekortTilBrukerDTO())
+            },
+        )
     }
 }
