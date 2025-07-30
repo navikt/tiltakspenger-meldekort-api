@@ -12,6 +12,7 @@ import io.ktor.http.path
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.util.url
 import no.nav.tiltakspenger.TestApplicationContext
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.json.deserialize
@@ -22,9 +23,11 @@ import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.BrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
+import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import no.nav.tiltakspenger.routes.requests.alleBrukersMeldekort
 import no.nav.tiltakspenger.routes.requests.hentFørsteMeldekortFraAlleMeldekort
@@ -401,6 +404,12 @@ class MeldekortBrukerRouteTest {
                         ]
                 """.trimIndent(),
             )
+
+            val alleMeldekortEtterKorrigering = this.alleBrukersMeldekort()
+            val førsteMeldekortEtterKorrigering = alleMeldekortEtterKorrigering.hentFørsteMeldekortFraAlleMeldekort()
+            JSONObject(førsteMeldekortEtterKorrigering).get("id").toString() shouldNotBe eksisterendeMeldekortId.toString()
+
+            tac.meldekortRepo.hentForMeldekortId(eksisterendeMeldekortId, Fnr.fromString(FAKE_FNR))?.status shouldBe MeldekortStatus.DEAKTIVERT
 
             korrigertMeldekort.id shouldNotBe eksisterendeMeldekortId
             korrigertMeldekort.status shouldBe MeldekortStatusDTO.INNSENDT
