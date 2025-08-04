@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.math.max
 
 /**
  * Se også Meldeperiode i tiltakspenger-saksbehandling-api
@@ -28,6 +29,8 @@ data class Meldeperiode(
     val girRett: Map<LocalDate, Boolean>,
 ) {
     val harRettIPerioden = girRett.any { it.value }
+    val antallDagerIkkeRett = girRett.count { !it.value }
+    val minAntallDagerForPeriode = max((maksAntallDagerForPeriode - antallDagerIkkeRett), 0)
 
     init {
         require(versjon >= 0) { "Versjon må være større eller lik 0" }
