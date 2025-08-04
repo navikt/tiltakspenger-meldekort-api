@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
@@ -78,5 +79,14 @@ interface MeldekortRepo {
 
     fun hentMeldekortDetSkalVarslesFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
 
-    fun hentMottatteEllerDeaktiverteSomDetVarslesFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
+    fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
+        limit: Int = 25,
+        sessionContext: SessionContext? = null,
+    ): List<Meldekort>
+
+    fun hentMeldeperiodeForMeldeperiodeKjedeId(
+        id: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): Meldeperiode?
 }

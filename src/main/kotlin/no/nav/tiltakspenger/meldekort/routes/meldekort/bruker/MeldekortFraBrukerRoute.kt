@@ -38,9 +38,7 @@ fun Route.meldekortFraBrukerRoute(
         }
 
         Either.catch {
-            meldekortService.lagreMeldekortFraBruker(
-                kommando = lagreFraBrukerKommando,
-            )
+            meldekortService.lagreMeldekortFraBruker(kommando = lagreFraBrukerKommando)
         }.onLeft {
             with("Feil ved lagring av innsendt meldekort fra bruker") {
                 logger.error { "Feil ved lagring av innsendt meldekort med id ${lagreFraBrukerKommando.id}" }

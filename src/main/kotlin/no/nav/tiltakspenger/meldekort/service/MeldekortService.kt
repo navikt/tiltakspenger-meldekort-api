@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.validerLagring
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.Clock
@@ -36,9 +37,19 @@ class MeldekortService(
             "Meldekort med id $meldekortId er deaktivert (${meldekort.deaktivert})"
         }
 
-        meldekort.validerLagring(kommando).also {
-            meldekortRepo.lagreFraBruker(kommando)
+        val meldeperiode = meldekortRepo.hentMeldeperiodeForMeldeperiodeKjedeId(
+            id = meldekort.meldeperiode.kjedeId,
+            fnr = innsenderFnr,
+        )
+
+        requireNotNull(meldeperiode) {
+            "Meldeperiode for meldekort med id $meldekortId finnes ikke for bruker ${innsenderFnr.verdi}"
         }
+
+        TODO("Må bruke samme klasse for valideringen")
+//        meldekort.validerLagring(meldeperiode, kommando).also {
+//            meldekortRepo.lagreFraBruker(kommando)
+//        }
     }
 
     fun hentForMeldekortId(id: MeldekortId, fnr: Fnr): Meldekort? {
@@ -72,22 +83,38 @@ class MeldekortService(
         val eksisterendeMeldekort = meldekortRepo.hentForMeldekortId(command.meldekortId, command.fnr)
             ?: return "Meldekort med id $command.meldekortId finnes ikke for bruker ${command.fnr.verdi}".left()
 
+        require(eksisterendeMeldekort.status == MeldekortStatus.INNSENDT) {
+            "Meldekort med id ${eksisterendeMeldekort.id} er ikke i status INNSENDT, kan ikke korrigeres. Nåværende status: ${eksisterendeMeldekort.status}"
+        }
+
+        val meldeperiode = meldekortRepo.hentMeldeperiodeForMeldeperiodeKjedeId(
+            id = eksisterendeMeldekort.meldeperiode.kjedeId,
+            fnr = command.fnr,
+        )
+
+        // TODO - vi må ha en repo.hentSisteMeldekortForKjede og sjekke at brukeren korrigerer siste meldekort i kjeden
+
+        requireNotNull(meldeperiode) {
+            "Meldeperiode for meldekort med id ${eksisterendeMeldekort.id} finnes ikke for bruker ${command.fnr.verdi}"
+        }
+
         val nyttMeldekortFraBruker = Meldekort(
             id = MeldekortId.random(),
             deaktivert = null,
             mottatt = LocalDateTime.now(clock),
-            meldeperiode = eksisterendeMeldekort.meldeperiode,
+            meldeperiode = meldeperiode,
             dager = command.korrigerteDager,
             journalpostId = null,
             journalføringstidspunkt = null,
-            varselId = null,
-            erVarselInaktivert = false,
+            // TODO - sjekk om denne skal referere til forrige, eller nullstilles
+            varselId = eksisterendeMeldekort.varselId,
+            erVarselInaktivert = true,
         )
 
         // vil trigge en 'ukjent feil' for bruker ved feil som vil være litt dårlig ux
-        nyttMeldekortFraBruker.validerLagring(command.korrigerteDager).also {
+        nyttMeldekortFraBruker.validerLagring(meldeperiode, command.korrigerteDager).also {
             sessionFactory.withTransactionContext { tx ->
-                // TODO - korrigering skal vel deaktivere den gamle?
+                // TODO - kan ha tidligere meldekort som har pågående varsler som burde bli stanset.
                 meldekortRepo.deaktiver(eksisterendeMeldekort.id, true, tx)
                 meldekortRepo.opprett(nyttMeldekortFraBruker)
             }

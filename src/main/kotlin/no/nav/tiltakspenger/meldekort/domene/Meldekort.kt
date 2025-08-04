@@ -74,16 +74,19 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         meldeperiode = this,
         mottatt = null,
         deaktivert = null,
-        dager = this.girRett.map {
-            MeldekortDag(
-                dag = it.key,
-                status = MeldekortDagStatus.IKKE_BESVART,
-            )
-        },
+        dager = this.girRett.tilMeldekortDager(),
         journalpostId = null,
         journalføringstidspunkt = null,
         varselId = null,
         erVarselInaktivert = false,
+    )
+}
+
+// TODO - test
+fun Map<LocalDate, Boolean>.tilMeldekortDager(): List<MeldekortDag> = this.map {
+    MeldekortDag(
+        dag = it.key,
+        status = if (it.value) MeldekortDagStatus.IKKE_BESVART else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
     )
 }
 
