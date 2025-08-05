@@ -84,9 +84,15 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     ): List<Meldekort>
 
-    fun hentMeldeperiodeForMeldeperiodeKjedeId(
+    fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(
         id: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): Meldeperiode?
+
+    fun hentSisteMeldekortForKjedeId(
+        kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): Meldekort?
 }

@@ -23,6 +23,8 @@ private data class MeldekortDagDbJson(
         FRAVÆR_GODKJENT_AV_NAV,
         FRAVÆR_ANNET,
         IKKE_BESVART,
+        IKKE_TILTAKSDAG,
+        IKKE_RETT_TIL_TILTAKSPENGER,
     }
 
     fun toDomain(): MeldekortDag {
@@ -36,6 +38,8 @@ private data class MeldekortDagDbJson(
                 MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV
                 MeldekortDagDbStatus.FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_ANNET
                 MeldekortDagDbStatus.IKKE_BESVART -> MeldekortDagStatus.IKKE_BESVART
+                MeldekortDagDbStatus.IKKE_TILTAKSDAG -> MeldekortDagStatus.IKKE_TILTAKSDAG
+                MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
             },
         )
     }
@@ -53,6 +57,8 @@ fun List<MeldekortDag>.tilMeldekortDagDbJson(): String {
                 MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV
                 MeldekortDagStatus.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_ANNET
                 MeldekortDagStatus.IKKE_BESVART -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_BESVART
+                MeldekortDagStatus.IKKE_TILTAKSDAG -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_TILTAKSDAG
+                MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER
             },
         )
     }.let { serialize(it) }
@@ -70,6 +76,8 @@ fun List<MeldekortDagFraBrukerDTO>.tilMeldekortDagFraBrukerDbJson(): String {
                 MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV
                 MeldekortDagStatusDTO.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_ANNET
                 MeldekortDagStatusDTO.IKKE_BESVART -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_BESVART
+                MeldekortDagStatusDTO.IKKE_TILTAKSDAG -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_TILTAKSDAG
+                MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_RETT_TIL_TILTAKSPENGER
             },
         )
     }.let { serialize(it) }

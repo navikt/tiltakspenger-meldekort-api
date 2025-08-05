@@ -30,6 +30,8 @@ fun List<MeldekortDag>.toSaksbehandlingDTO(): Map<LocalDate, Status> {
             MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> Status.FRAVÆR_GODKJENT_AV_NAV
             MeldekortDagStatus.FRAVÆR_ANNET -> Status.FRAVÆR_ANNET
             MeldekortDagStatus.IKKE_BESVART -> Status.IKKE_BESVART
+            MeldekortDagStatus.IKKE_TILTAKSDAG -> Status.IKKE_TILTAKSDAG
+            MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER -> Status.IKKE_RETT_TIL_TILTAKSPENGER
         }
     }
 }

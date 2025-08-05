@@ -1,10 +1,11 @@
 package no.nav.tiltakspenger.routes.requests
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.kotest.matchers.shouldBe
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.routes.defaultRequest
-import org.json.JSONObject
 
 suspend fun ApplicationTestBuilder.alleBrukersMeldekort(): String {
     this.defaultRequest(
@@ -16,8 +17,14 @@ suspend fun ApplicationTestBuilder.alleBrukersMeldekort(): String {
 }
 
 fun ApplicationTestBuilder.verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort: String) {
-    JSONObject(alleMeldekort).getJSONArray("meldekort").single()
+    jacksonObjectMapper().readTree(alleMeldekort).get("meldekort").single()
+}
+
+fun String.verifiserAntallMeldekortFraAlleMeldekort(antall: Int) {
+    jacksonObjectMapper().readTree(this).get("meldekort").size() shouldBe antall
 }
 
 fun String.hentFørsteMeldekortFraAlleMeldekort(): String =
-    JSONObject(this).getJSONArray("meldekort").getJSONObject(0).toString()
+    jacksonObjectMapper().readTree(this).get("meldekort").first().toString()
+
+fun String.hentSisteMeldekortFraAlleMeldekort(): String = jacksonObjectMapper().readTree(this).get("meldekort").last().toString()

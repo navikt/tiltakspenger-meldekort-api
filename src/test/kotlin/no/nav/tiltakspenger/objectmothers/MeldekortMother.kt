@@ -33,16 +33,22 @@ interface MeldekortMother {
         val meldeperiode =
             ObjectMother.meldeperiode(periode = periode, saksnummer = saksnummer, sakId = sakId, fnr = fnr)
 
+        val dager = meldeperiode.girRett.map { (dag, girRett) ->
+            MeldekortDag(
+                dag = dag,
+                status = statusMap[dag] ?: if (girRett) {
+                    MeldekortDagStatus.IKKE_BESVART
+                } else {
+                    MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
+                },
+            )
+        }
+
         return Meldekort(
             id = MeldekortId.random(),
             mottatt = mottatt,
             meldeperiode = meldeperiode,
-            dager = meldeperiode.girRett.map { (dag, _) ->
-                MeldekortDag(
-                    dag = dag,
-                    status = statusMap[dag] ?: MeldekortDagStatus.IKKE_BESVART,
-                )
-            },
+            dager = dager,
             journalpostId = null,
             journalføringstidspunkt = null,
             varselId = varselId,

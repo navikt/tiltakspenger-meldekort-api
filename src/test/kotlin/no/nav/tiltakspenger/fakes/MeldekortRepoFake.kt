@@ -8,6 +8,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.Clock
@@ -117,5 +118,27 @@ class MeldekortRepoFake(
         sessionContext: SessionContext?,
     ): List<Meldekort> {
         return emptyList()
+    }
+
+    override fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(
+        id: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Meldeperiode? {
+        return data.get()
+            .filter { it.value.meldeperiode.kjedeId == id && it.value.fnr == fnr }
+            .values
+            .maxByOrNull { it.meldeperiode.versjon }?.meldeperiode
+    }
+
+    override fun hentSisteMeldekortForKjedeId(
+        kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Meldekort? {
+        return data.get()
+            .filter { it.value.meldeperiode.kjedeId == kjedeId && it.value.fnr == fnr }
+            .maxByOrNull { it.value.meldeperiode.versjon }
+            ?.value
     }
 }
