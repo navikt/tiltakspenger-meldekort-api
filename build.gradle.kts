@@ -119,7 +119,6 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
     testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
     testImplementation("org.testcontainers:postgresql:$testContainersVersion")
-    testImplementation("org.json:json:20231013")
 
     testApi("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
     testApi("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")

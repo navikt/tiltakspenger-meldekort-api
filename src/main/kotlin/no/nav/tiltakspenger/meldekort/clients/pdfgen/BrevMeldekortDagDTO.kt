@@ -17,6 +17,8 @@ enum class BrevMeldekortStatusDTO {
     FRAVÆR_GODKJENT_AV_NAV,
     FRAVÆR_ANNET,
     IKKE_BESVART,
+    IKKE_TILTAKSDAG,
+    IKKE_RETT_TIL_TILTAKSPENGER,
 }
 
 fun MeldekortDagStatus.tilBrevMeldekortStatusDTO(): BrevMeldekortStatusDTO = when (this) {
@@ -27,6 +29,8 @@ fun MeldekortDagStatus.tilBrevMeldekortStatusDTO(): BrevMeldekortStatusDTO = whe
     MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> BrevMeldekortStatusDTO.FRAVÆR_GODKJENT_AV_NAV
     MeldekortDagStatus.FRAVÆR_ANNET -> BrevMeldekortStatusDTO.FRAVÆR_ANNET
     MeldekortDagStatus.IKKE_BESVART -> BrevMeldekortStatusDTO.IKKE_BESVART
+    MeldekortDagStatus.IKKE_TILTAKSDAG -> BrevMeldekortStatusDTO.IKKE_TILTAKSDAG
+    MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER -> BrevMeldekortStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER
 }
 
 fun List<MeldekortDag>.tilBrevMeldekortDagDTO(): List<BrevMeldekortDagDTO> {

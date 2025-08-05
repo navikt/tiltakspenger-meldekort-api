@@ -37,7 +37,7 @@ class MeldekortService(
             "Meldekort med id $meldekortId er deaktivert (${meldekort.deaktivert})"
         }
 
-        val meldeperiode = meldekortRepo.hentMeldeperiodeForMeldeperiodeKjedeId(
+        val meldeperiode = meldekortRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
             id = meldekort.meldeperiode.kjedeId,
             fnr = innsenderFnr,
         )
@@ -46,10 +46,9 @@ class MeldekortService(
             "Meldeperiode for meldekort med id $meldekortId finnes ikke for bruker ${innsenderFnr.verdi}"
         }
 
-        TODO("Må bruke samme klasse for valideringen")
-//        meldekort.validerLagring(meldeperiode, kommando).also {
-//            meldekortRepo.lagreFraBruker(kommando)
-//        }
+        meldekort.validerLagring(meldeperiode, kommando.dager.map { it.tilMeldekortDag() }).also {
+            meldekortRepo.lagreFraBruker(kommando)
+        }
     }
 
     fun hentForMeldekortId(id: MeldekortId, fnr: Fnr): Meldekort? {
@@ -87,15 +86,23 @@ class MeldekortService(
             "Meldekort med id ${eksisterendeMeldekort.id} er ikke i status INNSENDT, kan ikke korrigeres. Nåværende status: ${eksisterendeMeldekort.status}"
         }
 
-        val meldeperiode = meldekortRepo.hentMeldeperiodeForMeldeperiodeKjedeId(
+        val meldeperiode = meldekortRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
             id = eksisterendeMeldekort.meldeperiode.kjedeId,
             fnr = command.fnr,
         )
 
-        // TODO - vi må ha en repo.hentSisteMeldekortForKjede og sjekke at brukeren korrigerer siste meldekort i kjeden
-
         requireNotNull(meldeperiode) {
             "Meldeperiode for meldekort med id ${eksisterendeMeldekort.id} finnes ikke for bruker ${command.fnr.verdi}"
+        }
+
+        val sisteMeldekortForKjeden = meldekortRepo.hentSisteMeldekortForKjedeId(
+            kjedeId = eksisterendeMeldekort.meldeperiode.kjedeId,
+            fnr = command.fnr,
+        ) ?: return "Siste meldekort for kjede ${eksisterendeMeldekort.meldeperiode.kjedeId} finnes ikke for bruker ${command.fnr.verdi}".left()
+
+        // TODO - Hva er tilbakemeldingen vi vil gi bruker? Prøv igjen senere?
+        require(eksisterendeMeldekort == sisteMeldekortForKjeden) {
+            "Meldekort med id ${eksisterendeMeldekort.id} er ikke siste meldekort i kjeden ${eksisterendeMeldekort.meldeperiode.kjedeId}. Kan ikke korrigere."
         }
 
         val nyttMeldekortFraBruker = Meldekort(
@@ -106,16 +113,13 @@ class MeldekortService(
             dager = command.korrigerteDager,
             journalpostId = null,
             journalføringstidspunkt = null,
-            // TODO - sjekk om denne skal referere til forrige, eller nullstilles
-            varselId = eksisterendeMeldekort.varselId,
-            erVarselInaktivert = true,
+            varselId = null,
+            erVarselInaktivert = false,
         )
 
         // vil trigge en 'ukjent feil' for bruker ved feil som vil være litt dårlig ux
         nyttMeldekortFraBruker.validerLagring(meldeperiode, command.korrigerteDager).also {
             sessionFactory.withTransactionContext { tx ->
-                // TODO - kan ha tidligere meldekort som har pågående varsler som burde bli stanset.
-                meldekortRepo.deaktiver(eksisterendeMeldekort.id, true, tx)
                 meldekortRepo.opprett(nyttMeldekortFraBruker)
             }
         }

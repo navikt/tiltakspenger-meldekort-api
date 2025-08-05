@@ -170,7 +170,6 @@ class MeldekortPostgresRepo(
                     and mp.fnr = :fnr
                     """,
                     "id" to meldekortId.toString(),
-                    // hvorfor trenger vi fnr her? Er det ikke nok at man benytter seg av samme meldekortId? Er ikke denne unik?
                     "fnr" to fnr.verdi,
                 ).map { row ->
                     fromRow(row, session)
@@ -396,8 +395,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    // TODO - test
-    override fun hentMeldeperiodeForMeldeperiodeKjedeId(
+    override fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(
         id: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext?,
@@ -414,10 +412,35 @@ class MeldekortPostgresRepo(
                     ORDER BY fnr, kjede_id, versjon DESC;
                     """.trimIndent(),
                     mapOf(
-                        "id" to id,
+                        "id" to id.verdi,
                         "fnr" to fnr.verdi,
                     ),
                 ).map { it.toMeldeperiode() }.asSingle,
+            )
+        }
+    }
+
+    override fun hentSisteMeldekortForKjedeId(
+        kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Meldekort? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    select
+                        mk.*
+                    from meldekort_bruker mk
+                    join meldeperiode mp on mp.id = mk.meldeperiode_id
+                    where mp.kjede_id = :kjede_id
+                        and mp.fnr = :fnr
+                    order by mp.versjon desc
+                    limit 1
+                    """,
+                    "kjede_id" to kjedeId.verdi,
+                    "fnr" to fnr.verdi,
+                ).map { row -> fromRow(row, session) }.asSingle,
             )
         }
     }
@@ -435,7 +458,7 @@ class MeldekortPostgresRepo(
                 tilOgMed = localDate("til_og_med"),
             )
             val opprettet = localDateTime("opprettet")
-            val maksAntallDagerForPeriode = int("antall_dager_for_periode")
+            val maksAntallDagerForPeriode = int("maks_antall_dager_for_periode")
             val girRett = string("gir_rett").fromDbJsonToGirRett()
 
             return Meldeperiode(

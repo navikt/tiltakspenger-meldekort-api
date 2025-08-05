@@ -245,6 +245,18 @@ class MeldekortPostgresRepoTest {
                 alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
             }
         }
+
+        @Test
+        fun `henter siste meldekort for en kjede`() {
+            withMigratedDb { helper ->
+                val meldekort = ObjectMother.meldekort()
+                val kjedeId = meldekort.meldeperiode.kjedeId
+                helper.meldeperiodeRepo.lagre(meldekort.meldeperiode)
+                helper.meldekortPostgresRepo.opprett(meldekort)
+                val hentetMeldekort = helper.meldekortPostgresRepo.hentSisteMeldekortForKjedeId(kjedeId, meldekort.fnr)
+                hentetMeldekort shouldBe meldekort
+            }
+        }
     }
 
     @Nested
@@ -473,6 +485,18 @@ class MeldekortPostgresRepoTest {
                 result[0].varselId shouldBe VarselId("varsel1")
                 result[1].varselId shouldBe VarselId("varsel2")
             }
+        }
+    }
+
+    @Test
+    fun `henter siste meldeperiode for en kjede`() {
+        withMigratedDb { helper ->
+            val meldeperiode = ObjectMother.meldeperiode()
+            val kjedeId = meldeperiode.kjedeId
+            helper.meldeperiodeRepo.lagre(meldeperiode)
+            val hentetMeldeperiode =
+                helper.meldekortPostgresRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(kjedeId, meldeperiode.fnr)
+            hentetMeldeperiode shouldBe meldeperiode
         }
     }
 }
