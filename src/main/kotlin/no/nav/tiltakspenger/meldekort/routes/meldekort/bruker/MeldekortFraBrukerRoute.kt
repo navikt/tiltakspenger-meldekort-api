@@ -53,6 +53,7 @@ fun Route.meldekortFraBrukerRoute(
     }
 
     data class KorrigertDag(
+
         val dato: LocalDate,
         val status: MeldekortDagStatus,
     )
