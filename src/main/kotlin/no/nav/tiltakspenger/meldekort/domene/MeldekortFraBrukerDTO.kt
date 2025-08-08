@@ -43,6 +43,7 @@ data class MeldekortDagFraBrukerDTO(
     )
 }
 
+// TODO - flytt inn validering inn i typene
 fun Meldekort.validerLagring(meldeperiode: Meldeperiode, nyeDager: List<MeldekortDag>) {
     require(meldeperiode.girRett.keys.toList() == nyeDager.map { it.dag }) {
         "Forventer at meldeperioden sin girRett-verdier har samme dager som nyeDager. " +

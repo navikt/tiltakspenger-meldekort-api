@@ -1,15 +1,15 @@
 package no.nav.tiltakspenger.meldekort.service
 
 import arrow.core.Either
-import arrow.core.left
 import arrow.core.right
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
-import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.validerLagring
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.Clock
@@ -79,57 +79,54 @@ class MeldekortService(
     }
 
     fun korriger(command: KorrigerMeldekortCommand): Either<String, Meldekort> {
-        val eksisterendeMeldekort = meldekortRepo.hentForMeldekortId(command.meldekortId, command.fnr)
-            ?: return "Meldekort med id $command.meldekortId finnes ikke for bruker ${command.fnr.verdi}".left()
+        val meldekortSomKorrigeres = meldekortRepo.hentForMeldekortId(command.meldekortId, command.fnr)!!
+        val meldekortForKjede =
+            meldekortRepo.hentMeldekortForKjedeId(meldekortSomKorrigeres.meldeperiode.kjedeId, command.fnr)
 
-        require(eksisterendeMeldekort.status == MeldekortStatus.INNSENDT) {
-            "Meldekort med id ${eksisterendeMeldekort.id} er ikke i status INNSENDT, kan ikke korrigeres. Nåværende status: ${eksisterendeMeldekort.status}"
-        }
-
-        val meldeperiode = meldekortRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
-            id = eksisterendeMeldekort.meldeperiode.kjedeId,
+        val sisteMeldeperiode = meldekortRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
+            id = meldekortSomKorrigeres.meldeperiode.kjedeId,
             fnr = command.fnr,
+        )!!
+
+        val korrigertMeldekort = meldekortForKjede.korriger(command, sisteMeldeperiode, clock)
+
+        return korrigertMeldekort
+            .also {
+                if (it.second) {
+                    meldekortRepo.opprett(it.first)
+                } else {
+                    meldekortRepo.oppdater(it.first)
+                }
+            }.first.right()
+    }
+
+    fun hentMeldeperiodeForPeriode(periode: Periode, fnr: Fnr): PreutfyltKorrigering {
+        val meldeperiode = meldekortRepo.hentMeldeperiodeForPeriode(periode, fnr)!!
+
+        val meldekort: Meldekort =
+            meldekortRepo.hentMeldekortForKjedeId(meldeperiode.kjedeId, fnr).sisteInnsendteMeldekort()!!
+
+        val dager = meldeperiode.girRett.toList().zip(meldekort.dager).map { (girRett, meldekortDag) ->
+            MeldekortDag(
+                dag = meldekortDag.dag,
+                status = if (girRett.second) {
+                    if (meldekortDag.status == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
+                        MeldekortDagStatus.IKKE_BESVART
+                    } else {
+                        meldekortDag.status
+                    }
+                } else {
+                    MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
+                },
+            )
+        }
+
+        return PreutfyltKorrigering(
+            meldeperiodeId = meldeperiode.id,
+            kjedeId = meldeperiode.kjedeId,
+            dager = dager,
+            periode = meldeperiode.periode,
+            mottattTidspunktSisteMeldekort = meldekort.mottatt!!,
         )
-
-        requireNotNull(meldeperiode) {
-            "Meldeperiode for meldekort med id ${eksisterendeMeldekort.id} finnes ikke for bruker ${command.fnr.verdi}"
-        }
-
-        val sisteMeldekortForKjeden = meldekortRepo.hentSisteMeldekortForKjedeId(
-            kjedeId = eksisterendeMeldekort.meldeperiode.kjedeId,
-            fnr = command.fnr,
-        ) ?: return "Siste meldekort for kjede ${eksisterendeMeldekort.meldeperiode.kjedeId} finnes ikke for bruker ${command.fnr.verdi}".left()
-
-        // TODO - Hva er tilbakemeldingen vi vil gi bruker? Prøv igjen senere?
-        require(eksisterendeMeldekort == sisteMeldekortForKjeden) {
-            "Meldekort med id ${eksisterendeMeldekort.id} er ikke siste meldekort i kjeden ${eksisterendeMeldekort.meldeperiode.kjedeId}. Kan ikke korrigere."
-        }
-
-        val nyttMeldekortFraBruker = Meldekort(
-            id = MeldekortId.random(),
-            deaktivert = null,
-            mottatt = LocalDateTime.now(clock),
-            meldeperiode = meldeperiode,
-            dager = command.korrigerteDager,
-            journalpostId = null,
-            journalføringstidspunkt = null,
-            varselId = null,
-            erVarselInaktivert = false,
-        )
-
-        // vil trigge en 'ukjent feil' for bruker ved feil som vil være litt dårlig ux
-        nyttMeldekortFraBruker.validerLagring(meldeperiode, command.korrigerteDager).also {
-            sessionFactory.withTransactionContext { tx ->
-                meldekortRepo.opprett(nyttMeldekortFraBruker)
-            }
-        }
-
-        return nyttMeldekortFraBruker.right()
     }
 }
-
-data class KorrigerMeldekortCommand(
-    val meldekortId: MeldekortId,
-    val fnr: Fnr,
-    val korrigerteDager: List<MeldekortDag>,
-)

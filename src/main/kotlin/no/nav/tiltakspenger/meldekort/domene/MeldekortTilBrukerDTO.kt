@@ -52,12 +52,16 @@ fun Meldekort.tilMeldekortTilBrukerDTO(): MeldekortTilBrukerDTO {
         maksAntallDager = meldeperiode.maksAntallDagerForPeriode,
         minAntallDager = meldeperiode.minAntallDagerForPeriode,
         innsendt = mottatt,
-        dager = dager.map { dag ->
-            MeldekortDagTilBrukerDTO(
-                dag = dag.dag,
-                status = dag.status.tilDTO(),
-            )
-        },
+        dager = dager.toDto(),
         kanSendes = kanSendes,
     )
+}
+
+fun List<MeldekortDag>.toDto(): List<MeldekortDagTilBrukerDTO> {
+    return this.map { dag ->
+        MeldekortDagTilBrukerDTO(
+            dag = dag.dag,
+            status = dag.status.tilDTO(),
+        )
+    }
 }

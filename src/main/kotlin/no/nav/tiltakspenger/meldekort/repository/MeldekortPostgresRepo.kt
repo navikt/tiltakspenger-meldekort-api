@@ -18,6 +18,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFacto
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
@@ -131,7 +132,7 @@ class MeldekortPostgresRepo(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext?,
-    ): List<Meldekort> {
+    ): MeldekortForKjede {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -142,14 +143,14 @@ class MeldekortPostgresRepo(
                     join meldeperiode mp on mk.meldeperiode_id = mp.id
                     where mp.kjede_id = :kjede_id
                         and mp.fnr = :fnr
-                    order by mp.versjon
+                    order by mp.versjon, mk.mottatt
                     """,
                     "kjede_id" to kjedeId.verdi,
                     "fnr" to fnr.verdi,
                 ).map { row ->
                     fromRow(row, session)
                 }.asList,
-            )
+            ).let { MeldekortForKjede(it) }
         }
     }
 
@@ -441,6 +442,31 @@ class MeldekortPostgresRepo(
                     "kjede_id" to kjedeId.verdi,
                     "fnr" to fnr.verdi,
                 ).map { row -> fromRow(row, session) }.asSingle,
+            )
+        }
+    }
+
+    // TODO - test
+    override fun hentMeldeperiodeForPeriode(
+        periode: Periode,
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Meldeperiode? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        SELECT DISTINCT ON (fnr, kjede_id) *
+                        from meldeperiode
+                        where fra_og_med = :fra_og_med
+                          and til_og_med = :til_og_med
+                          and fnr = :fnr
+                        order by fnr, kjede_id, versjon desc
+                    """.trimIndent(),
+                    "fra_og_med" to periode.fraOgMed,
+                    "til_og_med" to periode.tilOgMed,
+                    "fnr" to fnr.verdi,
+                ).map { row -> row.toMeldeperiode() }.asSingle,
             )
         }
     }

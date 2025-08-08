@@ -33,19 +33,20 @@ data class Meldekort(
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
 
-    val klarTilInnsending = !periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())
-
     val status: MeldekortStatus = when {
         mottatt != null -> MeldekortStatus.INNSENDT
         deaktivert != null -> MeldekortStatus.DEAKTIVERT
-        klarTilInnsending -> MeldekortStatus.KAN_UTFYLLES
+        !periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending()) -> MeldekortStatus.KAN_UTFYLLES
         else -> MeldekortStatus.IKKE_KLAR
     }
+
+    val klarTilInnsending by lazy { status == MeldekortStatus.KAN_UTFYLLES }
 
     val kanSendes = when (status) {
         MeldekortStatus.KAN_UTFYLLES,
         MeldekortStatus.IKKE_KLAR,
         -> periode.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+
         MeldekortStatus.INNSENDT,
         MeldekortStatus.DEAKTIVERT,
         -> null
@@ -59,6 +60,12 @@ data class Meldekort(
         require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden (id=$id)" }
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden (id=$id)" }
         require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett (id=$id)" }
+
+        if (mottatt != null) {
+            require(deaktivert == null) {
+                "Meldekort ${this.id} kan ikke være både mottatt og deaktivert"
+            }
+        }
     }
 
     companion object {
