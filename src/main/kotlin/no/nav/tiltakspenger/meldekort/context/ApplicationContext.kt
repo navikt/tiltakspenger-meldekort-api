@@ -85,6 +85,7 @@ open class ApplicationContext(val clock: Clock) {
     open val meldekortService: MeldekortService by lazy {
         MeldekortService(
             meldekortRepo = meldekortRepo,
+            meldeperiodeRepo = meldeperiodeRepo,
             sessionFactory = sessionFactory,
             clock = clock,
         )

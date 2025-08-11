@@ -89,7 +89,6 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
     )
 }
 
-// TODO - test
 fun Map<LocalDate, Boolean>.tilMeldekortDager(): List<MeldekortDag> = this.map {
     MeldekortDag(
         dag = it.key,

@@ -487,16 +487,4 @@ class MeldekortPostgresRepoTest {
             }
         }
     }
-
-    @Test
-    fun `henter siste meldeperiode for en kjede`() {
-        withMigratedDb { helper ->
-            val meldeperiode = ObjectMother.meldeperiode()
-            val kjedeId = meldeperiode.kjedeId
-            helper.meldeperiodeRepo.lagre(meldeperiode)
-            val hentetMeldeperiode =
-                helper.meldekortPostgresRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(kjedeId, meldeperiode.fnr)
-            hentetMeldeperiode shouldBe meldeperiode
-        }
-    }
 }

@@ -7,8 +7,6 @@ import java.time.LocalDateTime
 
 /**
  * Alle meldekortene for en meldeperiodekjede.
- *
- * TODO - test
  */
 data class MeldekortForKjede(
     private val meldekort: List<Meldekort>,
@@ -16,13 +14,11 @@ data class MeldekortForKjede(
     val harInnsendtMeldekort by lazy { meldekort.any { it.status == MeldekortStatus.INNSENDT } }
 
     /**
-     * Det finnes et meldekort allerede som er klar til innsending
-     *
      * false dersom det ikke finnes noen meldekort i kjeden, eller det ikke finnes noe meldekort som er klar til innsending.
      */
-    val erKlarTilInnsending by lazy { meldekort.lastOrNull()?.klarTilInnsending == true }
+    val erSisteMeldekortKlarTilInnsending by lazy { meldekort.lastOrNull()?.klarTilInnsending == true }
 
-    fun sisteInnsendteMeldekort(): Meldekort? = meldekort.last { it.status == MeldekortStatus.INNSENDT }
+    fun sisteInnsendteMeldekort(): Meldekort? = meldekort.lastOrNull { it.status == MeldekortStatus.INNSENDT }
 
     /**
      * @returns Hacker inn en bool verdi om det er nytt meldekort (true) eller oppdatering av eksisterende meldekort (false)
@@ -36,7 +32,7 @@ data class MeldekortForKjede(
             "Meldekort med id ${command.meldekortId} er ikke siste meldekort i kjeden ${sisteInnsendteMeldekort()!!.meldeperiode.kjedeId}. Kan ikke korrigere."
         }
 
-        return if (erKlarTilInnsending) {
+        return if (erSisteMeldekortKlarTilInnsending) {
             meldekort.last().copy(
                 meldeperiode = meldeperiode,
                 mottatt = LocalDateTime.now(clock),

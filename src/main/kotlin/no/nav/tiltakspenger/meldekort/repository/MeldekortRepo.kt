@@ -3,12 +3,10 @@ package no.nav.tiltakspenger.meldekort.repository
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
-import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
@@ -86,21 +84,9 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     ): List<Meldekort>
 
-    fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(
-        id: MeldeperiodeKjedeId,
-        fnr: Fnr,
-        sessionContext: SessionContext? = null,
-    ): Meldeperiode?
-
     fun hentSisteMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): Meldekort?
-
-    fun hentMeldeperiodeForPeriode(
-        periode: Periode,
-        fnr: Fnr,
-        sessionContext: SessionContext? = null,
-    ): Meldeperiode?
 }

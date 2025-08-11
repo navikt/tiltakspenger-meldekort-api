@@ -1,38 +1,18 @@
-// så intellij ikke fjerner Atomic fra optimize imports
-@file:Suppress("UnusedImport")
-
 package no.nav.tiltakspenger.fakes
 
+import arrow.atomic.Atomic
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
-import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.Clock
 import java.time.LocalDateTime
-import kotlin.Boolean
-import kotlin.Int
-import kotlin.Suppress
-import kotlin.collections.List
-import kotlin.collections.emptyList
-import kotlin.collections.filter
-import kotlin.collections.firstOrNull
-import kotlin.collections.lastOrNull
-import kotlin.collections.map
-import kotlin.collections.maxByOrNull
-import kotlin.collections.mutableMapOf
-import kotlin.collections.set
-import kotlin.collections.sortedBy
-import kotlin.collections.sortedWith
-import kotlin.let
-import kotlin.requireNotNull
 
 class MeldekortRepoFake(
     private val clock: Clock,
@@ -141,17 +121,6 @@ class MeldekortRepoFake(
         return emptyList()
     }
 
-    override fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(
-        id: MeldeperiodeKjedeId,
-        fnr: Fnr,
-        sessionContext: SessionContext?,
-    ): Meldeperiode? {
-        return data.get()
-            .filter { it.value.meldeperiode.kjedeId == id && it.value.fnr == fnr }
-            .values
-            .maxByOrNull { it.meldeperiode.versjon }?.meldeperiode
-    }
-
     override fun hentSisteMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
@@ -161,13 +130,5 @@ class MeldekortRepoFake(
             .filter { it.value.meldeperiode.kjedeId == kjedeId && it.value.fnr == fnr }
             .maxByOrNull { it.value.meldeperiode.versjon }
             ?.value
-    }
-
-    override fun hentMeldeperiodeForPeriode(
-        periode: Periode,
-        fnr: Fnr,
-        sessionContext: SessionContext?,
-    ): Meldeperiode? {
-        return data.get().filter { it.value.meldeperiode.periode == periode }.values.lastOrNull()?.meldeperiode
     }
 }

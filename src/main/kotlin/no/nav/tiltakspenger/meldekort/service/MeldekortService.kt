@@ -12,11 +12,13 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.validerLagring
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
+import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import java.time.Clock
 import java.time.LocalDateTime
 
 class MeldekortService(
     val meldekortRepo: MeldekortRepo,
+    val meldeperiodeRepo: MeldeperiodeRepo,
     val sessionFactory: SessionFactory,
     val clock: Clock,
 ) {
@@ -37,7 +39,7 @@ class MeldekortService(
             "Meldekort med id $meldekortId er deaktivert (${meldekort.deaktivert})"
         }
 
-        val meldeperiode = meldekortRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
+        val meldeperiode = meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
             id = meldekort.meldeperiode.kjedeId,
             fnr = innsenderFnr,
         )
@@ -83,7 +85,7 @@ class MeldekortService(
         val meldekortForKjede =
             meldekortRepo.hentMeldekortForKjedeId(meldekortSomKorrigeres.meldeperiode.kjedeId, command.fnr)
 
-        val sisteMeldeperiode = meldekortRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
+        val sisteMeldeperiode = meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
             id = meldekortSomKorrigeres.meldeperiode.kjedeId,
             fnr = command.fnr,
         )!!
@@ -101,7 +103,7 @@ class MeldekortService(
     }
 
     fun hentMeldeperiodeForPeriode(periode: Periode, fnr: Fnr): PreutfyltKorrigering {
-        val meldeperiode = meldekortRepo.hentMeldeperiodeForPeriode(periode, fnr)!!
+        val meldeperiode = meldeperiodeRepo.hentMeldeperiodeForPeriode(periode, fnr)!!
 
         val meldekort: Meldekort =
             meldekortRepo.hentMeldekortForKjedeId(meldeperiode.kjedeId, fnr).sisteInnsendteMeldekort()!!

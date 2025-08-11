@@ -29,10 +29,13 @@ interface MeldekortMother {
         varselId: VarselId? = null,
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
         erVarselInaktivert: Boolean = false,
+        meldeperiode: Meldeperiode = ObjectMother.meldeperiode(
+            periode = periode,
+            saksnummer = saksnummer,
+            sakId = sakId,
+            fnr = fnr,
+        ),
     ): Meldekort {
-        val meldeperiode =
-            ObjectMother.meldeperiode(periode = periode, saksnummer = saksnummer, sakId = sakId, fnr = fnr)
-
         val dager = meldeperiode.girRett.map { (dag, girRett) ->
             MeldekortDag(
                 dag = dag,
