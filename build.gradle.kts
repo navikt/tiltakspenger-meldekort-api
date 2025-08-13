@@ -63,6 +63,7 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:tiltak-dtos:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:texas:$felleslibVersion")
 
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilderVersion")
 

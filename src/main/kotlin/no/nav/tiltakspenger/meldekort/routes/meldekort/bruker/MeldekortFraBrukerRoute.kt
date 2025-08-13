@@ -9,7 +9,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
-import no.nav.tiltakspenger.meldekort.auth.fnr
+import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.routes.meldekort.logger
 import no.nav.tiltakspenger.meldekort.service.MeldekortService

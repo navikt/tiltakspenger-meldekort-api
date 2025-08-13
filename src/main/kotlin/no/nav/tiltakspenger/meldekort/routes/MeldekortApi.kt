@@ -15,9 +15,9 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.header
 import io.ktor.server.request.path
 import io.ktor.server.routing.routing
-import no.nav.tiltakspenger.meldekort.auth.IdentityProvider
-import no.nav.tiltakspenger.meldekort.auth.TexasAuthenticationProvider
-import no.nav.tiltakspenger.meldekort.clients.texas.TokenClient
+import no.nav.tiltakspenger.libs.texas.IdentityProvider
+import no.nav.tiltakspenger.libs.texas.TexasAuthenticationProvider
+import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
 import org.slf4j.event.Level
@@ -43,7 +43,7 @@ fun Application.meldekortApi(
     }
     jacksonSerialization()
 
-    setupAuthentication(applicationContext.tokenClient)
+    setupAuthentication(applicationContext.texasClient)
 
     routing {
         healthRoutes()
@@ -67,14 +67,15 @@ fun Application.jacksonSerialization() {
     }
 }
 
-fun Application.setupAuthentication(tokenClient: TokenClient) {
+fun Application.setupAuthentication(texasClient: TexasClient) {
     authentication {
         register(
             TexasAuthenticationProvider(
                 TexasAuthenticationProvider.Config(
                     name = IdentityProvider.TOKENX.value,
-                    tokenClient = tokenClient,
+                    texasClient = texasClient,
                     identityProvider = IdentityProvider.TOKENX,
+                    requireIdportenLevelHigh = false,
                 ),
             ),
         )
@@ -83,7 +84,7 @@ fun Application.setupAuthentication(tokenClient: TokenClient) {
             TexasAuthenticationProvider(
                 TexasAuthenticationProvider.Config(
                     name = IdentityProvider.AZUREAD.value,
-                    tokenClient = tokenClient,
+                    texasClient = texasClient,
                     identityProvider = IdentityProvider.AZUREAD,
                 ),
             ),

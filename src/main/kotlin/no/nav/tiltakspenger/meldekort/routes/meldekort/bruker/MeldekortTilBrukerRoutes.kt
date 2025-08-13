@@ -5,7 +5,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import no.nav.tiltakspenger.libs.common.MeldekortId
-import no.nav.tiltakspenger.meldekort.auth.fnr
+import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.domene.AlleMeldekortDTO
 import no.nav.tiltakspenger.meldekort.domene.Bruker
 import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO

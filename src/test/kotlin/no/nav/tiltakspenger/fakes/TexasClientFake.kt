@@ -1,17 +1,17 @@
 package no.nav.tiltakspenger.fakes
 
 import no.nav.tiltakspenger.libs.common.AccessToken
-import no.nav.tiltakspenger.meldekort.auth.IdentityProvider
-import no.nav.tiltakspenger.meldekort.clients.texas.TokenClient
-import no.nav.tiltakspenger.meldekort.clients.texas.TokenIntrospectionResponse
+import no.nav.tiltakspenger.libs.texas.IdentityProvider
+import no.nav.tiltakspenger.libs.texas.client.TexasClient
+import no.nav.tiltakspenger.libs.texas.client.TexasIntrospectionResponse
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.Instant
 
-class TokenClientFake : TokenClient {
+class TexasClientFake : TexasClient {
     override suspend fun introspectToken(
         token: String,
         identityProvider: IdentityProvider,
-    ): TokenIntrospectionResponse {
+    ): TexasIntrospectionResponse {
         return godkjentResponse()
     }
 
@@ -36,8 +36,8 @@ class TokenClientFake : TokenClient {
         invaliderCache = { },
     )
 
-    private fun godkjentResponse(): TokenIntrospectionResponse {
-        return TokenIntrospectionResponse(
+    private fun godkjentResponse(): TexasIntrospectionResponse {
+        return TexasIntrospectionResponse(
             active = true,
             error = null,
             other = mutableMapOf("pid" to FAKE_FNR),
