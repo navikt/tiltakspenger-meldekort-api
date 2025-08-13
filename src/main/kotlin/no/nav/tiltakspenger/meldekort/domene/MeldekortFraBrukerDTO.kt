@@ -43,32 +43,41 @@ data class MeldekortDagFraBrukerDTO(
     )
 }
 
-fun Meldekort.validerLagring(kommando: LagreMeldekortFraBrukerKommando) {
+// TODO - flytt inn validering inn i typene
+fun Meldekort.validerLagring(meldeperiode: Meldeperiode, nyeDager: List<MeldekortDag>) {
+    require(meldeperiode.girRett.keys.toList() == nyeDager.map { it.dag }) {
+        "Forventer at meldeperioden sin girRett-verdier har samme dager som nyeDager. " +
+            "Meldeperiode girRett: ${meldeperiode.girRett.keys}, nyeDager: ${nyeDager.map { it.dag }}"
+    }
     require(!periode.tilOgMed.isAfter(Meldekort.senesteTilOgMedDatoForInnsending())) {
         "Meldekortet er ikke klart for innsending fra bruker"
     }
 
-    val antallDagerRegistrert = kommando.dager.count { it.status != MeldekortDagStatusDTO.IKKE_BESVART }
-
-    require(antallDagerRegistrert > 0) {
-        "Meldekortet må ha minst en dag med registrering"
-    }
-
-    val forventetAntallDager = meldeperiode.maksAntallDagerForPeriode
-
-    require(antallDagerRegistrert == forventetAntallDager) {
-        if (antallDagerRegistrert > forventetAntallDager) {
-            "Antall registrerte dager ($antallDagerRegistrert) overskrider maks ($forventetAntallDager)"
-        } else {
-            "Antall registrerte dager ($antallDagerRegistrert) er færre enn forventet antall registrerte dager ($forventetAntallDager)"
+    val antallDagerRegistrert =
+        nyeDager.count {
+            it.status != MeldekortDagStatus.IKKE_BESVART &&
+                it.status != MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER &&
+                it.status != MeldekortDagStatus.IKKE_TILTAKSDAG
         }
+
+    // Vi støtter 0 dager hvis antallIkkeRett er større eller lik maksAntallDager.
+    require(antallDagerRegistrert >= meldeperiode.minAntallDagerForPeriode && antallDagerRegistrert <= meldeperiode.maksAntallDagerForPeriode) {
+        "Antall registrerte dager ($antallDagerRegistrert) må være mellom $meldeperiode.minAntallDagerForPeriode og $meldeperiode.maksAntallDagerForPeriode"
     }
 
-    val harRegistrerteDagerUtenRett = kommando.dager.any {
-        it.status != MeldekortDagStatusDTO.IKKE_BESVART && meldeperiode.girRett[it.dag] == false
-    }
+    meldeperiode.girRett.values.zip(nyeDager.map { it.status }) { harRett, brukersInnsendteDagStatus ->
+        when (harRett) {
+            true -> {
+                require(brukersInnsendteDagStatus != MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
+                    "Når girRett er true, kan ikke status være IKKE_RETT_TIL_TILTAKSPENGER. GirRett: $harRett, Status: $brukersInnsendteDagStatus"
+                }
+            }
 
-    require(!harRegistrerteDagerUtenRett) {
-        "Meldekortet har registering på dager uten rett - $harRegistrerteDagerUtenRett"
+            false -> {
+                require(brukersInnsendteDagStatus == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
+                    "Når girRett er false, må status være IKKE_RETT_TIL_TILTAKSPENGER. GirRett: $harRett, Status: $brukersInnsendteDagStatus"
+                }
+            }
+        }
     }
 }

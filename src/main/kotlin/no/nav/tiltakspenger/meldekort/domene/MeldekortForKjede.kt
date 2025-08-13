@@ -1,0 +1,95 @@
+package no.nav.tiltakspenger.meldekort.domene
+
+import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.meldekort.service.KorrigerMeldekortCommand
+import java.time.Clock
+import java.time.LocalDateTime
+
+/**
+ * Alle meldekortene for en meldeperiodekjede.
+ */
+data class MeldekortForKjede(
+    private val meldekort: List<Meldekort>,
+) : List<Meldekort> by meldekort {
+    val harInnsendtMeldekort by lazy { meldekort.any { it.status == MeldekortStatus.INNSENDT } }
+
+    /**
+     * false dersom det ikke finnes noen meldekort i kjeden, eller det ikke finnes noe meldekort som er klar til innsending.
+     */
+    val erSisteMeldekortKlarTilInnsending by lazy { meldekort.lastOrNull()?.klarTilInnsending == true }
+
+    fun sisteInnsendteMeldekort(): Meldekort? = meldekort.lastOrNull { it.status == MeldekortStatus.INNSENDT }
+
+    /**
+     * @returns Hacker inn en bool verdi om det er nytt meldekort (true) eller oppdatering av eksisterende meldekort (false)
+     */
+    fun korriger(command: KorrigerMeldekortCommand, meldeperiode: Meldeperiode, clock: Clock): Pair<Meldekort, Boolean> {
+        require(this.harInnsendtMeldekort) {
+            "Meldekort med id ${command.meldekortId} er ikke i en kjede med innsending. Kan ikke korrigere."
+        }
+
+        require(command.meldekortId == sisteInnsendteMeldekort()!!.id) {
+            "Meldekort med id ${command.meldekortId} er ikke siste meldekort i kjeden ${sisteInnsendteMeldekort()!!.meldeperiode.kjedeId}. Kan ikke korrigere."
+        }
+
+        return if (erSisteMeldekortKlarTilInnsending) {
+            meldekort.last().copy(
+                meldeperiode = meldeperiode,
+                mottatt = LocalDateTime.now(clock),
+                dager = command.korrigerteDager,
+            ) to false
+        } else {
+            Meldekort(
+                id = MeldekortId.random(),
+                deaktivert = null,
+                mottatt = LocalDateTime.now(clock),
+                meldeperiode = meldeperiode,
+                dager = command.korrigerteDager,
+                journalpostId = null,
+                journalføringstidspunkt = null,
+                varselId = null,
+                erVarselInaktivert = false,
+            ) to true
+        }.also {
+            // TODO - flytt inn validering inn i typene
+            it.first.validerLagring(meldeperiode, command.korrigerteDager)
+        }
+    }
+
+    init {
+        meldekort.groupBy { it.meldeperiode.versjon }.values.forEach {
+            require(it.count { it.mottatt == null } <= 1) {
+                "Det kan ikke være mer enn ett meldekort som ikke er mottatt for hver versjon av meldeperioden. Dette skjedde for meldeperioden med kjedeId ${it.first().meldeperiode.kjedeId} og versjon ${it.first().meldeperiode.versjon}."
+            }
+        }
+
+        meldekort.zipWithNext { a, b ->
+            require(a.meldeperiode.versjon <= b.meldeperiode.versjon) {
+                """Meldekortene må være sortert på versjon. Feil i kjedeId ${a.meldeperiode.kjedeId}.
+                        a: ${a.meldeperiode.versjon}.
+                        b: ${b.meldeperiode.versjon}.
+                """.trimIndent()
+            }
+
+            // Vi er kun interessert å sammenligne mottatt innenfor samme versjon av meldeperioden
+            if (a.meldeperiode.versjon == b.meldeperiode.versjon) {
+                if (a.mottatt != null && b.mottatt != null) {
+                    require(a.mottatt <= b.mottatt) {
+                        """
+                        Meldekortene må være sortert på mottatt. Feil i kjedeId ${a.meldeperiode.kjedeId}.
+                            a: ${a.mottatt}.
+                            b: ${b.mottatt}.
+                        """.trimIndent()
+                    }
+                } else if (a.mottatt == null && b.mottatt == null) {
+                    /*
+                     * Hvis begge er null innenfor samme versjon
+                     *  For korrigering - så vil man ha samme meldeperiode-versjon, men mottatt vil alltid være satt
+                     * I utgangspunktet så skal ikke det skje at a og b har mottatt som null.
+                     */
+                    throw IllegalArgumentException("Meldekortene kan ikke ha mottatt som null innenfor samme versjon av meldeperioden. Feil i kjedeId ${a.meldeperiode.kjedeId}, for meldekort a ${a.id}, og b ${b.id}")
+                }
+            }
+        }
+    }
+}

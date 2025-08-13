@@ -100,11 +100,11 @@ class MeldekortPostgresRepoTest {
 
                 val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
-                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
+                val alleInnsendteMeldekort = repo.hentInnsendteMeldekortForBruker(fnr)
 
                 sisteMeldekortFraDb shouldBe førsteMeldekort
                 nesteMeldekortFraDb shouldBe andreMeldekort
-                alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
+                alleInnsendteMeldekort shouldBe listOf(førsteMeldekort)
             }
         }
 
@@ -131,12 +131,10 @@ class MeldekortPostgresRepoTest {
 
                 val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
-                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
 
                 sisteMeldekortFraDb shouldBe null
                 nesteMeldekortFraDb shouldBe førsteMeldekort
                 nesteMeldekortFraDb!!.status shouldBe MeldekortStatus.KAN_UTFYLLES
-                alleMeldekortFraDb shouldBe listOf(førsteMeldekort)
             }
         }
 
@@ -166,7 +164,7 @@ class MeldekortPostgresRepoTest {
 
                 val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
-                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
+                val alleMeldekortFraDb = repo.hentInnsendteMeldekortForBruker(fnr)
 
                 sisteMeldekortFraDb shouldBe null
                 nesteMeldekortFraDb shouldBe førsteMeldekort
@@ -204,7 +202,7 @@ class MeldekortPostgresRepoTest {
 
                 val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
-                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
+                val alleMeldekortFraDb = repo.hentInnsendteMeldekortForBruker(fnr)
 
                 sisteMeldekortFraDb shouldBe andreMeldekort
                 nesteMeldekortFraDb shouldBe null
@@ -238,11 +236,23 @@ class MeldekortPostgresRepoTest {
 
                 val sisteMeldekortFraDb = repo.hentSisteUtfylteMeldekort(fnr)
                 val nesteMeldekortFraDb = repo.hentNesteMeldekortTilUtfylling(fnr)
-                val alleMeldekortFraDb = repo.hentAlleMeldekortForBruker(fnr)
+                val alleInnsendteMeldekort = repo.hentInnsendteMeldekortForBruker(fnr)
 
                 sisteMeldekortFraDb shouldBe null
                 nesteMeldekortFraDb shouldBe førsteMeldekort
-                alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
+                alleInnsendteMeldekort shouldBe emptyList()
+            }
+        }
+
+        @Test
+        fun `henter siste meldekort for en kjede`() {
+            withMigratedDb { helper ->
+                val meldekort = ObjectMother.meldekort()
+                val kjedeId = meldekort.meldeperiode.kjedeId
+                helper.meldeperiodeRepo.lagre(meldekort.meldeperiode)
+                helper.meldekortPostgresRepo.opprett(meldekort)
+                val hentetMeldekort = helper.meldekortPostgresRepo.hentSisteMeldekortForKjedeId(kjedeId, meldekort.fnr)
+                hentetMeldekort shouldBe meldekort
             }
         }
     }

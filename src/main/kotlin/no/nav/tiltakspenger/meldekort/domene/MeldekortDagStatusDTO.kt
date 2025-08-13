@@ -8,6 +8,8 @@ enum class MeldekortDagStatusDTO {
     FRAVÆR_GODKJENT_AV_NAV,
     FRAVÆR_ANNET,
     IKKE_BESVART,
+    IKKE_TILTAKSDAG,
+    IKKE_RETT_TIL_TILTAKSPENGER,
     ;
 
     fun tilMeldekortDagStatus(): MeldekortDagStatus = when (this) {
@@ -18,6 +20,8 @@ enum class MeldekortDagStatusDTO {
         FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV
         FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_ANNET
         IKKE_BESVART -> MeldekortDagStatus.IKKE_BESVART
+        IKKE_TILTAKSDAG -> MeldekortDagStatus.IKKE_TILTAKSDAG
+        IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
     }
 }
 
@@ -29,4 +33,6 @@ fun MeldekortDagStatus.tilDTO(): MeldekortDagStatusDTO = when (this) {
     MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV
     MeldekortDagStatus.FRAVÆR_ANNET -> MeldekortDagStatusDTO.FRAVÆR_ANNET
     MeldekortDagStatus.IKKE_BESVART -> MeldekortDagStatusDTO.IKKE_BESVART
+    MeldekortDagStatus.IKKE_TILTAKSDAG -> MeldekortDagStatusDTO.IKKE_TILTAKSDAG
+    MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER -> MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER
 }

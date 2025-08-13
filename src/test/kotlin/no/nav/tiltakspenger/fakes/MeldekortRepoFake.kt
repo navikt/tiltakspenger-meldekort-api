@@ -8,6 +8,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.Clock
@@ -58,8 +59,9 @@ class MeldekortRepoFake(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext?,
-    ): List<Meldekort> {
+    ): MeldekortForKjede {
         return data.get().values.filter { it.fnr == fnr && it.meldeperiode.kjedeId == kjedeId }
+            .let { MeldekortForKjede(it) }
     }
 
     override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
@@ -77,7 +79,7 @@ class MeldekortRepoFake(
             .lastOrNull()
     }
 
-    override fun hentAlleMeldekortForBruker(fnr: Fnr, limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentInnsendteMeldekortForBruker(fnr: Fnr, limit: Int, sessionContext: SessionContext?): List<Meldekort> {
         return data.get().values
             .filter {
                 it.fnr == fnr && it.periode.tilOgMed <= Meldekort.senesteTilOgMedDatoForInnsending() && it.deaktivert == null
@@ -86,7 +88,7 @@ class MeldekortRepoFake(
     }
 
     override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 
     override fun markerSendtTilSaksbehandling(
@@ -94,7 +96,6 @@ class MeldekortRepoFake(
         sendtTidspunkt: LocalDateTime,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun markerJournalført(
@@ -103,21 +104,31 @@ class MeldekortRepoFake(
         tidspunkt: LocalDateTime,
         sessionContext: SessionContext?,
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 
     override fun hentMeldekortDetSkalVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 
     override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
         limit: Int,
         sessionContext: SessionContext?,
     ): List<Meldekort> {
-        TODO("Not yet implemented")
+        return emptyList()
+    }
+
+    override fun hentSisteMeldekortForKjedeId(
+        kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Meldekort? {
+        return data.get()
+            .filter { it.value.meldeperiode.kjedeId == kjedeId && it.value.fnr == fnr }
+            .maxByOrNull { it.value.meldeperiode.versjon }
+            ?.value
     }
 }

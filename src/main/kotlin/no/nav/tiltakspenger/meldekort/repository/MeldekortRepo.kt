@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
@@ -41,7 +42,7 @@ interface MeldekortRepo {
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): List<Meldekort>
+    ): MeldekortForKjede
 
     fun hentSisteUtfylteMeldekort(
         fnr: Fnr,
@@ -53,7 +54,7 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     ): Meldekort?
 
-    fun hentAlleMeldekortForBruker(
+    fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         limit: Int = 100,
         sessionContext: SessionContext? = null,
@@ -78,5 +79,14 @@ interface MeldekortRepo {
 
     fun hentMeldekortDetSkalVarslesFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
 
-    fun hentMottatteEllerDeaktiverteSomDetVarslesFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
+    fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
+        limit: Int = 25,
+        sessionContext: SessionContext? = null,
+    ): List<Meldekort>
+
+    fun hentSisteMeldekortForKjedeId(
+        kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): Meldekort?
 }

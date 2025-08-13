@@ -89,6 +89,55 @@ class MeldeperiodePostgresRepo(
         }
     }
 
+    override fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(
+        id: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Meldeperiode? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                queryOf(
+                    //language=sql
+                    """
+                    SELECT DISTINCT ON (fnr, kjede_id) *
+                    FROM meldeperiode
+                    where fnr = :fnr
+                      and kjede_id = :id
+                    ORDER BY fnr, kjede_id, versjon DESC;
+                    """.trimIndent(),
+                    mapOf(
+                        "id" to id.verdi,
+                        "fnr" to fnr.verdi,
+                    ),
+                ).map { fromRow(it) }.asSingle,
+            )
+        }
+    }
+
+    override fun hentMeldeperiodeForPeriode(
+        periode: Periode,
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Meldeperiode? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        SELECT DISTINCT ON (fnr, kjede_id) *
+                        from meldeperiode
+                        where fra_og_med = :fra_og_med
+                          and til_og_med = :til_og_med
+                          and fnr = :fnr
+                        order by fnr, kjede_id, versjon desc
+                    """.trimIndent(),
+                    "fra_og_med" to periode.fraOgMed,
+                    "til_og_med" to periode.tilOgMed,
+                    "fnr" to fnr.verdi,
+                ).map { fromRow(it) }.asSingle,
+            )
+        }
+    }
+
     private fun Map<LocalDate, Boolean>.toDbJson(): String {
         return entries.joinToString(
             prefix = "{",

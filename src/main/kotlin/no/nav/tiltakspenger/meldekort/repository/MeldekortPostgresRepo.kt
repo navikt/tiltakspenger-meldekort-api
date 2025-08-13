@@ -1,22 +1,29 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import com.fasterxml.jackson.core.type.TypeReference
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import kotliquery.Session
 import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.Clock
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 val logger = KotlinLogging.logger {}
@@ -125,7 +132,7 @@ class MeldekortPostgresRepo(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext?,
-    ): List<Meldekort> {
+    ): MeldekortForKjede {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -136,14 +143,14 @@ class MeldekortPostgresRepo(
                     join meldeperiode mp on mk.meldeperiode_id = mp.id
                     where mp.kjede_id = :kjede_id
                         and mp.fnr = :fnr
-                    order by mp.versjon
+                    order by mp.versjon, mk.mottatt
                     """,
                     "kjede_id" to kjedeId.verdi,
                     "fnr" to fnr.verdi,
                 ).map { row ->
                     fromRow(row, session)
                 }.asList,
-            )
+            ).let { MeldekortForKjede(it) }
         }
     }
 
@@ -215,8 +222,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    /** Henter alle meldekort som kan utfylles eller er utfylt */
-    override fun hentAlleMeldekortForBruker(
+    override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         limit: Int,
         sessionContext: SessionContext?,
@@ -232,6 +238,7 @@ class MeldekortPostgresRepo(
                         where mp.id = mk.meldeperiode_id
                             and mp.til_og_med <= :maks_til_og_med
                             and mk.deaktivert is null
+                            and mk.mottatt is not null
                         order by fra_og_med desc, versjon desc
                         limit :limit
                     """,
@@ -389,7 +396,66 @@ class MeldekortPostgresRepo(
         }
     }
 
+    override fun hentSisteMeldekortForKjedeId(
+        kjedeId: MeldeperiodeKjedeId,
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Meldekort? {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    select
+                        mk.*
+                    from meldekort_bruker mk
+                    join meldeperiode mp on mp.id = mk.meldeperiode_id
+                    where mp.kjede_id = :kjede_id
+                        and mp.fnr = :fnr
+                    order by mp.versjon desc
+                    limit 1
+                    """,
+                    "kjede_id" to kjedeId.verdi,
+                    "fnr" to fnr.verdi,
+                ).map { row -> fromRow(row, session) }.asSingle,
+            )
+        }
+    }
+
     companion object {
+        private fun Row.toMeldeperiode(): Meldeperiode {
+            val id = MeldeperiodeId.fromString(string("id"))
+            val kjedeId = MeldeperiodeKjedeId(string("kjede_id"))
+            val versjon = int("versjon")
+            val sakId = SakId.fromString(string("sak_id"))
+            val saksnummer = string("saksnummer")
+            val fnr = Fnr.fromString(string("fnr"))
+            val periode = Periode(
+                fraOgMed = localDate("fra_og_med"),
+                tilOgMed = localDate("til_og_med"),
+            )
+            val opprettet = localDateTime("opprettet")
+            val maksAntallDagerForPeriode = int("maks_antall_dager_for_periode")
+            val girRett = string("gir_rett").fromDbJsonToGirRett()
+
+            return Meldeperiode(
+                id = id,
+                kjedeId = kjedeId,
+                versjon = versjon,
+                sakId = sakId,
+                saksnummer = saksnummer,
+                fnr = fnr,
+                periode = periode,
+                opprettet = opprettet,
+                maksAntallDagerForPeriode = maksAntallDagerForPeriode,
+                girRett = girRett,
+            )
+        }
+
+        private fun String.fromDbJsonToGirRett(): Map<LocalDate, Boolean> {
+            val typeRef = object : TypeReference<Map<LocalDate, Boolean>>() {}
+            return objectMapper.readValue(this, typeRef)
+        }
+
         private fun fromRow(
             row: Row,
             session: Session,

@@ -15,6 +15,7 @@ data class MeldekortTilBrukerDTO(
     val uke2: Int,
     val status: MeldekortStatusDTO,
     val maksAntallDager: Int,
+    val minAntallDager: Int,
     val innsendt: LocalDateTime?,
     val dager: List<MeldekortDagTilBrukerDTO>,
     val kanSendes: LocalDate?,
@@ -30,7 +31,6 @@ enum class MeldekortStatusDTO {
 data class MeldekortDagTilBrukerDTO(
     val dag: LocalDate,
     val status: MeldekortDagStatusDTO,
-    val harRett: Boolean,
 )
 
 fun Meldekort.tilMeldekortTilBrukerDTO(): MeldekortTilBrukerDTO {
@@ -50,14 +50,18 @@ fun Meldekort.tilMeldekortTilBrukerDTO(): MeldekortTilBrukerDTO {
             MeldekortStatus.DEAKTIVERT -> MeldekortStatusDTO.DEAKTIVERT
         },
         maksAntallDager = meldeperiode.maksAntallDagerForPeriode,
+        minAntallDager = meldeperiode.minAntallDagerForPeriode,
         innsendt = mottatt,
-        dager = dager.map { dag ->
-            MeldekortDagTilBrukerDTO(
-                dag = dag.dag,
-                harRett = meldeperiode.girRett[dag.dag] == true,
-                status = dag.status.tilDTO(),
-            )
-        },
+        dager = dager.toDto(),
         kanSendes = kanSendes,
     )
+}
+
+fun List<MeldekortDag>.toDto(): List<MeldekortDagTilBrukerDTO> {
+    return this.map { dag ->
+        MeldekortDagTilBrukerDTO(
+            dag = dag.dag,
+            status = dag.status.tilDTO(),
+        )
+    }
 }
