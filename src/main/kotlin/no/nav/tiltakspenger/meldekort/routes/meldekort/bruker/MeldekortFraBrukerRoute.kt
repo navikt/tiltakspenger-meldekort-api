@@ -12,6 +12,8 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.libs.texas.fnr
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.routes.meldekort.logger
@@ -51,7 +53,6 @@ fun Route.meldekortFraBrukerRoute(
     }
 
     data class KorrigertDag(
-
         val dato: LocalDate,
         val status: MeldekortDagStatus,
     )
@@ -60,7 +61,7 @@ fun Route.meldekortFraBrukerRoute(
         val meldekortId = MeldekortId.fromString(call.parameters["meldekortId"]!!)
         val korrigerteDagerBody = deserialize<List<KorrigertDag>>(call.receiveText())
 
-        meldekortService.korriger(
+        val meldekort = meldekortService.korriger(
             KorrigerMeldekortCommand(
                 meldekortId = meldekortId,
                 fnr = call.fnr(),
@@ -68,13 +69,8 @@ fun Route.meldekortFraBrukerRoute(
                     MeldekortDag(dag = it.dato, status = it.status)
                 },
             ),
-        ).fold(
-            ifLeft = {
-                TODO("Implementer feilmelding")
-            },
-            ifRight = {
-                call.respond(HttpStatusCode.OK, it.tilMeldekortTilBrukerDTO())
-            },
         )
+
+        call.respond(HttpStatusCode.OK, meldekort.tilMeldekortTilBrukerDTO())
     }
 }

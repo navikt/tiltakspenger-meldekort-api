@@ -1,7 +1,5 @@
 package no.nav.tiltakspenger.meldekort.service
 
-import arrow.core.Either
-import arrow.core.right
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -80,7 +78,7 @@ class MeldekortService(
         meldekortRepo.markerSendtTilSaksbehandling(id, sendtTidspunkt)
     }
 
-    fun korriger(command: KorrigerMeldekortCommand): Either<String, Meldekort> {
+    fun korriger(command: KorrigerMeldekortCommand): Meldekort {
         val meldekortSomKorrigeres = meldekortRepo.hentForMeldekortId(command.meldekortId, command.fnr)!!
         val meldekortForKjede =
             meldekortRepo.hentMeldekortForKjedeId(meldekortSomKorrigeres.meldeperiode.kjedeId, command.fnr)
@@ -99,7 +97,7 @@ class MeldekortService(
                 } else {
                     meldekortRepo.oppdater(it.first)
                 }
-            }.first.right()
+            }.first
     }
 
     fun hentMeldeperiodeForPeriode(periode: Periode, fnr: Fnr): PreutfyltKorrigering {
