@@ -38,7 +38,7 @@ fun testMedMeldekortRoutes(context: TestApplicationContext, block: suspend Appli
         testApplication {
             application {
                 jacksonSerialization()
-                setupAuthentication(context.tokenClient)
+                setupAuthentication(context.texasClient)
                 routing {
                     meldekortRoutes(
                         meldekortService = context.meldekortService,
