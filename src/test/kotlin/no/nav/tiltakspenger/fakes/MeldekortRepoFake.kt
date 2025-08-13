@@ -79,7 +79,7 @@ class MeldekortRepoFake(
             .lastOrNull()
     }
 
-    override fun hentAlleMeldekortForBruker(fnr: Fnr, limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentInnsendteMeldekortForBruker(fnr: Fnr, limit: Int, sessionContext: SessionContext?): List<Meldekort> {
         return data.get().values
             .filter {
                 it.fnr == fnr && it.periode.tilOgMed <= Meldekort.senesteTilOgMedDatoForInnsending() && it.deaktivert == null

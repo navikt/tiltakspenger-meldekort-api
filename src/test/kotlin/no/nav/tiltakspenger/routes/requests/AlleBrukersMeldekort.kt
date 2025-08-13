@@ -10,7 +10,7 @@ import no.nav.tiltakspenger.routes.defaultRequest
 suspend fun ApplicationTestBuilder.alleBrukersMeldekort(): String {
     this.defaultRequest(
         method = HttpMethod.Get,
-        uri = "/brukerfrontend/meldekort/alle",
+        uri = "/brukerfrontend/meldekort/innsendte",
     ).let { response ->
         return response.bodyAsText()
     }

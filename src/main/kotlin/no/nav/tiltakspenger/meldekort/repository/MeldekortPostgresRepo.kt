@@ -222,8 +222,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    /** Henter alle meldekort som kan utfylles eller er utfylt */
-    override fun hentAlleMeldekortForBruker(
+    override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         limit: Int,
         sessionContext: SessionContext?,
@@ -239,6 +238,7 @@ class MeldekortPostgresRepo(
                         where mp.id = mk.meldeperiode_id
                             and mp.til_og_med <= :maks_til_og_med
                             and mk.deaktivert is null
+                            and mk.mottatt is not null
                         order by fra_og_med desc, versjon desc
                         limit :limit
                     """,

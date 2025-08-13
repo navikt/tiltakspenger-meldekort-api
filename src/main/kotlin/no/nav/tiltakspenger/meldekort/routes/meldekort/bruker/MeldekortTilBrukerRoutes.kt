@@ -23,13 +23,13 @@ fun Route.meldekortTilBrukerRoutes(
     meldekortService: MeldekortService,
     brukerService: BrukerService,
 ) {
-    get("meldekort/alle") {
+    get("meldekort/innsendte") {
         val fnr = call.fnr()
 
         val bruker = brukerService.hentBruker(fnr)
 
         val alleMeldekort = if (bruker is Bruker.MedSak) {
-            meldekortService.hentAlleMeldekort(fnr)
+            meldekortService.hentInnsendteMeldekort(fnr)
                 .map { it.tilMeldekortTilBrukerDTO() }
         } else {
             emptyList()
