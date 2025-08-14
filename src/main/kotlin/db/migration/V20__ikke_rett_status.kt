@@ -40,6 +40,11 @@ internal class V20__ikke_rett_status : BaseJavaMigration() {
         alleMeldekortBruker.forEach { meldekort ->
             val meldeperiode = meldekort.meldeperiode
 
+            //denne saken trenger ikke migrering
+            if(meldekort.sakId.toString().contains("01JCN9")){
+                return@forEach
+            }
+
             val dager = meldeperiode.girRett.toList().zip(meldekort.dager).map { (girRett, meldekortDag) ->
                 val harRettPåDenneDagen = girRett.second
 
