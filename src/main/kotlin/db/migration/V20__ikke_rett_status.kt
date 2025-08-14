@@ -27,21 +27,19 @@ internal class V20__ikke_rett_status : BaseJavaMigration() {
         val dataSource = context.configuration.dataSource
         val sessionFactory = PostgresSessionFactory(dataSource, SessionCounter(logger))
 
-        val alleMeldekortBruker = sessionFactory.withSession { session ->
+        //DENNE KAN VÆRE NULL SIDEN FROM-ROW KAN RETURNERE NULL - IKKE STOL PÅ KOTLIN
+        val alleMeldekortBruker: List<Meldekort> = sessionFactory.withSession { session ->
             session.run(
-                sqlQuery(
-                    """
-                        select * from meldekort_bruker
-                    """.trimIndent()
-                ).map { row -> fromRow(row, session) }.asList
+                sqlQuery("""select * from meldekort_bruker""")
+                    .map { row -> fromRow(row, session) }.asList
             )
-        }
+        }.mapNotNull { it }
 
         alleMeldekortBruker.forEach { meldekort ->
             val meldeperiode = meldekort.meldeperiode
 
             //denne saken trenger ikke migrering
-            if(meldekort.sakId.toString().contains("01JCN9")){
+            if (meldekort.sakId.toString().contains("01JCN9")) {
                 return@forEach
             }
 
@@ -83,11 +81,16 @@ internal class V20__ikke_rett_status : BaseJavaMigration() {
 private fun fromRow(
     row: Row,
     session: Session,
-): Meldekort {
+): Meldekort? {
     val id = MeldekortId.fromString(row.string("id"))
     val meldeperiodeId = row.string("meldeperiode_id")
 
     val meldeperiode = MeldeperiodePostgresRepo.hentForId(MeldeperiodeId.fromString(meldeperiodeId), session)
+
+    //denne saken trenger ikke migrering
+    if (meldeperiode?.sakId.toString().contains("01JCN9")) {
+        return null
+    }
 
     requireNotNull(meldeperiode) { "Fant ingen meldeperiode for $id" }
 
