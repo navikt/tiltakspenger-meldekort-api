@@ -1,6 +1,6 @@
 @file:Suppress("unused", "ktlint")
 
-package no.nav.tiltakspenger.meldekort.db.migration
+package db.migration
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
@@ -63,7 +63,7 @@ internal class V20__ikke_rett_status : BaseJavaMigration() {
                     sqlQuery(
                         """
                             update meldekort_bruker
-                            set dager = :dager
+                            set dager = to_jsonb(:dager::jsonb)
                             where id = :id
                         """.trimIndent(),
                         "dager" to dager.tilMeldekortDagDbJson(),
