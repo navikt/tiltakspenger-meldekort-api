@@ -1,9 +1,12 @@
+@file:Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
+
 package no.nav.tiltakspenger.meldekort.domene
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -32,6 +35,7 @@ data class Meldekort(
     val sakId = meldeperiode.sakId
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr
+    val saksnummer: String = meldeperiode.saksnummer
 
     val status: MeldekortStatus = when {
         mottatt != null -> MeldekortStatus.INNSENDT
@@ -40,9 +44,11 @@ data class Meldekort(
         else -> MeldekortStatus.IKKE_KLAR
     }
 
-    val klarTilInnsending by lazy { status == MeldekortStatus.KAN_UTFYLLES }
+    /** Om den er klar til innsending nå.*/
+    val klarTilInnsending: Boolean by lazy { status == MeldekortStatus.KAN_UTFYLLES }
 
-    val kanSendes = when (status) {
+    /** Hvilken dag de er klar til innsending eller null dersom den aldri kan sendes inn. */
+    val klarTilInnsendingDag: LocalDate? = when (status) {
         MeldekortStatus.KAN_UTFYLLES,
         MeldekortStatus.IKKE_KLAR,
         -> periode.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
@@ -50,6 +56,53 @@ data class Meldekort(
         MeldekortStatus.INNSENDT,
         MeldekortStatus.DEAKTIVERT,
         -> null
+    }
+
+    val maksAntallDagerForPeriode = meldeperiode.maksAntallDagerForPeriode
+
+    /** Regner ikke med IKKE_BESVART, IKKE_RETT_TIL_TILTAKSPENGER eller IKKE_TILTAKSDAG som besvart. */
+    val antallDagerBesvart = dager.count { it.erBesvart }
+
+    fun fyllUtMeldekortFraBruker(
+        sisteMeldeperiode: Meldeperiode,
+        clock: Clock,
+        brukerutfylteDager: List<MeldekortDag>,
+    ): Meldekort {
+        if (this.mottatt != null) {
+            throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
+        }
+        return this.copy(
+            meldeperiode = sisteMeldeperiode,
+            mottatt = LocalDateTime.now(clock),
+            dager = brukerutfylteDager,
+        )
+    }
+
+    fun fyllUtMeldekortFraBruker(
+        mottatt: LocalDateTime,
+        brukerutfylteDager: List<MeldekortDag>,
+    ): Meldekort {
+        if (this.mottatt != null) {
+            throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
+        }
+        return this.copy(
+            mottatt = mottatt,
+            dager = brukerutfylteDager,
+        )
+    }
+
+    fun inaktiverVarsel(): Meldekort {
+        return this.copy(
+            erVarselInaktivert = true,
+        )
+    }
+
+    fun oppdaterVarselId(
+        nyttVarselId: VarselId,
+    ): Meldekort {
+        return this.copy(
+            varselId = nyttVarselId,
+        )
     }
 
     init {
@@ -60,10 +113,38 @@ data class Meldekort(
         require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden (id=$id)" }
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden (id=$id)" }
         require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett (id=$id)" }
+        meldeperiode.girRett.values.zip(dager.map { it.status }) { harRett, brukersInnsendteDagStatus ->
+            when (harRett) {
+                true -> {
+                    require(brukersInnsendteDagStatus != MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
+                        "Når girRett er true, kan ikke status være IKKE_RETT_TIL_TILTAKSPENGER. sakId: $sakId, saksnummer: $saksnummer, meldekortId: $id, periode: $periode, meldeperiodeId: ${meldeperiode.id}"
+                    }
+                }
+
+                false -> {
+                    require(brukersInnsendteDagStatus == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
+                        "Når girRett er false, må status være IKKE_RETT_TIL_TILTAKSPENGER. meldekortDager: $dager, meldeperiodeGirRett: ${meldeperiode.girRett}, sakId: $sakId, saksnummer: $saksnummer, meldekortId: $id, periode: $periode, meldeperiodeId: ${meldeperiode.id}"
+                    }
+                }
+            }
+        }
+
+        if (mottatt == null) {
+            require(journalføringstidspunkt == null)
+            require(journalpostId == null)
+        }
 
         if (mottatt != null) {
+            require(!periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())) {
+                "Meldekortet er ikke klart for innsending fra bruker"
+            }
             require(deaktivert == null) {
                 "Meldekort ${this.id} kan ikke være både mottatt og deaktivert"
+            }
+            if (meldeperiode.alleDagerGirRettIPeriode) {
+                require(antallDagerBesvart == maksAntallDagerForPeriode) {
+                    "Når alle dagene i en meldeperiode gir rett til tiltakspenger, må bruker besvare maksAntallDagerSomGirRett (fra vedtaket). Antall dager besvart: $antallDagerBesvart, maks antall dager for periode: ${meldeperiode.maksAntallDagerForPeriode}. sakId: $sakId, saksnummer: $saksnummer, periode: $periode, meldeperiodeId: ${meldeperiode.id}"
+                }
             }
         }
     }
@@ -71,7 +152,8 @@ data class Meldekort(
     companion object {
         const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
 
-        fun senesteTilOgMedDatoForInnsending() = LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+        fun senesteTilOgMedDatoForInnsending(): LocalDate? =
+            LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
     }
 }
 
@@ -107,7 +189,10 @@ fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
         dager = forrigeMeldekort.dager.zip(this.girRett.values) { dag, harRett ->
             MeldekortDag(
                 dag = dag.dag,
-                status = if (harRett) dag.status else MeldekortDagStatus.IKKE_BESVART,
+                status = when (harRett) {
+                    true -> if (dag.status == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) MeldekortDagStatus.IKKE_BESVART else dag.status
+                    false -> MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
+                },
             )
         },
         journalpostId = null,

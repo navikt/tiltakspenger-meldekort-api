@@ -4,14 +4,18 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
 interface MeldekortRepo {
-    fun opprett(
+
+    /**
+     * Oppretter et nytt meldekort hvis meldekort.id ikke finnes, hvis ikke oppdateres det eksisterende meldekortet.
+     * Domenet har ansvaret for innholdet.
+     */
+    fun lagre(
         meldekort: Meldekort,
         sessionContext: SessionContext? = null,
     )
@@ -19,16 +23,6 @@ interface MeldekortRepo {
     fun deaktiver(
         meldekortId: MeldekortId,
         deaktiverVarsel: Boolean,
-        sessionContext: SessionContext? = null,
-    )
-
-    fun lagreFraBruker(
-        lagreKommando: LagreMeldekortFraBrukerKommando,
-        sessionContext: SessionContext? = null,
-    )
-
-    fun oppdater(
-        meldekort: Meldekort,
         sessionContext: SessionContext? = null,
     )
 

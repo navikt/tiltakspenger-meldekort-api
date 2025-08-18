@@ -21,7 +21,7 @@ class MeldeperiodePostgresRepoTest {
                 saksnummer = meldeperiode1.saksnummer,
                 sakId = meldeperiode1.sakId,
                 versjon = meldeperiode1.versjon + 1,
-                antallDagerForPeriode = meldeperiode1.antallDagerIkkeRett - 1, // Antall dager minker med 1.
+                antallDagerForPeriode = meldeperiode1.antallDagerSomIkkeGirRett - 1, // Antall dager minker med 1.
                 opprettet = meldeperiode1.opprettet.plusSeconds(1),
             )
             helper.meldeperiodeRepo.lagre(meldeperiode2)

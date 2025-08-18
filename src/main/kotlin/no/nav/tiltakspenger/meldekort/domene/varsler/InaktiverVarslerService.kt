@@ -22,7 +22,7 @@ class InaktiverVarslerService(
 
                     Either.catch {
                         tmsVarselClient.inaktiverVarsel(varselId)
-                        meldekortRepo.oppdater(meldekort.copy(erVarselInaktivert = true))
+                        meldekortRepo.lagre(meldekort.inaktiverVarsel())
                         log.info { "Varsel inaktivert for meldekort med id ${meldekort.id} varselId=$varselId" }
                     }.onLeft {
                         log.error(it) { "Kunne ikke inaktivere varsel for meldekort med id ${meldekort.id} varselId=$varselId, prøver igjen neste jobbkjøring" }

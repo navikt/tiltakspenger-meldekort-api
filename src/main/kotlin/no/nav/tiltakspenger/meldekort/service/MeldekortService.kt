@@ -3,12 +3,10 @@ package no.nav.tiltakspenger.meldekort.service
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.periodisering.Periode
-import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
-import no.nav.tiltakspenger.meldekort.domene.validerLagring
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import java.time.Clock
@@ -17,38 +15,31 @@ import java.time.LocalDateTime
 class MeldekortService(
     val meldekortRepo: MeldekortRepo,
     val meldeperiodeRepo: MeldeperiodeRepo,
-    val sessionFactory: SessionFactory,
     val clock: Clock,
 ) {
     fun lagreMeldekortFraBruker(kommando: LagreMeldekortFraBrukerKommando) {
         val meldekortId = kommando.id
         val innsenderFnr = kommando.fnr
-        val meldekort = meldekortRepo.hentForMeldekortId(meldekortId, innsenderFnr)
-
-        requireNotNull(meldekort) {
-            "Meldekort med id $meldekortId finnes ikke for bruker ${innsenderFnr.verdi}"
-        }
+        val meldekort = meldekortRepo.hentForMeldekortId(meldekortId, innsenderFnr)!!
 
         require(meldekort.mottatt == null) {
             "Meldekort med id $meldekortId er allerede mottatt (${meldekort.mottatt})"
         }
-
-        require(meldekort.deaktivert == null) {
-            "Meldekort med id $meldekortId er deaktivert (${meldekort.deaktivert})"
-        }
-
-        val meldeperiode = meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
+        val sisteMeldeperiode = meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(
             id = meldekort.meldeperiode.kjedeId,
             fnr = innsenderFnr,
+        )!!
+        require(meldekort.meldeperiode.id == sisteMeldeperiode.id) {
+            "Meldekortets meldeperiode-id (${meldekort.meldeperiode.id}) må den siste meldeperioden (${sisteMeldeperiode.id})"
+        }
+
+        val nyeDager = kommando.dager.map { it.tilMeldekortDag() }
+        meldekortRepo.lagre(
+            meldekort.fyllUtMeldekortFraBruker(
+                mottatt = kommando.mottatt,
+                brukerutfylteDager = nyeDager,
+            ),
         )
-
-        requireNotNull(meldeperiode) {
-            "Meldeperiode for meldekort med id $meldekortId finnes ikke for bruker ${innsenderFnr.verdi}"
-        }
-
-        meldekort.validerLagring(meldeperiode, kommando.dager.map { it.tilMeldekortDag() }).also {
-            meldekortRepo.lagreFraBruker(kommando)
-        }
     }
 
     fun hentForMeldekortId(id: MeldekortId, fnr: Fnr): Meldekort? {
@@ -88,16 +79,9 @@ class MeldekortService(
             fnr = command.fnr,
         )!!
 
-        val korrigertMeldekort = meldekortForKjede.korriger(command, sisteMeldeperiode, clock)
-
-        return korrigertMeldekort
-            .also {
-                if (it.second) {
-                    meldekortRepo.opprett(it.first)
-                } else {
-                    meldekortRepo.oppdater(it.first)
-                }
-            }.first
+        return meldekortForKjede.korriger(command, sisteMeldeperiode, clock).also {
+            meldekortRepo.lagre(it)
+        }
     }
 
     fun hentMeldeperiodeForPeriode(periode: Periode, fnr: Fnr): PreutfyltKorrigering {

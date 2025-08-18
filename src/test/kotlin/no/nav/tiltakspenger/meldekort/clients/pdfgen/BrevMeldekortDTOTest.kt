@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.periodisering.Periode
+import no.nav.tiltakspenger.libs.periodisering.til
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
@@ -74,7 +75,10 @@ class BrevMeldekortDTOTest {
                 mandagDenneUken.plusDays(13) to MeldekortDagStatus.IKKE_BESVART,
             )
 
-            val meldekort = ObjectMother.meldekort(statusMap = statusMap)
+            val meldekort = ObjectMother.meldekortAlleDagerGirRett(
+                periode = mandagDenneUken til mandagDenneUken.plusDays(13),
+                statusMap = statusMap,
+            )
             val serialized = meldekort.toBrevMeldekortDTO()
             val deserialized = deserialize<BrevMeldekortDTO>(serialized)
             val statusList = statusMap.entries.toList().map { it.value.tilBrevMeldekortStatusDTO() }

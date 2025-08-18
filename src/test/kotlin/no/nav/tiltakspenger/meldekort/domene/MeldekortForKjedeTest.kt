@@ -104,7 +104,7 @@ class MeldekortForKjedeTest {
                         fnr = meldekort.fnr,
                         korrigerteDager = emptyList(),
                     ),
-                    meldeperiode = meldeperiode,
+                    sisteMeldeperiode = meldeperiode,
                     clock = fixedClock,
                 )
             }
@@ -123,7 +123,7 @@ class MeldekortForKjedeTest {
                         fnr = meldekort1.fnr,
                         korrigerteDager = emptyList(),
                     ),
-                    meldeperiode = meldeperiode,
+                    sisteMeldeperiode = meldeperiode,
                     clock = fixedClock,
                 )
             }.message shouldBe "Meldekort med id ${meldekort1.id} er ikke siste meldekort i kjeden ${meldekort1.meldeperiode.kjedeId}. Kan ikke korrigere."
@@ -131,28 +131,38 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `korrigerer og fører til en oppdatering av av eksisterende meldekort til innsending`() {
-            val sisteMeldeperiode = ObjectMother.meldeperiode(versjon = 2)
-            val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode())
-            val meldekort2 = ObjectMother.meldekort(mottatt = null, meldeperiode = sisteMeldeperiode)
-            val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
+            val meldeperiode1 = ObjectMother.meldeperiode()
+            val meldeperiode2 = ObjectMother.meldeperiode(
+                sakId = meldeperiode1.sakId,
+                fnr = meldeperiode1.fnr,
+                periode = meldeperiode1.periode,
+                saksnummer = meldeperiode1.saksnummer,
+                versjon = 2,
+            )
+            val mottattMeldekort1 = ObjectMother.meldekort(meldeperiode = meldeperiode1)
+            val åpentMeldekort2 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode2)
+            val meldekortForKjede = MeldekortForKjede(listOf(mottattMeldekort1, åpentMeldekort2))
 
-            val (actualMeldekort, actualOppdatering) = meldekortForKjede.korriger(
+            val korrigerteDager = meldeperiode2.girRett.map { (dato, girRett) ->
+                MeldekortDag(
+                    dag = dato,
+                    status = if (girRett) MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
+                )
+            }
+            val actualMeldekort = meldekortForKjede.korriger(
                 command = KorrigerMeldekortCommand(
-                    meldekortId = meldekort1.id,
-                    fnr = meldekort1.fnr,
-                    korrigerteDager = sisteMeldeperiode.girRett.map { (dato, girRett) ->
-                        MeldekortDag(
-                            dag = dato,
-                            status = if (girRett) MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
-                        )
-                    },
+                    meldekortId = mottattMeldekort1.id,
+                    fnr = mottattMeldekort1.fnr,
+                    korrigerteDager = korrigerteDager,
                 ),
-                meldeperiode = sisteMeldeperiode,
+                sisteMeldeperiode = meldeperiode2,
                 clock = fixedClock,
             )
 
-            actualMeldekort.id shouldBe meldekort2.id
-            actualOppdatering shouldBe false
+            actualMeldekort shouldBe åpentMeldekort2.copy(
+                mottatt = nå(fixedClock),
+                dager = korrigerteDager,
+            )
         }
 
         @Test
@@ -161,7 +171,7 @@ class MeldekortForKjedeTest {
             val meldekort = ObjectMother.meldekort(meldeperiode = sisteMeldeperiode)
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort))
 
-            val (actualMeldekort, actualNyttMeldekort) = meldekortForKjede.korriger(
+            val actualMeldekort = meldekortForKjede.korriger(
                 command = KorrigerMeldekortCommand(
                     meldekortId = meldekort.id,
                     fnr = meldekort.fnr,
@@ -172,11 +182,10 @@ class MeldekortForKjedeTest {
                         )
                     },
                 ),
-                meldeperiode = sisteMeldeperiode,
+                sisteMeldeperiode = sisteMeldeperiode,
                 clock = fixedClock,
             )
             actualMeldekort.id shouldNotBe meldekort.id
-            actualNyttMeldekort shouldBe true
         }
     }
 

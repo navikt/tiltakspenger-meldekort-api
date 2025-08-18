@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.service
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.TestApplicationContext
@@ -26,7 +27,7 @@ class MeldekortServiceTest {
             mottatt = mottatt,
         )
         meldeperiodeRepo.lagre(meldekort.meldeperiode)
-        meldekortRepo.opprett(meldekort)
+        meldekortRepo.lagre(meldekort)
 
         return meldekort
     }
@@ -86,18 +87,16 @@ class MeldekortServiceTest {
         val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.of(2025, 1, 1)))
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort, fnr = Fnr.fromString("11111111111"))
 
-        shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} finnes ikke for bruker 11111111111") {
-            meldekortService.lagreMeldekortFraBruker(lagreKommando)
-        }
+        shouldThrow<NullPointerException> { meldekortService.lagreMeldekortFraBruker(lagreKommando) }
     }
 
     @Test
     fun `Kan ikke lagre meldekort fra bruker som allerede er mottatt`() {
         val tac = TestApplicationContext()
         val meldekortService = tac.meldekortService
-        val mottatt = nå(fixedClock)
+        val mottatt = nå(fixedClock).plusSeconds(1)
 
-        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now()), mottatt)
+        val meldekort = lagMeldekort(tac, ObjectMother.periode(LocalDate.now(fixedClock)), mottatt)
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
         shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt ($mottatt)") {

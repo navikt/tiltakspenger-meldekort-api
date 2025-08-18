@@ -79,7 +79,7 @@ class LagreFraSaksbehandlingService(
                     Either.catch {
                         lagreMeldeperiode(meldeperiode, tx)
                     }.onLeft {
-                        logger.error { "Feil under lagring av meldeperiode $meldeperiodeId for sak $sakId" }
+                        logger.error(it) { "Feil under lagring av meldeperiode $meldeperiodeId for sak $sakId" }
                         throw it
                     }
                 }
@@ -114,7 +114,7 @@ class LagreFraSaksbehandlingService(
         }
 
         nyttMeldekort?.also {
-            meldekortRepo.opprett(it, tx)
+            meldekortRepo.lagre(it, tx)
             logger.info { "Lagret brukers meldekort ${nyttMeldekort.id}" }
         }
     }
@@ -123,7 +123,7 @@ class LagreFraSaksbehandlingService(
         meldeperiode: Meldeperiode,
         eksisterendeMeldekort: Meldekort?,
     ): Meldekort? {
-        if (!meldeperiode.harRettIPerioden) {
+        if (!meldeperiode.minstEnDagGirRettIPerioden) {
             return null
         }
 

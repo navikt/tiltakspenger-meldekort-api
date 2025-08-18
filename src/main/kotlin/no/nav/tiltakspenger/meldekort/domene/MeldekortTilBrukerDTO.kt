@@ -53,7 +53,7 @@ fun Meldekort.tilMeldekortTilBrukerDTO(): MeldekortTilBrukerDTO {
         minAntallDager = meldeperiode.minAntallDagerForPeriode,
         innsendt = mottatt,
         dager = dager.toDto(),
-        kanSendes = kanSendes,
+        kanSendes = klarTilInnsendingDag,
     )
 }
 

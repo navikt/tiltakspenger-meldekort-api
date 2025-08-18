@@ -19,6 +19,40 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface MeldekortMother {
+
+    fun meldekortAlleDagerGirRett(
+        periode: Periode = ObjectMother.periode(),
+        mottatt: LocalDateTime? = nå(fixedClock),
+        deaktivert: LocalDateTime? = null,
+        saksnummer: String = Math.random().toString(),
+        sakId: SakId = SakId.random(),
+        statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
+        varselId: VarselId? = null,
+        fnr: Fnr = Fnr.fromString(FAKE_FNR),
+        erVarselInaktivert: Boolean = false,
+        maksAntallDagerForPeriode: Int = 10,
+    ): Meldekort {
+        return meldekort(
+            periode = periode,
+            mottatt = mottatt,
+            deaktivert = deaktivert,
+            saksnummer = saksnummer,
+            sakId = sakId,
+            statusMap = statusMap,
+            varselId = varselId,
+            fnr = fnr,
+            erVarselInaktivert = erVarselInaktivert,
+            meldeperiode = ObjectMother.meldeperiode(
+                periode = periode,
+                saksnummer = saksnummer,
+                sakId = sakId,
+                fnr = fnr,
+                girRett = periode.tilDager().associateWith { true },
+                antallDagerForPeriode = maksAntallDagerForPeriode,
+            ),
+        )
+    }
+
     fun meldekort(
         periode: Periode = ObjectMother.periode(),
         mottatt: LocalDateTime? = nå(fixedClock),
@@ -67,7 +101,7 @@ interface MeldekortMother {
         dager: List<MeldekortDagFraBrukerDTO> = meldeperiode.girRett.map { (dag, _) ->
             MeldekortDagFraBrukerDTO(
                 dag = dag,
-                status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_BESVART,
+                status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
             )
         },
     ): LagreMeldekortFraBrukerKommando {
