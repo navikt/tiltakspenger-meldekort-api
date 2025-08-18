@@ -18,6 +18,7 @@ interface MeldeperiodeMother {
     fun meldeperiode(
         id: MeldeperiodeId = MeldeperiodeId.random(),
         periode: Periode = ObjectMother.periode(),
+        kjedeId: MeldeperiodeKjedeId = MeldeperiodeKjedeId.fraPeriode(periode),
         saksnummer: String = Math.random().toString(),
         sakId: SakId = SakId.random(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
@@ -26,13 +27,16 @@ interface MeldeperiodeMother {
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
         antallDagerForPeriode: Int = girRett.filter { it.value }.size,
     ): Meldeperiode {
+        require(MeldeperiodeKjedeId.fraPeriode(periode) == kjedeId) {
+            "KjedeId må være lik MeldeperiodeKjedeId.fraPeriode(periode)"
+        }
         return Meldeperiode(
             id = id,
             periode = periode,
             saksnummer = saksnummer,
             sakId = sakId,
             fnr = fnr,
-            kjedeId = MeldeperiodeKjedeId.fraPeriode(periode),
+            kjedeId = kjedeId,
             versjon = versjon,
             opprettet = opprettet,
             maksAntallDagerForPeriode = antallDagerForPeriode,
