@@ -86,7 +86,6 @@ open class ApplicationContext(val clock: Clock) {
         MeldekortService(
             meldekortRepo = meldekortRepo,
             meldeperiodeRepo = meldeperiodeRepo,
-            sessionFactory = sessionFactory,
             clock = clock,
         )
     }

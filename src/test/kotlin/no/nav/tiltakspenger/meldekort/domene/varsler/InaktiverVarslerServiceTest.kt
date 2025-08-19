@@ -33,7 +33,7 @@ class InaktiverVarslerServiceTest {
         service.inaktiverVarslerForMottatteMeldekort()
 
         verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify { meldekortRepo.oppdater(meldekort.copy(erVarselInaktivert = true)) }
+        verify { meldekortRepo.lagre(meldekort.copy(erVarselInaktivert = true)) }
     }
 
     @Test
@@ -46,7 +46,7 @@ class InaktiverVarslerServiceTest {
         service.inaktiverVarslerForMottatteMeldekort()
 
         verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify(exactly = 0) { meldekortRepo.opprett(any()) }
+        verify(exactly = 1) { meldekortRepo.lagre(meldekort.copy(erVarselInaktivert = true), any()) }
     }
 
     @Test
@@ -60,6 +60,6 @@ class InaktiverVarslerServiceTest {
         service.inaktiverVarslerForMottatteMeldekort()
 
         verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify(exactly = 0) { meldekortRepo.opprett(any()) }
+        verify(exactly = 0) { meldekortRepo.lagre(any()) }
     }
 }

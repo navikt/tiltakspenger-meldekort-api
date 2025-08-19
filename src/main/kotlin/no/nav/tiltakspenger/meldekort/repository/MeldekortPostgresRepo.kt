@@ -16,7 +16,6 @@ import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
-import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
@@ -33,7 +32,7 @@ class MeldekortPostgresRepo(
     private val clock: Clock,
 ) : MeldekortRepo {
 
-    override fun opprett(meldekort: Meldekort, sessionContext: SessionContext?) {
+    override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -55,10 +54,19 @@ class MeldekortPostgresRepo(
                         :mottatt,
                         to_jsonb(:dager::jsonb),
                         :journalpost_id,
-                        :tidspunkt,
+                        :journalforingstidspunkt,
                         :varsel_id,
                         :erVarselInaktivert
                     )
+                    on conflict (id) do update set
+                        meldeperiode_id = :meldeperiode_id,
+                        sak_id = :sak_id,
+                        mottatt = :mottatt,
+                        dager = to_jsonb(:dager::jsonb),
+                        journalpost_id = :journalpost_id,
+                        journalføringstidspunkt = :journalforingstidspunkt,
+                        varsel_id = :varsel_id,
+                        varsel_inaktivert = :erVarselInaktivert
                 """,
                     "id" to meldekort.id.toString(),
                     "meldeperiode_id" to meldekort.meldeperiode.id.toString(),
@@ -66,7 +74,7 @@ class MeldekortPostgresRepo(
                     "mottatt" to meldekort.mottatt,
                     "dager" to meldekort.dager.tilMeldekortDagDbJson(),
                     "journalpost_id" to meldekort.journalpostId?.toString(),
-                    "tidspunkt" to meldekort.journalføringstidspunkt,
+                    "journalforingstidspunkt" to meldekort.journalføringstidspunkt,
                     "varsel_id" to meldekort.varselId?.toString(),
                     "erVarselInaktivert" to meldekort.erVarselInaktivert,
                 ).asUpdate,
@@ -87,42 +95,6 @@ class MeldekortPostgresRepo(
                     "id" to meldekortId.toString(),
                     "deaktivert" to nå(clock),
                     "varsel_inaktivert" to !deaktiverVarsel,
-                ).asUpdate,
-            )
-        }
-    }
-
-    override fun lagreFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                    update meldekort_bruker set
-                        mottatt = :mottatt,
-                        dager = to_jsonb(:dager::jsonb)
-                    where id = :id
-                    """,
-                    "id" to lagreKommando.id.toString(),
-                    "mottatt" to lagreKommando.mottatt,
-                    "dager" to lagreKommando.dager.tilMeldekortDagFraBrukerDbJson(),
-                ).asUpdate,
-            )
-        }
-    }
-
-    override fun oppdater(meldekort: Meldekort, sessionContext: SessionContext?) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                    update meldekort_bruker set 
-                        varsel_id = :varsel_id,
-                        varsel_inaktivert = :varsel_inaktivert
-                    where id = :id
-                """,
-                    "id" to meldekort.id.toString(),
-                    "varsel_id" to meldekort.varselId?.toString(),
-                    "varsel_inaktivert" to meldekort.erVarselInaktivert,
                 ).asUpdate,
             )
         }

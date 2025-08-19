@@ -26,7 +26,7 @@ class MeldekortPostgresRepoTest {
 
         meldekort.forEach {
             meldeperiodeRepo.lagre(it.meldeperiode)
-            meldekortRepo.opprett(it)
+            meldekortRepo.lagre(it)
         }
     }
 
@@ -64,7 +64,7 @@ class MeldekortPostgresRepoTest {
                 assertNotNull(meldekort.varselId, "varselId skal være satt til å begynne med")
 
                 val oppdatertMeldekort = meldekort.copy(varselId = null)
-                repo.oppdater(oppdatertMeldekort)
+                repo.lagre(oppdatertMeldekort)
 
                 val result = repo.hentForMeldekortId(meldekort.id, meldekort.meldeperiode.fnr)
                 assertEquals(oppdatertMeldekort.varselId, result!!.varselId, "varselId")
@@ -250,7 +250,7 @@ class MeldekortPostgresRepoTest {
                 val meldekort = ObjectMother.meldekort()
                 val kjedeId = meldekort.meldeperiode.kjedeId
                 helper.meldeperiodeRepo.lagre(meldekort.meldeperiode)
-                helper.meldekortPostgresRepo.opprett(meldekort)
+                helper.meldekortPostgresRepo.lagre(meldekort)
                 val hentetMeldekort = helper.meldekortPostgresRepo.hentSisteMeldekortForKjedeId(kjedeId, meldekort.fnr)
                 hentetMeldekort shouldBe meldekort
             }

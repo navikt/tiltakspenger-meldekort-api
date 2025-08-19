@@ -208,6 +208,7 @@ class MottaSakerRouteTest {
             periode = førstePeriode,
         )
         val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
+
             periode = førstePeriode,
             versjon = 2,
         )
@@ -270,14 +271,20 @@ class MottaSakerRouteTest {
                     Fnr.fromString(sakDto1.fnr),
                 ).first()
 
-                val meldeperiode = sakDto1.tilSak().meldeperioder.first()
+                val meldeperiode = meldekort.meldeperiode
 
                 val lagreKommando = lagreMeldekortFraBrukerKommando(
                     meldeperiode = meldeperiode,
                     meldekortId = meldekort.id,
                 )
 
-                tac.meldekortRepo.lagreFraBruker(lagreKommando)
+                tac.meldekortRepo.lagre(
+                    meldekort.fyllUtMeldekortFraBruker(
+                        sisteMeldeperiode = meldeperiode,
+                        clock = tac.clock,
+                        brukerutfylteDager = lagreKommando.dager.map { it.tilMeldekortDag() },
+                    ),
+                )
             }
 
             mottaSakRequest(sakDto2).apply {

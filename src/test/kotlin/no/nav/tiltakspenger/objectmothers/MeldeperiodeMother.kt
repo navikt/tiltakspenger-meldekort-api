@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.math.min
 
 interface MeldeperiodeMother {
     fun meldeperiode(
@@ -50,6 +51,7 @@ interface MeldeperiodeMother {
         versjon: Int = 1,
         opprettet: LocalDateTime = nå(fixedClock),
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
+        antallDagerForPeriode: Int = min(girRett.filter { it.value }.size, 10),
     ): SakTilMeldekortApiDTO.Meldeperiode {
         return SakTilMeldekortApiDTO.Meldeperiode(
             id = id,
@@ -59,7 +61,7 @@ interface MeldeperiodeMother {
             girRett = girRett,
             fraOgMed = periode.fraOgMed,
             tilOgMed = periode.tilOgMed,
-            antallDagerForPeriode = periode.antallDager.toInt(),
+            antallDagerForPeriode = antallDagerForPeriode,
         )
     }
 

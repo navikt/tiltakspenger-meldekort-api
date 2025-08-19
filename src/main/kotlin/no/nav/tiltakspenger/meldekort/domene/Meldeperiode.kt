@@ -28,14 +28,19 @@ data class Meldeperiode(
     val maksAntallDagerForPeriode: Int,
     val girRett: Map<LocalDate, Boolean>,
 ) {
-    val harRettIPerioden = girRett.any { it.value }
-    val antallDagerIkkeRett = girRett.count { !it.value }
-    val minAntallDagerForPeriode = max((maksAntallDagerForPeriode - antallDagerIkkeRett), 0)
+    val alleDagerGirRettIPeriode = girRett.all { it.value }
+    val minstEnDagGirRettIPerioden = girRett.any { it.value }
+    val antallDagerSomIkkeGirRett: Int = girRett.count { !it.value }
+    val antallDagerSomGirRett: Int = girRett.count { it.value }
+
+    // TODO Ramzi og John: Fjern denne når vi har fjernet den fra frontend.
+    val minAntallDagerForPeriode = max((maksAntallDagerForPeriode - antallDagerSomIkkeGirRett), 0)
 
     init {
         require(versjon >= 0) { "Versjon må være større eller lik 0" }
         require(girRett.size.toLong() == periode.antallDager) { "GirRett må ha like mange dager som perioden" }
-        require(maksAntallDagerForPeriode <= periode.antallDager) { "MaksAntallDagerForPeriode må være mindre eller lik dager i perioden" }
+        require(antallDagerSomGirRett <= periode.antallDager) { "Antall dager som gir rett må være mindre eller lik dager i perioden" }
+        require(maksAntallDagerForPeriode <= antallDagerSomGirRett) { "maks antall dager for periode må være mindre eller lik antall dager som gir rett" }
         require(periode.tilDager() == girRett.keys.toList()) { "GirRett må ha en verdi for hver dag i perioden" }
     }
 }

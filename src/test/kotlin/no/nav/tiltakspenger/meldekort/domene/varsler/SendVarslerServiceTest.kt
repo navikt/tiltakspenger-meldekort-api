@@ -37,7 +37,7 @@ class SendVarslerServiceTest {
 
         service.sendVarselForMeldekort()
 
-        verify { meldekortRepo.oppdater(any()) }
+        verify { meldekortRepo.lagre(any()) }
         assertNotNull(UUID.fromString(varselId.captured.toString()), "VarselId ble satt til en gyldig UUID")
         verify { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId.captured) }
     }
@@ -54,7 +54,7 @@ class SendVarslerServiceTest {
 
         service.sendVarselForMeldekort()
 
-        verify(exactly = meldekortList.size) { meldekortRepo.oppdater(any()) }
+        verify(exactly = meldekortList.size) { meldekortRepo.lagre(any()) }
         verify(exactly = meldekortList.size) { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) }
     }
 }

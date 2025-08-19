@@ -13,19 +13,17 @@ data class MeldekortForKjede(
 ) : List<Meldekort> by meldekort {
     val harInnsendtMeldekort by lazy { meldekort.any { it.status == MeldekortStatus.INNSENDT } }
 
-    /**
-     * false dersom det ikke finnes noen meldekort i kjeden, eller det ikke finnes noe meldekort som er klar til innsending.
-     */
     val erSisteMeldekortKlarTilInnsending by lazy { meldekort.lastOrNull()?.klarTilInnsending == true }
 
     fun sisteInnsendteMeldekort(): Meldekort? = meldekort.lastOrNull { it.status == MeldekortStatus.INNSENDT }
 
-    /**
-     * @returns Hacker inn en bool verdi om det er nytt meldekort (true) eller oppdatering av eksisterende meldekort (false)
-     */
-    fun korriger(command: KorrigerMeldekortCommand, meldeperiode: Meldeperiode, clock: Clock): Pair<Meldekort, Boolean> {
+    fun korriger(
+        command: KorrigerMeldekortCommand,
+        sisteMeldeperiode: Meldeperiode,
+        clock: Clock,
+    ): Meldekort {
         require(this.harInnsendtMeldekort) {
-            "Meldekort med id ${command.meldekortId} er ikke i en kjede med innsending. Kan ikke korrigere."
+            "Finner ingen innsendinger for valgt periode. Dette skulle vært en førstegangsinnsending, ikke en korrigering. MeldekortId: ${command.meldekortId}. Periode: ${sisteMeldeperiode.periode}. SakId: ${sisteMeldeperiode.sakId}. Saksnummer: ${sisteMeldeperiode.saksnummer}."
         }
 
         require(command.meldekortId == sisteInnsendteMeldekort()!!.id) {
@@ -33,26 +31,23 @@ data class MeldekortForKjede(
         }
 
         return if (erSisteMeldekortKlarTilInnsending) {
-            meldekort.last().copy(
-                meldeperiode = meldeperiode,
-                mottatt = LocalDateTime.now(clock),
-                dager = command.korrigerteDager,
-            ) to false
+            meldekort.last().fyllUtMeldekortFraBruker(
+                sisteMeldeperiode = sisteMeldeperiode,
+                clock = clock,
+                brukerutfylteDager = command.korrigerteDager,
+            )
         } else {
             Meldekort(
                 id = MeldekortId.random(),
                 deaktivert = null,
                 mottatt = LocalDateTime.now(clock),
-                meldeperiode = meldeperiode,
+                meldeperiode = sisteMeldeperiode,
                 dager = command.korrigerteDager,
                 journalpostId = null,
                 journalføringstidspunkt = null,
                 varselId = null,
                 erVarselInaktivert = false,
-            ) to true
-        }.also {
-            // TODO - flytt inn validering inn i typene
-            it.first.validerLagring(meldeperiode, command.korrigerteDager)
+            )
         }
     }
 

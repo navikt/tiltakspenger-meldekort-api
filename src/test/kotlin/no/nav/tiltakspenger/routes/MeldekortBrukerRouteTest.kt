@@ -88,10 +88,10 @@ class MeldekortBrukerRouteTest {
         tac.sakRepo.lagre(sak)
 
         tac.meldeperiodeRepo.lagre(førsteMeldekort.meldeperiode)
-        tac.meldekortRepo.opprett(førsteMeldekort)
+        tac.meldekortRepo.lagre(førsteMeldekort)
 
         tac.meldeperiodeRepo.lagre(andreMeldekort.meldeperiode)
-        tac.meldekortRepo.opprett(andreMeldekort)
+        tac.meldekortRepo.lagre(andreMeldekort)
 
         testMedMeldekortRoutes(tac) {
             meldekortBrukerRequest().apply {
@@ -142,10 +142,10 @@ class MeldekortBrukerRouteTest {
         tac.sakRepo.lagre(sak)
 
         tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
-        tac.meldekortRepo.opprett(innsendtMeldekort)
+        tac.meldekortRepo.lagre(innsendtMeldekort)
 
         tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
-        tac.meldekortRepo.opprett(ikkeKlartMeldekort)
+        tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
         testMedMeldekortRoutes(tac) {
             meldekortBrukerRequest().apply {
@@ -185,7 +185,7 @@ class MeldekortBrukerRouteTest {
         tac.sakRepo.lagre(sak)
 
         tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
-        tac.meldekortRepo.opprett(ikkeKlartMeldekort)
+        tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
         testMedMeldekortRoutes(tac) {
             meldekortBrukerRequest().apply {
@@ -341,7 +341,7 @@ class MeldekortBrukerRouteTest {
         tac.sakRepo.lagre(sak)
 
         tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
-        tac.meldekortRepo.opprett(innsendtMeldekort)
+        tac.meldekortRepo.lagre(innsendtMeldekort)
 
         testMedMeldekortRoutes(tac) {
             val alleMeldekort = this.alleBrukersMeldekort()

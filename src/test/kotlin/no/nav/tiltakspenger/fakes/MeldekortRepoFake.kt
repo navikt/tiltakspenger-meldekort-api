@@ -6,7 +6,6 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
@@ -19,7 +18,7 @@ class MeldekortRepoFake(
 ) : MeldekortRepo {
     private val data = Atomic(mutableMapOf<MeldekortId, Meldekort>())
 
-    override fun opprett(meldekort: Meldekort, sessionContext: SessionContext?) {
+    override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
         data.get()[meldekort.id] = meldekort
     }
 
@@ -34,21 +33,6 @@ class MeldekortRepoFake(
         }
 
         data.get()[meldekortId] = meldekort.copy(deaktivert = nå(clock), erVarselInaktivert = !deaktiverVarsel)
-    }
-
-    override fun lagreFraBruker(lagreKommando: LagreMeldekortFraBrukerKommando, sessionContext: SessionContext?) {
-        val meldekort = hentForMeldekortId(lagreKommando.id, lagreKommando.fnr, sessionContext)
-
-        requireNotNull(meldekort) { "Kan ikke lagre meldekort ${lagreKommando.id} fra bruker ${lagreKommando.fnr} - meldekortet finnes ikke" }
-
-        data.get()[meldekort.id] = meldekort.copy(
-            dager = lagreKommando.dager.map { it.tilMeldekortDag() },
-            mottatt = lagreKommando.mottatt,
-        )
-    }
-
-    override fun oppdater(meldekort: Meldekort, sessionContext: SessionContext?) {
-        data.get()[meldekort.id] = meldekort
     }
 
     override fun hentForMeldekortId(meldekortId: MeldekortId, fnr: Fnr, sessionContext: SessionContext?): Meldekort? {

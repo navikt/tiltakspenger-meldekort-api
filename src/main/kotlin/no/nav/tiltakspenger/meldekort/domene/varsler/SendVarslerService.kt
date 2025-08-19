@@ -23,7 +23,7 @@ class SendVarslerService(
 
                 Either.catch {
                     tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId = varselId)
-                    meldekortRepo.oppdater(meldekort.copy(varselId = varselId))
+                    meldekortRepo.lagre(meldekort.oppdaterVarselId(nyttVarselId = varselId))
                 }.onLeft {
                     log.error(it) { "Feil under sending av varsel for meldekort ${meldekort.id} / varsel id $varselId" }
                 }
