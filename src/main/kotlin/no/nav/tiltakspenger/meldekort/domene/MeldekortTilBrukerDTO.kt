@@ -15,7 +15,6 @@ data class MeldekortTilBrukerDTO(
     val uke2: Int,
     val status: MeldekortStatusDTO,
     val maksAntallDager: Int,
-    val minAntallDager: Int,
     val innsendt: LocalDateTime?,
     val dager: List<MeldekortDagTilBrukerDTO>,
     val kanSendes: LocalDate?,
@@ -50,7 +49,6 @@ fun Meldekort.tilMeldekortTilBrukerDTO(): MeldekortTilBrukerDTO {
             MeldekortStatus.DEAKTIVERT -> MeldekortStatusDTO.DEAKTIVERT
         },
         maksAntallDager = meldeperiode.maksAntallDagerForPeriode,
-        minAntallDager = meldeperiode.minAntallDagerForPeriode,
         innsendt = mottatt,
         dager = dager.toDto(),
         kanSendes = klarTilInnsendingDag,
