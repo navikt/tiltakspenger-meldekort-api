@@ -8,6 +8,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periodisering.PeriodeDTO
 import no.nav.tiltakspenger.libs.periodisering.toDTO
 import no.nav.tiltakspenger.libs.texas.fnr
@@ -41,6 +42,25 @@ fun Route.meldekortTilBrukerRoutes(
                 meldekort = alleMeldekort,
             ),
         )
+    }
+
+    get("kjede/{kjedeId}") {
+        val kjedeId = call.parameters["kjedeId"]?.let { MeldeperiodeKjedeId(it.replace("_", "/")) }
+        if (kjedeId == null) {
+            call.respond(HttpStatusCode.BadRequest)
+            return@get
+        }
+
+        meldekortService.hentMeldekortForKjede(kjedeId, call.fnr()).let {
+            call.respond(
+                HttpStatusCode.OK,
+                MeldekortForKjedeDTO(
+                    kjedeId = it.kjedeId?.toString(),
+                    periode = it.kjedeId?.periode?.toDTO(),
+                    meldekort = it.map { it.tilMeldekortTilBrukerDTO() },
+                ),
+            )
+        }
     }
 
     get("meldekort/{meldekortId}") {

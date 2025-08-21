@@ -11,6 +11,11 @@ import java.time.LocalDateTime
 data class MeldekortForKjede(
     private val meldekort: List<Meldekort>,
 ) : List<Meldekort> by meldekort {
+    /**
+     * Null dersom listen er tom
+     */
+    val kjedeId = meldekort.firstOrNull()?.meldeperiode?.kjedeId
+
     val harInnsendtMeldekort by lazy { meldekort.any { it.status == MeldekortStatus.INNSENDT } }
 
     val erSisteMeldekortKlarTilInnsending by lazy { meldekort.lastOrNull()?.klarTilInnsending == true }
