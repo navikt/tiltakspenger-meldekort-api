@@ -18,6 +18,7 @@ class TexasClientFake : TexasClient {
     override suspend fun getSystemToken(
         audienceTarget: String,
         identityProvider: IdentityProvider,
+        rewriteAudienceTarget: Boolean,
     ): AccessToken {
         return accessToken()
     }
@@ -40,6 +41,8 @@ class TexasClientFake : TexasClient {
         return TexasIntrospectionResponse(
             active = true,
             error = null,
+            groups = null,
+            roles = null,
             other = mutableMapOf("pid" to FAKE_FNR),
         )
     }
