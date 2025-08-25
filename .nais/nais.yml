@@ -59,6 +59,7 @@ spec:
     inbound:
       rules:
         - application: tiltakspenger-meldekort
+        - application: tiltakspenger-meldekort-microfrontend
         - application: tiltakspenger-saksbehandling-api
         - application: tokenx-token-generator
           namespace: nais
