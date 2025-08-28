@@ -122,7 +122,17 @@ class MeldekortService(
         return meldekortRepo.hentMeldekortForKjedeId(kjedeId, fnr)
     }
 
-    fun hentInformasjonOmMeldekortForMicrofrontend(fnr: Fnr): MeldekortForKjede {
-        return meldekortRepo.hentAlleMeldekortForBruker(fnr)
+    fun hentInformasjonOmMeldekortForMicrofrontend(fnr: Fnr): Pair<Int, LocalDate> {
+        val brukersMeldekort = meldekortRepo.hentAlleMeldekortForBruker(fnr)
+
+        val antallMeldekortBrukerKanfylleut = brukersMeldekort.count { it.klarTilInnsending }
+
+        val nesteMuligeInnsending = brukersMeldekort
+            .sortedBy { it.meldeperiode.periode.fraOgMed }
+            .first { it.status == MeldekortStatus.IKKE_KLAR }
+            // Siden vi filtrerer på IKKE_KLAR så er klarTilInnsendingDag aldri null her
+            .klarTilInnsendingDag!!
+
+        return Pair(antallMeldekortBrukerKanfylleut, nesteMuligeInnsending)
     }
 }
