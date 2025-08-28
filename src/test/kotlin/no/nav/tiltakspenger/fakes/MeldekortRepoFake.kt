@@ -115,4 +115,11 @@ class MeldekortRepoFake(
             .maxByOrNull { it.value.meldeperiode.versjon }
             ?.value
     }
+
+    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): MeldekortForKjede {
+        return data.get()
+            .values
+            .toList()
+            .let { MeldekortForKjede(it) }
+    }
 }

@@ -194,6 +194,25 @@ class MeldekortPostgresRepo(
         }
     }
 
+    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): MeldekortForKjede {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        select
+                            mk.*
+                        from meldekort_bruker mk
+                        join meldeperiode mp on mp.fnr = :fnr
+                        where mp.id = mk.meldeperiode_id
+                    """,
+                    "fnr" to fnr.verdi,
+                ).map { row ->
+                    fromRow(row, session)
+                }.asList,
+            ).let { MeldekortForKjede(it) }
+        }
+    }
+
     override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         limit: Int,
