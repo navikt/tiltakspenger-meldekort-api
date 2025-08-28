@@ -12,11 +12,13 @@ fun Route.microfrontendRoutes(
 ) {
     get("microfrontend/kort-info") {
         meldekortService.hentInformasjonOmMeldekortForMicrofrontend(call.fnr()).let {
+            val (antallMeldekortKlarTilInnsending, nesteMuligeInnsending) = it
+
             call.respond(
                 HttpStatusCode.OK,
                 MicrofrontendKortDTO(
-                    antallMeldekortKlarTilInnsending = it.antallMeldekortKlarTilInnsending,
-                    nesteMuligeInnsending = it.nesteMuligeInnsending,
+                    antallMeldekortKlarTilInnsending = antallMeldekortKlarTilInnsending,
+                    nesteMuligeInnsending = nesteMuligeInnsending,
                 ),
             )
         }

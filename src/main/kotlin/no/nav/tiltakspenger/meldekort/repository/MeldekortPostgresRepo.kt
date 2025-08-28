@@ -194,7 +194,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): MeldekortForKjede {
+    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
