@@ -20,15 +20,6 @@ data class MeldekortForKjede(
 
     val erSisteMeldekortKlarTilInnsending by lazy { meldekort.lastOrNull()?.klarTilInnsending == true }
 
-    val nesteMuligeInnsending by lazy {
-        meldekort
-            .first { it.status == MeldekortStatus.IKKE_KLAR }
-            // Siden vi filtrerer på IKKE_KLAR så er klarTilInnsendingDag aldri null her
-            .klarTilInnsendingDag!!
-    }
-
-    val antallMeldekortKlarTilInnsending by lazy { meldekort.count { it.klarTilInnsending } }
-
     fun sisteInnsendteMeldekort(): Meldekort? = meldekort.lastOrNull { it.status == MeldekortStatus.INNSENDT }
 
     fun korriger(
