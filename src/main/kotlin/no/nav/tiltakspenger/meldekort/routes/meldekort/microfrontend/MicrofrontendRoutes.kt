@@ -10,7 +10,7 @@ import no.nav.tiltakspenger.meldekort.service.MeldekortService
 fun Route.microfrontendRoutes(
     meldekortService: MeldekortService,
 ) {
-    get("microfrontend/kort-info") {
+    get("/meldekort-kort-info") {
         meldekortService.hentInformasjonOmMeldekortForMicrofrontend(call.fnr()).let {
             val (antallMeldekortKlarTilInnsending, nesteMuligeInnsending) = it
 
