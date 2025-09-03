@@ -83,6 +83,7 @@ fun start(
             { applicationContext.sendVarslerService.sendVarselForMeldekort() },
             { applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort() },
             { applicationContext.arenaMeldekortStatusService.oppdaterArenaMeldekortStatusForSaker() },
+            { applicationContext.inaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere() },
         ),
     )
 

@@ -3,6 +3,8 @@ package no.nav.tiltakspenger.fakes
 import arrow.atomic.Atomic
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.fixedClock
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
@@ -55,5 +57,14 @@ class SakRepoFake : SakRepo {
 
     override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
         return data.get().values.filter { it.arenaMeldekortStatus == ArenaMeldekortStatus.UKJENT }
+    }
+
+    override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?): List<Sak> {
+        return data.get().values.filter {
+            it.meldeperioder
+                .last()
+                .periode
+                .tilOgMed.isBefore(nå(fixedClock).minusMonths(6).toLocalDate())
+        }
     }
 }
