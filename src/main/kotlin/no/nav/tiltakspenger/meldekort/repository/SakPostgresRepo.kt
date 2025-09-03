@@ -27,13 +27,15 @@ class SakPostgresRepo(
                         saksnummer,
                         fnr,
                         arena_meldekort_status,
-                        har_soknad_under_behandling
+                        har_soknad_under_behandling,
+                        microfrontend_inaktivert
                     ) values (
                         :id,
                         :saksnummer,
                         :fnr,
                         :arena_meldekort_status,
-                        :har_soknad_under_behandling
+                        :har_soknad_under_behandling,
+                        :microfrontend_inaktivert
                     )
                     """,
                     "id" to sak.id.toString(),
@@ -41,6 +43,7 @@ class SakPostgresRepo(
                     "fnr" to sak.fnr.verdi,
                     "arena_meldekort_status" to sak.arenaMeldekortStatus.tilDb(),
                     "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
+                    "microfrontend_inaktivert" to sak.erMicrofrontendInaktivert,
                 ).asUpdate,
             )
         }
@@ -125,6 +128,30 @@ class SakPostgresRepo(
         }
     }
 
+    override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?): List<Sak> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                                SELECT s.*
+                                FROM sak s
+                                WHERE s.id IN (
+                                    SELECT DISTINCT ON (sak_id) sak_id
+                                    FROM meldeperiode
+                                    WHERE microfrontend_inaktivert IS DISTINCT FROM TRUE
+                                      AND EXISTS (
+                                        SELECT 1
+                                        FROM jsonb_each_text(meldeperiode.gir_rett) kv(key, value)
+                                        WHERE value::boolean = true
+                                      )
+                                    ORDER BY sak_id, til_og_med DESC
+                                );
+                    """.trimIndent(),
+                ).map { row -> fromRow(row, false, session) }.asList,
+            )
+        }
+    }
+
     companion object {
         private fun fromRow(row: Row, medMeldeperioder: Boolean, session: Session): Sak {
             val sakId = SakId.fromString(row.string("id"))
@@ -139,6 +166,7 @@ class SakPostgresRepo(
                 meldeperioder = meldeperioder,
                 arenaMeldekortStatus = row.string("arena_meldekort_status").tilArenaMeldekortStatus(),
                 harSoknadUnderBehandling = row.boolean("har_soknad_under_behandling"),
+                erMicrofrontendInaktivert = row.boolean("microfrontend_inaktivert"),
             )
         }
     }

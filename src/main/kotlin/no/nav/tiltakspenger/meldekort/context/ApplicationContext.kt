@@ -13,6 +13,9 @@ import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.Profile
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
+import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClient
+import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientFake
+import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientImpl
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
@@ -20,6 +23,7 @@ import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalførMeldekortService
+import no.nav.tiltakspenger.meldekort.domene.microfrontend.InaktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.domene.varsler.InaktiverVarslerService
 import no.nav.tiltakspenger.meldekort.domene.varsler.SendVarslerService
 import no.nav.tiltakspenger.meldekort.identhendelse.IdenthendelseConsumer
@@ -61,6 +65,17 @@ open class ApplicationContext(val clock: Clock) {
                 kafkaProducer = Producer(KafkaConfigImpl()),
                 topicName = Configuration.varselHendelseTopic,
                 meldekortFrontendUrl = Configuration.meldekortFrontendUrl,
+            )
+        }
+    }
+
+    open val tmsMikrofrontendClient: TmsMikrofrontendClient by lazy {
+        if (Configuration.applicationProfile() == Profile.LOCAL) {
+            TmsMikrofrontendClientFake()
+        } else {
+            TmsMikrofrontendClientImpl(
+                kafkaProducer = Producer(KafkaConfigImpl()),
+                topicName = Configuration.microfrontendTopic,
             )
         }
     }
@@ -193,7 +208,15 @@ open class ApplicationContext(val clock: Clock) {
             sakRepo = sakRepo,
             meldeperiodeRepo = meldeperiodeRepo,
             meldekortRepo = meldekortRepo,
+            tmsMikrofrontendClient = tmsMikrofrontendClient,
             sessionFactory = sessionFactory,
+        )
+    }
+
+    open val inaktiverMicrofrontendJob: InaktiverMicrofrontendJob by lazy {
+        InaktiverMicrofrontendJob(
+            sakRepo = sakRepo,
+            tmsMikrofrontendClient = tmsMikrofrontendClient,
         )
     }
 }

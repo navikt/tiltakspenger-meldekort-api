@@ -17,6 +17,7 @@ interface SakMother {
         meldeperioder: List<Meldeperiode> = emptyList(),
         arenaMeldekortStatus: ArenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
         harSoknadUnderBehandling: Boolean = false,
+        erMicrofrontendInaktivert: Boolean = false,
     ): Sak {
         return Sak(
             id = id,
@@ -25,6 +26,7 @@ interface SakMother {
             meldeperioder = meldeperioder,
             arenaMeldekortStatus = arenaMeldekortStatus,
             harSoknadUnderBehandling = harSoknadUnderBehandling,
+            erMicrofrontendInaktivert = erMicrofrontendInaktivert,
         )
     }
 

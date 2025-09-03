@@ -10,6 +10,7 @@ val felleslibVersion = "0.0.574"
 val kotestVersion = "6.0.3"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.1.1"
+val tmsMikrofrontendSelectorBuilderVersion = "3.0.0"
 val testContainersVersion = "1.21.3"
 
 fun isNonStable(version: String): Boolean {
@@ -66,6 +67,7 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:texas:$felleslibVersion")
 
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilderVersion")
+    implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMikrofrontendSelectorBuilderVersion")
 
     // DB
     implementation("org.flywaydb:flyway-database-postgresql:11.12.0")
