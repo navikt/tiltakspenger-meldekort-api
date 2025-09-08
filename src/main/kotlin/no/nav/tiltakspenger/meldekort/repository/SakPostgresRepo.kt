@@ -4,11 +4,13 @@ import kotliquery.Row
 import kotliquery.Session
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
+import java.time.Clock
 
 class SakPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
@@ -128,25 +130,27 @@ class SakPostgresRepo(
         }
     }
 
-    override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?): List<Sak> {
+    override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?, clock: Clock): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
                     """
                                 SELECT s.*
                                 FROM sak s
-                                WHERE s.id IN (
-                                    SELECT DISTINCT ON (sak_id) sak_id
-                                    FROM meldeperiode
-                                    WHERE microfrontend_inaktivert IS DISTINCT FROM TRUE
-                                      AND EXISTS (
-                                        SELECT 1
-                                        FROM jsonb_each_text(meldeperiode.gir_rett) kv(key, value)
-                                        WHERE value::boolean = true
-                                      )
-                                    ORDER BY sak_id, til_og_med DESC
-                                );
+                                WHERE s.microfrontend_inaktivert IS FALSE
+                                  AND EXISTS (
+                                      SELECT 1
+                                      FROM meldeperiode m
+                                      WHERE m.sak_id = s.id
+                                        AND m.til_og_med <= :sixMonthsAgo
+                                        AND EXISTS (
+                                            SELECT 1
+                                            FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                            WHERE value::boolean
+                                        )
+                                  );
                     """.trimIndent(),
+                    "sixMonthsAgo" to nå(clock).minusMonths(6),
                 ).map { row -> fromRow(row, false, session) }.asList,
             )
         }

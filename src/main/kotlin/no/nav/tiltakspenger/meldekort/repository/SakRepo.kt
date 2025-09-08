@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.Sak
+import java.time.Clock
 
 interface SakRepo {
     fun lagre(
@@ -35,5 +36,5 @@ interface SakRepo {
     ): Sak?
 
     fun hentSakerUtenArenaStatus(sessionContext: SessionContext? = null): List<Sak>
-    fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext? = null): List<Sak>
+    fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext? = null, clock: Clock): List<Sak>
 }

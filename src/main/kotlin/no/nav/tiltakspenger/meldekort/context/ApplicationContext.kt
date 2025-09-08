@@ -217,6 +217,7 @@ open class ApplicationContext(val clock: Clock) {
         InaktiverMicrofrontendJob(
             sakRepo = sakRepo,
             tmsMikrofrontendClient = tmsMikrofrontendClient,
+            clock = clock,
         )
     }
 }

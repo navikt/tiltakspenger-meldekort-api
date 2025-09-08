@@ -4,16 +4,18 @@ import arrow.core.Either
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClient
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
+import java.time.Clock
 
 class InaktiverMicrofrontendJob(
     private val sakRepo: SakRepo,
     private val tmsMikrofrontendClient: TmsMikrofrontendClient,
+    private val clock: Clock,
 ) {
     private val log = KotlinLogging.logger { }
 
     fun inaktiverMicrofrontendForBrukere() {
         Either.catch {
-            val saker = sakRepo.hentSakerHvorSistePeriodeMedRettighetErLengeSiden()
+            val saker = sakRepo.hentSakerHvorSistePeriodeMedRettighetErLengeSiden(clock = clock)
             log.debug { "Fant ${saker.size} saker hvor microfrontend kan inaktiveres" }
 
             saker.forEach { sak ->

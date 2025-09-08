@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
+import java.time.Clock
 
 class SakRepoFake : SakRepo {
     private val data = Atomic(mutableMapOf<SakId, Sak>())
@@ -59,7 +60,7 @@ class SakRepoFake : SakRepo {
         return data.get().values.filter { it.arenaMeldekortStatus == ArenaMeldekortStatus.UKJENT }
     }
 
-    override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?): List<Sak> {
+    override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?, clock: Clock): List<Sak> {
         return data.get().values.filter {
             it.meldeperioder
                 .last()
