@@ -19,11 +19,9 @@ class InaktiverMicrofrontendJob(
             log.debug { "Fant ${saker.size} saker hvor microfrontend kan inaktiveres" }
 
             saker.forEach { sak ->
-                log.info { "Inaktiverer microfrontend for bruker med sakId=${sak.id}" }
-
                 Either.catch {
                     tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(sak.fnr, sak.id)
-                    sakRepo.lagre(sak.copy(erMicrofrontendInaktivert = true))
+                    sakRepo.oppdater(sak.copy(erMicrofrontendInaktivert = true))
                     log.info { "Microfrontend inaktivert for bruker med sak sakId=${sak.id}" }
                 }.onLeft {
                     log.error(it) { "Kunne ikke inaktivere microfrontend for bruker med sakId=${sak.id}, prøver igjen neste jobbkjøring" }

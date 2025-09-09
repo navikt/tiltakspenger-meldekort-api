@@ -29,15 +29,13 @@ class SakPostgresRepo(
                         saksnummer,
                         fnr,
                         arena_meldekort_status,
-                        har_soknad_under_behandling,
-                        microfrontend_inaktivert
+                        har_soknad_under_behandling
                     ) values (
                         :id,
                         :saksnummer,
                         :fnr,
                         :arena_meldekort_status,
-                        :har_soknad_under_behandling,
-                        :microfrontend_inaktivert
+                        :har_soknad_under_behandling
                     )
                     """,
                     "id" to sak.id.toString(),
@@ -45,7 +43,6 @@ class SakPostgresRepo(
                     "fnr" to sak.fnr.verdi,
                     "arena_meldekort_status" to sak.arenaMeldekortStatus.tilDb(),
                     "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
-                    "microfrontend_inaktivert" to sak.erMicrofrontendInaktivert,
                 ).asUpdate,
             )
         }
@@ -62,12 +59,14 @@ class SakPostgresRepo(
                     """
                     update sak set 
                         fnr = :fnr,
-                        har_soknad_under_behandling = :har_soknad_under_behandling
+                        har_soknad_under_behandling = :har_soknad_under_behandling,
+                        microfrontend_inaktivert = :microfrontend_inaktivert
                     where id = :id
                     """,
                     "id" to sak.id.toString(),
                     "fnr" to sak.fnr.verdi,
                     "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
+                    "microfrontend_inaktivert" to sak.erMicrofrontendInaktivert,
                 ).asUpdate,
             )
         }
@@ -125,6 +124,32 @@ class SakPostgresRepo(
                 sqlQuery(
                     "select * from sak where arena_meldekort_status = :ukjent_status",
                     "ukjent_status" to ArenaMeldekortStatus.UKJENT.tilDb(),
+                ).map { row -> fromRow(row, false, session) }.asList,
+            )
+        }
+    }
+
+    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                                SELECT s.*
+                                FROM sak s
+                                WHERE s.microfrontend_inaktivert IS FALSE
+                                  AND EXISTS (
+                                      SELECT 1
+                                      FROM meldeperiode m
+                                      WHERE m.sak_id = s.id
+                                        AND m.til_og_med > :sixMonthsAgo
+                                        AND EXISTS (
+                                            SELECT 1
+                                            FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                            WHERE value::boolean
+                                        )
+                                  );
+                    """.trimIndent(),
+                    "sixMonthsAgo" to nå(clock).minusMonths(6),
                 ).map { row -> fromRow(row, false, session) }.asList,
             )
         }

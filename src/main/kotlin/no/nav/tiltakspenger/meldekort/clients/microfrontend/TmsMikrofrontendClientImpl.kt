@@ -18,7 +18,7 @@ class TmsMikrofrontendClientImpl(
     private val log = KotlinLogging.logger { }
 
     override fun aktiverMicrofrontendForBruker(fnr: Fnr, sakId: SakId) {
-        log.info { "Aktiverer microfrontend for bruker" }
+        log.info { "Aktiverer microfrontend for bruker med sakId=$sakId" }
         val aktiverMelding = enable(
             ident = fnr.verdi,
             microfrontendId = MICROFRONTEND_APP,
@@ -30,7 +30,7 @@ class TmsMikrofrontendClientImpl(
     }
 
     override fun inaktiverMicrofrontendForBruker(fnr: Fnr, sakId: SakId) {
-        log.info { "Inaktiverer microfrontend for bruker" }
+        log.info { "Inaktiverer microfrontend for bruker med sakId=$sakId" }
         val inaktiverMelding = disable(
             ident = fnr.verdi,
             microfrontenId = MICROFRONTEND_APP,

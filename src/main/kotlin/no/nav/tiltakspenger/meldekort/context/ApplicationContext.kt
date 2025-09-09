@@ -23,6 +23,7 @@ import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalførMeldekortService
+import no.nav.tiltakspenger.meldekort.domene.microfrontend.AktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.domene.microfrontend.InaktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.domene.varsler.InaktiverVarslerService
 import no.nav.tiltakspenger.meldekort.domene.varsler.SendVarslerService
@@ -208,8 +209,15 @@ open class ApplicationContext(val clock: Clock) {
             sakRepo = sakRepo,
             meldeperiodeRepo = meldeperiodeRepo,
             meldekortRepo = meldekortRepo,
-            tmsMikrofrontendClient = tmsMikrofrontendClient,
             sessionFactory = sessionFactory,
+        )
+    }
+
+    open val aktiverMicrofrontendJob: AktiverMicrofrontendJob by lazy {
+        AktiverMicrofrontendJob(
+            sakRepo = sakRepo,
+            tmsMikrofrontendClient = tmsMikrofrontendClient,
+            clock = clock,
         )
     }
 

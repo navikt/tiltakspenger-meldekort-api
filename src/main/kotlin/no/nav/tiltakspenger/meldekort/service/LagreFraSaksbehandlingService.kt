@@ -8,7 +8,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
-import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClient
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilOppdatertMeldekort
@@ -22,7 +21,6 @@ class LagreFraSaksbehandlingService(
     private val sakRepo: SakRepo,
     private val meldeperiodeRepo: MeldeperiodeRepo,
     private val meldekortRepo: MeldekortRepo,
-    private val tmsMikrofrontendClient: TmsMikrofrontendClient,
     private val sessionFactory: SessionFactory,
 ) {
     private val logger = KotlinLogging.logger {}
@@ -92,7 +90,6 @@ class LagreFraSaksbehandlingService(
         }
 
         logger.info { "Lagret sak $sakId med ${meldeperioderForLagring.size} nye meldeperioder" }
-        tmsMikrofrontendClient.aktiverMicrofrontendForBruker(fnr = sak.fnr, sakId = sakId)
 
         return Unit.right()
     }

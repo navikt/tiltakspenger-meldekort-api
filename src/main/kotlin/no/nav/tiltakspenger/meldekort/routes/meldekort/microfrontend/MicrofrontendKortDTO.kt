@@ -4,6 +4,5 @@ import java.time.LocalDate
 
 data class MicrofrontendKortDTO(
     val antallMeldekortKlarTilInnsending: Int,
-    val nesteMuligeInnsending: LocalDate
-    ?
+    val nesteMuligeInnsending: LocalDate?,
 )

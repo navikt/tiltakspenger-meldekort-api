@@ -60,6 +60,15 @@ class SakRepoFake : SakRepo {
         return data.get().values.filter { it.arenaMeldekortStatus == ArenaMeldekortStatus.UKJENT }
     }
 
+    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+        return data.get().values.filter {
+            it.meldeperioder
+                .last()
+                .periode
+                .tilOgMed.isAfter(nå(fixedClock).minusMonths(6).toLocalDate())
+        }
+    }
+
     override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?, clock: Clock): List<Sak> {
         return data.get().values.filter {
             it.meldeperioder
