@@ -1,0 +1,2 @@
+ALTER TABLE sak
+    ADD COLUMN IF NOT EXISTS microfrontend_inaktivert BOOLEAN DEFAULT FALSE NOT NULL;
