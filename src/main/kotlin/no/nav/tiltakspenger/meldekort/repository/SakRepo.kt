@@ -18,6 +18,12 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     )
 
+    fun oppdaterErMicrofrontendInaktivert(
+        sakId: SakId,
+        erMicrofrontendInaktivert: Boolean,
+        sessionContext: SessionContext? = null,
+    )
+
     fun oppdaterArenaStatus(
         id: SakId,
         arenaStatus: ArenaMeldekortStatus,

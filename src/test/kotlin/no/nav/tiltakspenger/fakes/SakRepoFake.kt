@@ -32,6 +32,12 @@ class SakRepoFake : SakRepo {
         )
     }
 
+    override fun oppdaterErMicrofrontendInaktivert(sakId: SakId, erMicrofrontendInaktivert: Boolean, sessionContext: SessionContext?) {
+        data.get()[sakId] = data.get()[sakId]!!.copy(
+            erMicrofrontendInaktivert = erMicrofrontendInaktivert,
+        )
+    }
+
     override fun oppdaterArenaStatus(
         id: SakId,
         arenaStatus: ArenaMeldekortStatus,

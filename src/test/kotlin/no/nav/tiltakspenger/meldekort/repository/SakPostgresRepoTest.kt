@@ -115,4 +115,22 @@ class SakPostgresRepoTest {
             }
         }
     }
+
+    @Nested
+    inner class OppdaterErMicrofrontendInaktivert {
+        @Test
+        fun `kan oppdaterere og hente ut`() {
+            withMigratedDb { helper ->
+                val repo = helper.sakPostgresRepo
+                val sak = ObjectMother.sak()
+                lagreSak(helper, sak)
+
+                repo.oppdaterErMicrofrontendInaktivert(sakId = sak.id, erMicrofrontendInaktivert = true)
+                assertEquals(true, repo.hent(sak.id)?.erMicrofrontendInaktivert, "erMicrofrontendInaktivert")
+
+                repo.oppdaterErMicrofrontendInaktivert(sakId = sak.id, erMicrofrontendInaktivert = false)
+                assertEquals(false, repo.hent(sak.id)?.erMicrofrontendInaktivert, "erMicrofrontendInaktivert")
+            }
+        }
+    }
 }

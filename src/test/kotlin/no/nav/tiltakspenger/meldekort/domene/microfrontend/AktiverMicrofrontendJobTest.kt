@@ -36,7 +36,7 @@ class AktiverMicrofrontendJobTest {
         service.aktiverMicrofrontendForBrukere()
 
         verify { tmsMikrofrontendClient.aktiverMicrofrontendForBruker(sak.fnr, sak.id) }
-        verify { sakRepo.oppdater(sak.copy(erMicrofrontendInaktivert = false)) }
+        verify { sakRepo.oppdaterErMicrofrontendInaktivert(sakId = sak.id, erMicrofrontendInaktivert = false) }
     }
 
     @Test
@@ -50,7 +50,7 @@ class AktiverMicrofrontendJobTest {
         service.aktiverMicrofrontendForBrukere()
 
         verify { tmsMikrofrontendClient.aktiverMicrofrontendForBruker(sak.fnr, sak.id) }
-        verify { sakRepo.oppdater(sak.copy(erMicrofrontendInaktivert = false)) }
+        verify { sakRepo.oppdaterErMicrofrontendInaktivert(sakId = sak.id, erMicrofrontendInaktivert = false) }
     }
 
     @Test
@@ -66,6 +66,6 @@ class AktiverMicrofrontendJobTest {
         service.aktiverMicrofrontendForBrukere()
 
         verify { tmsMikrofrontendClient.aktiverMicrofrontendForBruker(sak1.fnr, sak1.id) }
-        verify(exactly = 1) { sakRepo.oppdater(sak2.copy(erMicrofrontendInaktivert = false)) }
+        verify(exactly = 1) { sakRepo.oppdaterErMicrofrontendInaktivert(sakId = sak2.id, erMicrofrontendInaktivert = false) }
     }
 }

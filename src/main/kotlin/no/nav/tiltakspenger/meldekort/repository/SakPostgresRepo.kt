@@ -72,6 +72,26 @@ class SakPostgresRepo(
         }
     }
 
+    override fun oppdaterErMicrofrontendInaktivert(
+        sakId: SakId,
+        erMicrofrontendInaktivert: Boolean,
+        sessionContext: SessionContext?,
+    ) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update sak set 
+                        microfrontend_inaktivert = :microfrontend_inaktivert
+                    where id = :id
+                    """,
+                    "id" to sakId.toString(),
+                    "microfrontend_inaktivert" to erMicrofrontendInaktivert,
+                ).asUpdate,
+            )
+        }
+    }
+
     override fun oppdaterArenaStatus(
         id: SakId,
         arenaStatus: ArenaMeldekortStatus,
