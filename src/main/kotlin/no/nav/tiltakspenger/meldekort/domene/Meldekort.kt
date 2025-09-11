@@ -44,7 +44,10 @@ data class Meldekort(
         else -> MeldekortStatus.IKKE_KLAR
     }
 
-    /** Om den er klar til innsending nå.*/
+    /**
+     * Om den er klar til innsending nå.
+     * OBS! Denne dupliserer logikken som finnes for [no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo.hentAlleMeldekortKlarTilInnsending]. Om den ene endres så burde begge endres
+     */
     val klarTilInnsending: Boolean by lazy { status == MeldekortStatus.KAN_UTFYLLES }
 
     /** Hvilken dag de er klar til innsending eller null dersom den aldri kan sendes inn. */

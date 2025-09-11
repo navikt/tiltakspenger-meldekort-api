@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
@@ -9,6 +10,7 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.Meldekort.Companion.DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -16,8 +18,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.TemporalAdjusters
 
 class MeldekortPostgresRepoTest {
     private fun lagreMeldekort(helper: TestDataHelper, vararg meldekort: Meldekort) {
@@ -483,6 +487,61 @@ class MeldekortPostgresRepoTest {
                 result[0].varselId shouldBe VarselId("varsel1")
                 result[1].varselId shouldBe VarselId("varsel2")
             }
+        }
+    }
+
+    @Nested
+    inner class HentAlleMeldekortBrukerKanFylleUt {
+        @Test
+        fun `henter alle meldekort bruker kan fylle ut`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val fnr = Fnr.random()
+                val nærmesteSøndag = LocalDate.now()
+                    .plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+                    .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+
+                val nærmesteMeldekort = lagMeldekort(fnr, nærmesteSøndag)
+                val forrigeForrigeMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(4))
+                val forrigeMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(2))
+                val nesteMeldekort = lagMeldekort(fnr, nærmesteSøndag.plusWeeks(2))
+                val innsendtMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(2), mottatt = LocalDateTime.now())
+                val annenBrukersMeldekort = lagMeldekort(Fnr.random(), nærmesteSøndag)
+
+                lagreMeldekort(helper, nærmesteMeldekort, forrigeForrigeMeldekort, forrigeMeldekort, nesteMeldekort, innsendtMeldekort, annenBrukersMeldekort)
+
+                // Sjekk før uthenting fra repo at klarTilInnsending er som forventet ettersom logikken er duplisert i repo og domene
+                nærmesteMeldekort.klarTilInnsending shouldBe true
+                forrigeForrigeMeldekort.klarTilInnsending shouldBe true
+                forrigeMeldekort.klarTilInnsending shouldBe true
+                nesteMeldekort.klarTilInnsending shouldBe false
+                innsendtMeldekort.klarTilInnsending shouldBe false
+
+                val resultat = repo.hentAlleMeldekortKlarTilInnsending(fnr)
+
+                resultat.size shouldBe 3
+                resultat.map { it.periode.tilOgMed } shouldContainExactlyInAnyOrder listOf(
+                    nærmesteMeldekort.periode.tilOgMed,
+                    forrigeForrigeMeldekort.periode.tilOgMed,
+                    forrigeMeldekort.periode.tilOgMed,
+                )
+                resultat.forEach {
+                    it.status shouldBe MeldekortStatus.KAN_UTFYLLES
+                    it.klarTilInnsending shouldBe true
+                }
+            }
+        }
+
+        private fun lagMeldekort(
+            fnr: Fnr,
+            søndag: LocalDate,
+            mottatt: LocalDateTime? = null,
+        ): Meldekort {
+            return ObjectMother.meldekort(
+                fnr = fnr,
+                periode = ObjectMother.periode(tilSisteSøndagEtter = søndag),
+                mottatt = mottatt,
+            )
         }
     }
 }

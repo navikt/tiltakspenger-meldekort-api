@@ -116,10 +116,9 @@ class MeldekortRepoFake(
             ?.value
     }
 
-    override fun hentAlleMeldekortForBruker(fnr: Fnr, sessionContext: SessionContext?): MeldekortForKjede {
+    override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
         return data.get()
             .values
             .toList()
-            .let { MeldekortForKjede(it) }
     }
 }

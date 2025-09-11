@@ -15,7 +15,7 @@ class InaktiverMicrofrontendJob(
 
     fun inaktiverMicrofrontendForBrukere() {
         Either.catch {
-            val saker = sakRepo.hentSakerHvorSistePeriodeMedRettighetErLengeSiden(clock = clock)
+            val saker = sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = clock)
             log.debug { "Fant ${saker.size} saker hvor microfrontend kan inaktiveres" }
 
             saker.forEach { sak ->

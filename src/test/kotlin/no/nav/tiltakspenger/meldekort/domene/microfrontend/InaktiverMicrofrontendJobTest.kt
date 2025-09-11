@@ -30,7 +30,7 @@ class InaktiverMicrofrontendJobTest {
         val periode = ObjectMother.periode(fraSisteMandagFør = seksMånederBakover)
         val sak = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
 
-        every { sakRepo.hentSakerHvorSistePeriodeMedRettighetErLengeSiden(clock = fixedClock) } returns listOf(sak)
+        every { sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock) } returns listOf(sak)
         justRun { tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(sak.fnr, sak.id) }
 
         service.inaktiverMicrofrontendForBrukere()
@@ -45,7 +45,7 @@ class InaktiverMicrofrontendJobTest {
         val sak1 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
         val sak2 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
 
-        every { sakRepo.hentSakerHvorSistePeriodeMedRettighetErLengeSiden(clock = fixedClock) } returns listOf(sak1, sak2)
+        every { sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock) } returns listOf(sak1, sak2)
         every { tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(sak1.fnr, sak1.id) } throws RuntimeException("Feil")
         justRun { tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(sak2.fnr, sak2.id) }
 

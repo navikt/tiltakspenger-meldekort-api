@@ -75,7 +75,7 @@ class SakRepoFake : SakRepo {
         }
     }
 
-    override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
         return data.get().values.filter {
             it.meldeperioder
                 .last()

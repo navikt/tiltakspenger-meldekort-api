@@ -175,7 +175,7 @@ class SakPostgresRepo(
         }
     }
 
-    override fun hentSakerHvorSistePeriodeMedRettighetErLengeSiden(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(

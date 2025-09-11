@@ -69,7 +69,7 @@ class SakPostgresRepoTest {
     }
 
     @Nested
-    inner class HentSakerHvorSistePeriodeMedRettighetErLengeSiden {
+    inner class HentSakferHvorMicrofrontendSkalInaktiveres {
         @Test
         fun `saker med meldeperiode til og med 6 måneder siden blir returnert`() {
             withMigratedDb { helper ->
@@ -78,7 +78,7 @@ class SakPostgresRepoTest {
                 val nySak = ObjectMother.sak(fnr = Fnr.random())
                 lagreSak(helper, gammelSak, nySak)
 
-                val saker = repo.hentSakerHvorSistePeriodeMedRettighetErLengeSiden(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
                 assertEquals(1, saker.size, "Antall saker")
                 assertEquals(gammelSak.id, saker[0].id, "Sak")
@@ -93,7 +93,7 @@ class SakPostgresRepoTest {
                 val nySak = ObjectMother.sak(fnr = Fnr.random())
                 lagreSak(helper, gammelSak, nySak)
 
-                val saker = repo.hentSakerHvorSistePeriodeMedRettighetErLengeSiden(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
                 assertEquals(0, saker.size, "Antall saker")
             }
@@ -108,7 +108,7 @@ class SakPostgresRepoTest {
                 val nySak = ObjectMother.sak(fnr = Fnr.random())
                 lagreSak(helper, gammelSak, nySak)
 
-                val saker = repo.hentSakerHvorSistePeriodeMedRettighetErLengeSiden(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
                 assertEquals(1, saker.size, "Antall saker")
                 assertEquals(gammelSak.id, saker[0].id, "Sak")

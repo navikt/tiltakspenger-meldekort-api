@@ -9,7 +9,6 @@ import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
-import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import java.time.Clock
@@ -122,17 +121,11 @@ class MeldekortService(
         return meldekortRepo.hentMeldekortForKjedeId(kjedeId, fnr)
     }
 
-    fun hentInformasjonOmMeldekortForMicrofrontend(fnr: Fnr): Pair<Int, LocalDate> {
-        val brukersMeldekort = meldekortRepo.hentAlleMeldekortForBruker(fnr)
+    fun hentInformasjonOmMeldekortForMicrofrontend(fnr: Fnr): Pair<Int, LocalDate?> {
+        val meldekortKlarForInnsending = meldekortRepo.hentAlleMeldekortKlarTilInnsending(fnr)
+        val antallMeldekortKlarTilInnsending = meldekortKlarForInnsending.size
+        val nesteMuligeInnsending = meldekortKlarForInnsending.minByOrNull { it.periode.tilOgMed }?.klarTilInnsendingDag
 
-        val antallMeldekortBrukerKanfylleut = brukersMeldekort.count { it.klarTilInnsending }
-
-        val nesteMuligeInnsending = brukersMeldekort
-            .sortedBy { it.meldeperiode.periode.fraOgMed }
-            .first { it.status == MeldekortStatus.IKKE_KLAR }
-            // Siden vi filtrerer på IKKE_KLAR så er klarTilInnsendingDag aldri null her
-            .klarTilInnsendingDag!!
-
-        return Pair(antallMeldekortBrukerKanfylleut, nesteMuligeInnsending)
+        return Pair(antallMeldekortKlarTilInnsending, nesteMuligeInnsending)
     }
 }
