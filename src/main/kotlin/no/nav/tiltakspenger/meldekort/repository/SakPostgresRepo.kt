@@ -154,20 +154,30 @@ class SakPostgresRepo(
             session.run(
                 sqlQuery(
                     """
-                                SELECT s.*
-                                FROM sak s
-                                WHERE s.microfrontend_inaktivert IS FALSE
-                                  AND EXISTS (
-                                      SELECT 1
-                                      FROM meldeperiode m
-                                      WHERE m.sak_id = s.id
-                                        AND m.til_og_med > :sixMonthsAgo
-                                        AND EXISTS (
-                                            SELECT 1
-                                            FROM jsonb_each_text(m.gir_rett) kv(key, value)
-                                            WHERE value::boolean
-                                        )
-                                  );
+                        SELECT s.*
+                        FROM sak s
+                        WHERE s.microfrontend_inaktivert IS FALSE
+                          AND EXISTS (
+                              SELECT 1
+                              FROM meldeperiode m
+                              WHERE m.sak_id = s.id
+                                AND m.til_og_med > :sixMonthsAgo
+                                AND EXISTS (
+                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                    WHERE value::boolean
+                                )
+                          )
+                          -- For å unngå at flagget endres frem og tilbake må vi også sjekke det negative tilfellet
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM meldeperiode m
+                              WHERE m.sak_id = s.id
+                                AND m.til_og_med <= :sixMonthsAgo
+                                AND EXISTS (
+                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                    WHERE value::boolean
+                                )
+                          );
                     """.trimIndent(),
                     "sixMonthsAgo" to nå(clock).minusMonths(6),
                 ).map { row -> fromRow(row, false, session) }.asList,
@@ -180,20 +190,30 @@ class SakPostgresRepo(
             session.run(
                 sqlQuery(
                     """
-                                SELECT s.*
-                                FROM sak s
-                                WHERE s.microfrontend_inaktivert IS FALSE
-                                  AND EXISTS (
-                                      SELECT 1
-                                      FROM meldeperiode m
-                                      WHERE m.sak_id = s.id
-                                        AND m.til_og_med <= :sixMonthsAgo
-                                        AND EXISTS (
-                                            SELECT 1
-                                            FROM jsonb_each_text(m.gir_rett) kv(key, value)
-                                            WHERE value::boolean
-                                        )
-                                  );
+                        SELECT s.*
+                        FROM sak s
+                        WHERE s.microfrontend_inaktivert IS FALSE
+                          AND EXISTS (
+                              SELECT 1
+                              FROM meldeperiode m
+                              WHERE m.sak_id = s.id
+                                AND m.til_og_med <= :sixMonthsAgo
+                                AND EXISTS (
+                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                    WHERE value::boolean
+                                )
+                          )
+                          -- For å unngå at flagget endres frem og tilbake må vi også sjekke det negative tilfellet
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM meldeperiode m
+                              WHERE m.sak_id = s.id
+                                AND m.til_og_med > :sixMonthsAgo
+                                AND EXISTS (
+                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                    WHERE value::boolean
+                                )
+                          );
                     """.trimIndent(),
                     "sixMonthsAgo" to nå(clock).minusMonths(6),
                 ).map { row -> fromRow(row, false, session) }.asList,
