@@ -43,7 +43,7 @@ class TmsVarselClientImpl(
             this.type = Varseltype.Oppgave
             this.varselId = varselId.toString()
             this.ident = meldekort.fnr.verdi
-            this.sensitivitet = Sensitivitet.Substantial
+            this.sensitivitet = Sensitivitet.High
             this.link = meldekortFrontendUrl
             this.eksternVarsling {
                 preferertKanal = EksternKanal.SMS

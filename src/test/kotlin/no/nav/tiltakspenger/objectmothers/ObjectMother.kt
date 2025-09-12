@@ -11,7 +11,16 @@ object ObjectMother :
     MeldekortMother,
     MeldeperiodeMother,
     SakMother {
-    fun periode(fraSisteMandagFør: LocalDate = nå(fixedClock).toLocalDate()): Periode {
+    /**
+     * Lager en periode basert på siste mandag før [fraSisteMandagFør] eller eventuelt siste søndag etter [tilSisteSøndagEtter].
+     */
+    fun periode(fraSisteMandagFør: LocalDate = nå(fixedClock).toLocalDate(), tilSisteSøndagEtter: LocalDate? = null): Periode {
+        if (tilSisteSøndagEtter != null) {
+            return tilSisteSøndagEtter.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).let { søndag ->
+                Periode(søndag.minusDays(13), søndag)
+            }
+        }
+
         return fraSisteMandagFør.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).let { mandag ->
             Periode(mandag, mandag.plusDays(13))
         }

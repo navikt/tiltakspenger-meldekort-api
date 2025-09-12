@@ -17,6 +17,7 @@ data class Sak(
 ) {
 
     fun erLik(otherSak: Sak): Boolean {
+        // Enkelte felter er ikke relevante for å avgjøre om to saker er like, dermed kopierer vi disse feltene før sammenligningen
         return this.copy(
             arenaMeldekortStatus = otherSak.arenaMeldekortStatus,
         ) == otherSak

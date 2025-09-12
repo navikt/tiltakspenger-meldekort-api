@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFacto
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo
 import java.time.Clock
 import javax.sql.DataSource
 
@@ -18,6 +19,7 @@ class TestDataHelper(
     val sessionFactory = PostgresSessionFactory(dataSource, sessionCounter)
     val meldeperiodeRepo = MeldeperiodePostgresRepo(sessionFactory)
     val meldekortPostgresRepo = MeldekortPostgresRepo(sessionFactory, clock)
+    val sakPostgresRepo = SakPostgresRepo(sessionFactory)
 }
 
 /**

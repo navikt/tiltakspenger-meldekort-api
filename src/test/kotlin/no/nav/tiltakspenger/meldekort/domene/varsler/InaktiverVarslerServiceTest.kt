@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.domene.varsler
 
 import io.mockk.clearAllMocks
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
@@ -13,9 +14,8 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class InaktiverVarslerServiceTest {
-
     private val meldekortRepo = mockk<MeldekortRepo>(relaxed = true)
-    private val tmsVarselClient = mockk<TmsVarselClient>(relaxed = true)
+    private val tmsVarselClient = mockk<TmsVarselClient>()
     private val service = InaktiverVarslerService(meldekortRepo, tmsVarselClient)
 
     @BeforeEach
@@ -29,37 +29,29 @@ class InaktiverVarslerServiceTest {
         val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
 
         every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort)
+        justRun { tmsVarselClient.inaktiverVarsel(varselId) }
 
         service.inaktiverVarslerForMottatteMeldekort()
 
         verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify { meldekortRepo.lagre(meldekort.copy(erVarselInaktivert = true)) }
+        verify(exactly = 1) { meldekortRepo.lagre(meldekort.copy(erVarselInaktivert = true)) }
     }
 
     @Test
-    fun `slutter ikke å forsøke inaktivering av varsling om det oppstår feil ved inaktivering av varsel`() {
-        val varselId = VarselId("varsel1")
-        val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
+    fun `slutter ikke å forsøke inaktivering selv om exception kastes ved en av inaktiveringene`() {
+        val varselId1 = VarselId("varsel1")
+        val varselId2 = VarselId("varsel2")
+        val meldekort1 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId1)
+        val meldekort2 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId2)
 
-        every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort)
-
-        service.inaktiverVarslerForMottatteMeldekort()
-
-        verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify(exactly = 1) { meldekortRepo.lagre(meldekort.copy(erVarselInaktivert = true), any()) }
-    }
-
-    @Test
-    fun `slutter ikke å forsøke inaktivering av varsling dersom exception kastes ved inaktivering av varsel`() {
-        val varselId = VarselId("varsel1")
-        val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
-
-        every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort)
-        every { tmsVarselClient.inaktiverVarsel(varselId) } throws RuntimeException("Feil")
+        every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort1, meldekort2)
+        every { tmsVarselClient.inaktiverVarsel(varselId1) } throws RuntimeException("Feil")
+        justRun { tmsVarselClient.inaktiverVarsel(varselId2) }
 
         service.inaktiverVarslerForMottatteMeldekort()
 
-        verify { tmsVarselClient.inaktiverVarsel(varselId) }
-        verify(exactly = 0) { meldekortRepo.lagre(any()) }
+        verify { tmsVarselClient.inaktiverVarsel(varselId1) }
+        verify { tmsVarselClient.inaktiverVarsel(varselId2) }
+        verify(exactly = 1) { meldekortRepo.lagre(any()) }
     }
 }

@@ -12,6 +12,7 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import java.time.Clock
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MeldekortService(
@@ -118,5 +119,13 @@ class MeldekortService(
 
     fun hentMeldekortForKjede(kjedeId: MeldeperiodeKjedeId, fnr: Fnr): MeldekortForKjede {
         return meldekortRepo.hentMeldekortForKjedeId(kjedeId, fnr)
+    }
+
+    fun hentInformasjonOmMeldekortForMicrofrontend(fnr: Fnr): Pair<Int, LocalDate?> {
+        val meldekortKlarForInnsending = meldekortRepo.hentAlleMeldekortKlarTilInnsending(fnr)
+        val antallMeldekortKlarTilInnsending = meldekortKlarForInnsending.size
+        val nesteMuligeInnsending = meldekortKlarForInnsending.minByOrNull { it.periode.tilOgMed }?.klarTilInnsendingDag
+
+        return Pair(antallMeldekortKlarTilInnsending, nesteMuligeInnsending)
     }
 }

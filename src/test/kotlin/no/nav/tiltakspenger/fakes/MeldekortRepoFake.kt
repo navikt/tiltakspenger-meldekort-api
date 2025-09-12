@@ -115,4 +115,10 @@ class MeldekortRepoFake(
             .maxByOrNull { it.value.meldeperiode.versjon }
             ?.value
     }
+
+    override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
+        return data.get()
+            .values
+            .toList()
+    }
 }
