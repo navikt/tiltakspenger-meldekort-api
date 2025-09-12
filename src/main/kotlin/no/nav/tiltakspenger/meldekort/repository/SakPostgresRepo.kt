@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.domene.MicrofrontendStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
 import java.time.Clock
 
@@ -59,22 +60,20 @@ class SakPostgresRepo(
                     """
                     update sak set 
                         fnr = :fnr,
-                        har_soknad_under_behandling = :har_soknad_under_behandling,
-                        microfrontend_inaktivert = :microfrontend_inaktivert
+                        har_soknad_under_behandling = :har_soknad_under_behandling
                     where id = :id
                     """,
                     "id" to sak.id.toString(),
                     "fnr" to sak.fnr.verdi,
                     "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
-                    "microfrontend_inaktivert" to sak.erMicrofrontendInaktivert,
                 ).asUpdate,
             )
         }
     }
 
-    override fun oppdaterErMicrofrontendInaktivert(
+    override fun oppdaterStatusForMicrofrontend(
         sakId: SakId,
-        erMicrofrontendInaktivert: Boolean,
+        aktiv: Boolean,
         sessionContext: SessionContext?,
     ) {
         sessionFactory.withSession(sessionContext) { session ->
@@ -82,11 +81,11 @@ class SakPostgresRepo(
                 sqlQuery(
                     """
                     update sak set 
-                        microfrontend_inaktivert = :microfrontend_inaktivert
+                        microfrontend_status = :microfrontend_status
                     where id = :id
                     """,
                     "id" to sakId.toString(),
-                    "microfrontend_inaktivert" to erMicrofrontendInaktivert,
+                    "microfrontend_status" to if (aktiv) MicrofrontendStatus.AKTIV.toString() else MicrofrontendStatus.INAKTIV.toString(),
                 ).asUpdate,
             )
         }
@@ -156,7 +155,7 @@ class SakPostgresRepo(
                     """
                         SELECT s.*
                         FROM sak s
-                        WHERE s.microfrontend_inaktivert IS FALSE
+                        WHERE s.microfrontend_status <> :aktivStatus
                           AND EXISTS (
                               SELECT 1
                               FROM meldeperiode m
@@ -167,7 +166,6 @@ class SakPostgresRepo(
                                     WHERE value::boolean
                                 )
                           )
-                          -- For å unngå at flagget endres frem og tilbake må vi også sjekke det negative tilfellet
                           AND NOT EXISTS (
                               SELECT 1
                               FROM meldeperiode m
@@ -180,6 +178,7 @@ class SakPostgresRepo(
                           );
                     """.trimIndent(),
                     "sixMonthsAgo" to nå(clock).minusMonths(6),
+                    "aktivStatus" to MicrofrontendStatus.AKTIV.toString(),
                 ).map { row -> fromRow(row, false, session) }.asList,
             )
         }
@@ -192,7 +191,7 @@ class SakPostgresRepo(
                     """
                         SELECT s.*
                         FROM sak s
-                        WHERE s.microfrontend_inaktivert IS FALSE
+                        WHERE s.microfrontend_status <> :inaktivStatus
                           AND EXISTS (
                               SELECT 1
                               FROM meldeperiode m
@@ -203,7 +202,6 @@ class SakPostgresRepo(
                                     WHERE value::boolean
                                 )
                           )
-                          -- For å unngå at flagget endres frem og tilbake må vi også sjekke det negative tilfellet
                           AND NOT EXISTS (
                               SELECT 1
                               FROM meldeperiode m
@@ -216,6 +214,7 @@ class SakPostgresRepo(
                           );
                     """.trimIndent(),
                     "sixMonthsAgo" to nå(clock).minusMonths(6),
+                    "inaktivStatus" to MicrofrontendStatus.INAKTIV.toString(),
                 ).map { row -> fromRow(row, false, session) }.asList,
             )
         }
@@ -235,7 +234,6 @@ class SakPostgresRepo(
                 meldeperioder = meldeperioder,
                 arenaMeldekortStatus = row.string("arena_meldekort_status").tilArenaMeldekortStatus(),
                 harSoknadUnderBehandling = row.boolean("har_soknad_under_behandling"),
-                erMicrofrontendInaktivert = row.boolean("microfrontend_inaktivert"),
             )
         }
     }

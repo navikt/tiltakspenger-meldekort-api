@@ -32,10 +32,8 @@ class SakRepoFake : SakRepo {
         )
     }
 
-    override fun oppdaterErMicrofrontendInaktivert(sakId: SakId, erMicrofrontendInaktivert: Boolean, sessionContext: SessionContext?) {
-        data.get()[sakId] = data.get()[sakId]!!.copy(
-            erMicrofrontendInaktivert = erMicrofrontendInaktivert,
-        )
+    override fun oppdaterStatusForMicrofrontend(sakId: SakId, aktiv: Boolean, sessionContext: SessionContext?) {
+        // Ingen operasjon i kode ettersom det bare er et db-flagg
     }
 
     override fun oppdaterArenaStatus(

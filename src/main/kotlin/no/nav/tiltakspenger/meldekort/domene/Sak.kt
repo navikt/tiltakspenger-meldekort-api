@@ -14,14 +14,12 @@ data class Sak(
     val meldeperioder: List<Meldeperiode>,
     val arenaMeldekortStatus: ArenaMeldekortStatus,
     val harSoknadUnderBehandling: Boolean,
-    val erMicrofrontendInaktivert: Boolean,
 ) {
 
     fun erLik(otherSak: Sak): Boolean {
         // Enkelte felter er ikke relevante for å avgjøre om to saker er like, dermed kopierer vi disse feltene før sammenligningen
         return this.copy(
             arenaMeldekortStatus = otherSak.arenaMeldekortStatus,
-            erMicrofrontendInaktivert = otherSak.erMicrofrontendInaktivert,
         ) == otherSak
     }
 
@@ -69,6 +67,5 @@ fun SakTilMeldekortApiDTO.tilSak(): Sak {
         meldeperioder = meldeperioder,
         arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
         harSoknadUnderBehandling = harSoknadUnderBehandling,
-        erMicrofrontendInaktivert = false,
     )
 }

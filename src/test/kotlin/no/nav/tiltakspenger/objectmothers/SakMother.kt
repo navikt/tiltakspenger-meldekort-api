@@ -26,7 +26,6 @@ interface SakMother {
             meldeperioder = meldeperioder,
             arenaMeldekortStatus = arenaMeldekortStatus,
             harSoknadUnderBehandling = harSoknadUnderBehandling,
-            erMicrofrontendInaktivert = erMicrofrontendInaktivert,
         )
     }
 

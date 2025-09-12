@@ -18,9 +18,9 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     )
 
-    fun oppdaterErMicrofrontendInaktivert(
+    fun oppdaterStatusForMicrofrontend(
         sakId: SakId,
-        erMicrofrontendInaktivert: Boolean,
+        aktiv: Boolean,
         sessionContext: SessionContext? = null,
     )
 

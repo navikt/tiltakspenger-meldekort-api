@@ -21,7 +21,7 @@ class AktiverMicrofrontendJob(
             saker.forEach { sak ->
                 Either.catch {
                     tmsMikrofrontendClient.aktiverMicrofrontendForBruker(sak.fnr, sak.id)
-                    sakRepo.oppdaterErMicrofrontendInaktivert(sakId = sak.id, erMicrofrontendInaktivert = false)
+                    sakRepo.oppdaterStatusForMicrofrontend(sakId = sak.id, aktiv = true)
                     log.info { "Microfrontend aktivert for bruker med sak sakId=${sak.id}" }
                 }.onLeft {
                     log.error(it) { "Kunne ikke aktivere microfrontend for bruker med sakId=${sak.id}, prøver igjen neste jobbkjøring" }
