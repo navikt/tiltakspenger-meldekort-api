@@ -160,7 +160,7 @@ class SakPostgresRepo(
                               SELECT 1
                               FROM meldeperiode m
                               WHERE m.sak_id = s.id
-                                AND m.til_og_med > :sixMonthsAgo
+                                AND m.til_og_med > :offset
                                 AND EXISTS (
                                     SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
                                     WHERE value::boolean
@@ -170,14 +170,14 @@ class SakPostgresRepo(
                               SELECT 1
                               FROM meldeperiode m
                               WHERE m.sak_id = s.id
-                                AND m.til_og_med <= :sixMonthsAgo
+                                AND m.til_og_med <= :offset
                                 AND EXISTS (
                                     SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
                                     WHERE value::boolean
                                 )
                           );
                     """.trimIndent(),
-                    "sixMonthsAgo" to nå(clock).minusMonths(6),
+                    "offset" to nå(clock).minusMonths(1),
                     "aktivStatus" to MicrofrontendStatus.AKTIV.toString(),
                 ).map { row -> fromRow(row, false, session) }.asList,
             )
@@ -196,7 +196,7 @@ class SakPostgresRepo(
                               SELECT 1
                               FROM meldeperiode m
                               WHERE m.sak_id = s.id
-                                AND m.til_og_med <= :sixMonthsAgo
+                                AND m.til_og_med <= :offset
                                 AND EXISTS (
                                     SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
                                     WHERE value::boolean
@@ -206,14 +206,14 @@ class SakPostgresRepo(
                               SELECT 1
                               FROM meldeperiode m
                               WHERE m.sak_id = s.id
-                                AND m.til_og_med > :sixMonthsAgo
+                                AND m.til_og_med > :offset
                                 AND EXISTS (
                                     SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
                                     WHERE value::boolean
                                 )
                           );
                     """.trimIndent(),
-                    "sixMonthsAgo" to nå(clock).minusMonths(6),
+                    "offset" to nå(clock).minusMonths(1),
                     "inaktivStatus" to MicrofrontendStatus.INAKTIV.toString(),
                 ).map { row -> fromRow(row, false, session) }.asList,
             )

@@ -15,7 +15,7 @@ import java.time.LocalDate
 import kotlin.test.assertEquals
 
 class SakPostgresRepoTest {
-    private val seksMånederBakover = nå(fixedClock).toLocalDate().minusMonths(6)
+    private val offset = nå(fixedClock).toLocalDate().minusMonths(1)
     private fun lagreSak(helper: TestDataHelper, vararg saker: Sak) {
         saker.forEach {
             it.meldeperioder.forEach { mp -> helper.meldeperiodeRepo.lagre(mp) }
@@ -38,11 +38,11 @@ class SakPostgresRepoTest {
     @Nested
     inner class HentSakerHvorMicrofrontendSkalAktiveres {
         @Test
-        fun `saker med meldeperiode innenfor siste 6 måneder returneres`() {
+        fun `saker med meldeperiode innenfor offset returneres`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val sakMedMeldeperiodeInnenfor6Måneder = lagSakMedMeldeperiode(tilSisteSøndagEtter = seksMånederBakover.plusDays(14)) // Garanterer at perioden innenfor 6 måneder med siste søndag 14 dager før.
-                val sakMedMeldeperiodeSeksMånederBakover = lagSakMedMeldeperiode(tilSisteSøndagEtter = seksMånederBakover)
+                val sakMedMeldeperiodeInnenfor6Måneder = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset.plusDays(14)) // Garanterer at perioden innenfor offset med siste søndag 14 dager før.
+                val sakMedMeldeperiodeSeksMånederBakover = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset)
                 lagreSak(helper, sakMedMeldeperiodeInnenfor6Måneder, sakMedMeldeperiodeSeksMånederBakover)
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
@@ -56,7 +56,7 @@ class SakPostgresRepoTest {
         fun `saker med meldeperiode nær dagens dato`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val sakMeldeperiodeSeksmånederBakover = lagSakMedMeldeperiode(tilSisteSøndagEtter = seksMånederBakover)
+                val sakMeldeperiodeSeksmånederBakover = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset)
                 val sakMeldeperiodeNylig = lagSakMedMeldeperiode(tilSisteSøndagEtter = nå(fixedClock).toLocalDate())
                 lagreSak(helper, sakMeldeperiodeNylig, sakMeldeperiodeSeksmånederBakover)
 
@@ -69,12 +69,12 @@ class SakPostgresRepoTest {
     }
 
     @Nested
-    inner class HentSakferHvorMicrofrontendSkalInaktiveres {
+    inner class HentSakerHvorMicrofrontendSkalInaktiveres {
         @Test
-        fun `saker med meldeperiode til og med 6 måneder siden blir returnert`() {
+        fun `saker med meldeperiode til og med offset antall måneder siden blir returnert`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = seksMånederBakover)
+                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset)
                 val nySak = ObjectMother.sak(fnr = Fnr.random())
                 lagreSak(helper, gammelSak, nySak)
 
@@ -86,10 +86,10 @@ class SakPostgresRepoTest {
         }
 
         @Test
-        fun `saker med meldeperiode mindre enn 6 måneder siden blir ikke returnert`() {
+        fun `saker med meldeperiode mindre enn offset antall måneder siden blir ikke returnert`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = seksMånederBakover.plusMonths(1))
+                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset.plusMonths(1))
                 val nySak = ObjectMother.sak(fnr = Fnr.random())
                 lagreSak(helper, gammelSak, nySak)
 
@@ -100,11 +100,11 @@ class SakPostgresRepoTest {
         }
 
         @Test
-        fun `saker med meldeperiode mer enn 6 måneder siden blir returnert`() {
+        fun `saker med meldeperiode mer enn offset antall måneder siden blir returnert`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
 
-                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = seksMånederBakover.minusMonths(1))
+                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset.minusMonths(1))
                 val nySak = ObjectMother.sak(fnr = Fnr.random())
                 lagreSak(helper, gammelSak, nySak)
 

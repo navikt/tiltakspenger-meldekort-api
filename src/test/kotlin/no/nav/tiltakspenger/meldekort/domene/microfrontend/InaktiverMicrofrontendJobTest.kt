@@ -23,11 +23,11 @@ class InaktiverMicrofrontendJobTest {
         clearAllMocks()
     }
 
-    private val seksMånederBakover = nå(fixedClock).toLocalDate().minusMonths(6)
+    private val offset = nå(fixedClock).toLocalDate().minusMonths(1)
 
     @Test
-    fun `inaktiverer for bruker med siste meldeperiode med rett 6 måneder bakover i tid`() {
-        val periode = ObjectMother.periode(fraSisteMandagFør = seksMånederBakover)
+    fun `inaktiverer for bruker med siste meldeperiode med rett bakover i tid`() {
+        val periode = ObjectMother.periode(fraSisteMandagFør = offset)
         val sak = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
 
         every { sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock) } returns listOf(sak)
@@ -41,7 +41,7 @@ class InaktiverMicrofrontendJobTest {
 
     @Test
     fun `slutter ikke å forsøke inaktivering selv om exception kastes ved en av inaktiveringene`() {
-        val periode = ObjectMother.periode(fraSisteMandagFør = seksMånederBakover)
+        val periode = ObjectMother.periode(fraSisteMandagFør = offset)
         val sak1 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
         val sak2 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
 

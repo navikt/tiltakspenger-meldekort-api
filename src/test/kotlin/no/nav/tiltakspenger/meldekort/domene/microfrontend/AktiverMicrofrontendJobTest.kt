@@ -23,11 +23,11 @@ class AktiverMicrofrontendJobTest {
         clearAllMocks()
     }
 
-    private val seksMånederBakover = nå(fixedClock).toLocalDate().minusMonths(6)
+    private val offset = nå(fixedClock).toLocalDate().minusMonths(1)
 
     @Test
-    fun `aktiverer for bruker med siste meldeperiode med rett siste 6 måneder`() {
-        val periode = ObjectMother.periode(fraSisteMandagFør = seksMånederBakover.plusDays(1))
+    fun `aktiverer for bruker med siste meldeperiode med rett siste tiden`() {
+        val periode = ObjectMother.periode(fraSisteMandagFør = offset.plusDays(1))
         val sak = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
 
         every { sakRepo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock) } returns listOf(sak)
@@ -55,7 +55,7 @@ class AktiverMicrofrontendJobTest {
 
     @Test
     fun `slutter ikke å forsøke aktivering selv om exception kastes ved en av aktiveringene`() {
-        val periode = ObjectMother.periode(fraSisteMandagFør = seksMånederBakover.plusDays(1))
+        val periode = ObjectMother.periode(fraSisteMandagFør = offset.plusDays(1))
         val sak1 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
         val sak2 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
 
