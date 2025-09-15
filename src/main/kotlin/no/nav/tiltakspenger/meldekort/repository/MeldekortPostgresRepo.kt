@@ -194,6 +194,29 @@ class MeldekortPostgresRepo(
         }
     }
 
+    /**
+     * OBS! Denne dupliserer logikken som finnes for [Meldekort.klarTilInnsending]. Om den ene endres så burde begge endres
+     */
+    override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        SELECT mb.*
+                        FROM meldekort_bruker mb
+                        JOIN meldeperiode mp ON mp.id = mb.meldeperiode_id and mp.fnr = :fnr
+                        WHERE mb.mottatt IS NULL
+                          AND mb.deaktivert IS NULL
+                          AND mp.til_og_med <= (CURRENT_DATE + INTERVAL '2 days');
+                    """,
+                    "fnr" to fnr.verdi,
+                ).map { row ->
+                    fromRow(row, session)
+                }.asList,
+            )
+        }
+    }
+
     override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         limit: Int,

@@ -48,6 +48,11 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     ): Meldekort?
 
+    fun hentAlleMeldekortKlarTilInnsending(
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): List<Meldekort>
+
     fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         limit: Int = 100,

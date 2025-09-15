@@ -5,6 +5,7 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
+import java.time.Clock
 
 interface SakRepo {
     fun lagre(
@@ -14,6 +15,12 @@ interface SakRepo {
 
     fun oppdater(
         sak: Sak,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun oppdaterStatusForMicrofrontend(
+        sakId: SakId,
+        aktiv: Boolean,
         sessionContext: SessionContext? = null,
     )
 
@@ -34,4 +41,6 @@ interface SakRepo {
     ): Sak?
 
     fun hentSakerUtenArenaStatus(sessionContext: SessionContext? = null): List<Sak>
+    fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext? = null, clock: Clock): List<Sak>
+    fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext? = null, clock: Clock): List<Sak>
 }

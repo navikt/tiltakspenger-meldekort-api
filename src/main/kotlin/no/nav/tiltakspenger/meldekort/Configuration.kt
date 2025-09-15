@@ -32,6 +32,7 @@ object Configuration {
                 "KAFKA_KEYSTORE_PATH" to System.getenv("KAFKA_KEYSTORE_PATH"),
                 "KAFKA_CREDSTORE_PASSWORD" to System.getenv("KAFKA_CREDSTORE_PASSWORD"),
                 "VARSEL_HENDELSE_TOPIC" to "min-side.aapen-brukervarsel-v1",
+                "MICROFRONTEND_TOPIC" to "min-side.aapen-microfrontend-v1",
                 "IDENTHENDELSE_TOPIC" to "tpts.identhendelse-v1",
             ),
         )
@@ -132,6 +133,7 @@ object Configuration {
     val dokarkivScope: String by lazy { config()[Key("DOKARKIV_SCOPE", stringType)] }
     val pdfgenUrl: String by lazy { config()[Key("PDFGEN_URL", stringType)] }
     val varselHendelseTopic: String by lazy { config()[Key("VARSEL_HENDELSE_TOPIC", stringType)] }
+    val microfrontendTopic: String by lazy { config()[Key("MICROFRONTEND_TOPIC", stringType)] }
 
     val identhendelseTopic: String by lazy { config()[Key("IDENTHENDELSE_TOPIC", stringType)] }
 
@@ -148,6 +150,7 @@ object Configuration {
         config()[Key("DB_JDBC_URL", stringType)]
 
     fun isNais() = applicationProfile() != Profile.LOCAL
+    fun isProd() = applicationProfile() == Profile.PROD
 
     fun electorPath(): String = config()[Key("ELECTOR_PATH", stringType)]
 }

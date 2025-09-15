@@ -83,7 +83,18 @@ fun start(
             { applicationContext.sendVarslerService.sendVarselForMeldekort() },
             { applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort() },
             { applicationContext.arenaMeldekortStatusService.oppdaterArenaMeldekortStatusForSaker() },
-        ),
+        ).let {
+            if (!Configuration.isProd()) {
+                it.plus {
+                    listOf(
+                        { applicationContext.aktiverMicrofrontendJob.aktiverMicrofrontendForBrukere() },
+                        { applicationContext.inaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere() },
+                    )
+                }
+            } else {
+                it
+            }
+        },
     )
 
     if (Configuration.isNais()) {

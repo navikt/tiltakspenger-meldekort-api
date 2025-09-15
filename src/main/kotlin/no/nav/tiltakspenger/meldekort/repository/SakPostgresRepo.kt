@@ -4,11 +4,14 @@ import kotliquery.Row
 import kotliquery.Session
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.domene.MicrofrontendStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
+import java.time.Clock
 
 class SakPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
@@ -68,6 +71,26 @@ class SakPostgresRepo(
         }
     }
 
+    override fun oppdaterStatusForMicrofrontend(
+        sakId: SakId,
+        aktiv: Boolean,
+        sessionContext: SessionContext?,
+    ) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update sak set 
+                        microfrontend_status = :microfrontend_status
+                    where id = :id
+                    """,
+                    "id" to sakId.toString(),
+                    "microfrontend_status" to if (aktiv) MicrofrontendStatus.AKTIV.toString() else MicrofrontendStatus.INAKTIV.toString(),
+                ).asUpdate,
+            )
+        }
+    }
+
     override fun oppdaterArenaStatus(
         id: SakId,
         arenaStatus: ArenaMeldekortStatus,
@@ -120,6 +143,78 @@ class SakPostgresRepo(
                 sqlQuery(
                     "select * from sak where arena_meldekort_status = :ukjent_status",
                     "ukjent_status" to ArenaMeldekortStatus.UKJENT.tilDb(),
+                ).map { row -> fromRow(row, false, session) }.asList,
+            )
+        }
+    }
+
+    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        SELECT s.*
+                        FROM sak s
+                        WHERE s.microfrontend_status <> :aktivStatus
+                          AND EXISTS (
+                              SELECT 1
+                              FROM meldeperiode m
+                              WHERE m.sak_id = s.id
+                                AND m.til_og_med > :offset
+                                AND EXISTS (
+                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                    WHERE value::boolean
+                                )
+                          )
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM meldeperiode m
+                              WHERE m.sak_id = s.id
+                                AND m.til_og_med <= :offset
+                                AND EXISTS (
+                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                    WHERE value::boolean
+                                )
+                          );
+                    """.trimIndent(),
+                    "offset" to nå(clock).minusMonths(1),
+                    "aktivStatus" to MicrofrontendStatus.AKTIV.toString(),
+                ).map { row -> fromRow(row, false, session) }.asList,
+            )
+        }
+    }
+
+    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        SELECT s.*
+                        FROM sak s
+                        WHERE s.microfrontend_status <> :inaktivStatus
+                          AND EXISTS (
+                              SELECT 1
+                              FROM meldeperiode m
+                              WHERE m.sak_id = s.id
+                                AND m.til_og_med <= :offset
+                                AND EXISTS (
+                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                    WHERE value::boolean
+                                )
+                          )
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM meldeperiode m
+                              WHERE m.sak_id = s.id
+                                AND m.til_og_med > :offset
+                                AND EXISTS (
+                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                    WHERE value::boolean
+                                )
+                          );
+                    """.trimIndent(),
+                    "offset" to nå(clock).minusMonths(1),
+                    "inaktivStatus" to MicrofrontendStatus.INAKTIV.toString(),
                 ).map { row -> fromRow(row, false, session) }.asList,
             )
         }
