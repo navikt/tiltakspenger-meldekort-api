@@ -150,6 +150,7 @@ object Configuration {
         config()[Key("DB_JDBC_URL", stringType)]
 
     fun isNais() = applicationProfile() != Profile.LOCAL
+    fun isProd() = applicationProfile() == Profile.PROD
 
     fun electorPath(): String = config()[Key("ELECTOR_PATH", stringType)]
 }
