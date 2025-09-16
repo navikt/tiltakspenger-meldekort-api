@@ -87,7 +87,6 @@ class SakPostgresRepoTest {
         }
     }
 
-
     @Nested
     inner class HentSakerHvorMicrofrontendSkalInaktiveres {
 
@@ -136,5 +135,4 @@ class SakPostgresRepoTest {
             }
         }
     }
-
 }
