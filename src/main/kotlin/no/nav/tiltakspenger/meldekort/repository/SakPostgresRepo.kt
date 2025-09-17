@@ -160,20 +160,16 @@ class SakPostgresRepo(
                               SELECT 1
                               FROM meldeperiode m
                               WHERE m.sak_id = s.id
-                                AND m.til_og_med > :offset
-                                AND EXISTS (
-                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
-                                    WHERE value::boolean
-                                )
-                          )
-                          AND NOT EXISTS (
-                              SELECT 1
-                              FROM meldeperiode m
-                              WHERE m.sak_id = s.id
-                                AND m.til_og_med <= :offset
-                                AND EXISTS (
-                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
-                                    WHERE value::boolean
+                                AND (
+                                    EXISTS (
+                                        SELECT 1
+                                        FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                                        WHERE value::boolean
+                                    )
+                                    AND (
+                                        m.opprettet > :offset
+                                        OR m.til_og_med > :offset
+                                    )
                                 )
                           );
                     """.trimIndent(),
@@ -192,25 +188,21 @@ class SakPostgresRepo(
                         SELECT s.*
                         FROM sak s
                         WHERE s.microfrontend_status <> :inaktivStatus
-                          AND EXISTS (
-                              SELECT 1
-                              FROM meldeperiode m
-                              WHERE m.sak_id = s.id
-                                AND m.til_og_med <= :offset
-                                AND EXISTS (
-                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
-                                    WHERE value::boolean
-                                )
-                          )
                           AND NOT EXISTS (
-                              SELECT 1
-                              FROM meldeperiode m
-                              WHERE m.sak_id = s.id
-                                AND m.til_og_med > :offset
-                                AND EXISTS (
-                                    SELECT 1 FROM jsonb_each_text(m.gir_rett) kv(key, value)
+                            SELECT 1
+                            FROM meldeperiode m
+                            WHERE m.sak_id = s.id
+                              AND (
+                                EXISTS (
+                                    SELECT 1
+                                    FROM jsonb_each_text(m.gir_rett) kv(key, value)
                                     WHERE value::boolean
                                 )
+                                AND (
+                                    m.opprettet > :offset
+                                    OR m.til_og_med > :offset
+                                )
+                              )
                           );
                     """.trimIndent(),
                     "offset" to nå(clock).minusMonths(1),

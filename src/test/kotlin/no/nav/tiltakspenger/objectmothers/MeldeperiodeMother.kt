@@ -24,7 +24,7 @@ interface MeldeperiodeMother {
         sakId: SakId = SakId.random(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
         versjon: Int = 1,
-        opprettet: LocalDateTime = nå(fixedClock),
+        opprettet: LocalDateTime? = null,
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
         antallDagerForPeriode: Int = girRett.filter { it.value }.size,
     ): Meldeperiode {
@@ -39,7 +39,7 @@ interface MeldeperiodeMother {
             fnr = fnr,
             kjedeId = kjedeId,
             versjon = versjon,
-            opprettet = opprettet,
+            opprettet = opprettet ?: nå(fixedClock),
             maksAntallDagerForPeriode = antallDagerForPeriode,
             girRett = girRett,
         )

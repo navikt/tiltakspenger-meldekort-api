@@ -15,7 +15,10 @@ import java.time.LocalDate
 import kotlin.test.assertEquals
 
 class SakPostgresRepoTest {
-    private val offset = nå(fixedClock).toLocalDate().minusMonths(1)
+    private val offsetMonths = 1L
+    private val offset = nå(fixedClock).toLocalDate().minusMonths(offsetMonths)
+    private val innenforOffset = offset.plusMonths(offsetMonths)
+    private val utenforOffset = offset.minusMonths(1)
     private fun lagreSak(helper: TestDataHelper, vararg saker: Sak) {
         saker.forEach {
             it.meldeperioder.forEach { mp -> helper.meldeperiodeRepo.lagre(mp) }
@@ -26,92 +29,109 @@ class SakPostgresRepoTest {
     /**
      * Genererer en sak med en meldeperiode hvor vi setter tilOgMed
      */
-    private fun lagSakMedMeldeperiode(fraSisteMandagFør: LocalDate? = null, tilSisteSøndagEtter: LocalDate? = null): Sak {
+    private fun lagSakMedMeldeperiode(fraSisteMandagFør: LocalDate? = null, tilSisteSøndagEtter: LocalDate? = null, opprettet: LocalDate?): Sak {
         var periode: Periode? = null
         fraSisteMandagFør?.let { periode = ObjectMother.periode(fraSisteMandagFør = fraSisteMandagFør) }
         tilSisteSøndagEtter?.let { periode = ObjectMother.periode(tilSisteSøndagEtter = tilSisteSøndagEtter) }
 
-        val meldeperiode = ObjectMother.meldeperiode(periode = periode!!)
+        val meldeperiode = ObjectMother.meldeperiode(opprettet = opprettet?.atStartOfDay(), periode = periode!!)
         return ObjectMother.sak(id = meldeperiode.sakId, fnr = Fnr.random(), meldeperioder = listOf(meldeperiode))
     }
 
     @Nested
     inner class HentSakerHvorMicrofrontendSkalAktiveres {
+
         @Test
-        fun `saker med meldeperiode innenfor offset returneres`() {
+        fun `returneres - meldeperiode innenfor offset`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val sakMedMeldeperiodeInnenfor6Måneder = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset.plusDays(14)) // Garanterer at perioden innenfor offset med siste søndag 14 dager før.
-                val sakMedMeldeperiodeSeksMånederBakover = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset)
-                lagreSak(helper, sakMedMeldeperiodeInnenfor6Måneder, sakMedMeldeperiodeSeksMånederBakover)
+                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = utenforOffset)
+                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
+                lagreSak(helper, sak1, sak2)
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
 
                 assertEquals(1, saker.size, "Antall saker")
-                assertEquals(sakMedMeldeperiodeInnenfor6Måneder.id, saker[0].id, "Sak")
+                assertEquals(sak1.id, saker.single().id, "Sak")
             }
         }
 
         @Test
-        fun `saker med meldeperiode nær dagens dato`() {
+        fun `returneres - opprettet innenfor offset`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val sakMeldeperiodeSeksmånederBakover = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset)
-                val sakMeldeperiodeNylig = lagSakMedMeldeperiode(tilSisteSøndagEtter = nå(fixedClock).toLocalDate())
-                lagreSak(helper, sakMeldeperiodeNylig, sakMeldeperiodeSeksmånederBakover)
+                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = innenforOffset)
+                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
+                lagreSak(helper, sak1, sak2)
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
 
                 assertEquals(1, saker.size, "Antall saker")
-                assertEquals(sakMeldeperiodeNylig.id, saker[0].id, "Sak")
+                assertEquals(sak1.id, saker.single().id, "Sak")
+            }
+        }
+
+        @Test
+        fun `returneres - meldeperiode og opprettet innenfor offset`() {
+            withMigratedDb { helper ->
+                val repo = helper.sakPostgresRepo
+                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = innenforOffset)
+                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
+                lagreSak(helper, sak1, sak2)
+
+                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
+
+                assertEquals(1, saker.size, "Antall saker")
+                assertEquals(sak1.id, saker.single().id, "Sak")
             }
         }
     }
 
     @Nested
     inner class HentSakerHvorMicrofrontendSkalInaktiveres {
+
         @Test
-        fun `saker med meldeperiode til og med offset antall måneder siden blir returnert`() {
+        fun `returneres ikke - opprettet innenfor offset`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset)
-                val nySak = ObjectMother.sak(fnr = Fnr.random())
-                lagreSak(helper, gammelSak, nySak)
+                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
+                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = innenforOffset)
+                lagreSak(helper, sak1, sak2)
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
                 assertEquals(1, saker.size, "Antall saker")
-                assertEquals(gammelSak.id, saker[0].id, "Sak")
+                assertEquals(sak1.id, saker.single().id, "Forventer at sak med opprettet utenfor offset returneres")
             }
         }
 
         @Test
-        fun `saker med meldeperiode mindre enn offset antall måneder siden blir ikke returnert`() {
+        fun `returneres ikke - meldeperiode innenfor offset`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset.plusMonths(1))
-                val nySak = ObjectMother.sak(fnr = Fnr.random())
-                lagreSak(helper, gammelSak, nySak)
-
-                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
-
-                assertEquals(0, saker.size, "Antall saker")
-            }
-        }
-
-        @Test
-        fun `saker med meldeperiode mer enn offset antall måneder siden blir returnert`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-
-                val gammelSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = offset.minusMonths(1))
-                val nySak = ObjectMother.sak(fnr = Fnr.random())
-                lagreSak(helper, gammelSak, nySak)
+                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
+                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = utenforOffset)
+                lagreSak(helper, sak1, sak2)
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
                 assertEquals(1, saker.size, "Antall saker")
-                assertEquals(gammelSak.id, saker[0].id, "Sak")
+                assertEquals(sak1.id, saker.single().id, "Forventer at sak med meldeperiode utenfor offset returneres")
+            }
+        }
+
+        @Test
+        fun `returneres - meldeperiode og opprettet utenfor offset`() {
+            withMigratedDb { helper ->
+                val repo = helper.sakPostgresRepo
+                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
+                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = innenforOffset)
+                lagreSak(helper, sak1, sak2)
+
+                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
+
+                assertEquals(1, saker.size, "Antall saker")
+                assertEquals(sak1.id, saker.single().id, "Forventer at sak med begge felter utenfor offset returneres")
             }
         }
     }
