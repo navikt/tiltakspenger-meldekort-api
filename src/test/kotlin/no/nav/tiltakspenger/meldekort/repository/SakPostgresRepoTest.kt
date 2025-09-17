@@ -91,11 +91,11 @@ class SakPostgresRepoTest {
     inner class HentSakerHvorMicrofrontendSkalInaktiveres {
 
         @Test
-        fun `returneres - opprettet utenfor offset`() {
+        fun `returneres ikke - opprettet innenfor offset`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = utenforOffset)
-                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = innenforOffset)
+                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
+                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = innenforOffset)
                 lagreSak(helper, sak1, sak2)
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
@@ -106,11 +106,11 @@ class SakPostgresRepoTest {
         }
 
         @Test
-        fun `returneres - meldeperiode utenfor offset`() {
+        fun `returneres ikke - meldeperiode innenfor offset`() {
             withMigratedDb { helper ->
                 val repo = helper.sakPostgresRepo
-                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = innenforOffset)
-                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = innenforOffset)
+                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
+                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = utenforOffset)
                 lagreSak(helper, sak1, sak2)
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)

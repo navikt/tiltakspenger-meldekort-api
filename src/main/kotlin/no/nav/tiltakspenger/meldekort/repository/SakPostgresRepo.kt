@@ -188,7 +188,7 @@ class SakPostgresRepo(
                         SELECT s.*
                         FROM sak s
                         WHERE s.microfrontend_status <> :inaktivStatus
-                          AND EXISTS (
+                          AND NOT EXISTS (
                             SELECT 1
                             FROM meldeperiode m
                             WHERE m.sak_id = s.id
@@ -199,8 +199,8 @@ class SakPostgresRepo(
                                     WHERE value::boolean
                                 )
                                 AND (
-                                    m.opprettet <= :offset
-                                    OR m.til_og_med <= :offset
+                                    m.opprettet > :offset
+                                    OR m.til_og_med > :offset
                                 )
                               )
                           );
