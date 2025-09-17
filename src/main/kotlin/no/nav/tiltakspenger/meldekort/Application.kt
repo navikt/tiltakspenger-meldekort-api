@@ -85,12 +85,12 @@ fun start(
             { applicationContext.arenaMeldekortStatusService.oppdaterArenaMeldekortStatusForSaker() },
         ).let {
             if (!Configuration.isProd()) {
-                it.plus {
+                it.plus(
                     listOf(
                         { applicationContext.aktiverMicrofrontendJob.aktiverMicrofrontendForBrukere() },
                         { applicationContext.inaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere() },
-                    )
-                }
+                    ),
+                )
             } else {
                 it
             }
