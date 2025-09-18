@@ -23,7 +23,7 @@ class TmsMikrofrontendClientImpl(
             ident = fnr.verdi,
             microfrontendId = MICROFRONTEND_APP,
             initiatedBy = MICROFRONTEND_TEAM,
-            sensitivitet = Sensitivitet.HIGH,
+            sensitivitet = Sensitivitet.SUBSTANTIAL,
         )
 
         kafkaProducer.produce(topicName, sakId.toString(), aktiverMelding.text())
