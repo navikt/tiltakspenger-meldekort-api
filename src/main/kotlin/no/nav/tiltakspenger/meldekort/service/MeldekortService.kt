@@ -124,7 +124,7 @@ class MeldekortService(
     fun hentInformasjonOmMeldekortForMicrofrontend(fnr: Fnr): Pair<Int, LocalDate?> {
         val meldekortKlarForInnsending = meldekortRepo.hentAlleMeldekortKlarTilInnsending(fnr)
         val antallMeldekortKlarTilInnsending = meldekortKlarForInnsending.size
-        val nesteMuligeInnsending = meldekortKlarForInnsending.minByOrNull { it.periode.tilOgMed }?.klarTilInnsendingDag
+        val nesteMuligeInnsending = meldekortRepo.hentNesteMeldekortTilUtfylling(fnr)?.klarTilInnsendingDag
 
         return Pair(antallMeldekortKlarTilInnsending, nesteMuligeInnsending)
     }
