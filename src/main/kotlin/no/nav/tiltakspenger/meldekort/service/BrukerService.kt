@@ -29,6 +29,7 @@ class BrukerService(
             nesteMeldekort = nesteMeldekort,
             sisteMeldekort = sisteMeldekort,
             harSoknadUnderBehandling = sak.harSoknadUnderBehandling,
+            kanSendeInnHelgForMeldekort = sak.kanSendeInnHelgForMeldekort,
         )
     }
 
