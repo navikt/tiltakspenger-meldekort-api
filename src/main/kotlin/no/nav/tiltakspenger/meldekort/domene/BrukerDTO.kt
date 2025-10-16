@@ -8,6 +8,7 @@ sealed interface BrukerDTO {
         val forrigeMeldekort: MeldekortTilBrukerDTO?,
         val arenaMeldekortStatus: ArenaMeldekortStatusDTO,
         val harSoknadUnderBehandling: Boolean,
+        val kanSendeInnHelgForMeldekort: Boolean,
     ) : BrukerDTO {
         override val harSak = true
     }
@@ -39,6 +40,7 @@ private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO.MedSak {
         forrigeMeldekort = sisteMeldekort?.tilMeldekortTilBrukerDTO(),
         arenaMeldekortStatus = sak.arenaMeldekortStatus.tilDTO(),
         harSoknadUnderBehandling = harSoknadUnderBehandling,
+        kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
     )
 }
 

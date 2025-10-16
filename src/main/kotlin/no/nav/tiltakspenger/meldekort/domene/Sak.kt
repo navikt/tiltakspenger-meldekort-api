@@ -14,6 +14,7 @@ data class Sak(
     val meldeperioder: List<Meldeperiode>,
     val arenaMeldekortStatus: ArenaMeldekortStatus,
     val harSoknadUnderBehandling: Boolean,
+    val kanSendeInnHelgForMeldekort: Boolean,
 ) {
 
     fun erLik(otherSak: Sak): Boolean {
@@ -67,5 +68,6 @@ fun SakTilMeldekortApiDTO.tilSak(): Sak {
         meldeperioder = meldeperioder,
         arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
         harSoknadUnderBehandling = harSoknadUnderBehandling,
+        kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
     )
 }

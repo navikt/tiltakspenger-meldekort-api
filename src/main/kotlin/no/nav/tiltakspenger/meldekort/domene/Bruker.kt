@@ -8,6 +8,7 @@ sealed interface Bruker {
         val nesteMeldekort: Meldekort?,
         val sisteMeldekort: Meldekort?,
         val harSoknadUnderBehandling: Boolean,
+        val kanSendeInnHelgForMeldekort: Boolean,
     ) : Bruker
 
     data class UtenSak(

@@ -18,6 +18,7 @@ interface SakMother {
         arenaMeldekortStatus: ArenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
         harSoknadUnderBehandling: Boolean = false,
         erMicrofrontendInaktivert: Boolean = false,
+        kanSendeInnHelgForMeldekort: Boolean = false,
     ): Sak {
         return Sak(
             id = id,
@@ -26,6 +27,7 @@ interface SakMother {
             meldeperioder = meldeperioder,
             arenaMeldekortStatus = arenaMeldekortStatus,
             harSoknadUnderBehandling = harSoknadUnderBehandling,
+            kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
         )
     }
 
@@ -35,6 +37,7 @@ interface SakMother {
         fnr: String = FAKE_FNR,
         meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = emptyList(),
         harSoknadUnderBehandling: Boolean = false,
+        kanSendeInnHelgForMeldekort: Boolean = false,
     ): SakTilMeldekortApiDTO {
         return SakTilMeldekortApiDTO(
             fnr = fnr,
@@ -42,6 +45,7 @@ interface SakMother {
             saksnummer = saksnummer,
             meldeperioder = meldeperioder,
             harSoknadUnderBehandling = harSoknadUnderBehandling,
+            kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
         )
     }
 }

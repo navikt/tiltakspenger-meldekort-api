@@ -30,13 +30,15 @@ class SakPostgresRepo(
                         saksnummer,
                         fnr,
                         arena_meldekort_status,
-                        har_soknad_under_behandling
+                        har_soknad_under_behandling,
+                        kan_sende_inn_helg_for_meldekort
                     ) values (
                         :id,
                         :saksnummer,
                         :fnr,
                         :arena_meldekort_status,
-                        :har_soknad_under_behandling
+                        :har_soknad_under_behandling,
+                        :kan_sende_inn_helg_for_meldekort
                     )
                     """,
                     "id" to sak.id.toString(),
@@ -44,12 +46,13 @@ class SakPostgresRepo(
                     "fnr" to sak.fnr.verdi,
                     "arena_meldekort_status" to sak.arenaMeldekortStatus.tilDb(),
                     "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
+                    "kan_sende_inn_helg_for_meldekort" to sak.kanSendeInnHelgForMeldekort,
                 ).asUpdate,
             )
         }
     }
 
-    /** Oppdaterer fnr og søknadsbehandlingstatus på en sak */
+    /** Oppdaterer fnr, søknadsbehandlingstatus, og kanSendeInnHelgForMeldekort på en sak */
     override fun oppdater(
         sak: Sak,
         sessionContext: SessionContext?,
@@ -60,12 +63,14 @@ class SakPostgresRepo(
                     """
                     update sak set 
                         fnr = :fnr,
-                        har_soknad_under_behandling = :har_soknad_under_behandling
+                        har_soknad_under_behandling = :har_soknad_under_behandling,
+                        kan_sende_inn_helg_for_meldekort = :kan_sende_inn_helg_for_meldekort
                     where id = :id
                     """,
                     "id" to sak.id.toString(),
                     "fnr" to sak.fnr.verdi,
                     "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
+                    "kan_sende_inn_helg_for_meldekort" to sak.kanSendeInnHelgForMeldekort,
                 ).asUpdate,
             )
         }
@@ -226,6 +231,7 @@ class SakPostgresRepo(
                 meldeperioder = meldeperioder,
                 arenaMeldekortStatus = row.string("arena_meldekort_status").tilArenaMeldekortStatus(),
                 harSoknadUnderBehandling = row.boolean("har_soknad_under_behandling"),
+                kanSendeInnHelgForMeldekort = row.boolean("kan_sende_inn_helg_for_meldekort"),
             )
         }
     }
