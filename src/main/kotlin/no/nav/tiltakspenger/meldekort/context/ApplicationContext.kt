@@ -10,16 +10,13 @@ import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.libs.texas.client.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.Configuration
-import no.nav.tiltakspenger.meldekort.Profile
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClient
-import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientFake
 import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientImpl
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
-import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalførMeldekortService
@@ -59,26 +56,18 @@ open class ApplicationContext(val clock: Clock) {
     }
 
     open val tmsVarselClient: TmsVarselClient by lazy {
-        if (Configuration.applicationProfile() == Profile.LOCAL) {
-            TmsVarselClientFake()
-        } else {
-            TmsVarselClientImpl(
-                kafkaProducer = Producer(KafkaConfigImpl()),
-                topicName = Configuration.varselHendelseTopic,
-                meldekortFrontendUrl = Configuration.meldekortFrontendUrl,
-            )
-        }
+        TmsVarselClientImpl(
+            kafkaProducer = Producer(KafkaConfigImpl()),
+            topicName = Configuration.varselHendelseTopic,
+            meldekortFrontendUrl = Configuration.meldekortFrontendUrl,
+        )
     }
 
     open val tmsMikrofrontendClient: TmsMikrofrontendClient by lazy {
-        if (Configuration.applicationProfile() == Profile.LOCAL) {
-            TmsMikrofrontendClientFake()
-        } else {
-            TmsMikrofrontendClientImpl(
-                kafkaProducer = Producer(KafkaConfigImpl()),
-                topicName = Configuration.microfrontendTopic,
-            )
-        }
+        TmsMikrofrontendClientImpl(
+            kafkaProducer = Producer(KafkaConfigImpl()),
+            topicName = Configuration.microfrontendTopic,
+        )
     }
 
     open val meldekortRepo: MeldekortRepo by lazy {
