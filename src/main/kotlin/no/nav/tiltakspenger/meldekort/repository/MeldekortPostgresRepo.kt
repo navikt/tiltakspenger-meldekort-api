@@ -1,7 +1,6 @@
 package no.nav.tiltakspenger.meldekort.repository
 
 import com.fasterxml.jackson.core.type.TypeReference
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import kotliquery.Session
 import kotliquery.queryOf
@@ -24,8 +23,6 @@ import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
-
-val logger = KotlinLogging.logger {}
 
 class MeldekortPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,

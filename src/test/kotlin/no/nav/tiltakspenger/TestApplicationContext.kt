@@ -3,7 +3,7 @@ package no.nav.tiltakspenger
 import no.nav.tiltakspenger.fakes.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.MeldeperiodeRepoFake
 import no.nav.tiltakspenger.fakes.SakRepoFake
-import no.nav.tiltakspenger.fakes.TexasClientFake
+import no.nav.tiltakspenger.fakes.TexasClientFakeTest
 import no.nav.tiltakspenger.libs.common.TestSessionFactory
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
@@ -18,7 +18,7 @@ import java.time.Clock
 class TestApplicationContext(clock: Clock = TikkendeKlokke()) : ApplicationContext(clock) {
     override val sessionFactory: TestSessionFactory = TestSessionFactory()
 
-    override val texasClient = TexasClientFake()
+    override val texasClient = TexasClientFakeTest()
 
     override val tmsVarselClient = TmsVarselClientFake()
 
