@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.objectmothers
 
+import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
@@ -112,4 +113,37 @@ interface MeldekortMother {
             dager = dager,
         )
     }
+}
+
+fun TestApplicationContext.lagMeldekort(meldeperiode: Meldeperiode, mottatt: LocalDateTime? = null): Meldekort {
+    val meldekort = ObjectMother.meldekort(
+        meldeperiode = meldeperiode,
+        mottatt = mottatt,
+        fnr = meldeperiode.fnr,
+        periode = meldeperiode.periode,
+        sakId = meldeperiode.sakId,
+        saksnummer = meldeperiode.saksnummer,
+    )
+
+    meldeperiodeRepo.lagre(meldekort.meldeperiode)
+    meldekortRepo.lagre(meldekort)
+
+    return meldekort
+}
+
+fun lagMeldekortFraBrukerKommando(
+    meldekort: Meldekort,
+    fnr: Fnr = meldekort.fnr,
+): LagreMeldekortFraBrukerKommando {
+    return LagreMeldekortFraBrukerKommando(
+        id = meldekort.id,
+        mottatt = nå(fixedClock),
+        fnr = fnr,
+        dager = meldekort.dager.map {
+            MeldekortDagFraBrukerDTO(
+                dag = it.dag,
+                status = if (meldekort.meldeperiode.girRett[it.dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
+            )
+        },
+    )
 }

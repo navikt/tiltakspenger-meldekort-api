@@ -127,9 +127,17 @@ class LagreFraSaksbehandlingService(
             return null
         }
 
-        return eksisterendeMeldekort
-            ?.let { meldeperiode.tilOppdatertMeldekort(it) }
-            ?: meldeperiode.tilTomtMeldekort()
+        if (eksisterendeMeldekort == null) {
+            return meldeperiode.tilTomtMeldekort()
+        }
+
+        // Ikke lag et nytt meldekort dersom meldekortet allerede var mottatt
+        // Bruker må selv opprette en korrigering dersom det er endringer som påvirker allerede innsendte meldekort
+        if (eksisterendeMeldekort.mottatt != null) {
+            return null
+        }
+
+        return meldeperiode.tilOppdatertMeldekort(eksisterendeMeldekort)
     }
 }
 

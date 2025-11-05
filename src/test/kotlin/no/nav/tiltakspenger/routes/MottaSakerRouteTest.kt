@@ -244,7 +244,7 @@ class MottaSakerRouteTest {
     }
 
     @Test
-    fun `Skal opprette nytt meldekort og ikke deaktivere meldekort som er mottatt`() {
+    fun `Skal ikke opprette nytt meldekort for kjede der meldekort allerede er mottatt`() {
         val tac = TestApplicationContext()
 
         val meldeperiode = ObjectMother.meldeperiodeDto(
@@ -290,15 +290,12 @@ class MottaSakerRouteTest {
             mottaSakRequest(sakDto2).apply {
                 status shouldBe HttpStatusCode.OK
 
-                val (førsteMeldekort, andreMeldekort) = tac.meldekortRepo.hentMeldekortForKjedeId(
+                val meldekortFraKjede = tac.meldekortRepo.hentMeldekortForKjedeId(
                     MeldeperiodeKjedeId(meldeperiode.kjedeId),
                     Fnr.fromString(sakDto1.fnr),
                 )
 
-                førsteMeldekort.deaktivert shouldBe null
-
-                andreMeldekort.deaktivert shouldBe null
-                førsteMeldekort.varselId shouldBe andreMeldekort.varselId
+                meldekortFraKjede.size shouldBe 1
             }
         }
     }

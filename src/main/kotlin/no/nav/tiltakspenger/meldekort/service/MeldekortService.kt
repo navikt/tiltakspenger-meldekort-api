@@ -33,7 +33,7 @@ class MeldekortService(
             fnr = innsenderFnr,
         )!!
         require(meldekort.meldeperiode.id == sisteMeldeperiode.id) {
-            "Meldekortets meldeperiode-id (${meldekort.meldeperiode.id}) må den siste meldeperioden (${sisteMeldeperiode.id})"
+            "Meldekortets meldeperiode-id (${meldekort.meldeperiode.id}) må være den siste meldeperioden (${sisteMeldeperiode.id})"
         }
 
         val nyeDager = kommando.dager.map { it.tilMeldekortDag() }
