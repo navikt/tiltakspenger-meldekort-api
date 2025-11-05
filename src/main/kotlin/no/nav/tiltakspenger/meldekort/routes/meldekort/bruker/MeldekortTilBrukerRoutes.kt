@@ -98,6 +98,7 @@ fun Route.meldekortTilBrukerRoutes(
                     dager = it.dager.toDto(),
                     periode = it.periode.toDTO(),
                     mottattTidspunktSisteMeldekort = it.mottattTidspunktSisteMeldekort,
+                    maksAntallDagerForPeriode = it.maksAntallDagerForPeriode,
                 ),
             )
         }

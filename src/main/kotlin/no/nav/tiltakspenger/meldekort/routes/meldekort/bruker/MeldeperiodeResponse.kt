@@ -10,4 +10,5 @@ data class MeldeperiodeResponse(
     val dager: List<MeldekortDagTilBrukerDTO>,
     val periode: PeriodeDTO,
     val mottattTidspunktSisteMeldekort: LocalDateTime,
+    val maksAntallDagerForPeriode: Int,
 )
