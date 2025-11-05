@@ -114,6 +114,7 @@ class MeldekortService(
             dager = dager,
             periode = meldeperiode.periode,
             mottattTidspunktSisteMeldekort = meldekort.mottatt!!,
+            maksAntallDagerForPeriode = meldeperiode.maksAntallDagerForPeriode,
         )
     }
 

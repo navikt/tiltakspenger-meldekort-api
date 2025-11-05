@@ -12,4 +12,5 @@ data class PreutfyltKorrigering(
     val dager: List<MeldekortDag>,
     val periode: Periode,
     val mottattTidspunktSisteMeldekort: LocalDateTime,
+    val maksAntallDagerForPeriode: Int,
 )
