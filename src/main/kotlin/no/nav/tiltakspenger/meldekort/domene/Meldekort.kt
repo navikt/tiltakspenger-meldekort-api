@@ -109,13 +109,16 @@ data class Meldekort(
     }
 
     init {
+        val msgSuffix = "(id: $id - mpId: ${meldeperiode.id} - kjedeId: ${meldeperiode.kjedeId} - dager: $dager)"
+
         dager.zipWithNext().forEach { (dag, nesteDag) ->
-            require(dag.dag.isBefore(nesteDag.dag)) { "Dager må være sortert (id=$id)" }
+            require(dag.dag.isBefore(nesteDag.dag)) { "Dager må være sortert $msgSuffix" }
         }
-        require(dager.first().dag == periode.fraOgMed) { "Første dag i meldekortet må være lik første dag i meldeperioden (id=$id)" }
-        require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden (id=$id)" }
-        require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden (id=$id)" }
-        require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett (id=$id)" }
+        require(dager.first().dag == periode.fraOgMed) { "Første dag i meldekortet må være lik første dag i meldeperioden $msgSuffix" }
+        require(dager.last().dag == periode.tilOgMed) { "Siste dag i meldekortet må være lik siste dag i meldeperioden $msgSuffix" }
+        require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden $msgSuffix" }
+        require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett $msgSuffix" }
+
         meldeperiode.girRett.values.zip(dager.map { it.status }) { harRett, brukersInnsendteDagStatus ->
             when (harRett) {
                 true -> {
