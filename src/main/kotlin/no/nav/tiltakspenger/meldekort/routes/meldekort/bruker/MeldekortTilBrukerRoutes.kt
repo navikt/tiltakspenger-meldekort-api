@@ -87,6 +87,7 @@ fun Route.meldekortTilBrukerRoutes(
         call.respond(bruker.tilBrukerDTO())
     }
 
+    // TODO: Fjern når frontend er oppdatert
     post("/meldeperiode") {
         val periode = deserialize<PeriodeDTO>(call.receiveText())
 
@@ -102,5 +103,18 @@ fun Route.meldekortTilBrukerRoutes(
                 ),
             )
         }
+    }
+
+    get("/korrigering/{meldekortId}") {
+        val meldekortId = call.parameters["meldekortId"]?.let { MeldekortId.fromString(it) }
+        if (meldekortId == null) {
+            call.respond(HttpStatusCode.BadRequest)
+            return@get
+        }
+
+        meldekortService.hentSisteMeldeperiodeOgInnsendteMeldekort(meldekortId, call.fnr())
+            ?.let { (meldeperiode, meldekort) ->
+                call.respond(meldeperiode.tilKorrigeringDTO(meldekort))
+            } ?: call.respond(HttpStatusCode.BadRequest)
     }
 }

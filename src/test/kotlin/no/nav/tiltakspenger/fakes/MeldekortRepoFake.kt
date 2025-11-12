@@ -45,6 +45,7 @@ class MeldekortRepoFake(
         sessionContext: SessionContext?,
     ): MeldekortForKjede {
         return data.get().values.filter { it.fnr == fnr && it.meldeperiode.kjedeId == kjedeId }
+            .sortedWith(compareBy({ it.meldeperiode.versjon }, { it.mottatt }))
             .let { MeldekortForKjede(it) }
     }
 
@@ -63,7 +64,11 @@ class MeldekortRepoFake(
             .lastOrNull()
     }
 
-    override fun hentInnsendteMeldekortForBruker(fnr: Fnr, limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentInnsendteMeldekortForBruker(
+        fnr: Fnr,
+        limit: Int,
+        sessionContext: SessionContext?,
+    ): List<Meldekort> {
         return data.get().values
             .filter {
                 it.fnr == fnr && it.periode.tilOgMed <= Meldekort.senesteTilOgMedDatoForInnsending() && it.deaktivert == null

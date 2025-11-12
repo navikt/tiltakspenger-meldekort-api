@@ -1,0 +1,46 @@
+package no.nav.tiltakspenger.meldekort.routes.meldekort.bruker
+
+import no.nav.tiltakspenger.libs.periodisering.toDTO
+import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
+import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.toDto
+
+data class MeldekortTilKorrigeringDTO(
+    val forrigeMeldekort: MeldekortTilBrukerDTO,
+    val tilUtfylling: MeldeperiodeResponse, // Gjenbruker denne så lenge
+)
+
+fun Meldeperiode.tilKorrigeringDTO(forrigeMeldekort: Meldekort): MeldekortTilKorrigeringDTO {
+    requireNotNull(forrigeMeldekort.mottatt)
+
+    val oppdaterteDager = forrigeMeldekort.dager.map { meldekortDag ->
+        MeldekortDag(
+            dag = meldekortDag.dag,
+            status = if (girRett[meldekortDag.dag]!!) {
+                if (meldekortDag.status == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
+                    MeldekortDagStatus.IKKE_BESVART
+                } else {
+                    meldekortDag.status
+                }
+            } else {
+                MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
+            },
+        )
+    }
+
+    return MeldekortTilKorrigeringDTO(
+        forrigeMeldekort = forrigeMeldekort.tilMeldekortTilBrukerDTO(),
+        tilUtfylling = MeldeperiodeResponse(
+            meldeperiodeId = id.toString(),
+            kjedeId = kjedeId.toString(),
+            dager = oppdaterteDager.toDto(),
+            periode = periode.toDTO(),
+            mottattTidspunktSisteMeldekort = forrigeMeldekort.mottatt,
+            maksAntallDagerForPeriode = maksAntallDagerForPeriode,
+        ),
+    )
+}

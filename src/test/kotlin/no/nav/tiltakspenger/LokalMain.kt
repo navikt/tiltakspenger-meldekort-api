@@ -1,8 +1,10 @@
 package no.nav.tiltakspenger
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.tiltakspenger.libs.periodisering.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.start
+import java.time.Clock
 
 /**
  * Starter opp serveren lokalt med postgres i docker og fakes fra [LokalApplicationContext]
@@ -15,6 +17,6 @@ fun main() {
     start(
         log = log,
         isNais = false,
-        applicationContext = LokalApplicationContext(),
+        applicationContext = LokalApplicationContext(Clock.system(zoneIdOslo)),
     )
 }

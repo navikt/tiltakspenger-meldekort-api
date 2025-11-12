@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import java.time.Clock
@@ -118,6 +119,17 @@ class MeldekortService(
             mottattTidspunktSisteMeldekort = meldekort.mottatt!!,
             maksAntallDagerForPeriode = meldeperiode.maksAntallDagerForPeriode,
         )
+    }
+
+    fun hentSisteMeldeperiodeOgInnsendteMeldekort(meldekortId: MeldekortId, fnr: Fnr): Pair<Meldeperiode, Meldekort>? {
+        val sisteMeldekort =
+            meldekortRepo.hentForMeldekortId(meldekortId, fnr) ?: return null
+
+        val sisteMeldeperiode =
+            meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(sisteMeldekort.meldeperiode.kjedeId, fnr)
+                ?: return null
+
+        return sisteMeldeperiode to sisteMeldekort
     }
 
     fun hentMeldekortForKjede(kjedeId: MeldeperiodeKjedeId, fnr: Fnr): MeldekortForKjede {
