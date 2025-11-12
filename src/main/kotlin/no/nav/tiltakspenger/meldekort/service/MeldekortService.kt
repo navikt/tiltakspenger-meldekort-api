@@ -93,10 +93,12 @@ class MeldekortService(
         val meldekort: Meldekort =
             meldekortRepo.hentMeldekortForKjedeId(meldeperiode.kjedeId, fnr).sisteInnsendteMeldekort()!!
 
-        val dager = meldeperiode.girRett.toList().zip(meldekort.dager).map { (girRett, meldekortDag) ->
+        val dager = meldekort.dager.map { meldekortDag ->
+            val harRett = meldeperiode.girRett[meldekortDag.dag]!!
+
             MeldekortDag(
                 dag = meldekortDag.dag,
-                status = if (girRett.second) {
+                status = if (harRett) {
                     if (meldekortDag.status == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
                         MeldekortDagStatus.IKKE_BESVART
                     } else {
