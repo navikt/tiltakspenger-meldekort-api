@@ -71,7 +71,7 @@ data class Meldekort(
         sisteMeldeperiode: Meldeperiode,
         clock: Clock,
         brukerutfylteDager: List<MeldekortDag>,
-        korrigering: Boolean = false
+        korrigering: Boolean = false,
     ): Meldekort {
         if (this.mottatt != null) {
             throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
@@ -80,7 +80,7 @@ data class Meldekort(
             meldeperiode = sisteMeldeperiode,
             mottatt = LocalDateTime.now(clock),
             dager = brukerutfylteDager,
-            korrigering = korrigering
+            korrigering = korrigering,
         )
     }
 
