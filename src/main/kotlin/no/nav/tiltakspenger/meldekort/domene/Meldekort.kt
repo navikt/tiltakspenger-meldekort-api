@@ -177,7 +177,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         journalføringstidspunkt = null,
         varselId = null,
         erVarselInaktivert = false,
-        korrigering = false
+        korrigering = false,
     )
 }
 
