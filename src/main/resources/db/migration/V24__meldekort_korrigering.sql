@@ -2,10 +2,11 @@ ALTER TABLE meldekort_bruker
   ADD COLUMN IF NOT EXISTS korrigering BOOLEAN NOT NULL DEFAULT FALSE;
 
 WITH meldekort_i_kjede AS (
-    SELECT id,
-           row_number() OVER (PARTITION BY meldeperiode_kjede_id ORDER BY mottatt) AS index
-    FROM meldekort_bruker
-    WHERE mottatt IS NOT NULL
+    SELECT mb.id,
+           row_number() OVER (PARTITION BY mp.kjede_id ORDER BY mb.mottatt) AS index
+    FROM meldekort_bruker mb
+    JOIN meldeperiode mp ON mp.id = mb.meldeperiode_id
+    WHERE mb.mottatt IS NOT NULL
 )
 UPDATE meldekort_bruker mb
 SET korrigering = true
