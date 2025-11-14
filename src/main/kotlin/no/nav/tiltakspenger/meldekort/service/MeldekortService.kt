@@ -3,11 +3,8 @@ package no.nav.tiltakspenger.meldekort.service
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
-import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
@@ -88,48 +85,26 @@ class MeldekortService(
         }
     }
 
-    fun hentMeldeperiodeForPeriode(periode: Periode, fnr: Fnr): PreutfyltKorrigering {
-        val meldeperiode = meldeperiodeRepo.hentMeldeperiodeForPeriode(periode, fnr)!!
+    fun hentMeldekortOgSisteMeldeperiode(meldekortId: MeldekortId, fnr: Fnr): Pair<Meldeperiode, Meldekort> {
+        val meldekort = meldekortRepo.hentForMeldekortId(meldekortId, fnr)
 
-        val meldekort: Meldekort =
-            meldekortRepo.hentMeldekortForKjedeId(meldeperiode.kjedeId, fnr).sisteInnsendteMeldekort()!!
-
-        val dager = meldekort.dager.map { meldekortDag ->
-            val harRett = meldeperiode.girRett[meldekortDag.dag]!!
-
-            MeldekortDag(
-                dag = meldekortDag.dag,
-                status = if (harRett) {
-                    if (meldekortDag.status == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
-                        MeldekortDagStatus.IKKE_BESVART
-                    } else {
-                        meldekortDag.status
-                    }
-                } else {
-                    MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER
-                },
-            )
+        requireNotNull(meldekort) {
+            "Fant ikke meldekort med id $meldekortId"
         }
 
-        return PreutfyltKorrigering(
-            meldeperiodeId = meldeperiode.id,
-            kjedeId = meldeperiode.kjedeId,
-            dager = dager,
-            periode = meldeperiode.periode,
-            mottattTidspunktSisteMeldekort = meldekort.mottatt!!,
-            maksAntallDagerForPeriode = meldeperiode.maksAntallDagerForPeriode,
-        )
-    }
+        requireNotNull(meldekort.mottatt) {
+            "Meldekortet må være mottatt for å kunne korrigeres - id: $meldekortId"
+        }
 
-    fun hentSisteMeldeperiodeOgInnsendteMeldekort(meldekortId: MeldekortId, fnr: Fnr): Pair<Meldeperiode, Meldekort>? {
-        val sisteMeldekort =
-            meldekortRepo.hentForMeldekortId(meldekortId, fnr) ?: return null
+        /**
+         *  Her kunne vi kanskje også validere at meldekortet er det siste innsendte, men da må frontend oppdateres til
+         *  ikke å kalle korrigering-endepunktet etter at korrigeringen er sendt inn
+         */
 
         val sisteMeldeperiode =
-            meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(sisteMeldekort.meldeperiode.kjedeId, fnr)
-                ?: return null
+            meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(meldekort.meldeperiode.kjedeId, fnr)!!
 
-        return sisteMeldeperiode to sisteMeldekort
+        return sisteMeldeperiode to meldekort
     }
 
     fun hentMeldekortForKjede(kjedeId: MeldeperiodeKjedeId, fnr: Fnr): MeldekortForKjede {

@@ -1,18 +1,32 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort.bruker
 
+import no.nav.tiltakspenger.libs.periodisering.PeriodeDTO
 import no.nav.tiltakspenger.libs.periodisering.toDTO
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.toDto
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.MeldekortTilKorrigeringDTO.PreutfyltKorrigeringDTO
+import java.time.LocalDateTime
 
 data class MeldekortTilKorrigeringDTO(
     val forrigeMeldekort: MeldekortTilBrukerDTO,
-    val tilUtfylling: MeldeperiodeResponse, // Gjenbruker denne så lenge
-)
+    val tilUtfylling: PreutfyltKorrigeringDTO,
+) {
+
+    data class PreutfyltKorrigeringDTO(
+        val meldeperiodeId: String,
+        val kjedeId: String,
+        val dager: List<MeldekortDagTilBrukerDTO>,
+        val periode: PeriodeDTO,
+        val mottattTidspunktSisteMeldekort: LocalDateTime,
+        val maksAntallDagerForPeriode: Int,
+    )
+}
 
 fun Meldeperiode.tilKorrigeringDTO(forrigeMeldekort: Meldekort): MeldekortTilKorrigeringDTO {
     requireNotNull(forrigeMeldekort.mottatt)
@@ -34,7 +48,7 @@ fun Meldeperiode.tilKorrigeringDTO(forrigeMeldekort: Meldekort): MeldekortTilKor
 
     return MeldekortTilKorrigeringDTO(
         forrigeMeldekort = forrigeMeldekort.tilMeldekortTilBrukerDTO(),
-        tilUtfylling = MeldeperiodeResponse(
+        tilUtfylling = PreutfyltKorrigeringDTO(
             meldeperiodeId = id.toString(),
             kjedeId = kjedeId.toString(),
             dager = oppdaterteDager.toDto(),
