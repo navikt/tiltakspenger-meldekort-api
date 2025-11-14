@@ -35,12 +35,23 @@ class PdfgenClient(
 ) {
     private val log = KotlinLogging.logger {}
 
-    suspend fun genererPdf(
+    suspend fun genererMeldekortPdf(
         meldekort: Meldekort,
         errorContext: String = "SakId: ${meldekort.sakId}, saksnummer: ${meldekort.meldeperiode.saksnummer} meldekortId: ${meldekort.id}",
     ): Either<KunneIkkeGenererePdf, PdfOgJson> {
         return pdfgenRequest(
             uri = "$baseUrl/$PDFGEN_PATH/meldekort",
+            jsonPayload = { meldekort.toBrevMeldekortDTO() },
+            errorContext = errorContext,
+        )
+    }
+
+    suspend fun genererKorrigertMeldekortPdf(
+        meldekort: Meldekort,
+        errorContext: String = "SakId: ${meldekort.sakId}, saksnummer: ${meldekort.meldeperiode.saksnummer} meldekortId: ${meldekort.id}",
+    ): Either<KunneIkkeGenererePdf, PdfOgJson> {
+        return pdfgenRequest(
+            uri = "$baseUrl/$PDFGEN_PATH/meldekort-korrigert",
             jsonPayload = { meldekort.toBrevMeldekortDTO() },
             errorContext = errorContext,
         )
