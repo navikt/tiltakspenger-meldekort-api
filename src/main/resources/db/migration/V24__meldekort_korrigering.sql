@@ -3,7 +3,7 @@ ALTER TABLE meldekort_bruker
 
 WITH meldekort_i_kjede AS (
     SELECT id,
-           row_number() OVER (PARTITION BY meldeperiode_id ORDER BY mottatt) AS index
+           row_number() OVER (PARTITION BY meldeperiode_kjede_id ORDER BY mottatt) AS index
     FROM meldekort_bruker
     WHERE mottatt IS NOT NULL
 )

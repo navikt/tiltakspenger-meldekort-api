@@ -31,7 +31,7 @@ data class Meldekort(
     val journalføringstidspunkt: LocalDateTime?,
     val varselId: VarselId? = null,
     val erVarselInaktivert: Boolean = false,
-    val korrigering: Boolean = false,
+    val korrigering: Boolean,
 ) {
     val sakId = meldeperiode.sakId
     val periode: Periode = meldeperiode.periode
@@ -71,7 +71,7 @@ data class Meldekort(
         sisteMeldeperiode: Meldeperiode,
         clock: Clock,
         brukerutfylteDager: List<MeldekortDag>,
-        korrigering: Boolean = false,
+        korrigering: Boolean,
     ): Meldekort {
         if (this.mottatt != null) {
             throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
@@ -177,6 +177,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         journalføringstidspunkt = null,
         varselId = null,
         erVarselInaktivert = false,
+        korrigering = false
     )
 }
 
