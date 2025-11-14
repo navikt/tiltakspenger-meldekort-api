@@ -40,6 +40,7 @@ data class MeldekortForKjede(
                 sisteMeldeperiode = sisteMeldeperiode,
                 clock = clock,
                 brukerutfylteDager = command.korrigerteDager,
+                korrigering = true,
             )
         } else {
             Meldekort(
@@ -52,6 +53,7 @@ data class MeldekortForKjede(
                 journalføringstidspunkt = null,
                 varselId = null,
                 erVarselInaktivert = false,
+                korrigering = true,
             )
         }
     }
