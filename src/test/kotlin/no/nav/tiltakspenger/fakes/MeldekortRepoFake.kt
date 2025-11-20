@@ -66,7 +66,6 @@ class MeldekortRepoFake(
 
     override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
-        limit: Int,
         sessionContext: SessionContext?,
     ): List<Meldekort> {
         return data.get().values

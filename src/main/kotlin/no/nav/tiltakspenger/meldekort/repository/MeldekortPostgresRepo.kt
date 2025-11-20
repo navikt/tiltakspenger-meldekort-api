@@ -216,7 +216,6 @@ class MeldekortPostgresRepo(
 
     override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
-        limit: Int,
         sessionContext: SessionContext?,
     ): List<Meldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -228,15 +227,11 @@ class MeldekortPostgresRepo(
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.fnr = :fnr
                         where mp.id = mk.meldeperiode_id
-                            and mp.til_og_med <= :maks_til_og_med
                             and mk.deaktivert is null
                             and mk.mottatt is not null
                         order by fra_og_med desc, versjon desc
-                        limit :limit
                     """,
                     "fnr" to fnr.verdi,
-                    "limit" to limit,
-                    "maks_til_og_med" to Meldekort.senesteTilOgMedDatoForInnsending(),
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }
