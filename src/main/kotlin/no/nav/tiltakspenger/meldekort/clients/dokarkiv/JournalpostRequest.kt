@@ -68,7 +68,7 @@ private fun Meldekort.lagTittel(): String {
     val fra = this.meldeperiode.periode.fraOgMed.toNorskDatoMedPunktum()
     val til = this.meldeperiode.periode.tilOgMed.toNorskDatoMedPunktum()
 
-    val tittel = "Meldekort"
+    val tittel = if (this.korrigering) "Korrigert meldekort" else "Meldekort"
     return "$tittel for uke $uke1 - $uke2 ($fra - $til) elektronisk mottatt av Nav"
 }
 

@@ -31,6 +31,10 @@ data class Meldekort(
     val journalføringstidspunkt: LocalDateTime?,
     val varselId: VarselId? = null,
     val erVarselInaktivert: Boolean = false,
+    /**
+     * Ettersom meldekort ikke synkroniseres tilbake fra tiltakspenger-saksbehandling-api så vet vi ikke helt om meldekortet er en korrigering eller ikke.
+     * Saksbehandler kan ha sendt inn meldekort for samme periode slik at brukes første innsendte meldekort for en gitt periode egentlig er en korrigering.
+     */
     val korrigering: Boolean,
 ) {
     val sakId = meldeperiode.sakId
