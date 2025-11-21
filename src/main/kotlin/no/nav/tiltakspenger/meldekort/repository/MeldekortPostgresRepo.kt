@@ -43,7 +43,8 @@ class MeldekortPostgresRepo(
                         journalpost_id,
                         journalføringstidspunkt,
                         varsel_id,
-                        varsel_inaktivert
+                        varsel_inaktivert,
+                        korrigering
                     ) values (
                         :id,
                         :meldeperiode_id,
@@ -53,7 +54,8 @@ class MeldekortPostgresRepo(
                         :journalpost_id,
                         :journalforingstidspunkt,
                         :varsel_id,
-                        :erVarselInaktivert
+                        :erVarselInaktivert,
+                        :korrigering
                     )
                     on conflict (id) do update set
                         meldeperiode_id = :meldeperiode_id,
@@ -63,7 +65,8 @@ class MeldekortPostgresRepo(
                         journalpost_id = :journalpost_id,
                         journalføringstidspunkt = :journalforingstidspunkt,
                         varsel_id = :varsel_id,
-                        varsel_inaktivert = :erVarselInaktivert
+                        varsel_inaktivert = :erVarselInaktivert,
+                        korrigering = :korrigering
                 """,
                     "id" to meldekort.id.toString(),
                     "meldeperiode_id" to meldekort.meldeperiode.id.toString(),
@@ -74,6 +77,7 @@ class MeldekortPostgresRepo(
                     "journalforingstidspunkt" to meldekort.journalføringstidspunkt,
                     "varsel_id" to meldekort.varselId?.toString(),
                     "erVarselInaktivert" to meldekort.erVarselInaktivert,
+                    "korrigering" to meldekort.korrigering,
                 ).asUpdate,
             )
         }
