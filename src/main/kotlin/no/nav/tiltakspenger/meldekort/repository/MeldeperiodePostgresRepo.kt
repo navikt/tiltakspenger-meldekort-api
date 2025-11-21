@@ -38,7 +38,8 @@ class MeldeperiodePostgresRepo(
                         fra_og_med,
                         til_og_med,
                         maks_antall_dager_for_periode,
-                        gir_rett
+                        gir_rett,
+                        kan_fylles_ut_fra_og_med
                     ) values (
                         :id,
                         :kjede_id,
@@ -50,7 +51,8 @@ class MeldeperiodePostgresRepo(
                         :fra_og_med,
                         :til_og_med,
                         :maks_antall_dager_for_periode,
-                        to_jsonb(:gir_rett::jsonb)
+                        to_jsonb(:gir_rett::jsonb),
+                        :kan_fylles_ut_fra_og_med
                     )
                     """,
                     "id" to meldeperiode.id.toString(),
@@ -64,6 +66,7 @@ class MeldeperiodePostgresRepo(
                     "til_og_med" to meldeperiode.periode.tilOgMed,
                     "maks_antall_dager_for_periode" to meldeperiode.maksAntallDagerForPeriode,
                     "gir_rett" to meldeperiode.girRett.toDbJson(),
+                    "kan_fylles_ut_fra_og_med" to meldeperiode.kanFyllesUtFraOgMed,
                 ).asUpdate,
             )
         }
@@ -192,6 +195,7 @@ class MeldeperiodePostgresRepo(
                 maksAntallDagerForPeriode = row.int("maks_antall_dager_for_periode"),
                 girRett = row.string("gir_rett").fromDbJsonToGirRett(),
                 saksnummer = row.string("saksnummer"),
+                kanFyllesUtFraOgMed = row.localDateTime("kan_fylles_ut_fra_og_med"),
             )
         }
 

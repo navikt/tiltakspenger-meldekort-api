@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.math.max
 
 /**
@@ -27,6 +28,12 @@ data class Meldeperiode(
     val opprettet: LocalDateTime,
     val maksAntallDagerForPeriode: Int,
     val girRett: Map<LocalDate, Boolean>,
+    /**
+     * Feltet indikerer 2 ting:
+     * - Hvilken dato meldeperioden aksepterer at meldekort kan fylles ut fra.
+     * - Hvilken dato vi skal sende varsel om at meldekort kan fylles ut fra.
+     */
+    val kanFyllesUtFraOgMed: LocalDateTime,
 ) {
     val alleDagerGirRettIPeriode = girRett.all { it.value }
     val minstEnDagGirRettIPerioden = girRett.any { it.value }
@@ -42,5 +49,10 @@ data class Meldeperiode(
         require(antallDagerSomGirRett <= periode.antallDager) { "Antall dager som gir rett må være mindre eller lik dager i perioden" }
         require(maksAntallDagerForPeriode <= antallDagerSomGirRett) { "maks antall dager for periode må være mindre eller lik antall dager som gir rett" }
         require(periode.tilDager() == girRett.keys.toList()) { "GirRett må ha en verdi for hver dag i perioden" }
+    }
+
+    companion object {
+        // TODO - se om å ha en const for tidspunkt for kanFyllesUtFraOgMed er hensiktsmessig
+        val TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR = LocalTime.of(15, 0)
     }
 }

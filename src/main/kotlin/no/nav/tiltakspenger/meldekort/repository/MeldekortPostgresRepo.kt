@@ -204,9 +204,10 @@ class MeldekortPostgresRepo(
                         JOIN meldeperiode mp ON mp.id = mb.meldeperiode_id and mp.fnr = :fnr
                         WHERE mb.mottatt IS NULL
                           AND mb.deaktivert IS NULL
-                          AND mp.til_og_med <= (CURRENT_DATE + INTERVAL '2 days');
+                          AND mp.kan_fylles_ut_fra_og_med <= :tidsgrense;
                     """,
                     "fnr" to fnr.verdi,
+                    "tidsgrense" to LocalDateTime.now(clock),
                 ).map { row ->
                     fromRow(row, session)
                 }.asList,
@@ -228,7 +229,7 @@ class MeldekortPostgresRepo(
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.fnr = :fnr
                         where mp.id = mk.meldeperiode_id
-                            and mp.til_og_med <= :maks_til_og_med
+                            and mp.kan_fylles_ut_fra_og_med <= :tidsgrense
                             and mk.deaktivert is null
                             and mk.mottatt is not null
                         order by fra_og_med desc, versjon desc
@@ -236,7 +237,7 @@ class MeldekortPostgresRepo(
                     """,
                     "fnr" to fnr.verdi,
                     "limit" to limit,
-                    "maks_til_og_med" to Meldekort.senesteTilOgMedDatoForInnsending(),
+                    "tidsgrense" to LocalDateTime.now(clock),
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }
@@ -348,7 +349,7 @@ class MeldekortPostgresRepo(
                                      ROW_NUMBER() OVER (PARTITION BY mp.fnr ORDER BY mp.fra_og_med) AS radnummer
                                  FROM meldekort_bruker mk
                                           JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
-                                 WHERE mp.til_og_med <= :maks_til_og_med
+                                 WHERE mp.kan_fylles_ut_fra_og_med <= :tidsgrense
                                    AND mk.mottatt IS NULL
                                    AND mk.deaktivert IS NULL
                                    AND mk.varsel_id IS NULL
@@ -361,7 +362,7 @@ class MeldekortPostgresRepo(
                         limit :limit
                     """,
                     "limit" to limit,
-                    "maks_til_og_med" to Meldekort.senesteTilOgMedDatoForInnsending(),
+                    "tidsgrense" to LocalDateTime.now(clock),
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }
@@ -414,40 +415,6 @@ class MeldekortPostgresRepo(
     }
 
     companion object {
-        private fun Row.toMeldeperiode(): Meldeperiode {
-            val id = MeldeperiodeId.fromString(string("id"))
-            val kjedeId = MeldeperiodeKjedeId(string("kjede_id"))
-            val versjon = int("versjon")
-            val sakId = SakId.fromString(string("sak_id"))
-            val saksnummer = string("saksnummer")
-            val fnr = Fnr.fromString(string("fnr"))
-            val periode = Periode(
-                fraOgMed = localDate("fra_og_med"),
-                tilOgMed = localDate("til_og_med"),
-            )
-            val opprettet = localDateTime("opprettet")
-            val maksAntallDagerForPeriode = int("maks_antall_dager_for_periode")
-            val girRett = string("gir_rett").fromDbJsonToGirRett()
-
-            return Meldeperiode(
-                id = id,
-                kjedeId = kjedeId,
-                versjon = versjon,
-                sakId = sakId,
-                saksnummer = saksnummer,
-                fnr = fnr,
-                periode = periode,
-                opprettet = opprettet,
-                maksAntallDagerForPeriode = maksAntallDagerForPeriode,
-                girRett = girRett,
-            )
-        }
-
-        private fun String.fromDbJsonToGirRett(): Map<LocalDate, Boolean> {
-            val typeRef = object : TypeReference<Map<LocalDate, Boolean>>() {}
-            return objectMapper.readValue(this, typeRef)
-        }
-
         private fun fromRow(
             row: Row,
             session: Session,

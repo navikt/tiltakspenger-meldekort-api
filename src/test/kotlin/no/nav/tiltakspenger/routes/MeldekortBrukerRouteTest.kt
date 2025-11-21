@@ -15,7 +15,9 @@ import io.ktor.server.util.url
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -53,21 +55,13 @@ class MeldekortBrukerRouteTest {
     @Test
     fun `hent neste meldekort for utfylling`() {
         val tac = TestApplicationContext()
+        (tac.clock as TikkendeKlokke).spolTil(1.mars(2025))
 
-        val førstePeriode = Periode(
-            fraOgMed = LocalDate.of(2025, 1, 6),
-            tilOgMed = LocalDate.of(2025, 1, 19),
-        )
-
+        val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
         val andrePeriode = førstePeriode.plus14Dager()
 
-        val førsteMeldeperiode = ObjectMother.meldeperiode(
-            periode = førstePeriode,
-        )
-
-        val andreMeldeperiode = ObjectMother.meldeperiode(
-            periode = andrePeriode,
-        )
+        val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode)
+        val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode)
 
         val sak = ObjectMother.sak(
             meldeperioder = listOf(førsteMeldeperiode, andreMeldeperiode),
@@ -95,12 +89,13 @@ class MeldekortBrukerRouteTest {
 
         testMedMeldekortRoutes(tac) {
             meldekortBrukerRequest().apply {
-                val body = deserialize<BrukerDTO.MedSak>(bodyAsText())
+                val bodyAsText = bodyAsText()
+                val body = deserialize<BrukerDTO.MedSak>(bodyAsText)
 
                 status shouldBe HttpStatusCode.OK
                 contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
 
-                body.nesteMeldekort shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO()
+                body.nesteMeldekort shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO(clock = tac.clock)
                 body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.KAN_UTFYLLES
                 body.forrigeMeldekort shouldBe null
                 body.harSoknadUnderBehandling shouldBe false
@@ -154,10 +149,10 @@ class MeldekortBrukerRouteTest {
                 status shouldBe HttpStatusCode.OK
                 contentType() shouldBe ContentType.parse("application/json; charset=UTF-8")
 
-                body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO()
+                body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
                 body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
 
-                body.forrigeMeldekort shouldBe innsendtMeldekort.tilMeldekortTilBrukerDTO()
+                body.forrigeMeldekort shouldBe innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
                 body.forrigeMeldekort!!.status shouldBe MeldekortStatusDTO.INNSENDT
 
                 body.harSoknadUnderBehandling shouldBe false
@@ -193,7 +188,7 @@ class MeldekortBrukerRouteTest {
 
                 status shouldBe HttpStatusCode.OK
 
-                body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO()
+                body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
                 body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
 
                 body.forrigeMeldekort shouldBe null
@@ -229,16 +224,13 @@ class MeldekortBrukerRouteTest {
     @Test
     fun `skal hente siste versjon av meldekort for en periode med flere versjoner`() {
         val tac = TestApplicationContext()
+        (tac.clock as TikkendeKlokke).spolTil(1.mars(2025))
+
         val lagreFraSaksbehandlingService = tac.lagreFraSaksbehandlingService
 
-        val periode = Periode(
-            fraOgMed = LocalDate.of(2025, 1, 6),
-            tilOgMed = LocalDate.of(2025, 1, 19),
-        )
+        val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
-        val førsteDto = meldeperiodeDto(
-            periode = periode,
-        )
+        val førsteDto = meldeperiodeDto(periode = periode)
         val andreDto = førsteDto.copy(id = MeldeperiodeId.random().toString(), versjon = 2)
 
         val sakDto = ObjectMother.sakDTO(
@@ -328,7 +320,10 @@ class MeldekortBrukerRouteTest {
     @Test
     fun `korrigerer et meldekort`() {
         val tac = TestApplicationContext()
-        val førsteMeldeperiode = ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
+        (tac.clock as TikkendeKlokke).spolTil(1.mars(2025))
+
+        val førsteMeldeperiode =
+            ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
 
         val sak = ObjectMother.sak(meldeperioder = listOf(førsteMeldeperiode))
 
@@ -346,9 +341,12 @@ class MeldekortBrukerRouteTest {
         testMedMeldekortRoutes(tac) {
             val alleMeldekort = this.alleBrukersMeldekort()
             verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort)
-            val meldekortSomSkalKorrigeres = jacksonObjectMapper().readTree(alleMeldekort.hentFørsteMeldekortFraAlleMeldekort())
-            val idForMeldekortSomSkalKorrigeres = MeldekortId.fromString(meldekortSomSkalKorrigeres.get("id").textValue())
-            val meldeperiodeIdForMeldekortSomSkalKorrigeres = meldekortSomSkalKorrigeres.get("meldeperiodeId").textValue()
+            val meldekortSomSkalKorrigeres =
+                jacksonObjectMapper().readTree(alleMeldekort.hentFørsteMeldekortFraAlleMeldekort())
+            val idForMeldekortSomSkalKorrigeres =
+                MeldekortId.fromString(meldekortSomSkalKorrigeres.get("id").textValue())
+            val meldeperiodeIdForMeldekortSomSkalKorrigeres =
+                meldekortSomSkalKorrigeres.get("meldeperiodeId").textValue()
 
             val (korrigertMeldekort) = this.korrigerMeldekort(
                 meldekortId = idForMeldekortSomSkalKorrigeres.toString(),
@@ -417,9 +415,12 @@ class MeldekortBrukerRouteTest {
             val alleMeldekortEtterKorrigering = this.alleBrukersMeldekort()
             alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(2)
             val korrigerteMeldekortFraAlleMeldekort = alleMeldekortEtterKorrigering.hentSisteMeldekortFraAlleMeldekort()
-            jacksonObjectMapper().readTree(korrigerteMeldekortFraAlleMeldekort).get("id").textValue() shouldNotBe idForMeldekortSomSkalKorrigeres.toString()
+            jacksonObjectMapper().readTree(korrigerteMeldekortFraAlleMeldekort).get("id")
+                .textValue() shouldNotBe idForMeldekortSomSkalKorrigeres.toString()
 
-            tac.meldekortRepo.hentForMeldekortId(idForMeldekortSomSkalKorrigeres, Fnr.fromString(FAKE_FNR))?.status shouldBe MeldekortStatus.INNSENDT
+            tac.meldekortRepo.hentForMeldekortId(idForMeldekortSomSkalKorrigeres, Fnr.fromString(FAKE_FNR))?.status(
+                tac.clock,
+            ) shouldBe MeldekortStatus.INNSENDT
 
             korrigertMeldekort.id shouldNotBe idForMeldekortSomSkalKorrigeres
             korrigertMeldekort.status shouldBe MeldekortStatusDTO.INNSENDT

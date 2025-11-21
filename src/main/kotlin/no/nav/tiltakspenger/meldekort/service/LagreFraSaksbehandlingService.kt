@@ -133,7 +133,7 @@ class LagreFraSaksbehandlingService(
 
         // Ikke lag et nytt meldekort dersom meldekortet allerede var mottatt
         // Bruker må selv opprette en korrigering dersom det er endringer som påvirker allerede innsendte meldekort
-        if (eksisterendeMeldekort.mottatt != null) {
+        if (eksisterendeMeldekort.erInnsendt) {
             return null
         }
 
