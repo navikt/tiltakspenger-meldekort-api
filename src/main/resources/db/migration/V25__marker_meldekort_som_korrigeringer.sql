@@ -1,6 +1,3 @@
-ALTER TABLE meldekort_bruker
-  ADD COLUMN IF NOT EXISTS korrigering BOOLEAN NOT NULL DEFAULT FALSE;
-
 WITH meldekort_i_kjede AS (
     SELECT mb.id,
            row_number() OVER (PARTITION BY mp.sak_id, mp.kjede_id ORDER BY mb.mottatt, mb.id) AS indeks
