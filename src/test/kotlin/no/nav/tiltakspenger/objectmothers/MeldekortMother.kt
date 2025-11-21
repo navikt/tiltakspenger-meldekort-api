@@ -110,7 +110,6 @@ interface MeldekortMother {
     ): LagreMeldekortFraBrukerKommando {
         return LagreMeldekortFraBrukerKommando(
             id = meldekortId,
-            mottatt = nå(fixedClock),
             fnr = meldeperiode.fnr,
             dager = dager,
         )
@@ -139,7 +138,6 @@ fun lagMeldekortFraBrukerKommando(
 ): LagreMeldekortFraBrukerKommando {
     return LagreMeldekortFraBrukerKommando(
         id = meldekort.id,
-        mottatt = nå(fixedClock),
         fnr = fnr,
         dager = meldekort.dager.map {
             MeldekortDagFraBrukerDTO(

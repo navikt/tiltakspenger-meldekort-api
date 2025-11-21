@@ -29,7 +29,7 @@ fun Route.meldekortFraBrukerRoute(
     post("send-inn") {
         val lagreFraBrukerKommando = Either.catch {
             deserialize<MeldekortFraBrukerDTO>(call.receiveText())
-                .tilLagreKommando(call.fnr(), clock)
+                .tilLagreKommando(call.fnr())
         }.getOrElse {
             with("Feil ved parsing av innsendt meldekort fra bruker") {
                 logger.error { this }
@@ -71,6 +71,6 @@ fun Route.meldekortFraBrukerRoute(
             ),
         )
 
-        call.respond(HttpStatusCode.OK, meldekort.tilMeldekortTilBrukerDTO())
+        call.respond(HttpStatusCode.OK, meldekort.tilMeldekortTilBrukerDTO(clock))
     }
 }

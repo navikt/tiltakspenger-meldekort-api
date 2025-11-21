@@ -4,6 +4,7 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.getOrFail
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -36,6 +37,7 @@ class LagreFraSaksbehandlingServiceTest {
     fun `Skal ikke generere nytt meldekort for ny meldeperiode-versjon dersom meldekort allerede var mottatt for meldeperioden`() {
         val tac = TestApplicationContext()
         val meldeperiodeDto = ObjectMother.meldeperiodeDto()
+        (tac.clock as TikkendeKlokke).spolTil(meldeperiodeDto.tilOgMed)
 
         val sakDto = ObjectMother.sakDTO(
             meldeperioder = listOf(

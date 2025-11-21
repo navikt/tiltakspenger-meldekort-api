@@ -9,6 +9,8 @@ import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * meldekort-api er master for brukers meldekort.
@@ -20,6 +22,7 @@ import java.time.LocalDateTime
  * @param deaktivert settes dersom meldeperioden har fått en ny versjon (pga revurdering), og forrige meldekort-versjon ikke er mottatt fra bruker
  * @param mottatt Tidspunktet mottatt fra bruker
  * @param dager Et innslag per dag i meldeperioden. Må være sortert.
+ *
  */
 data class Meldekort(
     val id: MeldekortId,
@@ -42,10 +45,12 @@ data class Meldekort(
     val fnr: Fnr = meldeperiode.fnr
     val saksnummer: String = meldeperiode.saksnummer
 
-    val status: MeldekortStatus = when {
-        mottatt != null -> MeldekortStatus.INNSENDT
+    val erInnsendt: Boolean by lazy { mottatt != null }
+
+    fun status(clock: Clock): MeldekortStatus = when {
+        erInnsendt -> MeldekortStatus.INNSENDT
         deaktivert != null -> MeldekortStatus.DEAKTIVERT
-        !periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending()) -> MeldekortStatus.KAN_UTFYLLES
+        LocalDateTime.now(clock).isAfter(meldeperiode.kanFyllesUtFraOgMed) -> MeldekortStatus.KAN_UTFYLLES
         else -> MeldekortStatus.IKKE_KLAR
     }
 
@@ -53,13 +58,13 @@ data class Meldekort(
      * Om den er klar til innsending nå.
      * OBS! Denne dupliserer logikken som finnes for [no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo.hentAlleMeldekortKlarTilInnsending]. Om den ene endres så burde begge endres
      */
-    val klarTilInnsending: Boolean by lazy { status == MeldekortStatus.KAN_UTFYLLES }
+    fun klarTilInnsending(clock: Clock): Boolean = status(clock) == MeldekortStatus.KAN_UTFYLLES
 
     /** Hvilken dag de er klar til innsending eller null dersom den aldri kan sendes inn. */
-    val klarTilInnsendingDag: LocalDate? = when (status) {
+    fun klarTilInnsendingDateTime(clock: Clock): LocalDateTime? = when (status(clock)) {
         MeldekortStatus.KAN_UTFYLLES,
         MeldekortStatus.IKKE_KLAR,
-        -> periode.tilOgMed.minusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+        -> meldeperiode.kanFyllesUtFraOgMed
 
         MeldekortStatus.INNSENDT,
         MeldekortStatus.DEAKTIVERT,
@@ -77,8 +82,11 @@ data class Meldekort(
         brukerutfylteDager: List<MeldekortDag>,
         korrigering: Boolean,
     ): Meldekort {
-        if (this.mottatt != null) {
+        if (erInnsendt) {
             throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
+        }
+        require(this.status(clock) == MeldekortStatus.KAN_UTFYLLES) {
+            "Meldekort med id ${this.id} er ikke klar til innsending (status: ${this.status(clock)})"
         }
         return this.copy(
             meldeperiode = sisteMeldeperiode,
@@ -89,14 +97,18 @@ data class Meldekort(
     }
 
     fun fyllUtMeldekortFraBruker(
-        mottatt: LocalDateTime,
         brukerutfylteDager: List<MeldekortDag>,
+        clock: Clock,
     ): Meldekort {
-        if (this.mottatt != null) {
+        if (erInnsendt) {
             throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
         }
+        require(this.status(clock) == MeldekortStatus.KAN_UTFYLLES) {
+            "Meldekort med id ${this.id} er ikke klar til innsending (status: ${this.status(clock)})"
+        }
+
         return this.copy(
-            mottatt = mottatt,
+            mottatt = LocalDateTime.now(clock),
             dager = brukerutfylteDager,
         )
     }
@@ -147,10 +159,7 @@ data class Meldekort(
             require(journalpostId == null)
         }
 
-        if (mottatt != null) {
-            require(!periode.tilOgMed.isAfter(senesteTilOgMedDatoForInnsending())) {
-                "Meldekortet er ikke klart for innsending fra bruker"
-            }
+        if (erInnsendt) {
             require(deaktivert == null) {
                 "Meldekort ${this.id} kan ikke være både mottatt og deaktivert"
             }
@@ -163,10 +172,10 @@ data class Meldekort(
     }
 
     companion object {
-        const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
-
-        fun senesteTilOgMedDatoForInnsending(): LocalDate? =
-            LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
+//        const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
+//
+//        fun senesteTilOgMedDatoForInnsending(): LocalDate? =
+//            LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
     }
 }
 

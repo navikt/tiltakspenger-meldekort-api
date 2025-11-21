@@ -11,6 +11,7 @@ import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.toDto
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.MeldekortTilKorrigeringDTO.PreutfyltKorrigeringDTO
+import java.time.Clock
 import java.time.LocalDateTime
 
 data class MeldekortTilKorrigeringDTO(
@@ -28,7 +29,7 @@ data class MeldekortTilKorrigeringDTO(
     )
 }
 
-fun Meldeperiode.tilKorrigeringDTO(forrigeMeldekort: Meldekort): MeldekortTilKorrigeringDTO {
+fun Meldeperiode.tilKorrigeringDTO(forrigeMeldekort: Meldekort, clock: Clock): MeldekortTilKorrigeringDTO {
     requireNotNull(forrigeMeldekort.mottatt)
 
     val oppdaterteDager = forrigeMeldekort.dager.map { meldekortDag ->
@@ -47,7 +48,7 @@ fun Meldeperiode.tilKorrigeringDTO(forrigeMeldekort: Meldekort): MeldekortTilKor
     }
 
     return MeldekortTilKorrigeringDTO(
-        forrigeMeldekort = forrigeMeldekort.tilMeldekortTilBrukerDTO(),
+        forrigeMeldekort = forrigeMeldekort.tilMeldekortTilBrukerDTO(clock),
         tilUtfylling = PreutfyltKorrigeringDTO(
             meldeperiodeId = id.toString(),
             kjedeId = kjedeId.toString(),
