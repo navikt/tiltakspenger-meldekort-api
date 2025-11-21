@@ -1,0 +1,2 @@
+ALTER TABLE meldekort_bruker
+    ADD COLUMN IF NOT EXISTS korrigering BOOLEAN NOT NULL DEFAULT FALSE;
