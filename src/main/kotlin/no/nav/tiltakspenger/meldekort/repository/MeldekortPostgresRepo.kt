@@ -464,6 +464,7 @@ class MeldekortPostgresRepo(
                 journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
                 varselId = row.stringOrNull("varsel_id")?.let { VarselId(it) },
                 erVarselInaktivert = row.boolean("varsel_inaktivert"),
+                korrigering = row.boolean("korrigering"),
             )
         }
     }

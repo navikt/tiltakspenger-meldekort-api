@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import java.time.temporal.ChronoUnit
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 class MeldekortForKjedeTest {
 
@@ -162,6 +160,7 @@ class MeldekortForKjedeTest {
             actualMeldekort shouldBe åpentMeldekort2.copy(
                 mottatt = nå(fixedClock),
                 dager = korrigerteDager,
+                korrigering = true,
             )
         }
 

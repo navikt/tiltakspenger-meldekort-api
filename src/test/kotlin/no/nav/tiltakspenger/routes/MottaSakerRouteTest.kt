@@ -283,6 +283,7 @@ class MottaSakerRouteTest {
                         sisteMeldeperiode = meldeperiode,
                         clock = tac.clock,
                         brukerutfylteDager = lagreKommando.dager.map { it.tilMeldekortDag() },
+                        korrigering = false,
                     ),
                 )
             }

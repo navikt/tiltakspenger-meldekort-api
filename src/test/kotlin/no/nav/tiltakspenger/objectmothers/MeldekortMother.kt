@@ -70,6 +70,7 @@ interface MeldekortMother {
             sakId = sakId,
             fnr = fnr,
         ),
+        korrigering: Boolean = false,
     ): Meldekort {
         val dager = meldeperiode.girRett.map { (dag, girRett) ->
             MeldekortDag(
@@ -92,6 +93,7 @@ interface MeldekortMother {
             varselId = varselId,
             erVarselInaktivert = erVarselInaktivert,
             deaktivert = deaktivert,
+            korrigering = korrigering,
         )
     }
 
