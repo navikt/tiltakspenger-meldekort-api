@@ -52,7 +52,6 @@ data class Meldeperiode(
     }
 
     companion object {
-        // TODO - se om å ha en const for tidspunkt for kanFyllesUtFraOgMed er hensiktsmessig
         val TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR = LocalTime.of(15, 0)
     }
 }
