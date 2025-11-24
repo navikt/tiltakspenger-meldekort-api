@@ -6,10 +6,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR
-import java.time.DayOfWeek
-import java.time.LocalDateTime
-import java.time.temporal.TemporalAdjusters
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
 
 data class Sak(
     val id: SakId,
@@ -42,14 +39,6 @@ enum class ArenaMeldekortStatus {
     HAR_MELDEKORT,
     HAR_IKKE_MELDEKORT,
 }
-
-fun Periode.kanFyllesUtFraOgMed(): LocalDateTime =
-    this.tilOgMed.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY))
-        .atTime(TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR).also {
-            if (!this.inneholder(it.toLocalDate())) {
-                throw IllegalArgumentException("$it er utenfor perioden $this")
-            }
-        }
 
 fun SakTilMeldekortApiDTO.tilSak(): Sak {
     val sakId = SakId.fromString(this.sakId)

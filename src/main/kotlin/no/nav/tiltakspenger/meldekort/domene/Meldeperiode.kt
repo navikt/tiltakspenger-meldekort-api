@@ -5,9 +5,11 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.temporal.TemporalAdjusters
 import kotlin.math.max
 
 /**
@@ -52,6 +54,14 @@ data class Meldeperiode(
     }
 
     companion object {
-        val TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR = LocalTime.of(15, 0)
+        private val TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR = LocalTime.of(15, 0)
+
+        fun Periode.kanFyllesUtFraOgMed(): LocalDateTime =
+            this.tilOgMed.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY))
+                .atTime(TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR).also {
+                    if (!this.inneholder(it.toLocalDate())) {
+                        throw IllegalArgumentException("$it er utenfor perioden $this")
+                    }
+                }
     }
 }
