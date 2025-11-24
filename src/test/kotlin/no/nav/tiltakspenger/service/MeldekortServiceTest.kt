@@ -5,6 +5,7 @@ import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -19,6 +20,8 @@ class MeldekortServiceTest {
     @Test
     fun `Kan lagre gyldig meldekort fra bruker`() {
         val tac = TestApplicationContext()
+        (tac.clock as TikkendeKlokke).spolTil(gyldigPeriode.tilOgMed)
+
         val meldekortRepo = tac.meldekortRepo
         val meldekortService = tac.meldekortService
 
@@ -29,7 +32,7 @@ class MeldekortServiceTest {
 
         val oppdatertMeldekort = meldekortRepo.hentForMeldekortId(meldekortId = meldekort.id, fnr = meldekort.fnr)
         val forventetMeldekort =
-            meldekort.copy(mottatt = lagreKommando.mottatt, dager = lagreKommando.dager.map { it.tilMeldekortDag() })
+            meldekort.copy(dager = lagreKommando.dager.map { it.tilMeldekortDag() }, mottatt = oppdatertMeldekort?.mottatt)
 
         oppdatertMeldekort shouldBe forventetMeldekort
     }
@@ -37,6 +40,7 @@ class MeldekortServiceTest {
     @Test
     fun `Kan ikke lagre meldekort fra bruker for periode som ikke er klart til innsending`() {
         val tac = TestApplicationContext()
+        (tac.clock as TikkendeKlokke).spolTil(LocalDate.now())
         val meldekortService = tac.meldekortService
 
         val meldekort = tac.lagMeldekort(
@@ -48,7 +52,7 @@ class MeldekortServiceTest {
         )
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-        shouldThrowWithMessage<IllegalArgumentException>("Meldekortet er ikke klart for innsending fra bruker") {
+        shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er ikke klar til innsending (status: IKKE_KLAR)") {
             meldekortService.lagreMeldekortFraBruker(lagreKommando)
         }
     }

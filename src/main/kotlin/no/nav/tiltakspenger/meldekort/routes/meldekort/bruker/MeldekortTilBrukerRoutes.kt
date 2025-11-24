@@ -14,10 +14,12 @@ import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.service.BrukerService
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
+import java.time.Clock
 
 fun Route.meldekortTilBrukerRoutes(
     meldekortService: MeldekortService,
     brukerService: BrukerService,
+    clock: Clock,
 ) {
     get("meldekort/innsendte") {
         val fnr = call.fnr()
@@ -26,14 +28,14 @@ fun Route.meldekortTilBrukerRoutes(
 
         val alleMeldekort = if (bruker is Bruker.MedSak) {
             meldekortService.hentInnsendteMeldekort(fnr)
-                .map { it.tilMeldekortTilBrukerDTO() }
+                .map { it.tilMeldekortTilBrukerDTO(clock) }
         } else {
             emptyList()
         }
 
         call.respond(
             AlleMeldekortDTO(
-                bruker = bruker.tilBrukerDTO(),
+                bruker = bruker.tilBrukerDTO(clock),
                 meldekort = alleMeldekort,
             ),
         )
@@ -52,7 +54,7 @@ fun Route.meldekortTilBrukerRoutes(
                 MeldekortForKjedeDTO(
                     kjedeId = it.kjedeId?.toString(),
                     periode = it.kjedeId?.periode?.toDTO(),
-                    meldekort = it.map { it.tilMeldekortTilBrukerDTO() },
+                    meldekort = it.map { it.tilMeldekortTilBrukerDTO(clock) },
                 ),
             )
         }
@@ -66,7 +68,7 @@ fun Route.meldekortTilBrukerRoutes(
         }
 
         meldekortService.hentForMeldekortId(meldekortId, call.fnr())?.also {
-            call.respond(it.tilMeldekortTilBrukerDTO())
+            call.respond(it.tilMeldekortTilBrukerDTO(clock))
             return@get
         }
 
@@ -79,7 +81,7 @@ fun Route.meldekortTilBrukerRoutes(
     get("bruker") {
         val bruker = brukerService.hentBruker(call.fnr())
 
-        call.respond(bruker.tilBrukerDTO())
+        call.respond(bruker.tilBrukerDTO(clock))
     }
 
     get("/korrigering/{meldekortId}") {
@@ -91,7 +93,7 @@ fun Route.meldekortTilBrukerRoutes(
 
         meldekortService.hentMeldekortOgSisteMeldeperiode(meldekortId, call.fnr())
             .let { (meldeperiode, meldekort) ->
-                call.respond(meldeperiode.tilKorrigeringDTO(meldekort))
+                call.respond(meldeperiode.tilKorrigeringDTO(meldekort, clock))
             }
     }
 }

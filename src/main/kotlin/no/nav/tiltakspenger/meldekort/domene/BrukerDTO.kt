@@ -1,5 +1,7 @@
 package no.nav.tiltakspenger.meldekort.domene
 
+import java.time.Clock
+
 sealed interface BrukerDTO {
     val harSak: Boolean
 
@@ -32,12 +34,12 @@ fun ArenaMeldekortStatus.tilDTO(): ArenaMeldekortStatusDTO = when (this) {
     ArenaMeldekortStatus.HAR_IKKE_MELDEKORT -> ArenaMeldekortStatusDTO.HAR_IKKE_MELDEKORT
 }
 
-private fun Bruker.MedSak.tilBrukerDTO(): BrukerDTO.MedSak {
-    val nesteMeldekort = nesteMeldekort?.tilMeldekortTilBrukerDTO()
+private fun Bruker.MedSak.tilBrukerDTO(clock: Clock): BrukerDTO.MedSak {
+    val nesteMeldekort = nesteMeldekort?.tilMeldekortTilBrukerDTO(clock)
 
     return BrukerDTO.MedSak(
         nesteMeldekort = nesteMeldekort,
-        forrigeMeldekort = sisteMeldekort?.tilMeldekortTilBrukerDTO(),
+        forrigeMeldekort = sisteMeldekort?.tilMeldekortTilBrukerDTO(clock),
         arenaMeldekortStatus = sak.arenaMeldekortStatus.tilDTO(),
         harSoknadUnderBehandling = harSoknadUnderBehandling,
         kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
@@ -48,7 +50,7 @@ private fun Bruker.UtenSak.tilBrukerDTO(): BrukerDTO.UtenSak = BrukerDTO.UtenSak
     arenaMeldekortStatus = arenaMeldekortStatus.tilDTO(),
 )
 
-fun Bruker.tilBrukerDTO(): BrukerDTO = when (this) {
-    is Bruker.MedSak -> tilBrukerDTO()
+fun Bruker.tilBrukerDTO(clock: Clock): BrukerDTO = when (this) {
+    is Bruker.MedSak -> tilBrukerDTO(clock)
     is Bruker.UtenSak -> tilBrukerDTO()
 }

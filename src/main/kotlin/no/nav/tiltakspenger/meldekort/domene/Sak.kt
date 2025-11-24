@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
 
 data class Sak(
     val id: SakId,
@@ -44,6 +45,10 @@ fun SakTilMeldekortApiDTO.tilSak(): Sak {
     val fnr = Fnr.fromString(this.fnr)
 
     val meldeperioder = this.meldeperioder.map {
+        val periode = Periode(
+            it.fraOgMed,
+            it.tilOgMed,
+        )
         Meldeperiode(
             id = MeldeperiodeId.fromString(it.id),
             kjedeId = MeldeperiodeKjedeId(it.kjedeId),
@@ -51,13 +56,11 @@ fun SakTilMeldekortApiDTO.tilSak(): Sak {
             sakId = sakId,
             saksnummer = this.saksnummer,
             fnr = fnr,
-            periode = Periode(
-                it.fraOgMed,
-                it.tilOgMed,
-            ),
+            periode = periode,
             opprettet = it.opprettet,
             maksAntallDagerForPeriode = it.antallDagerForPeriode,
             girRett = it.girRett,
+            kanFyllesUtFraOgMed = periode.kanFyllesUtFraOgMed(),
         )
     }.sortedBy { it.periode.fraOgMed }
 

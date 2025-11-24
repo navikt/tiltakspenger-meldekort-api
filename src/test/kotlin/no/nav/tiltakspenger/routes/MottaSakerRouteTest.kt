@@ -12,15 +12,21 @@ import io.ktor.server.util.url
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.TikkendeKlokke
+import no.nav.tiltakspenger.libs.dato.mars
+import no.nav.tiltakspenger.libs.dato.november
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
 import no.nav.tiltakspenger.meldekort.domene.tilSak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.lagreMeldekortFraBrukerKommando
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -44,6 +50,7 @@ class MottaSakerRouteTest {
     @Test
     fun `Skal lagre saken og opprette meldekort`() {
         val tac = TestApplicationContext()
+        (tac.clock as TikkendeKlokke).spolTil(1.mars(2025))
 
         val sakDto = ObjectMother.sakDTO(
             meldeperioder = listOf(
@@ -246,6 +253,7 @@ class MottaSakerRouteTest {
     @Test
     fun `Skal ikke opprette nytt meldekort for kjede der meldekort allerede er mottatt`() {
         val tac = TestApplicationContext()
+        (tac.clock as TikkendeKlokke).spolTil(1.mars(2025))
 
         val meldeperiode = ObjectMother.meldeperiodeDto(
             periode = førstePeriode,
@@ -297,6 +305,36 @@ class MottaSakerRouteTest {
                 )
 
                 meldekortFraKjede.size shouldBe 1
+            }
+        }
+    }
+
+    @Nested
+    inner class FinnerNærmesteFredagInnenforPeriodenOgLeggerPåRiktigTidspunkt {
+        @Test
+        fun `tilOgMed = torsdag - velger fredag som er '1 uke tilbake'`() {
+            val periode = Periode(fraOgMed = 10.november(2025), tilOgMed = 20.november(2025))
+
+            val actual = periode.kanFyllesUtFraOgMed()
+
+            actual shouldBe 14.november(2025).atTime(15, 0, 0)
+        }
+
+        @Test
+        fun `tilOgMed = lørdag - velger fredagen som er før lørdagen`() {
+            val periode = Periode(fraOgMed = 15.november(2025), tilOgMed = 22.november(2025))
+
+            val actual = periode.kanFyllesUtFraOgMed()
+
+            actual shouldBe 21.november(2025).atTime(15, 0, 0)
+        }
+
+        @Test
+        fun `perioden inneholder ikke en fredag`() {
+            val periode = Periode(fraOgMed = 19.november(2025), tilOgMed = 20.november(2025))
+
+            assertThrows<IllegalArgumentException> {
+                periode.kanFyllesUtFraOgMed()
             }
         }
     }

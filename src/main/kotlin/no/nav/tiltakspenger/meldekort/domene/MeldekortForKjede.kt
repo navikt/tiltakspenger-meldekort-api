@@ -16,11 +16,12 @@ data class MeldekortForKjede(
      */
     val kjedeId = meldekort.firstOrNull()?.meldeperiode?.kjedeId
 
-    val harInnsendtMeldekort by lazy { meldekort.any { it.status == MeldekortStatus.INNSENDT } }
+    val harInnsendtMeldekort by lazy { meldekort.any { it.erInnsendt } }
 
-    val erSisteMeldekortKlarTilInnsending by lazy { meldekort.lastOrNull()?.klarTilInnsending == true }
+    fun erSisteMeldekortKlarTilInnsending(clock: Clock): Boolean =
+        meldekort.lastOrNull()?.klarTilInnsending(clock) == true
 
-    fun sisteInnsendteMeldekort(): Meldekort? = meldekort.lastOrNull { it.status == MeldekortStatus.INNSENDT }
+    fun sisteInnsendteMeldekort(): Meldekort? = meldekort.lastOrNull { it.erInnsendt }
 
     fun korriger(
         command: KorrigerMeldekortCommand,
@@ -35,7 +36,7 @@ data class MeldekortForKjede(
             "Meldekort med id ${command.meldekortId} er ikke siste meldekort i kjeden ${sisteInnsendteMeldekort()!!.meldeperiode.kjedeId}. Kan ikke korrigere."
         }
 
-        return if (erSisteMeldekortKlarTilInnsending) {
+        return if (erSisteMeldekortKlarTilInnsending(clock)) {
             meldekort.last().fyllUtMeldekortFraBruker(
                 sisteMeldeperiode = sisteMeldeperiode,
                 clock = clock,
@@ -75,8 +76,8 @@ data class MeldekortForKjede(
 
             // Vi er kun interessert å sammenligne mottatt innenfor samme versjon av meldeperioden
             if (a.meldeperiode.versjon == b.meldeperiode.versjon) {
-                if (a.mottatt != null && b.mottatt != null) {
-                    require(a.mottatt <= b.mottatt) {
+                if (a.erInnsendt && b.erInnsendt) {
+                    require(a.mottatt!! <= b.mottatt) {
                         """
                         Meldekortene må være sortert på mottatt. Feil i kjedeId ${a.meldeperiode.kjedeId}.
                             a: ${a.mottatt}.

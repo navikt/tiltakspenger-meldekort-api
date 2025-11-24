@@ -59,7 +59,7 @@ class MeldekortRepoFake(
 
     override fun hentSisteUtfylteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
         return data.get().values
-            .filter { it.fnr == fnr && it.mottatt != null }
+            .filter { it.fnr == fnr && it.erInnsendt }
             .sortedBy { it.mottatt }
             .lastOrNull()
     }
@@ -70,7 +70,7 @@ class MeldekortRepoFake(
     ): List<Meldekort> {
         return data.get().values
             .filter {
-                it.fnr == fnr && it.periode.tilOgMed <= Meldekort.senesteTilOgMedDatoForInnsending() && it.deaktivert == null
+                it.fnr == fnr && it.meldeperiode.kanFyllesUtFraOgMed <= LocalDateTime.now(clock) && it.deaktivert == null
             }
             .sortedWith(compareByDescending<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
     }

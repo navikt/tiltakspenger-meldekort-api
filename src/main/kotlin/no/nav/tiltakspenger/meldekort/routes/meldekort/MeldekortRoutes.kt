@@ -32,7 +32,7 @@ fun Route.meldekortRoutes(
     // Endepunkter som kalles fra brukers meldekort-frontend
     authenticate(IdentityProvider.TOKENX.value) {
         route("/brukerfrontend") {
-            meldekortTilBrukerRoutes(meldekortService, brukerService)
+            meldekortTilBrukerRoutes(meldekortService, brukerService, clock)
             meldekortFraBrukerRoute(meldekortService, clock)
         }
     }
@@ -40,7 +40,7 @@ fun Route.meldekortRoutes(
     // Endepunkter som kalles fra brukers meldekort-microfrontend
     authenticate(IdentityProvider.TOKENX.value) {
         route("/din-side/microfrontend") {
-            microfrontendRoutes(meldekortService)
+            microfrontendRoutes(meldekortService, clock)
         }
     }
 }

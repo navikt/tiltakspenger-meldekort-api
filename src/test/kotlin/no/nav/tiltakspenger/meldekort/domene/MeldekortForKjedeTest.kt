@@ -3,13 +3,17 @@ package no.nav.tiltakspenger.meldekort.domene
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltakspenger.libs.common.fixedClock
+import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.service.KorrigerMeldekortCommand
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import java.time.Clock
 import java.time.temporal.ChronoUnit
 
 class MeldekortForKjedeTest {
@@ -41,28 +45,46 @@ class MeldekortForKjedeTest {
     inner class ErSisteMeldekortKlarTilInnsending {
         @Test
         fun `true dersom siste meldekort er klar til innsending`() {
-            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode())
+            val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+            val meldekort1 = ObjectMother.meldekort(
+                mottatt = null,
+                meldeperiode = ObjectMother.meldeperiode(periode = periode),
+            )
             val meldekort2 =
-                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(versjon = 2))
+                ObjectMother.meldekort(
+                    mottatt = null,
+                    meldeperiode = ObjectMother.meldeperiode(
+                        versjon = 2,
+                        periode = periode,
+                    ),
+                )
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
-            meldekortForKjede.erSisteMeldekortKlarTilInnsending shouldBe true
+            meldekortForKjede.erSisteMeldekortKlarTilInnsending(
+                clock = fixedClockAt(19.januar(2025).atTime(15, 0, 1)),
+            ) shouldBe true
         }
 
         @Test
         fun `false dersom siste meldekort ikke er klar til innsending`() {
-            val meldekort1 = ObjectMother.meldekort(mottatt = null)
-            val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2))
+            val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+
+            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(periode = periode))
+            val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, periode = periode))
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
-            meldekortForKjede.erSisteMeldekortKlarTilInnsending shouldBe false
+            meldekortForKjede.erSisteMeldekortKlarTilInnsending(
+                clock = fixedClockAt(14.januar(2021).atTime(14, 59, 59)),
+            ) shouldBe false
         }
 
         @Test
         fun `false dersom det ikke finnes noen meldekort i kjeden`() {
             val meldekortForKjede = MeldekortForKjede(emptyList())
 
-            meldekortForKjede.erSisteMeldekortKlarTilInnsending shouldBe false
+            meldekortForKjede.erSisteMeldekortKlarTilInnsending(
+                clock = fixedClockAt(14.januar(2021).atTime(15, 0, 1)),
+            ) shouldBe false
         }
     }
 
@@ -128,7 +150,7 @@ class MeldekortForKjedeTest {
         }
 
         @Test
-        fun `korrigerer og fører til en oppdatering av av eksisterende meldekort til innsending`() {
+        fun `korrigerer og fører til en oppdatering av et eksisterende meldekort til innsending`() {
             val meldeperiode1 = ObjectMother.meldeperiode()
             val meldeperiode2 = ObjectMother.meldeperiode(
                 sakId = meldeperiode1.sakId,
@@ -154,11 +176,11 @@ class MeldekortForKjedeTest {
                     korrigerteDager = korrigerteDager,
                 ),
                 sisteMeldeperiode = meldeperiode2,
-                clock = fixedClock,
+                clock = fixedClockAt(meldeperiode2.periode.tilOgMed),
             )
 
             actualMeldekort shouldBe åpentMeldekort2.copy(
-                mottatt = nå(fixedClock),
+                mottatt = nå(fixedClockAt(meldeperiode2.periode.tilOgMed)),
                 dager = korrigerteDager,
                 korrigering = true,
             )

@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -27,6 +28,7 @@ interface MeldeperiodeMother {
         opprettet: LocalDateTime? = null,
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
         antallDagerForPeriode: Int = girRett.filter { it.value }.size,
+        kanFyllesUtFraOgMed: LocalDateTime = periode.kanFyllesUtFraOgMed(),
     ): Meldeperiode {
         require(MeldeperiodeKjedeId.fraPeriode(periode) == kjedeId) {
             "KjedeId må være lik MeldeperiodeKjedeId.fraPeriode(periode)"
@@ -42,6 +44,7 @@ interface MeldeperiodeMother {
             opprettet = opprettet ?: nå(fixedClock),
             maksAntallDagerForPeriode = antallDagerForPeriode,
             girRett = girRett,
+            kanFyllesUtFraOgMed = kanFyllesUtFraOgMed,
         )
     }
 
