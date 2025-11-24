@@ -170,13 +170,6 @@ data class Meldekort(
             }
         }
     }
-
-    companion object {
-//        const val DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING = 2L
-//
-//        fun senesteTilOgMedDatoForInnsending(): LocalDate? =
-//            LocalDate.now().plusDays(DAGER_FØR_PERIODE_SLUTT_FOR_INNSENDING)
-    }
 }
 
 fun Meldeperiode.tilTomtMeldekort(): Meldekort {
