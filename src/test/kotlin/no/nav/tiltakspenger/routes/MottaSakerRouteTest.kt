@@ -312,21 +312,21 @@ class MottaSakerRouteTest {
     @Nested
     inner class FinnerNærmesteFredagInnenforPeriodenOgLeggerPåRiktigTidspunkt {
         @Test
-        fun `tilOgMed = torsdag - på grensen av en fredag`() {
+        fun `tilOgMed = torsdag - velger fredag som er '1 uke tilbake'`() {
             val periode = Periode(fraOgMed = 10.november(2025), tilOgMed = 20.november(2025))
 
             val actual = periode.kanFyllesUtFraOgMed()
 
-            actual shouldBe LocalDateTime.of(2025, 11, 14, 15, 0, 0)
+            actual shouldBe 14.november(2025).atTime(15, 0, 0)
         }
 
         @Test
-        fun `tilOgMed = lørdag - på grensen av en fredag`() {
+        fun `tilOgMed = lørdag - velger fredagen som er før lørdagen`() {
             val periode = Periode(fraOgMed = 15.november(2025), tilOgMed = 22.november(2025))
 
             val actual = periode.kanFyllesUtFraOgMed()
 
-            actual shouldBe LocalDateTime.of(2025, 11, 21, 15, 0, 0)
+            actual shouldBe 21.november(2025).atTime(15, 0, 0)
         }
 
         @Test
