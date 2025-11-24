@@ -329,7 +329,7 @@ class MeldekortPostgresRepo(
                             SELECT mp.fnr AS fnr_med_varsel
                             FROM meldekort_bruker mk
                                      JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
-                            WHERE mp.til_og_med <= :maks_til_og_med
+                            WHERE mp.kan_fylles_ut_fra_og_med <= :tidsgrense
                               AND mk.mottatt IS NULL
                               AND mk.deaktivert IS NULL
                               AND mk.varsel_id IS NOT NULL
