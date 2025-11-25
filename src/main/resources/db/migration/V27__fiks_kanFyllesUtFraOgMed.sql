@@ -8,6 +8,4 @@
 
 update meldeperiode
 set kan_fylles_ut_fra_og_med = (til_og_med::date - 2 || ' 00:00:00')::TIMESTAMP
-from meldeperiode m
-         join meldekort_bruker mk on m.id = mk.meldeperiode_id
 WHERE kan_fylles_ut_fra_og_med < TIMESTAMP '2025-11-24 15:02:00';
