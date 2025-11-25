@@ -70,7 +70,7 @@ dependencies {
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMikrofrontendSelectorBuilderVersion")
 
     // DB
-    implementation("org.flywaydb:flyway-database-postgresql:11.17.0")
+    implementation("org.flywaydb:flyway-database-postgresql:11.17.2")
     implementation("com.zaxxer:HikariCP:7.0.2")
     implementation("org.postgresql:postgresql:42.7.8")
     implementation("com.github.seratch:kotliquery:1.9.1")
