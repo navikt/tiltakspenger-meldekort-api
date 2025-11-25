@@ -45,6 +45,13 @@ data class Meldeperiode(
     // TODO Ramzi og John: Fjern denne når vi har fjernet den fra frontend.
     val minAntallDagerForPeriode = max((maksAntallDagerForPeriode - antallDagerSomIkkeGirRett), 0)
 
+    fun erLik(other: Meldeperiode): Boolean {
+        // Enkelte felter er ikke relevante for å avgjøre om to saker er like, dermed kopierer vi disse feltene før sammenligningen
+        return this.copy(
+            kanFyllesUtFraOgMed = other.kanFyllesUtFraOgMed,
+        ) == other
+    }
+
     init {
         require(versjon >= 0) { "Versjon må være større eller lik 0" }
         require(girRett.size.toLong() == periode.antallDager) { "GirRett må ha like mange dager som perioden" }

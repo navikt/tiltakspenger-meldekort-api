@@ -50,7 +50,7 @@ class LagreFraSaksbehandlingService(
                 return@filter true
             }
 
-            if (eksisterendeMeldeperiode == nyMeldeperiode) {
+            if (eksisterendeMeldeperiode.erLik(nyMeldeperiode)) {
                 logger.debug { "Meldeperioden $meldeperiodeId finnes allerede med samme data" }
                 return@filter false
             }
