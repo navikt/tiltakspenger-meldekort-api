@@ -20,7 +20,6 @@ fun Route.microfrontendRoutes(
                 HttpStatusCode.OK,
                 MicrofrontendKortDTO(
                     antallMeldekortKlarTilInnsending = antallMeldekortKlarTilInnsending,
-                    nesteMuligeInnsending = nesteMuligeInnsending?.toLocalDate(),
                     nesteMuligeInnsendingstidspunkt = nesteMuligeInnsending,
                 ),
             )
