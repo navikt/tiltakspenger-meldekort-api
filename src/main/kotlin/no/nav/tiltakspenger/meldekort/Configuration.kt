@@ -92,6 +92,7 @@ object Configuration {
                 "PDFGEN_URL" to "http://host.docker.internal:8081",
                 "ARENA_MELDEKORTSERVICE_URL" to "http://host.docker.internal:8091",
                 "ARENA_MELDEKORTSERVICE_AUDIENCE" to "meldekortservice",
+                "BRUK_FAKE_AUTH" to System.getenv("BRUK_FAKE_AUTH"),
             ),
         )
 
@@ -141,6 +142,9 @@ object Configuration {
 
     val arenaMeldekortServiceUrl: String by lazy { config()[Key("ARENA_MELDEKORTSERVICE_URL", stringType)] }
     val arenaMeldekortServiceAudience: String by lazy { config()[Key("ARENA_MELDEKORTSERVICE_AUDIENCE", stringType)] }
+
+    val brukFakeTexasClientLokalt: Boolean =
+        config().getOrNull(Key("BRUK_FAKE_AUTH", stringType))?.toBooleanStrictOrNull() ?: true
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 

@@ -24,6 +24,11 @@ For å bygge artifaktene:
 
 ---
 
+## Lokal kjøring
+Appen kan startes lokalt med main-funksjonen i LokalMain.kt. Som default krever denne kun database kjørende lokalt, andre eksterne tjenester erstattes av fakes.
+
+Dersom du ønsker å kjøre ekte autentiseringsflyt lokalt, sett environvent variabel `BRUK_FAKE_AUTH=false`, f.eks. via run config i Intellij.
+
 # Henvendelser
 
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
