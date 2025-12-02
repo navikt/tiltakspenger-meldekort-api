@@ -9,8 +9,6 @@ import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 /**
  * meldekort-api er master for brukers meldekort.
@@ -138,18 +136,16 @@ data class Meldekort(
         require(dager.size.toLong() == periode.antallDager) { "Antall dager i meldekortet må være lik antall dager i meldeperioden $msgSuffix" }
         require(meldeperiode.girRett.values.any { it }) { "Meldeperioden for meldekortet må ha minst en dag som gir rett $msgSuffix" }
 
-        meldeperiode.girRett.values.zip(dager.map { it.status }) { harRett, brukersInnsendteDagStatus ->
-            when (harRett) {
-                true -> {
-                    require(brukersInnsendteDagStatus != MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
-                        "Når girRett er true, kan ikke status være IKKE_RETT_TIL_TILTAKSPENGER. sakId: $sakId, saksnummer: $saksnummer, meldekortId: $id, periode: $periode, meldeperiodeId: ${meldeperiode.id}"
-                    }
-                }
+        dager.forEach {
+            val harRett = meldeperiode.girRett[it.dag]!!
 
-                false -> {
-                    require(brukersInnsendteDagStatus == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
-                        "Når girRett er false, må status være IKKE_RETT_TIL_TILTAKSPENGER. meldekortDager: $dager, meldeperiodeGirRett: ${meldeperiode.girRett}, sakId: $sakId, saksnummer: $saksnummer, meldekortId: $id, periode: $periode, meldeperiodeId: ${meldeperiode.id}"
-                    }
+            if (harRett) {
+                require(it.status != MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
+                    "Når girRett er true, kan ikke status være IKKE_RETT_TIL_TILTAKSPENGER $msgSuffix"
+                }
+            } else {
+                require(it.status == MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER) {
+                    "Når girRett er false, må status være IKKE_RETT_TIL_TILTAKSPENGER $msgSuffix"
                 }
             }
         }
