@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.domene
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.dato.desember
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -62,13 +63,23 @@ data class Meldeperiode(
 
     companion object {
         private val TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR = LocalTime.of(15, 0)
+        private val SISTE_PERIODE_FØR_JUL_2025 = Periode(
+            fraOgMed = 8.desember(2025),
+            tilOgMed = 21.desember(2025),
+        )
 
-        fun Periode.kanFyllesUtFraOgMed(): LocalDateTime =
-            this.tilOgMed.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY))
+        fun Periode.kanFyllesUtFraOgMed(): LocalDateTime {
+            // Spesialhåndtering for siste meldekort før jul. TODO: kan fjernes fredag 19. des kl 1500!
+            if (this == SISTE_PERIODE_FØR_JUL_2025) {
+                return 17.desember(2025).atTime(TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR)
+            }
+
+            return this.tilOgMed.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY))
                 .atTime(TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR).also {
                     if (!this.inneholder(it.toLocalDate())) {
                         throw IllegalArgumentException("$it er utenfor perioden $this")
                     }
                 }
+        }
     }
 }
