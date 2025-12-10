@@ -1,9 +1,12 @@
 package no.nav.tiltakspenger.meldekort.domene
 
+import arrow.core.left
+import arrow.core.right
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
+import no.nav.tiltakspenger.libs.common.getOrFail
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periodisering.Periode
@@ -13,7 +16,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import java.time.Clock
 import java.time.temporal.ChronoUnit
 
 class MeldekortForKjedeTest {
@@ -69,8 +71,10 @@ class MeldekortForKjedeTest {
         fun `false dersom siste meldekort ikke er klar til innsending`() {
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
-            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(periode = periode))
-            val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, periode = periode))
+            val meldekort1 =
+                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(periode = periode))
+            val meldekort2 =
+                ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, periode = periode))
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
             meldekortForKjede.erSisteMeldekortKlarTilInnsending(
@@ -136,17 +140,18 @@ class MeldekortForKjedeTest {
             val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
             val meldekort2 =
                 ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = meldeperiode)
-            assertThrows<IllegalArgumentException> {
-                MeldekortForKjede(listOf(meldekort1, meldekort2)).korriger(
-                    command = KorrigerMeldekortCommand(
-                        meldekortId = meldekort1.id,
-                        fnr = meldekort1.fnr,
-                        korrigerteDager = emptyList(),
-                    ),
-                    sisteMeldeperiode = meldeperiode,
-                    clock = fixedClock,
-                )
-            }.message shouldBe "Meldekort med id ${meldekort1.id} er ikke siste meldekort i kjeden ${meldekort1.meldeperiode.kjedeId}. Kan ikke korrigere."
+
+            val actual = MeldekortForKjede(listOf(meldekort1, meldekort2)).korriger(
+                command = KorrigerMeldekortCommand(
+                    meldekortId = meldekort1.id,
+                    fnr = meldekort1.fnr,
+                    korrigerteDager = emptyList(),
+                ),
+                sisteMeldeperiode = meldeperiode,
+                clock = fixedClock,
+            )
+
+            actual shouldBe FeilVedKorrigeringAvMeldekort.IkkeSisteMeldekortIKjeden.left()
         }
 
         @Test
@@ -183,7 +188,7 @@ class MeldekortForKjedeTest {
                 mottatt = nå(fixedClockAt(meldeperiode2.periode.tilOgMed)),
                 dager = korrigerteDager,
                 korrigering = true,
-            )
+            ).right()
         }
 
         @Test
@@ -205,7 +210,7 @@ class MeldekortForKjedeTest {
                 ),
                 sisteMeldeperiode = sisteMeldeperiode,
                 clock = fixedClock,
-            )
+            ).getOrFail()
             actualMeldekort.id shouldNotBe meldekort.id
         }
     }

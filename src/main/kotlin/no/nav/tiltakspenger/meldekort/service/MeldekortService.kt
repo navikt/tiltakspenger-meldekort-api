@@ -1,8 +1,10 @@
 package no.nav.tiltakspenger.meldekort.service
 
+import arrow.core.Either
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.meldekort.domene.FeilVedKorrigeringAvMeldekort
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
@@ -69,7 +71,7 @@ class MeldekortService(
         meldekortRepo.markerSendtTilSaksbehandling(id, sendtTidspunkt)
     }
 
-    fun korriger(command: KorrigerMeldekortCommand): Meldekort {
+    fun korriger(command: KorrigerMeldekortCommand): Either<FeilVedKorrigeringAvMeldekort, Meldekort> {
         val meldekortSomKorrigeres = meldekortRepo.hentForMeldekortId(command.meldekortId, command.fnr)!!
         val meldekortForKjede =
             meldekortRepo.hentMeldekortForKjedeId(meldekortSomKorrigeres.meldeperiode.kjedeId, command.fnr)
@@ -79,7 +81,7 @@ class MeldekortService(
             fnr = command.fnr,
         )!!
 
-        return meldekortForKjede.korriger(command, sisteMeldeperiode, clock).also {
+        return meldekortForKjede.korriger(command, sisteMeldeperiode, clock).onRight {
             meldekortRepo.lagre(it)
         }
     }

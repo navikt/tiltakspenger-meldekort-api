@@ -12,9 +12,11 @@ import no.nav.tiltakspenger.libs.texas.client.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
+import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClientImpl
 import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClient
 import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientImpl
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
+import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
@@ -95,7 +97,7 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    open val saksbehandlingClient by lazy {
+    open val saksbehandlingClient: SaksbehandlingClient by lazy {
         SaksbehandlingClientImpl(
             baseUrl = Configuration.saksbehandlingApiUrl,
             getToken = {
@@ -137,8 +139,8 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    open val dokarkivClient by lazy {
-        DokarkivClient(
+    open val dokarkivClient: DokarkivClient by lazy {
+        DokarkivClientImpl(
             baseUrl = Configuration.dokarkivUrl,
             getToken = {
                 texasClient.getSystemToken(

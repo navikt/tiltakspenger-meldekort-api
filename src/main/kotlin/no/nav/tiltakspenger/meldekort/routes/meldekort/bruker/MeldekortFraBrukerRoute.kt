@@ -10,8 +10,10 @@ import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.ktor.common.ErrorJson
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.libs.texas.fnr
+import no.nav.tiltakspenger.meldekort.domene.FeilVedKorrigeringAvMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
@@ -61,7 +63,7 @@ fun Route.meldekortFraBrukerRoute(
         val meldekortId = MeldekortId.fromString(call.parameters["meldekortId"]!!)
         val korrigerteDagerBody = deserialize<List<KorrigertDag>>(call.receiveText())
 
-        val meldekort = meldekortService.korriger(
+        meldekortService.korriger(
             KorrigerMeldekortCommand(
                 meldekortId = meldekortId,
                 fnr = call.fnr(),
@@ -69,8 +71,21 @@ fun Route.meldekortFraBrukerRoute(
                     MeldekortDag(dag = it.dato, status = it.status)
                 },
             ),
+        ).fold(
+            ifLeft = {
+                val (status, message) = it.toErrorJson()
+                call.respond(status, message)
+            },
+            ifRight = {
+                call.respond(HttpStatusCode.OK, it.tilMeldekortTilBrukerDTO(clock))
+            },
         )
-
-        call.respond(HttpStatusCode.OK, meldekort.tilMeldekortTilBrukerDTO(clock))
     }
+}
+
+fun FeilVedKorrigeringAvMeldekort.toErrorJson(): Pair<HttpStatusCode, ErrorJson> = when (this) {
+    FeilVedKorrigeringAvMeldekort.IkkeSisteMeldekortIKjeden -> HttpStatusCode.BadRequest to ErrorJson(
+        "Dette meldekortet er allerede korrigert, og er ikke lenger gyldig. Et nyere meldekort finnes.",
+        "meldekort_allerede_korrigert_og_ikke_lenger_gyldig",
+    )
 }

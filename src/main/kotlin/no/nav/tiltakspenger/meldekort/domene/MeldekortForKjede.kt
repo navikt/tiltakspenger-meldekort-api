@@ -1,5 +1,8 @@
 package no.nav.tiltakspenger.meldekort.domene
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.meldekort.service.KorrigerMeldekortCommand
 import java.time.Clock
@@ -27,13 +30,13 @@ data class MeldekortForKjede(
         command: KorrigerMeldekortCommand,
         sisteMeldeperiode: Meldeperiode,
         clock: Clock,
-    ): Meldekort {
+    ): Either<FeilVedKorrigeringAvMeldekort, Meldekort> {
         require(this.harInnsendtMeldekort) {
             "Finner ingen innsendinger for valgt periode. Dette skulle vært en førstegangsinnsending, ikke en korrigering. MeldekortId: ${command.meldekortId}. Periode: ${sisteMeldeperiode.periode}. SakId: ${sisteMeldeperiode.sakId}. Saksnummer: ${sisteMeldeperiode.saksnummer}."
         }
 
         require(command.meldekortId == sisteInnsendteMeldekort()!!.id) {
-            "Meldekort med id ${command.meldekortId} er ikke siste meldekort i kjeden ${sisteInnsendteMeldekort()!!.meldeperiode.kjedeId}. Kan ikke korrigere."
+            return FeilVedKorrigeringAvMeldekort.IkkeSisteMeldekortIKjeden.left()
         }
 
         return if (erSisteMeldekortKlarTilInnsending(clock)) {
@@ -56,7 +59,7 @@ data class MeldekortForKjede(
                 erVarselInaktivert = false,
                 korrigering = true,
             )
-        }
+        }.right()
     }
 
     init {

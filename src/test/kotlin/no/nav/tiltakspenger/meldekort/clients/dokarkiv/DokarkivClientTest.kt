@@ -50,7 +50,7 @@ class DokarkivClientTest {
             )
         }
         val client = httpClientGeneric(mockEngine)
-        return DokarkivClient(
+        return DokarkivClientImpl(
             client = client,
             baseUrl = baseurl,
             getToken = { getMockToken() },

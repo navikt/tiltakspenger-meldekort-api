@@ -93,6 +93,7 @@ object Configuration {
                 "ARENA_MELDEKORTSERVICE_URL" to "http://host.docker.internal:8091",
                 "ARENA_MELDEKORTSERVICE_AUDIENCE" to "meldekortservice",
                 "BRUK_FAKE_AUTH" to System.getenv("BRUK_FAKE_AUTH"),
+                "BRUK_FAKE_SAKSBEHANDLING" to System.getenv("BRUK_FAKE_SAKSBEHANDLING"),
             ),
         )
 
@@ -145,6 +146,9 @@ object Configuration {
 
     val brukFakeTexasClientLokalt: Boolean =
         config().getOrNull(Key("BRUK_FAKE_AUTH", stringType))?.toBooleanStrictOrNull() ?: true
+
+    val brukFakeSaksbehandlingClient: Boolean =
+        config().getOrNull(Key("BRUK_FAKE_SAKSBEHANDLING", stringType))?.toBooleanStrictOrNull() ?: false
 
     fun logbackConfigurationFile() = config()[Key("logback.configurationFile", stringType)]
 
