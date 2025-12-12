@@ -26,6 +26,9 @@ data class MeldekortForKjede(
 
     fun sisteInnsendteMeldekort(): Meldekort? = meldekort.lastOrNull { it.erInnsendt }
 
+    fun kanMeldekortKorrigeres(meldekortId: MeldekortId): Boolean =
+        harInnsendtMeldekort && sisteInnsendteMeldekort()?.id == meldekortId
+
     fun korriger(
         command: KorrigerMeldekortCommand,
         sisteMeldeperiode: Meldeperiode,

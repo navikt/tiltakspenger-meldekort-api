@@ -276,4 +276,37 @@ class MeldekortForKjedeTest {
             }
         }
     }
+
+    @Nested
+    inner class KanMeldekortKorrigeres {
+        @Test
+        fun `returnerer true dersom det finnes et innsendt meldekort i kjeden`() {
+            val meldeperiode = ObjectMother.meldeperiode()
+            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
+            val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = meldeperiode)
+            val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
+
+            meldekortForKjede.kanMeldekortKorrigeres(meldekort2.id) shouldBe true
+        }
+
+        @Test
+        fun `returnerer false dersom det ikke finnes et innsendt meldekort i kjeden`() {
+            val meldeperiode = ObjectMother.meldeperiode()
+            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
+            val meldekortForKjede = MeldekortForKjede(listOf(meldekort1))
+
+            meldekortForKjede.kanMeldekortKorrigeres(meldekort1.id) shouldBe false
+        }
+
+        @Test
+        fun `returnerer false dersom meldekortet ikke er den siste`() {
+            val meldeperiode = ObjectMother.meldeperiode()
+            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
+            val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = meldeperiode)
+            val meldekort3 = ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = meldeperiode)
+            val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2, meldekort3))
+
+            meldekortForKjede.kanMeldekortKorrigeres(meldekort2.id) shouldBe false
+        }
+    }
 }
