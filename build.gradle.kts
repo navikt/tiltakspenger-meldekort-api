@@ -5,7 +5,7 @@ val jvmVersion = JvmTarget.JVM_21
 val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "3.3.3"
-val mockkVersion = "1.14.6"
+val mockkVersion = "1.14.7"
 val felleslibVersion = "0.0.632"
 val kotestVersion = "6.0.7"
 val kotlinxCoroutinesVersion = "1.10.2"
