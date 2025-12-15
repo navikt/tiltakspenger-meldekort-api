@@ -26,10 +26,15 @@ data class MeldekortTilKorrigeringDTO(
         val periode: PeriodeDTO,
         val mottattTidspunktSisteMeldekort: LocalDateTime,
         val maksAntallDagerForPeriode: Int,
+        val kanSendeInnHelg: Boolean,
     )
 }
 
-fun Meldeperiode.tilKorrigeringDTO(forrigeMeldekort: Meldekort, clock: Clock): MeldekortTilKorrigeringDTO {
+fun Meldeperiode.tilKorrigeringDTO(
+    forrigeMeldekort: Meldekort,
+    kanSendeInnHelg: Boolean,
+    clock: Clock,
+): MeldekortTilKorrigeringDTO {
     requireNotNull(forrigeMeldekort.mottatt)
 
     val oppdaterteDager = forrigeMeldekort.dager.map { meldekortDag ->
@@ -56,6 +61,7 @@ fun Meldeperiode.tilKorrigeringDTO(forrigeMeldekort: Meldekort, clock: Clock): M
             periode = periode.toDTO(),
             mottattTidspunktSisteMeldekort = forrigeMeldekort.mottatt,
             maksAntallDagerForPeriode = maksAntallDagerForPeriode,
+            kanSendeInnHelg = kanSendeInnHelg,
         ),
     )
 }

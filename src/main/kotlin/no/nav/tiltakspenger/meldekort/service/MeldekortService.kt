@@ -11,12 +11,14 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
+import no.nav.tiltakspenger.meldekort.repository.SakRepo
 import java.time.Clock
 import java.time.LocalDateTime
 
 class MeldekortService(
     val meldekortRepo: MeldekortRepo,
     val meldeperiodeRepo: MeldeperiodeRepo,
+    val sakRepo: SakRepo,
     val clock: Clock,
 ) {
     fun lagreMeldekortFraBruker(kommando: LagreMeldekortFraBrukerKommando) {
@@ -86,7 +88,10 @@ class MeldekortService(
         }
     }
 
-    fun hentMeldekortOgSisteMeldeperiode(meldekortId: MeldekortId, fnr: Fnr): Pair<Meldeperiode, Meldekort> {
+    /**
+     *  @return [Meldekort] for [meldekortId], siste [Meldeperiode] for meldekortets kjede, og flagg for melding i helg
+     * */
+    fun hentForKorrigering(meldekortId: MeldekortId, fnr: Fnr): Triple<Meldekort, Meldeperiode, Boolean> {
         val meldekort = meldekortRepo.hentForMeldekortId(meldekortId, fnr)
 
         requireNotNull(meldekort) {
@@ -105,7 +110,9 @@ class MeldekortService(
         val sisteMeldeperiode =
             meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(meldekort.meldeperiode.kjedeId, fnr)!!
 
-        return sisteMeldeperiode to meldekort
+        val sak = sakRepo.hentTilBruker(sisteMeldeperiode.fnr)!!
+
+        return Triple(meldekort, sisteMeldeperiode, sak.kanSendeInnHelgForMeldekort)
     }
 
     fun hentMeldekortForKjede(kjedeId: MeldeperiodeKjedeId, fnr: Fnr): MeldekortForKjede {

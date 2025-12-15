@@ -92,9 +92,9 @@ fun Route.meldekortTilBrukerRoutes(
             return@get
         }
 
-        meldekortService.hentMeldekortOgSisteMeldeperiode(meldekortId, call.fnr())
-            .let { (meldeperiode, meldekort) ->
-                call.respond(meldeperiode.tilKorrigeringDTO(meldekort, clock))
+        meldekortService.hentForKorrigering(meldekortId, call.fnr())
+            .let { (meldekort, meldeperiode, kanSendeInnHelg) ->
+                call.respond(meldeperiode.tilKorrigeringDTO(meldekort, kanSendeInnHelg, clock))
             }
     }
 
