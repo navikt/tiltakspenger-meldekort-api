@@ -5,6 +5,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periodisering.toDTO
 import no.nav.tiltakspenger.libs.texas.fnr
@@ -96,4 +97,22 @@ fun Route.meldekortTilBrukerRoutes(
                 call.respond(meldeperiode.tilKorrigeringDTO(meldekort, clock))
             }
     }
+
+    get("/{meldekortId}/kan-korrigeres") {
+        val meldekortId = call.parameters["meldekortId"]?.let { MeldekortId.fromString(it) }
+        if (meldekortId == null) {
+            call.respond(HttpStatusCode.BadRequest)
+            return@get
+        }
+
+        meldekortService.kanMeldekortKorrigeres(meldekortId, call.fnr())
+            .let {
+                call.respond(HttpStatusCode.OK, serialize(KanKorrigereMeldekortDto(it)))
+            }
+    }
 }
+
+// Lettere å forholde seg til et felt inni et objekt når man skal bruke det i frontend
+data class KanKorrigereMeldekortDto(
+    val kanKorrigeres: Boolean,
+)

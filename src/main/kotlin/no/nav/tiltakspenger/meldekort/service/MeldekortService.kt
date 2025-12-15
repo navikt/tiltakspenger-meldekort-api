@@ -119,4 +119,14 @@ class MeldekortService(
 
         return Pair(antallMeldekortKlarTilInnsending, nesteMuligeInnsending)
     }
+
+    fun kanMeldekortKorrigeres(meldekortId: MeldekortId, fnr: Fnr): Boolean {
+        val meldekort = meldekortRepo.hentForMeldekortId(meldekortId, fnr)
+        requireNotNull(meldekort) {
+            "Fant ikke meldekort med id $meldekortId"
+        }
+        val kjede = meldekortRepo.hentMeldekortForKjedeId(meldekort.meldeperiode.kjedeId, fnr)
+
+        return kjede.kanMeldekortKorrigeres(meldekort.id)
+    }
 }
