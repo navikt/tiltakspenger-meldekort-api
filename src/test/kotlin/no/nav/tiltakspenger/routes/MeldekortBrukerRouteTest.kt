@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.routes
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.kotest.assertions.json.shouldEqualJson
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.client.statement.bodyAsText
@@ -19,6 +20,7 @@ import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periodisering.Periode
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
@@ -28,7 +30,9 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatusDTO
+import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.MeldekortKorrigertDagDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
@@ -348,7 +352,7 @@ class MeldekortBrukerRouteTest {
             val meldeperiodeIdForMeldekortSomSkalKorrigeres =
                 meldekortSomSkalKorrigeres.get("meldeperiodeId").textValue()
 
-            val (korrigertMeldekort) = this.korrigerMeldekort(
+            val responseBody = this.korrigerMeldekort(
                 meldekortId = idForMeldekortSomSkalKorrigeres.toString(),
                 dager = """
                         [
@@ -411,6 +415,8 @@ class MeldekortBrukerRouteTest {
                         ]
                 """.trimIndent(),
             )
+
+            val korrigertMeldekort = deserialize<MeldekortTilBrukerDTO>(responseBody)
 
             val alleMeldekortEtterKorrigering = this.alleBrukersMeldekort()
             alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(2)
@@ -486,6 +492,57 @@ class MeldekortBrukerRouteTest {
                     status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
                 ),
             )
+        }
+    }
+
+    @Test
+    fun `kan ikke korrigere uten endring på dager`() {
+        val tac = TestApplicationContext()
+        (tac.clock as TikkendeKlokke).spolTil(1.mars(2025))
+
+        val førsteMeldeperiode =
+            ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
+
+        val sak = ObjectMother.sak(meldeperioder = listOf(førsteMeldeperiode))
+
+        val innsendtMeldekort = ObjectMother.meldekort(
+            sakId = sak.id,
+            mottatt = førsteMeldeperiode.periode.tilOgMed.atStartOfDay(),
+            periode = førsteMeldeperiode.periode,
+        )
+
+        tac.sakRepo.lagre(sak)
+
+        tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
+        tac.meldekortRepo.lagre(innsendtMeldekort)
+
+        val dagerUtenEndring = serialize(
+            innsendtMeldekort.dager.map {
+                MeldekortKorrigertDagDTO(
+                    dato = it.dag,
+                    status = it.status,
+                )
+            },
+        )
+
+        testMedMeldekortRoutes(tac) {
+            val responseBody = this.korrigerMeldekort(
+                meldekortId = innsendtMeldekort.id.toString(),
+                dager = dagerUtenEndring,
+                HttpStatusCode.BadRequest,
+            )
+
+            responseBody shouldEqualJson (
+                """
+                {
+                    "melding": "Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.",
+                    "kode": "kan_ikke_korrigere_uten_endring"
+                }
+                """.trimIndent()
+                )
+
+            val alleMeldekortEtterKorrigering = this.alleBrukersMeldekort()
+            alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(1)
         }
     }
 }

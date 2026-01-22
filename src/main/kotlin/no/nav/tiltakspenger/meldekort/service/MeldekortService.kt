@@ -1,12 +1,14 @@
 package no.nav.tiltakspenger.meldekort.service
 
 import arrow.core.Either
+import arrow.core.left
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.meldekort.domene.FeilVedKorrigeringAvMeldekort
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
@@ -75,6 +77,11 @@ class MeldekortService(
 
     fun korriger(command: KorrigerMeldekortCommand): Either<FeilVedKorrigeringAvMeldekort, Meldekort> {
         val meldekortSomKorrigeres = meldekortRepo.hentForMeldekortId(command.meldekortId, command.fnr)!!
+
+        if (!meldekortSomKorrigeres.harMinstEnEndring(command.korrigerteDager)) {
+            return FeilVedKorrigeringAvMeldekort.IngenEndringer.left()
+        }
+
         val meldekortForKjede =
             meldekortRepo.hentMeldekortForKjedeId(meldekortSomKorrigeres.meldeperiode.kjedeId, command.fnr)
 
@@ -135,5 +142,11 @@ class MeldekortService(
         val kjede = meldekortRepo.hentMeldekortForKjedeId(meldekort.meldeperiode.kjedeId, fnr)
 
         return kjede.kanMeldekortKorrigeres(meldekort.id)
+    }
+
+    private fun Meldekort.harMinstEnEndring(korrigerteDager: List<MeldekortDag>): Boolean {
+        return korrigerteDager.zip(this.dager).any { (korrigerDag, eksisterendeDag) ->
+            korrigerDag.status != eksisterendeDag.status
+        }
     }
 }

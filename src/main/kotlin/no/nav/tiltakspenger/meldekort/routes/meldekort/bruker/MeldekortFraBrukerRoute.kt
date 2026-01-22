@@ -15,14 +15,12 @@ import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.domene.FeilVedKorrigeringAvMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.routes.meldekort.logger
 import no.nav.tiltakspenger.meldekort.service.KorrigerMeldekortCommand
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import java.time.Clock
-import java.time.LocalDate
 
 fun Route.meldekortFraBrukerRoute(
     meldekortService: MeldekortService,
@@ -54,14 +52,9 @@ fun Route.meldekortFraBrukerRoute(
         }
     }
 
-    data class KorrigertDag(
-        val dato: LocalDate,
-        val status: MeldekortDagStatus,
-    )
-
     patch("/{meldekortId}/korriger") {
         val meldekortId = MeldekortId.fromString(call.parameters["meldekortId"]!!)
-        val korrigerteDagerBody = deserialize<List<KorrigertDag>>(call.receiveText())
+        val korrigerteDagerBody = deserialize<List<MeldekortKorrigertDagDTO>>(call.receiveText())
 
         meldekortService.korriger(
             KorrigerMeldekortCommand(
@@ -87,5 +80,10 @@ fun FeilVedKorrigeringAvMeldekort.toErrorJson(): Pair<HttpStatusCode, ErrorJson>
     FeilVedKorrigeringAvMeldekort.IkkeSisteMeldekortIKjeden -> HttpStatusCode.BadRequest to ErrorJson(
         "Dette meldekortet er allerede korrigert, og er ikke lenger gyldig. Et nyere meldekort finnes.",
         "meldekort_allerede_korrigert_og_ikke_lenger_gyldig",
+    )
+
+    FeilVedKorrigeringAvMeldekort.IngenEndringer -> HttpStatusCode.BadRequest to ErrorJson(
+        "Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.",
+        "kan_ikke_korrigere_uten_endring",
     )
 }
