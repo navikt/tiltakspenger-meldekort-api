@@ -6,7 +6,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "3.4.0"
 val mockkVersion = "1.14.7"
-val felleslibVersion = "0.0.632"
+val felleslibVersion = "0.0.673"
 val kotestVersion = "6.1.0"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.1.1"

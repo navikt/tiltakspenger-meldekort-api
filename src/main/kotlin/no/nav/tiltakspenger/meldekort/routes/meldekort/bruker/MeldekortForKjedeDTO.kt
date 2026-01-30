@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.routes.meldekort.bruker
 
-import no.nav.tiltakspenger.libs.periodisering.PeriodeDTO
+import no.nav.tiltakspenger.libs.periode.PeriodeDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 
 /**
