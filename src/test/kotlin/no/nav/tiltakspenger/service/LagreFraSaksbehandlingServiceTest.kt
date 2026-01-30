@@ -8,7 +8,7 @@ import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.getOrFail
 import no.nav.tiltakspenger.libs.dato.desember
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
-import no.nav.tiltakspenger.libs.periodisering.Periode
+import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.lagMeldekortFraBrukerKommando
 import org.junit.jupiter.api.Test

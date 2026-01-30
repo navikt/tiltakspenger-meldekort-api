@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.periodisering.zoneIdOslo
+import no.nav.tiltakspenger.libs.tid.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.start
 import java.time.Clock

@@ -1,5 +1,7 @@
 package no.nav.tiltakspenger.meldekort.clients.pdfgen
 
+import no.nav.tiltakspenger.meldekort.clients.utils.toEngelskDatoMedPunktum
+import no.nav.tiltakspenger.meldekort.clients.utils.toEngelskUkedagOgDatoUtenÅr
 import no.nav.tiltakspenger.meldekort.clients.utils.toNorskUkedagOgDatoUtenÅr
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
@@ -33,11 +35,20 @@ fun MeldekortDagStatus.tilBrevMeldekortStatusDTO(): BrevMeldekortStatusDTO = whe
     MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER -> BrevMeldekortStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER
 }
 
-fun List<MeldekortDag>.tilBrevMeldekortDagDTO(): List<BrevMeldekortDagDTO> {
-    return this.map {
-        BrevMeldekortDagDTO(
-            dag = it.dag.toNorskUkedagOgDatoUtenÅr(),
-            status = it.status.tilBrevMeldekortStatusDTO(),
-        )
+fun List<MeldekortDag>.tilBrevMeldekortDagDTO(locale: String?): List<BrevMeldekortDagDTO> {
+    return if (locale == "en") {
+        this.map {
+            BrevMeldekortDagDTO(
+                dag = it.dag.toEngelskUkedagOgDatoUtenÅr(),
+                status = it.status.tilBrevMeldekortStatusDTO(),
+            )
+        }
+    } else {
+        this.map {
+            BrevMeldekortDagDTO(
+                dag = it.dag.toNorskUkedagOgDatoUtenÅr(),
+                status = it.status.tilBrevMeldekortStatusDTO(),
+            )
+        }
     }
 }

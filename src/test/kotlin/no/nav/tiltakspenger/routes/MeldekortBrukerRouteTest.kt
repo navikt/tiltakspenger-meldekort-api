@@ -22,7 +22,7 @@ import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
-import no.nav.tiltakspenger.libs.periodisering.Periode
+import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.BrukerDTO

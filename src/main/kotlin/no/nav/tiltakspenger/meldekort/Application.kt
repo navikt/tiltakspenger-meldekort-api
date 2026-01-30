@@ -12,7 +12,7 @@ import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
-import no.nav.tiltakspenger.libs.periodisering.zoneIdOslo
+import no.nav.tiltakspenger.libs.tid.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.jobber.TaskExecutor

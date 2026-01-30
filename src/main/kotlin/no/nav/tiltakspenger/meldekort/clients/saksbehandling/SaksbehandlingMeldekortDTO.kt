@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.clients.saksbehandling
 
 import no.nav.tiltakspenger.libs.meldekort.BrukerutfyltMeldekortDTO
 import no.nav.tiltakspenger.libs.meldekort.BrukerutfyltMeldekortDTO.Status
-import no.nav.tiltakspenger.libs.periodisering.toDTO
+import no.nav.tiltakspenger.libs.periode.toDTO
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
