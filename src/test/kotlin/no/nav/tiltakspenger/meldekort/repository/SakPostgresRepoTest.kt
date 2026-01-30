@@ -1,5 +1,7 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import io.kotest.assertions.withClue
+import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -12,7 +14,6 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import kotlin.test.assertEquals
 
 class SakPostgresRepoTest {
     private val offsetMonths = 1L
@@ -51,8 +52,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
 
-                assertEquals(1, saker.size, "Antall saker")
-                assertEquals(sak1.id, saker.single().id, "Sak")
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Sak") { saker.single().id shouldBe sak1.id }
             }
         }
 
@@ -66,8 +67,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
 
-                assertEquals(1, saker.size, "Antall saker")
-                assertEquals(sak1.id, saker.single().id, "Sak")
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Sak") { saker.single().id shouldBe sak1.id }
             }
         }
 
@@ -81,8 +82,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
 
-                assertEquals(1, saker.size, "Antall saker")
-                assertEquals(sak1.id, saker.single().id, "Sak")
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Sak") { saker.single().id shouldBe sak1.id }
             }
         }
     }
@@ -100,8 +101,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
-                assertEquals(1, saker.size, "Antall saker")
-                assertEquals(sak1.id, saker.single().id, "Forventer at sak med opprettet utenfor offset returneres")
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Forventer at sak med opprettet utenfor offset returneres") { saker.single().id shouldBe sak1.id }
             }
         }
 
@@ -115,8 +116,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
-                assertEquals(1, saker.size, "Antall saker")
-                assertEquals(sak1.id, saker.single().id, "Forventer at sak med meldeperiode utenfor offset returneres")
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Forventer at sak med meldeperiode utenfor offset returneres") { saker.single().id shouldBe sak1.id }
             }
         }
 
@@ -130,8 +131,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
-                assertEquals(1, saker.size, "Antall saker")
-                assertEquals(sak1.id, saker.single().id, "Forventer at sak med begge felter utenfor offset returneres")
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Forventer at sak med begge felter utenfor offset returneres") { saker.single().id shouldBe sak1.id }
             }
         }
     }
