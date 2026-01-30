@@ -71,6 +71,7 @@ interface MeldekortMother {
             fnr = fnr,
         ),
         korrigering: Boolean = false,
+        locale: String? = null,
     ): Meldekort {
         val dager = meldeperiode.girRett.map { (dag, girRett) ->
             MeldekortDag(
@@ -94,6 +95,7 @@ interface MeldekortMother {
             erVarselInaktivert = erVarselInaktivert,
             deaktivert = deaktivert,
             korrigering = korrigering,
+            locale = locale,
         )
     }
 
@@ -107,16 +109,22 @@ interface MeldekortMother {
                 status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
             )
         },
+        locale: String? = null,
     ): LagreMeldekortFraBrukerKommando {
         return LagreMeldekortFraBrukerKommando(
             id = meldekortId,
             fnr = meldeperiode.fnr,
             dager = dager,
+            locale = locale,
         )
     }
 }
 
-fun TestApplicationContext.lagMeldekort(meldeperiode: Meldeperiode, mottatt: LocalDateTime? = null): Meldekort {
+fun TestApplicationContext.lagMeldekort(
+    meldeperiode: Meldeperiode,
+    mottatt: LocalDateTime? = null,
+    locale: String? = null,
+): Meldekort {
     val meldekort = ObjectMother.meldekort(
         meldeperiode = meldeperiode,
         mottatt = mottatt,
@@ -124,6 +132,7 @@ fun TestApplicationContext.lagMeldekort(meldeperiode: Meldeperiode, mottatt: Loc
         periode = meldeperiode.periode,
         sakId = meldeperiode.sakId,
         saksnummer = meldeperiode.saksnummer,
+        locale = locale,
     )
 
     meldeperiodeRepo.lagre(meldekort.meldeperiode)
@@ -145,5 +154,6 @@ fun lagMeldekortFraBrukerKommando(
                 status = if (meldekort.meldeperiode.girRett[it.dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
             )
         },
+        locale = meldekort.locale,
     )
 }

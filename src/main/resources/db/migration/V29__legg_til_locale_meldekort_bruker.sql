@@ -1,0 +1,2 @@
+ALTER TABLE meldekort_bruker
+    ADD COLUMN IF NOT EXISTS locale VARCHAR DEFAULT null;

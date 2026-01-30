@@ -292,6 +292,7 @@ class MottaSakerRouteTest {
                         clock = tac.clock,
                         brukerutfylteDager = lagreKommando.dager.map { it.tilMeldekortDag() },
                         korrigering = false,
+                        locale = null,
                     ),
                 )
             }

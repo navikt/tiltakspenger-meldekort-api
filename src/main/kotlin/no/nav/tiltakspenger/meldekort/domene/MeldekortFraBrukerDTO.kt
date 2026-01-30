@@ -13,17 +13,20 @@ data class LagreMeldekortFraBrukerKommando(
     val id: MeldekortId,
     val fnr: Fnr,
     val dager: List<MeldekortDagFraBrukerDTO>,
+    val locale: String?,
 )
 
 data class MeldekortFraBrukerDTO(
     val id: String,
     val dager: List<MeldekortDagFraBrukerDTO>,
+    val locale: String?,
 ) {
     fun tilLagreKommando(fnr: Fnr): LagreMeldekortFraBrukerKommando {
         return LagreMeldekortFraBrukerKommando(
             id = MeldekortId.fromString(id),
             fnr = fnr,
             dager = dager,
+            locale = locale,
         )
     }
 }

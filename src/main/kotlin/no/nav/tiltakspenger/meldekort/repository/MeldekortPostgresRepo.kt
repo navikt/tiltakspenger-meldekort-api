@@ -38,7 +38,8 @@ class MeldekortPostgresRepo(
                         journalføringstidspunkt,
                         varsel_id,
                         varsel_inaktivert,
-                        korrigering
+                        korrigering,
+                        locale
                     ) values (
                         :id,
                         :meldeperiode_id,
@@ -49,7 +50,8 @@ class MeldekortPostgresRepo(
                         :journalforingstidspunkt,
                         :varsel_id,
                         :erVarselInaktivert,
-                        :korrigering
+                        :korrigering,
+                        :locale
                     )
                     on conflict (id) do update set
                         meldeperiode_id = :meldeperiode_id,
@@ -60,7 +62,8 @@ class MeldekortPostgresRepo(
                         journalføringstidspunkt = :journalforingstidspunkt,
                         varsel_id = :varsel_id,
                         varsel_inaktivert = :erVarselInaktivert,
-                        korrigering = :korrigering
+                        korrigering = :korrigering,
+                        locale = :locale
                 """,
                     "id" to meldekort.id.toString(),
                     "meldeperiode_id" to meldekort.meldeperiode.id.toString(),
@@ -72,6 +75,7 @@ class MeldekortPostgresRepo(
                     "varsel_id" to meldekort.varselId?.toString(),
                     "erVarselInaktivert" to meldekort.erVarselInaktivert,
                     "korrigering" to meldekort.korrigering,
+                    "locale" to meldekort.locale,
                 ).asUpdate,
             )
         }
@@ -430,6 +434,7 @@ class MeldekortPostgresRepo(
                 varselId = row.stringOrNull("varsel_id")?.let { VarselId(it) },
                 erVarselInaktivert = row.boolean("varsel_inaktivert"),
                 korrigering = row.boolean("korrigering"),
+                locale = row.stringOrNull("locale"),
             )
         }
     }

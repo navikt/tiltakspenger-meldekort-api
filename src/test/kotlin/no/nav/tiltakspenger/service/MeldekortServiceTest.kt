@@ -25,14 +25,14 @@ class MeldekortServiceTest {
         val meldekortRepo = tac.meldekortRepo
         val meldekortService = tac.meldekortService
 
-        val meldekort = tac.lagMeldekort(ObjectMother.meldeperiode(periode = gyldigPeriode))
+        val meldekort = tac.lagMeldekort(ObjectMother.meldeperiode(periode = gyldigPeriode), locale = "en")
         val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
         meldekortService.lagreMeldekortFraBruker(lagreKommando)
 
         val oppdatertMeldekort = meldekortRepo.hentForMeldekortId(meldekortId = meldekort.id, fnr = meldekort.fnr)
         val forventetMeldekort =
-            meldekort.copy(dager = lagreKommando.dager.map { it.tilMeldekortDag() }, mottatt = oppdatertMeldekort?.mottatt)
+            meldekort.copy(dager = lagreKommando.dager.map { it.tilMeldekortDag() }, mottatt = oppdatertMeldekort?.mottatt, locale = "en")
 
         oppdatertMeldekort shouldBe forventetMeldekort
     }

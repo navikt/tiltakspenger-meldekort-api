@@ -43,6 +43,7 @@ class MeldekortService(
         meldekortRepo.lagre(
             meldekort.fyllUtMeldekortFraBruker(
                 brukerutfylteDager = nyeDager,
+                locale = kommando.locale,
                 clock = clock,
             ),
         )

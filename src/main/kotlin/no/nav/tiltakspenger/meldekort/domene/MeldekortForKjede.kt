@@ -48,6 +48,7 @@ data class MeldekortForKjede(
                 clock = clock,
                 brukerutfylteDager = command.korrigerteDager,
                 korrigering = true,
+                locale = command.locale,
             )
         } else {
             Meldekort(
@@ -61,6 +62,7 @@ data class MeldekortForKjede(
                 varselId = null,
                 erVarselInaktivert = false,
                 korrigering = true,
+                locale = command.locale,
             )
         }.right()
     }
