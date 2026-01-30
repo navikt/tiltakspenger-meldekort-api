@@ -12,6 +12,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
 class SakPostgresRepoTest {
@@ -51,8 +52,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
 
-                saker.size shouldBe 1
-                saker.single().id shouldBe sak1.id
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Sak") { saker.single().id shouldBe sak1.id }
             }
         }
 
@@ -66,8 +67,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
 
-                saker.size shouldBe 1
-                saker.single().id shouldBe sak1.id
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Sak") { saker.single().id shouldBe sak1.id }
             }
         }
 
@@ -81,8 +82,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
 
-                saker.size shouldBe 1
-                saker.single().id shouldBe sak1.id
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Sak") { saker.single().id shouldBe sak1.id }
             }
         }
     }
@@ -100,8 +101,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
-                saker.size shouldBe 1
-                saker.single().id shouldBe sak1.id
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Forventer at sak med opprettet utenfor offset returneres") { saker.single().id shouldBe sak1.id }
             }
         }
 
@@ -115,8 +116,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
-                saker.size shouldBe 1
-                saker.single().id shouldBe sak1.id
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Forventer at sak med meldeperiode utenfor offset returneres") { saker.single().id shouldBe sak1.id }
             }
         }
 
@@ -130,8 +131,8 @@ class SakPostgresRepoTest {
 
                 val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
 
-                saker.size shouldBe 1
-                saker.single().id shouldBe sak1.id
+                withClue("Antall saker") { saker.size shouldBe 1 }
+                withClue("Forventer at sak med begge felter utenfor offset returneres") { saker.single().id shouldBe sak1.id }
             }
         }
     }
