@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val jvmVersion = JvmTarget.JVM_21
 val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
-val ktorVersion = "3.3.3"
+val ktorVersion = "3.4.0"
 val mockkVersion = "1.14.7"
 val felleslibVersion = "0.0.632"
 val kotestVersion = "6.1.0"
@@ -102,6 +102,7 @@ dependencies {
     api("com.auth0:jwks-rsa:0.23.0")
 
     // Test
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.3.0")
     testImplementation(platform("org.junit:junit-bom:6.0.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
