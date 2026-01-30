@@ -1,5 +1,7 @@
 package no.nav.tiltakspenger.meldekort.repository
 
+import io.kotest.assertions.withClue
+import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -12,8 +14,6 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import io.kotest.assertions.withClue
-import io.kotest.matchers.shouldBe
 
 class SakPostgresRepoTest {
     private val offsetMonths = 1L
