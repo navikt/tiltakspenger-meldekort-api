@@ -37,6 +37,7 @@ data class Meldekort(
      * Saksbehandler kan ha sendt inn meldekort for samme periode slik at brukes første innsendte meldekort for en gitt periode egentlig er en korrigering.
      */
     val korrigering: Boolean,
+    val locale: String?,
 ) {
     val sakId = meldeperiode.sakId
     val periode: Periode = meldeperiode.periode
@@ -79,6 +80,7 @@ data class Meldekort(
         clock: Clock,
         brukerutfylteDager: List<MeldekortDag>,
         korrigering: Boolean,
+        locale: String?,
     ): Meldekort {
         if (erInnsendt) {
             throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
@@ -91,11 +93,13 @@ data class Meldekort(
             mottatt = LocalDateTime.now(clock),
             dager = brukerutfylteDager,
             korrigering = korrigering,
+            locale = locale,
         )
     }
 
     fun fyllUtMeldekortFraBruker(
         brukerutfylteDager: List<MeldekortDag>,
+        locale: String?,
         clock: Clock,
     ): Meldekort {
         if (erInnsendt) {
@@ -108,6 +112,7 @@ data class Meldekort(
         return this.copy(
             mottatt = LocalDateTime.now(clock),
             dager = brukerutfylteDager,
+            locale = locale,
         )
     }
 
@@ -180,6 +185,7 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         varselId = null,
         erVarselInaktivert = false,
         korrigering = false,
+        locale = null,
     )
 }
 
@@ -209,5 +215,6 @@ fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
         },
         journalpostId = null,
         journalføringstidspunkt = null,
+        locale = null,
     )
 }

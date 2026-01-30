@@ -123,8 +123,8 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:$testContainersVersion")
     testImplementation("org.testcontainers:testcontainers-postgresql:$testContainersVersion")
 
-    testApi("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
-    testApi("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
+    testImplementation("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
+    testImplementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
 }
 
 spotless {

@@ -63,6 +63,7 @@ fun Route.meldekortFraBrukerRoute(
                 korrigerteDager = korrigerteDagerBody.map {
                     MeldekortDag(dag = it.dato, status = it.status)
                 },
+                locale = null, // Denne skal settes fra frontend når vi støtter engelsk visning for korrigering
             ),
         ).fold(
             ifLeft = {
