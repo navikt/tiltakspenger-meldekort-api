@@ -98,8 +98,8 @@ class BrevMeldekortDTOTest {
 
         @Test
         fun `datoer i periode blir formatert til engelsk dato`() {
-            brevMeldekortDTO.periode.fraOgMed shouldBe "6. January 2025"
-            brevMeldekortDTO.periode.tilOgMed shouldBe "19. January 2025"
+            brevMeldekortDTO.periode.fraOgMed shouldBe "6 January 2025"
+            brevMeldekortDTO.periode.tilOgMed shouldBe "19 January 2025"
         }
 
         @Test
@@ -115,9 +115,9 @@ class BrevMeldekortDTOTest {
 
         @Test
         fun `datoer for meldekort dag vises på formatet ukedag og dato uten år`() {
-            brevMeldekortDTO.dager[0].dag shouldBe "Monday 6. January"
-            brevMeldekortDTO.dager[1].dag shouldBe "Tuesday 7. January"
-            brevMeldekortDTO.dager[2].dag shouldBe "Wednesday 8. January"
+            brevMeldekortDTO.dager[0].dag shouldBe "Monday 6 January"
+            brevMeldekortDTO.dager[1].dag shouldBe "Tuesday 7 January"
+            brevMeldekortDTO.dager[2].dag shouldBe "Wednesday 8 January"
         }
 
         @Test
