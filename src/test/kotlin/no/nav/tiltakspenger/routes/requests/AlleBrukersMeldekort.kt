@@ -1,11 +1,11 @@
 package no.nav.tiltakspenger.routes.requests
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.kotest.matchers.shouldBe
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.routes.defaultRequest
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 suspend fun ApplicationTestBuilder.alleBrukersMeldekort(): String {
     this.defaultRequest(

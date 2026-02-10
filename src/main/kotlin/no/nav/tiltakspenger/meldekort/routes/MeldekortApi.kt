@@ -1,10 +1,8 @@
 package no.nav.tiltakspenger.meldekort.routes
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.JacksonConverter
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.authentication
@@ -15,6 +13,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.header
 import io.ktor.server.request.path
 import io.ktor.server.routing.routing
+import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.TexasAuthenticationProvider
 import no.nav.tiltakspenger.libs.texas.client.TexasClient
@@ -59,11 +58,7 @@ fun Application.meldekortApi(
 
 fun Application.jacksonSerialization() {
     install(ContentNegotiation) {
-        jackson {
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            registerModule(JavaTimeModule())
-            registerModule(KotlinModule.Builder().build())
-        }
+        register(ContentType.Application.Json, JacksonConverter(objectMapper))
     }
 }
 
