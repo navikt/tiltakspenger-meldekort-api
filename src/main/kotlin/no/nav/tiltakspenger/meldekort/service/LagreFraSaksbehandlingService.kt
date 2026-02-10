@@ -104,11 +104,11 @@ class LagreFraSaksbehandlingService(
         logger.info { "Lagret meldeperiode ${meldeperiode.id}" }
 
         aktiveMeldekort.forEach {
-            /** Deaktiverer varselet for tidligere meldekort dersom det ikke har blitt generert et nytt meldekort,
-             *  dvs det ikke er rett til tp i den nye versjonen av meldeperioden.
-             *
-             *  Dersom nytt meldekort ble opprettet skal varselet fortsatt være aktivt for dette
-             * */
+            /* Deaktiverer varselet for tidligere meldekort dersom det ikke har blitt generert et nytt meldekort,
+              dvs det ikke er rett til tp i den nye versjonen av meldeperioden.
+
+              Dersom nytt meldekort ble opprettet skal varselet fortsatt være aktivt for dette
+             */
             meldekortRepo.deaktiver(it.id, deaktiverVarsel = nyttMeldekort == null, tx)
             logger.info { "Deaktiverte meldekortet ${it.id}" }
         }
