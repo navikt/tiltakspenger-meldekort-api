@@ -76,8 +76,8 @@ fun Route.meldekortTilBrukerRoutes(
         call.respond(HttpStatusCode.NotFound)
     }
 
-    /**
-     * Dette apiet brukes også av arena-meldekortløsningen for å se om bruker har meldekort hos oss
+    /*
+     Dette apiet brukes også av arena-meldekortløsningen for å se om bruker har meldekort hos oss
      */
     get("bruker") {
         val bruker = brukerService.hentBruker(call.fnr())
