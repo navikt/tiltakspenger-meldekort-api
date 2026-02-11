@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.routes
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.kotest.assertions.json.shouldEqualJson
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -43,6 +42,7 @@ import no.nav.tiltakspenger.routes.requests.korrigerMeldekort
 import no.nav.tiltakspenger.routes.requests.verifiserAntallMeldekortFraAlleMeldekort
 import no.nav.tiltakspenger.routes.requests.verifiserKunEtMeldekortFraAlleMeldekort
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 
 class MeldekortBrukerRouteTest {
@@ -276,6 +276,7 @@ class MeldekortBrukerRouteTest {
             id = MeldeperiodeId.random().toString(),
             versjon = 2,
             girRett = periode.tilDager().associateWith { false },
+            antallDagerForPeriode = 0,
         )
 
         val sakDto = ObjectMother.sakDTO(

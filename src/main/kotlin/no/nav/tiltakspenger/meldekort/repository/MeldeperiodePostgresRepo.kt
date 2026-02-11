@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.meldekort.repository
 
-import com.fasterxml.jackson.core.type.TypeReference
 import kotliquery.Row
 import kotliquery.Session
 import kotliquery.queryOf
@@ -14,6 +13,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
+import tools.jackson.core.type.TypeReference
 import java.time.LocalDate
 
 class MeldeperiodePostgresRepo(

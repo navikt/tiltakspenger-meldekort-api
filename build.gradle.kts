@@ -6,7 +6,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "3.4.0"
 val mockkVersion = "1.14.9"
-val felleslibVersion = "0.0.676"
+val felleslibVersion = "0.0.685"
 val kotestVersion = "6.1.2"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.1.1"
@@ -95,7 +95,7 @@ dependencies {
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
 
     implementation("io.ktor:ktor-utils:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
 
     // Auth
     api("com.auth0:java-jwt:4.5.0")
