@@ -276,6 +276,7 @@ class MeldekortBrukerRouteTest {
             id = MeldeperiodeId.random().toString(),
             versjon = 2,
             girRett = periode.tilDager().associateWith { false },
+            antallDagerForPeriode = 0,
         )
 
         val sakDto = ObjectMother.sakDTO(
