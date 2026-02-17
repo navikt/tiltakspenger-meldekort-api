@@ -16,6 +16,7 @@ enum class BrevMeldekortStatusDTO {
     DELTATT_MED_LØNN_I_TILTAKET,
     FRAVÆR_SYK,
     FRAVÆR_SYKT_BARN,
+    FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU,
     FRAVÆR_GODKJENT_AV_NAV,
     FRAVÆR_ANNET,
     IKKE_BESVART,
@@ -28,6 +29,7 @@ fun MeldekortDagStatus.tilBrevMeldekortStatusDTO(): BrevMeldekortStatusDTO = whe
     MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> BrevMeldekortStatusDTO.DELTATT_MED_LØNN_I_TILTAKET
     MeldekortDagStatus.FRAVÆR_SYK -> BrevMeldekortStatusDTO.FRAVÆR_SYK
     MeldekortDagStatus.FRAVÆR_SYKT_BARN -> BrevMeldekortStatusDTO.FRAVÆR_SYKT_BARN
+    MeldekortDagStatus.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU -> BrevMeldekortStatusDTO.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU
     MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> BrevMeldekortStatusDTO.FRAVÆR_GODKJENT_AV_NAV
     MeldekortDagStatus.FRAVÆR_ANNET -> BrevMeldekortStatusDTO.FRAVÆR_ANNET
     MeldekortDagStatus.IKKE_BESVART -> BrevMeldekortStatusDTO.IKKE_BESVART

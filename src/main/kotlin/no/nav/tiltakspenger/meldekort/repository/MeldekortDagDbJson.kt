@@ -20,6 +20,7 @@ private data class MeldekortDagDbJson(
         DELTATT_MED_LØNN_I_TILTAKET,
         FRAVÆR_SYK,
         FRAVÆR_SYKT_BARN,
+        FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU,
         FRAVÆR_GODKJENT_AV_NAV,
         FRAVÆR_ANNET,
         IKKE_BESVART,
@@ -35,6 +36,7 @@ private data class MeldekortDagDbJson(
                 MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagDbStatus.FRAVÆR_SYK -> MeldekortDagStatus.FRAVÆR_SYK
                 MeldekortDagDbStatus.FRAVÆR_SYKT_BARN -> MeldekortDagStatus.FRAVÆR_SYKT_BARN
+                MeldekortDagDbStatus.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU -> MeldekortDagStatus.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU
                 MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV
                 MeldekortDagDbStatus.FRAVÆR_ANNET -> MeldekortDagStatus.FRAVÆR_ANNET
                 MeldekortDagDbStatus.IKKE_BESVART -> MeldekortDagStatus.IKKE_BESVART
@@ -54,6 +56,7 @@ fun List<MeldekortDag>.tilMeldekortDagDbJson(): String {
                 MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagStatus.FRAVÆR_SYK -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYK
                 MeldekortDagStatus.FRAVÆR_SYKT_BARN -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYKT_BARN
+                MeldekortDagStatus.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU
                 MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV
                 MeldekortDagStatus.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_ANNET
                 MeldekortDagStatus.IKKE_BESVART -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_BESVART
@@ -73,6 +76,7 @@ fun List<MeldekortDagFraBrukerDTO>.tilMeldekortDagFraBrukerDbJson(): String {
                 MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET -> MeldekortDagDbJson.MeldekortDagDbStatus.DELTATT_MED_LØNN_I_TILTAKET
                 MeldekortDagStatusDTO.FRAVÆR_SYK -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYK
                 MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_SYKT_BARN
+                MeldekortDagStatusDTO.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU
                 MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_GODKJENT_AV_NAV
                 MeldekortDagStatusDTO.FRAVÆR_ANNET -> MeldekortDagDbJson.MeldekortDagDbStatus.FRAVÆR_ANNET
                 MeldekortDagStatusDTO.IKKE_BESVART -> MeldekortDagDbJson.MeldekortDagDbStatus.IKKE_BESVART
