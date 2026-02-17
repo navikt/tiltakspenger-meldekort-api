@@ -349,9 +349,9 @@ class MeldekortBrukerRouteTest {
             val meldekortSomSkalKorrigeres =
                 jacksonObjectMapper().readTree(alleMeldekort.hentFørsteMeldekortFraAlleMeldekort())
             val idForMeldekortSomSkalKorrigeres =
-                MeldekortId.fromString(meldekortSomSkalKorrigeres.get("id").textValue())
+                MeldekortId.fromString(meldekortSomSkalKorrigeres.get("id").asString())
             val meldeperiodeIdForMeldekortSomSkalKorrigeres =
-                meldekortSomSkalKorrigeres.get("meldeperiodeId").textValue()
+                meldekortSomSkalKorrigeres.get("meldeperiodeId").asString()
 
             val responseBody = this.korrigerMeldekort(
                 meldekortId = idForMeldekortSomSkalKorrigeres.toString(),
@@ -375,7 +375,7 @@ class MeldekortBrukerRouteTest {
                             },
                             {
                               "dato": "2025-01-10",
-                              "status": "FRAVÆR_GODKJENT_AV_NAV"
+                              "status": "FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU"
                             },
                             {
                               "dato": "2025-01-11",
@@ -423,7 +423,7 @@ class MeldekortBrukerRouteTest {
             alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(2)
             val korrigerteMeldekortFraAlleMeldekort = alleMeldekortEtterKorrigering.hentSisteMeldekortFraAlleMeldekort()
             jacksonObjectMapper().readTree(korrigerteMeldekortFraAlleMeldekort).get("id")
-                .textValue() shouldNotBe idForMeldekortSomSkalKorrigeres.toString()
+                .asString() shouldNotBe idForMeldekortSomSkalKorrigeres.toString()
 
             tac.meldekortRepo.hentForMeldekortId(idForMeldekortSomSkalKorrigeres, Fnr.fromString(FAKE_FNR))?.status(
                 tac.clock,
@@ -454,7 +454,7 @@ class MeldekortBrukerRouteTest {
                 ),
                 MeldekortDagTilBrukerDTO(
                     dag = 10.januar(2025),
-                    status = MeldekortDagStatusDTO.FRAVÆR_GODKJENT_AV_NAV,
+                    status = MeldekortDagStatusDTO.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU,
                 ),
                 MeldekortDagTilBrukerDTO(
                     dag = 11.januar(2025),
