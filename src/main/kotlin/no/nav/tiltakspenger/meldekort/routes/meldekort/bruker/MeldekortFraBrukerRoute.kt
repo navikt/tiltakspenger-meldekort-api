@@ -55,6 +55,7 @@ fun Route.meldekortFraBrukerRoute(
     patch("/{meldekortId}/korriger") {
         val meldekortId = MeldekortId.fromString(call.parameters["meldekortId"]!!)
         val korrigerteDagerBody = deserialize<List<MeldekortKorrigertDagDTO>>(call.receiveText())
+        val locale = call.request.queryParameters["locale"]
 
         meldekortService.korriger(
             KorrigerMeldekortCommand(
@@ -63,7 +64,7 @@ fun Route.meldekortFraBrukerRoute(
                 korrigerteDager = korrigerteDagerBody.map {
                     MeldekortDag(dag = it.dato, status = it.status)
                 },
-                locale = null, // Denne skal settes fra frontend når vi støtter engelsk visning for korrigering
+                locale = locale,
             ),
         ).fold(
             ifLeft = {

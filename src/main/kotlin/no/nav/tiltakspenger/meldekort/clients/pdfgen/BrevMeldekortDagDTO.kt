@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.meldekort.clients.pdfgen
 
-import no.nav.tiltakspenger.meldekort.clients.utils.toEngelskDatoMedPunktum
 import no.nav.tiltakspenger.meldekort.clients.utils.toEngelskUkedagOgDatoUtenÅr
 import no.nav.tiltakspenger.meldekort.clients.utils.toNorskUkedagOgDatoUtenÅr
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag

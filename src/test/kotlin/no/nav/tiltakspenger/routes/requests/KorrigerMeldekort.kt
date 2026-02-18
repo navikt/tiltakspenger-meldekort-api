@@ -10,11 +10,12 @@ import no.nav.tiltakspenger.routes.defaultRequest
 suspend fun ApplicationTestBuilder.korrigerMeldekort(
     meldekortId: String,
     dager: String,
+    locale: String?,
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
 ): String {
     this.defaultRequest(
         method = io.ktor.http.HttpMethod.Patch,
-        uri = "/brukerfrontend/$meldekortId/korriger",
+        uri = "/brukerfrontend/$meldekortId/korriger?locale=$locale",
     ) {
         setBody(dager)
     }.let { response ->

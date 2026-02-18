@@ -127,6 +127,7 @@ class MeldekortForKjedeTest {
                         meldekortId = meldekort.id,
                         fnr = meldekort.fnr,
                         korrigerteDager = emptyList(),
+                        locale = "nb",
                     ),
                     sisteMeldeperiode = meldeperiode,
                     clock = fixedClock,
@@ -146,6 +147,7 @@ class MeldekortForKjedeTest {
                     meldekortId = meldekort1.id,
                     fnr = meldekort1.fnr,
                     korrigerteDager = emptyList(),
+                    locale = "nb",
                 ),
                 sisteMeldeperiode = meldeperiode,
                 clock = fixedClock,
@@ -179,6 +181,7 @@ class MeldekortForKjedeTest {
                     meldekortId = mottattMeldekort1.id,
                     fnr = mottattMeldekort1.fnr,
                     korrigerteDager = korrigerteDager,
+                    locale = "nb",
                 ),
                 sisteMeldeperiode = meldeperiode2,
                 clock = fixedClockAt(meldeperiode2.periode.tilOgMed),
@@ -188,6 +191,7 @@ class MeldekortForKjedeTest {
                 mottatt = nå(fixedClockAt(meldeperiode2.periode.tilOgMed)),
                 dager = korrigerteDager,
                 korrigering = true,
+                locale = "nb",
             ).right()
         }
 
@@ -207,6 +211,7 @@ class MeldekortForKjedeTest {
                             status = if (girRett) MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
                         )
                     },
+                    locale = "nb",
                 ),
                 sisteMeldeperiode = sisteMeldeperiode,
                 clock = fixedClock,
