@@ -56,8 +56,14 @@ class PdfgenClient(
         meldekort: Meldekort,
         errorContext: String = "SakId: ${meldekort.sakId}, saksnummer: ${meldekort.meldeperiode.saksnummer} meldekortId: ${meldekort.id}",
     ): Either<KunneIkkeGenererePdf, PdfOgJson> {
+        val base = "$baseUrl/$PDFGEN_PATH/meldekort-korrigert"
+        val uri = if (meldekort.locale == "en") {
+            "$base-en"
+        } else {
+            base
+        }
         return pdfgenRequest(
-            uri = "$baseUrl/$PDFGEN_PATH/meldekort-korrigert",
+            uri = uri,
             jsonPayload = { meldekort.toBrevMeldekortDTO() },
             errorContext = errorContext,
         )

@@ -8,5 +8,5 @@ data class KorrigerMeldekortCommand(
     val meldekortId: MeldekortId,
     val fnr: Fnr,
     val korrigerteDager: List<MeldekortDag>,
-    val locale: String? = null,
+    val locale: String?,
 )

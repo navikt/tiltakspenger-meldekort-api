@@ -415,6 +415,7 @@ class MeldekortBrukerRouteTest {
                             }
                         ]
                 """.trimIndent(),
+                locale = "nb",
             )
 
             val korrigertMeldekort = deserialize<MeldekortTilBrukerDTO>(responseBody)
@@ -493,6 +494,9 @@ class MeldekortBrukerRouteTest {
                     status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
                 ),
             )
+
+            val korrigertMeldekortFraDb = tac.meldekortRepo.hentForMeldekortId(MeldekortId.fromString(korrigertMeldekort.id), Fnr.fromString(FAKE_FNR))
+            korrigertMeldekortFraDb?.locale shouldBe "nb"
         }
     }
 
@@ -530,6 +534,7 @@ class MeldekortBrukerRouteTest {
             val responseBody = this.korrigerMeldekort(
                 meldekortId = innsendtMeldekort.id.toString(),
                 dager = dagerUtenEndring,
+                locale = "nb",
                 HttpStatusCode.BadRequest,
             )
 
