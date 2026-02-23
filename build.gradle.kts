@@ -98,7 +98,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
 
     // Auth
-    api("com.auth0:java-jwt:4.5.0")
+    api("com.auth0:java-jwt:4.5.1")
     api("com.auth0:jwks-rsa:0.23.0")
 
     // Test
