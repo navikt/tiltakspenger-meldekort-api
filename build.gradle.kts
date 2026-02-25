@@ -6,7 +6,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "3.4.0"
 val mockkVersion = "1.14.9"
-val felleslibVersion = "0.0.689"
+val felleslibVersion = "0.0.697"
 val kotestVersion = "6.1.3"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.1.1"
@@ -50,7 +50,7 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:9.0")
     implementation("org.jetbrains:annotations:26.0.2-1")
     implementation("com.natpryce:konfig:1.6.10.0")
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
+    implementation("io.github.oshai:kotlin-logging-jvm:8.0.01")
 
     // Felles libs
     implementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
@@ -78,7 +78,7 @@ dependencies {
 
     // Http
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache5:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation("io.ktor:ktor-http:$ktorVersion")
