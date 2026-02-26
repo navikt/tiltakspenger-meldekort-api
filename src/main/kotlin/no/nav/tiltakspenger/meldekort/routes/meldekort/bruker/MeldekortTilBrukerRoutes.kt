@@ -37,7 +37,6 @@ fun Route.meldekortTilBrukerRoutes(
         call.respond(
             AlleMeldekortDTO(
                 bruker = bruker.tilBrukerDTO(clock),
-                meldekort = alleMeldekort.map { it.meldekort.tilMeldekortTilBrukerDTO(clock) },
                 meldekortMedSisteMeldeperiode = alleMeldekort.map { it.tilMeldekortMedSisteMeldeperiodeDTO(clock) },
             ),
         )

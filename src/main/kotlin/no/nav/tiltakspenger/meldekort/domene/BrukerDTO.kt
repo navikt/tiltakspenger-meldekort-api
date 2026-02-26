@@ -1,7 +1,14 @@
 package no.nav.tiltakspenger.meldekort.domene
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.Clock
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = BrukerDTO.MedSak::class, name = "MedSak"),
+    JsonSubTypes.Type(value = BrukerDTO.UtenSak::class, name = "UtenSak"),
+)
 sealed interface BrukerDTO {
     val harSak: Boolean
 
