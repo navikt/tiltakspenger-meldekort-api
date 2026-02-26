@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFacto
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
+import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.Clock
@@ -220,22 +221,54 @@ class MeldekortPostgresRepo(
     override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         sessionContext: SessionContext?,
-    ): List<Meldekort> {
+    ): List<MeldekortMedSisteMeldeperiode> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
                     """
                         select
-                            mk.*
+                            mk.*,
+                            mp.id as "mp.id",
+                            mp.kjede_id as "mp.kjede_id",
+                            mp.versjon as "mp.versjon",
+                            mp.sak_id as "mp.sak_id",
+                            mp.fnr as "mp.fnr",
+                            mp.opprettet as "mp.opprettet",
+                            mp.fra_og_med as "mp.fra_og_med",
+                            mp.til_og_med as "mp.til_og_med",
+                            mp.maks_antall_dager_for_periode as "mp.maks_antall_dager_for_periode",
+                            mp.gir_rett as "mp.gir_rett",
+                            mp.saksnummer as "mp.saksnummer",
+                            mp.kan_fylles_ut_fra_og_med as "mp.kan_fylles_ut_fra_og_med",
+                            siste_mp.id as "siste_mp.id",
+                            siste_mp.kjede_id as "siste_mp.kjede_id",
+                            siste_mp.versjon as "siste_mp.versjon",
+                            siste_mp.sak_id as "siste_mp.sak_id",
+                            siste_mp.fnr as "siste_mp.fnr",
+                            siste_mp.opprettet as "siste_mp.opprettet",
+                            siste_mp.fra_og_med as "siste_mp.fra_og_med",
+                            siste_mp.til_og_med as "siste_mp.til_og_med",
+                            siste_mp.maks_antall_dager_for_periode as "siste_mp.maks_antall_dager_for_periode",
+                            siste_mp.gir_rett as "siste_mp.gir_rett",
+                            siste_mp.saksnummer as "siste_mp.saksnummer",
+                            siste_mp.kan_fylles_ut_fra_og_med as "siste_mp.kan_fylles_ut_fra_og_med"
                         from meldekort_bruker mk
-                        join meldeperiode mp on mp.fnr = :fnr
-                        where mp.id = mk.meldeperiode_id
-                            and mk.deaktivert is null
-                            and mk.mottatt is not null
-                        order by fra_og_med desc, versjon desc
+                                 join meldeperiode mp on mp.id = mk.meldeperiode_id
+                                 left join lateral (
+                            select *
+                            from meldeperiode siste_mp
+                            where siste_mp.sak_id = mk.sak_id
+                              and siste_mp.kjede_id = mp.kjede_id
+                            order by siste_mp.versjon desc
+                            limit 1
+                            ) siste_mp on true
+                        where mk.deaktivert is null
+                          and mk.mottatt is not null
+                          and mp.fnr = :fnr
+                        order by mp.fra_og_med desc, mp.versjon desc
                     """,
                     "fnr" to fnr.verdi,
-                ).map { row -> fromRow(row, session) }.asList,
+                ).map { row -> meldekortMedSisteMeldeperiodeFromRow(row) }.asList,
             )
         }
     }
@@ -435,6 +468,29 @@ class MeldekortPostgresRepo(
                 erVarselInaktivert = row.boolean("varsel_inaktivert"),
                 korrigering = row.boolean("korrigering"),
                 locale = row.stringOrNull("locale"),
+            )
+        }
+
+        private fun meldekortMedSisteMeldeperiodeFromRow(
+            row: Row,
+        ): MeldekortMedSisteMeldeperiode {
+            val id = MeldekortId.fromString(row.string("id"))
+
+            return MeldekortMedSisteMeldeperiode(
+                meldekort = Meldekort(
+                    id = id,
+                    meldeperiode = MeldeperiodePostgresRepo.fromRow(row, alias = "mp"),
+                    mottatt = row.localDateTimeOrNull("mottatt"),
+                    deaktivert = row.localDateTimeOrNull("deaktivert"),
+                    dager = row.string("dager").toMeldekortDager(),
+                    journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
+                    journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
+                    varselId = row.stringOrNull("varsel_id")?.let { VarselId(it) },
+                    erVarselInaktivert = row.boolean("varsel_inaktivert"),
+                    korrigering = row.boolean("korrigering"),
+                    locale = row.stringOrNull("locale"),
+                ),
+                sisteMeldeperiode = MeldeperiodePostgresRepo.fromRow(row, alias = "siste_mp"),
             )
         }
     }

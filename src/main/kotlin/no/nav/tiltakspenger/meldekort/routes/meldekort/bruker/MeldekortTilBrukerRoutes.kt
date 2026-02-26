@@ -12,6 +12,7 @@ import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.domene.AlleMeldekortDTO
 import no.nav.tiltakspenger.meldekort.domene.Bruker
 import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.tilMeldekortMedSisteMeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.service.BrukerService
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
@@ -29,7 +30,6 @@ fun Route.meldekortTilBrukerRoutes(
 
         val alleMeldekort = if (bruker is Bruker.MedSak) {
             meldekortService.hentInnsendteMeldekort(fnr)
-                .map { it.tilMeldekortTilBrukerDTO(clock) }
         } else {
             emptyList()
         }
@@ -37,7 +37,8 @@ fun Route.meldekortTilBrukerRoutes(
         call.respond(
             AlleMeldekortDTO(
                 bruker = bruker.tilBrukerDTO(clock),
-                meldekort = alleMeldekort,
+                meldekort = alleMeldekort.map { it.meldekort.tilMeldekortTilBrukerDTO(clock) },
+                meldekortMedSisteMeldeperiode = alleMeldekort.map { it.tilMeldekortMedSisteMeldeperiodeDTO(clock) },
             ),
         )
     }

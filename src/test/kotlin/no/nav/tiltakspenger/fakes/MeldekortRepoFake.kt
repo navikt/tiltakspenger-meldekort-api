@@ -8,6 +8,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
+import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.Clock
@@ -67,12 +68,13 @@ class MeldekortRepoFake(
     override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         sessionContext: SessionContext?,
-    ): List<Meldekort> {
+    ): List<MeldekortMedSisteMeldeperiode> {
         return data.get().values
             .filter {
                 it.fnr == fnr && it.meldeperiode.kanFyllesUtFraOgMed <= LocalDateTime.now(clock) && it.deaktivert == null
             }
             .sortedWith(compareByDescending<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
+            .map { MeldekortMedSisteMeldeperiode(it, it.meldeperiode) }
     }
 
     override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
