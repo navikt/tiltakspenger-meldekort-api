@@ -42,7 +42,6 @@ import no.nav.tiltakspenger.routes.requests.korrigerMeldekort
 import no.nav.tiltakspenger.routes.requests.verifiserAntallMeldekortFraAlleMeldekort
 import no.nav.tiltakspenger.routes.requests.verifiserKunEtMeldekortFraAlleMeldekort
 import org.junit.jupiter.api.Test
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 
 class MeldekortBrukerRouteTest {
@@ -346,12 +345,9 @@ class MeldekortBrukerRouteTest {
         testMedMeldekortRoutes(tac) {
             val alleMeldekort = this.alleBrukersMeldekort()
             verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort)
-            val meldekortSomSkalKorrigeres =
-                jacksonObjectMapper().readTree(alleMeldekort.hentFørsteMeldekortFraAlleMeldekort())
-            val idForMeldekortSomSkalKorrigeres =
-                MeldekortId.fromString(meldekortSomSkalKorrigeres.get("id").asString())
-            val meldeperiodeIdForMeldekortSomSkalKorrigeres =
-                meldekortSomSkalKorrigeres.get("meldeperiodeId").asString()
+            val meldekortSomSkalKorrigeres = alleMeldekort.hentFørsteMeldekortFraAlleMeldekort()
+            val idForMeldekortSomSkalKorrigeres = MeldekortId.fromString(meldekortSomSkalKorrigeres.id)
+            val meldeperiodeIdForMeldekortSomSkalKorrigeres = meldekortSomSkalKorrigeres.meldeperiodeId
 
             val responseBody = this.korrigerMeldekort(
                 meldekortId = idForMeldekortSomSkalKorrigeres.toString(),
@@ -423,8 +419,7 @@ class MeldekortBrukerRouteTest {
             val alleMeldekortEtterKorrigering = this.alleBrukersMeldekort()
             alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(2)
             val korrigerteMeldekortFraAlleMeldekort = alleMeldekortEtterKorrigering.hentSisteMeldekortFraAlleMeldekort()
-            jacksonObjectMapper().readTree(korrigerteMeldekortFraAlleMeldekort).get("id")
-                .asString() shouldNotBe idForMeldekortSomSkalKorrigeres.toString()
+            korrigerteMeldekortFraAlleMeldekort.id shouldNotBe idForMeldekortSomSkalKorrigeres.toString()
 
             tac.meldekortRepo.hentForMeldekortId(idForMeldekortSomSkalKorrigeres, Fnr.fromString(FAKE_FNR))?.status(
                 tac.clock,
