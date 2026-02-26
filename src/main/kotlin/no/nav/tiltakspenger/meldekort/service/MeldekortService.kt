@@ -10,6 +10,7 @@ import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
+import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
@@ -61,7 +62,7 @@ class MeldekortService(
         return meldekortRepo.hentNesteMeldekortTilUtfylling(fnr)
     }
 
-    fun hentInnsendteMeldekort(fnr: Fnr): List<Meldekort> {
+    fun hentInnsendteMeldekort(fnr: Fnr): List<MeldekortMedSisteMeldeperiode> {
         return meldekortRepo.hentInnsendteMeldekortForBruker(fnr)
     }
 

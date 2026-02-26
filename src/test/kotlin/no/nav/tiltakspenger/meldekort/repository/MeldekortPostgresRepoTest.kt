@@ -11,8 +11,10 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -108,7 +110,7 @@ class MeldekortPostgresRepoTest {
 
                 sisteMeldekortFraDb shouldBe førsteMeldekort
                 nesteMeldekortFraDb shouldBe andreMeldekort
-                alleInnsendteMeldekort shouldBe listOf(førsteMeldekort)
+                alleInnsendteMeldekort shouldBe listOf(MeldekortMedSisteMeldeperiode(førsteMeldekort, førsteMeldekort.meldeperiode))
             }
         }
 
@@ -211,7 +213,41 @@ class MeldekortPostgresRepoTest {
 
                 sisteMeldekortFraDb shouldBe andreMeldekort
                 nesteMeldekortFraDb shouldBe null
-                alleMeldekortFraDb shouldBe listOf(andreMeldekort, førsteMeldekort)
+                alleMeldekortFraDb shouldBe listOf(
+                    MeldekortMedSisteMeldeperiode(andreMeldekort, andreMeldekort.meldeperiode),
+                    MeldekortMedSisteMeldeperiode(førsteMeldekort, førsteMeldekort.meldeperiode),
+                )
+            }
+        }
+
+        @Test
+        fun `skal hente nyeste meldeperiode for innsendt meldekort`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+
+                val meldekort = ObjectMother.meldekort(
+                    mottatt = nå(fixedClock).minusWeeks(2),
+                    periode = periode,
+                )
+
+                lagreMeldekort(helper, meldekort)
+
+                val oppdatertMeldeperiode = meldekort.meldeperiode.copy(
+                    id = MeldeperiodeId.random(),
+                    versjon = 2,
+                    opprettet = nå(fixedClock).plusHours(1),
+                )
+                helper.meldeperiodeRepo.lagre(oppdatertMeldeperiode)
+
+                val repo = helper.meldekortPostgresRepo
+
+                val fnr = meldekort.fnr
+
+                val innsendteMeldekort = repo.hentInnsendteMeldekortForBruker(fnr)
+
+                innsendteMeldekort shouldBe listOf(
+                    MeldekortMedSisteMeldeperiode(meldekort, oppdatertMeldeperiode),
+                )
             }
         }
 

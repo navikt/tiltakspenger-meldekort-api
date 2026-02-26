@@ -12,6 +12,7 @@ import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.meldekort.db.prefixColumn
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import tools.jackson.core.type.TypeReference
 import java.time.LocalDate
@@ -180,22 +181,23 @@ class MeldeperiodePostgresRepo(
             )
         }
 
-        private fun fromRow(row: Row): Meldeperiode {
+        fun fromRow(row: Row, alias: String? = null): Meldeperiode {
+            val col = prefixColumn(alias)
             return Meldeperiode(
-                id = MeldeperiodeId.fromString(row.string("id")),
-                kjedeId = MeldeperiodeKjedeId(row.string("kjede_id")),
-                versjon = row.int("versjon"),
-                sakId = SakId.fromString(row.string("sak_id")),
-                fnr = Fnr.fromString(row.string("fnr")),
-                opprettet = row.localDateTime("opprettet"),
+                id = MeldeperiodeId.fromString(row.string(col("id"))),
+                kjedeId = MeldeperiodeKjedeId(row.string(col("kjede_id"))),
+                versjon = row.int(col("versjon")),
+                sakId = SakId.fromString(row.string(col("sak_id"))),
+                fnr = Fnr.fromString(row.string(col("fnr"))),
+                opprettet = row.localDateTime(col("opprettet")),
                 periode = Periode(
-                    fraOgMed = row.localDate("fra_og_med"),
-                    tilOgMed = row.localDate("til_og_med"),
+                    fraOgMed = row.localDate(col("fra_og_med")),
+                    tilOgMed = row.localDate(col("til_og_med")),
                 ),
-                maksAntallDagerForPeriode = row.int("maks_antall_dager_for_periode"),
-                girRett = row.string("gir_rett").fromDbJsonToGirRett(),
-                saksnummer = row.string("saksnummer"),
-                kanFyllesUtFraOgMed = row.localDateTime("kan_fylles_ut_fra_og_med"),
+                maksAntallDagerForPeriode = row.int(col("maks_antall_dager_for_periode")),
+                girRett = row.string(col("gir_rett")).fromDbJsonToGirRett(),
+                saksnummer = row.string(col("saksnummer")),
+                kanFyllesUtFraOgMed = row.localDateTime(col("kan_fylles_ut_fra_og_med")),
             )
         }
 

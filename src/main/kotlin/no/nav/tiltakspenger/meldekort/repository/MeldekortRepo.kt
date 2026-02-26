@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
+import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.LocalDateTime
 
@@ -56,7 +57,7 @@ interface MeldekortRepo {
     fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): List<Meldekort>
+    ): List<MeldekortMedSisteMeldeperiode>
 
     fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext? = null): List<Meldekort>
 
