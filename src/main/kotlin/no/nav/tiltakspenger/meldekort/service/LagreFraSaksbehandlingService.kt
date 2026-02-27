@@ -70,8 +70,7 @@ class LagreFraSaksbehandlingService(
                         sakRepo.oppdater(sak, tx)
                     }
                 }.onLeft {
-                    logger.error(it) { "Feil under lagring av sak $sakId" }
-                    throw it
+                    throw RuntimeException("Feil under lagring eller oppdatering av sak.", it)
                 }
 
                 meldeperioderForLagring.forEach { meldeperiode ->
@@ -79,8 +78,7 @@ class LagreFraSaksbehandlingService(
                     Either.catch {
                         lagreMeldeperiode(meldeperiode, tx)
                     }.onLeft {
-                        logger.error(it) { "Feil under lagring av meldeperiode $meldeperiodeId for sak $sakId. finnesEksisterendeSak: ${eksisterendeSak != null}" }
-                        throw it
+                        throw RuntimeException("Feil under lagring av meldeperiode $meldeperiodeId", it)
                     }
                 }
             }
