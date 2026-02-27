@@ -79,13 +79,13 @@ class LagreFraSaksbehandlingService(
                     Either.catch {
                         lagreMeldeperiode(meldeperiode, tx)
                     }.onLeft {
-                        logger.error(it) { "Feil under lagring av meldeperiode $meldeperiodeId for sak $sakId. finnesEksisterendeSak: ${eksisterendeSak == null}" }
+                        logger.error(it) { "Feil under lagring av meldeperiode $meldeperiodeId for sak $sakId. finnesEksisterendeSak: ${eksisterendeSak != null}" }
                         throw it
                     }
                 }
             }
         }.onLeft {
-            logger.error(it) { "Feil under lagring av sak eller meldeperioder for $sakId. finnesEksisterendeSak: ${eksisterendeSak == null}" }
+            logger.error(it) { "Feil under lagring av sak eller meldeperioder for $sakId. finnesEksisterendeSak: ${eksisterendeSak != null}" }
             return FeilVedMottakAvSak.LagringFeilet.left()
         }
 
