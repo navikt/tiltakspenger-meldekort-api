@@ -29,7 +29,7 @@ class LagreFraSaksbehandlingService(
         logger.debug { "Mottok sak med id ${sakDTO.sakId} fra saksbehandling" }
 
         val sak = Either.catch { sakDTO.tilSak() }.getOrElse {
-            logger.error { "Kunne ikke opprette sak fra saksbehandling - $it" }
+            logger.error(it) { "Kunne ikke opprette sak fra saksbehandling - $it" }
             return FeilVedMottakAvSak.OpprettSakFeilet.left()
         }
 
@@ -63,14 +63,14 @@ class LagreFraSaksbehandlingService(
             sessionFactory.withTransactionContext { tx ->
                 Either.catch {
                     if (eksisterendeSak == null) {
-                        logger.info { "Lagrer sak med id $sakId" }
+                        logger.info { "Lagrer ny sak med id $sakId" }
                         sakRepo.lagre(sak, tx)
                     } else {
                         logger.info { "Oppdaterer sak med id $sakId" }
                         sakRepo.oppdater(sak, tx)
                     }
                 }.onLeft {
-                    logger.error { "Feil under lagring av sak $sakId" }
+                    logger.error(it) { "Feil under lagring av sak $sakId" }
                     throw it
                 }
 
@@ -79,13 +79,13 @@ class LagreFraSaksbehandlingService(
                     Either.catch {
                         lagreMeldeperiode(meldeperiode, tx)
                     }.onLeft {
-                        logger.error(it) { "Feil under lagring av meldeperiode $meldeperiodeId for sak $sakId" }
+                        logger.error(it) { "Feil under lagring av meldeperiode $meldeperiodeId for sak $sakId. finnesEksisterendeSak: ${eksisterendeSak == null}" }
                         throw it
                     }
                 }
             }
         }.onLeft {
-            logger.error { "Feil under lagring av sak $sakId" }
+            logger.error(it) { "Feil under lagring av sak eller meldeperioder for $sakId. finnesEksisterendeSak: ${eksisterendeSak == null}" }
             return FeilVedMottakAvSak.LagringFeilet.left()
         }
 
