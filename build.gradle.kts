@@ -9,7 +9,7 @@ val mockkVersion = "1.14.9"
 val felleslibVersion = "0.0.697"
 val kotestVersion = "6.1.4"
 val kotlinxCoroutinesVersion = "1.10.2"
-val tmsVarselBuilderVersion = "2.1.1"
+val tmsVarselBuilderVersion = "2.2.0"
 val tmsMikrofrontendSelectorBuilderVersion = "3.0.0"
 val testContainersVersion = "2.0.3"
 
