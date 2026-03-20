@@ -14,6 +14,12 @@ fun Route.fellesLandingssideRoutes(
     get("/status") {
         val fnr = call.fnr()
         val landingssideStatus = meldekortService.hentLandingssideStatus(fnr)
+
+        if (landingssideStatus == null) {
+            call.respond(HttpStatusCode.NotFound)
+            return@get
+        }
+
         call.respond(HttpStatusCode.OK, landingssideStatus)
     }
 }

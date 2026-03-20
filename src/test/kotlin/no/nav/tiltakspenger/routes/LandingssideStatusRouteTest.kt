@@ -33,18 +33,12 @@ class LandingssideStatusRouteTest {
     )
 
     @Test
-    fun `bruker uten sak - returnerer tom status`() {
+    fun `bruker uten sak - returnerer 404`() {
         val tac = TestApplicationContext()
 
         testMedMeldekortRoutes(tac) {
             landingssideStatusRequest().apply {
-                status shouldBe HttpStatusCode.OK
-
-                val body = deserialize<LandingssideStatusDTO>(bodyAsText())
-
-                body.harInnsendteMeldekort shouldBe false
-                body.meldekortTilUtfylling shouldHaveSize 0
-                body.redirectUrl shouldBe Configuration.meldekortFrontendUrl
+                status shouldBe HttpStatusCode.NotFound
             }
         }
     }

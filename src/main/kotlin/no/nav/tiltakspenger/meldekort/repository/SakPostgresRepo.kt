@@ -142,6 +142,20 @@ class SakPostgresRepo(
         }
     }
 
+    override fun harSak(
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Boolean {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    "select exists(select 1 from sak where fnr = :fnr) as exists",
+                    "fnr" to fnr.verdi,
+                ).map { row -> row.boolean("exists") }.asSingle,
+            )!!
+        }
+    }
+
     override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(

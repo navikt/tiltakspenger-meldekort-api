@@ -40,6 +40,11 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     ): Sak?
 
+    fun harSak(
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): Boolean
+
     fun hentSakerUtenArenaStatus(sessionContext: SessionContext? = null): List<Sak>
     fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext? = null, clock: Clock): List<Sak>
     fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext? = null, clock: Clock): List<Sak>

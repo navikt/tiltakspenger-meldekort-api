@@ -137,7 +137,11 @@ class MeldekortService(
         return Pair(antallMeldekortKlarTilInnsending, nesteMuligeInnsending)
     }
 
-    fun hentLandingssideStatus(fnr: Fnr): LandingssideStatusDTO {
+    fun hentLandingssideStatus(fnr: Fnr): LandingssideStatusDTO? {
+        if (!sakRepo.harSak(fnr)) {
+            return null
+        }
+
         val meldekortKlarTilInnsending = meldekortRepo.hentAlleMeldekortKlarTilInnsending(fnr)
         val harInnsendteMeldekort = meldekortRepo.hentSisteUtfylteMeldekort(fnr) != null
 
