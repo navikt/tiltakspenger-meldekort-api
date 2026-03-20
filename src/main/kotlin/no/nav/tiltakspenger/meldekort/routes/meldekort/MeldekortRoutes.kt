@@ -48,7 +48,7 @@ fun Route.meldekortRoutes(
     // Endepunkter som kalles fra felles landingsside for meldekortytelsene
     authenticate(IdentityProvider.TOKENX.value) {
         route("/landingsside") {
-            fellesLandingssideRoutes()
+            fellesLandingssideRoutes(meldekortService)
         }
     }
 }

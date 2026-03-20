@@ -33,7 +33,7 @@ data class LandingssideStatusDTO(
     override val redirectUrl: String = Configuration.meldekortFrontendUrl
 
     /**
-     *  [kanFyllesUtFra] Vi tillater utfylling og innsending fra samme dato
+     *  [kanFyllesUtFra] Vi tillater utfylling og innsending fra samme tidspunkt
      *  [fristForInsending] Vi har ingen frist for innsending nå, men dette kommer antagelig på plass når samtlige brukere er ute av Arena
      * */
     data class LandingssideMeldekortDTO(
