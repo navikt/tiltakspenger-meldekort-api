@@ -17,12 +17,12 @@ interface LandingssideStatusKontrakt {
     /**
      *  [kanSendesFra] Tidspunkt der meldekortet blir tilgjengelig for innsending
      *  [kanFyllesUtFra] Tidspunkt der meldekortet blir tilgjengelig for utfylling
-     *  [fristForInsending] Siste frist for innsending av meldekort uten trekk i ytelsen
+     *  [fristForInnsending] Siste frist for innsending av meldekort uten trekk i ytelsen
      * */
     interface LandingssideMeldekort {
         val kanSendesFra: LocalDateTime
         val kanFyllesUtFra: LocalDateTime?
-        val fristForInsending: LocalDateTime
+        val fristForInnsending: LocalDateTime
     }
 }
 
@@ -34,12 +34,12 @@ data class LandingssideStatusDTO(
 
     /**
      *  [kanFyllesUtFra] Vi tillater utfylling og innsending fra samme tidspunkt
-     *  [fristForInsending] Vi har ingen frist for innsending nå, men dette kommer antagelig på plass når samtlige brukere er ute av Arena
+     *  [fristForInnsending] Vi har ingen frist for innsending nå, men dette kommer antagelig på plass når samtlige brukere er ute av Arena
      * */
     data class LandingssideMeldekortDTO(
         override val kanSendesFra: LocalDateTime,
     ) : LandingssideMeldekort {
         override val kanFyllesUtFra: LocalDateTime = kanSendesFra
-        override val fristForInsending: LocalDateTime = kanSendesFra.plusYears(10)
+        override val fristForInnsending: LocalDateTime = kanSendesFra.plusYears(10)
     }
 }

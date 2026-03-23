@@ -86,7 +86,7 @@ class LandingssideStatusRouteTest {
                 body.meldekortTilUtfylling shouldHaveSize 1
                 body.meldekortTilUtfylling.first().kanSendesFra shouldBe meldekort.meldeperiode.kanFyllesUtFraOgMed
                 body.meldekortTilUtfylling.first().kanFyllesUtFra shouldBe meldekort.meldeperiode.kanFyllesUtFraOgMed
-                body.meldekortTilUtfylling.first().fristForInsending shouldBe meldekort.meldeperiode.kanFyllesUtFraOgMed.plusYears(10)
+                body.meldekortTilUtfylling.first().fristForInnsending shouldBe meldekort.meldeperiode.kanFyllesUtFraOgMed.plusYears(10)
                 body.redirectUrl shouldBe Configuration.meldekortFrontendUrl
             }
         }
