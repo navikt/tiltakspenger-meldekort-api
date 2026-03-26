@@ -73,6 +73,8 @@ spec:
         - application: tokenx-token-generator
           namespace: nais
           cluster: dev-gcp
+        - application: meldekort-landingsside
+          namespace: meldekort
       {{#each accessPolicyInbound.arenaMeldekortFrontend}}
         - application: {{ this }}
           namespace: meldekort
