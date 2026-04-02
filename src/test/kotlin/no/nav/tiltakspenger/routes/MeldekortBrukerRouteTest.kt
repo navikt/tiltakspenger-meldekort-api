@@ -96,7 +96,7 @@ class MeldekortBrukerRouteTest {
                 val body = deserialize<BrukerDTO.MedSak>(bodyAsText)
 
                 status shouldBe HttpStatusCode.OK
-                contentType() shouldBe ContentType.parse("application/json")
+                contentType() shouldBe ContentType.Application.Json
 
                 body.nesteMeldekort shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO(clock = tac.clock)
                 body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.KAN_UTFYLLES
@@ -150,7 +150,7 @@ class MeldekortBrukerRouteTest {
                 val body = deserialize<BrukerDTO.MedSak>(bodyAsText())
 
                 status shouldBe HttpStatusCode.OK
-                contentType() shouldBe ContentType.parse("application/json")
+                contentType() shouldBe ContentType.Application.Json
 
                 body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
                 body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
