@@ -7,6 +7,7 @@ import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortFraBrukerRoute
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes
+import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.fellesLandingssideRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort.microfrontend.microfrontendRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute
 import no.nav.tiltakspenger.meldekort.service.BrukerService
@@ -41,6 +42,13 @@ fun Route.meldekortRoutes(
     authenticate(IdentityProvider.TOKENX.value) {
         route("/din-side/microfrontend") {
             microfrontendRoutes(meldekortService, clock)
+        }
+    }
+
+    // Endepunkter som kalles fra felles landingsside for meldekortytelsene
+    authenticate(IdentityProvider.TOKENX.value) {
+        route("/landingsside") {
+            fellesLandingssideRoutes(meldekortService)
         }
     }
 }

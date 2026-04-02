@@ -60,6 +60,13 @@ class SakRepoFake : SakRepo {
         return data.get().values.find { it.fnr == fnr }
     }
 
+    override fun harSak(
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): Boolean {
+        return data.get().values.any { it.fnr == fnr }
+    }
+
     override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
         return data.get().values.filter { it.arenaMeldekortStatus == ArenaMeldekortStatus.UKJENT }
     }

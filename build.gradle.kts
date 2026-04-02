@@ -6,12 +6,12 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "3.4.1"
 val mockkVersion = "1.14.9"
-val felleslibVersion = "0.0.697"
-val kotestVersion = "6.1.4"
+val felleslibVersion = "0.0.724"
+val kotestVersion = "6.1.9"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.2.0"
 val tmsMikrofrontendSelectorBuilderVersion = "3.0.0"
-val testContainersVersion = "2.0.3"
+val testContainersVersion = "2.0.4"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
@@ -22,9 +22,9 @@ fun isNonStable(version: String): Boolean {
 
 plugins {
     application
-    kotlin("jvm") version "2.3.10"
-    kotlin("plugin.serialization") version "2.3.10"
-    id("com.diffplug.spotless") version "8.2.1"
+    kotlin("jvm") version "2.3.20"
+    kotlin("plugin.serialization") version "2.3.20"
+    id("com.diffplug.spotless") version "8.4.0"
     id("com.github.ben-manes.versions") version "0.53.0"
 }
 
@@ -41,7 +41,7 @@ application {
 
 dependencies {
     // <3
-    implementation("io.arrow-kt:arrow-core:2.2.1.1")
+    implementation("io.arrow-kt:arrow-core:2.2.2.1")
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -70,7 +70,7 @@ dependencies {
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMikrofrontendSelectorBuilderVersion")
 
     // DB
-    implementation("org.flywaydb:flyway-database-postgresql:12.0.3")
+    implementation("org.flywaydb:flyway-database-postgresql:12.2.0")
     implementation("com.zaxxer:HikariCP:7.0.2")
     implementation("org.postgresql:postgresql:42.7.10")
     implementation("com.github.seratch:kotliquery:1.9.1")

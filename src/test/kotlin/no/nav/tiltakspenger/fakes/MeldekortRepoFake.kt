@@ -125,6 +125,8 @@ class MeldekortRepoFake(
     override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
         return data.get()
             .values
+            .filter { it.klarTilInnsending(clock) }
+            .sortedBy { it.meldeperiode.periode.fraOgMed }
             .toList()
     }
 }

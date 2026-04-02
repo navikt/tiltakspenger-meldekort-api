@@ -207,7 +207,8 @@ class MeldekortPostgresRepo(
                         JOIN meldeperiode mp ON mp.id = mb.meldeperiode_id and mp.fnr = :fnr
                         WHERE mb.mottatt IS NULL
                           AND mb.deaktivert IS NULL
-                          AND mp.kan_fylles_ut_fra_og_med <= :tidsgrense;
+                          AND mp.kan_fylles_ut_fra_og_med <= :tidsgrense
+                        ORDER BY mp.fra_og_med;
                     """,
                     "fnr" to fnr.verdi,
                     "tidsgrense" to LocalDateTime.now(clock),
