@@ -160,8 +160,8 @@ class MeldekortPostgresRepo(
                         select
                             mk.*
                         from meldekort_bruker mk
-                        join meldeperiode mp on mp.fnr = :fnr
-                        where mp.id = mk.meldeperiode_id
+                        join meldeperiode mp on mp.id = mk.meldeperiode_id
+                        where mp.fnr = :fnr
                             and mk.mottatt is not null
                         order by mottatt desc
                         limit 1
@@ -181,8 +181,8 @@ class MeldekortPostgresRepo(
                         select
                             mk.*
                         from meldekort_bruker mk
-                        join meldeperiode mp on mp.fnr = :fnr
-                        where mp.id = mk.meldeperiode_id
+                        join meldeperiode mp on mp.id = mk.meldeperiode_id
+                        where mp.fnr = :fnr
                             and mk.mottatt is null
                             and mk.deaktivert is null
                         order by fra_og_med, versjon desc
@@ -204,8 +204,9 @@ class MeldekortPostgresRepo(
                     """
                         SELECT mb.*
                         FROM meldekort_bruker mb
-                        JOIN meldeperiode mp ON mp.id = mb.meldeperiode_id and mp.fnr = :fnr
-                        WHERE mb.mottatt IS NULL
+                        JOIN meldeperiode mp ON mp.id = mb.meldeperiode_id
+                        WHERE mp.fnr = :fnr
+                          AND mb.mottatt IS NULL
                           AND mb.deaktivert IS NULL
                           AND mp.kan_fylles_ut_fra_og_med <= :tidsgrense
                         ORDER BY mp.fra_og_med;
@@ -346,8 +347,9 @@ class MeldekortPostgresRepo(
                     """
                     select u.*, mp.fnr as fnr, mp.saksnummer 
                     from meldekort_bruker u 
-                    join meldeperiode mp on u.meldeperiode_id = mp.id and mp.saksnummer is not null
-                    where u.journalpost_id is null
+                    join meldeperiode mp on u.meldeperiode_id = mp.id
+                    where mp.saksnummer is not null
+                    and u.journalpost_id is null
                     and u.mottatt is not null
                     limit :limit
                     """.trimIndent(),
@@ -363,34 +365,27 @@ class MeldekortPostgresRepo(
             session.run(
                 sqlQuery(
                     """
-                        WITH sendt_varsel_ikke_mottatt AS (
-                            SELECT mp.fnr AS fnr_med_varsel
-                            FROM meldekort_bruker mk
-                                     JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
-                            WHERE mp.kan_fylles_ut_fra_og_med <= :tidsgrense
-                              AND mk.mottatt IS NULL
-                              AND mk.deaktivert IS NULL
-                              AND mk.varsel_id IS NOT NULL
-                              AND mk.varsel_inaktivert IS FALSE
-                        ),
-                             meldekort_sortert_paa_fra_og_med AS (
-                                 SELECT
-                                     mk.*,
-                                     mp.fnr,
-                                     ROW_NUMBER() OVER (PARTITION BY mp.fnr ORDER BY mp.fra_og_med) AS radnummer
-                                 FROM meldekort_bruker mk
-                                          JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
-                                 WHERE mp.kan_fylles_ut_fra_og_med <= :tidsgrense
-                                   AND mk.mottatt IS NULL
-                                   AND mk.deaktivert IS NULL
-                                   AND mk.varsel_id IS NULL
-                                   AND mk.varsel_inaktivert IS FALSE
-                                   AND mp.fnr NOT IN (SELECT fnr_med_varsel FROM sendt_varsel_ikke_mottatt)
-                             )
-                        SELECT *
-                        FROM meldekort_sortert_paa_fra_og_med
-                        WHERE radnummer = 1
-                        limit :limit
+                        SELECT DISTINCT ON (mp.fnr) mk.*, mp.fnr
+                        FROM meldekort_bruker mk
+                        JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
+                        WHERE mp.kan_fylles_ut_fra_og_med <= :tidsgrense
+                          AND mk.mottatt IS NULL
+                          AND mk.deaktivert IS NULL
+                          AND mk.varsel_id IS NULL
+                          AND mk.varsel_inaktivert IS FALSE
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM meldekort_bruker mk2
+                              JOIN meldeperiode mp2 ON mp2.id = mk2.meldeperiode_id
+                              WHERE mp2.fnr = mp.fnr
+                                AND mp2.kan_fylles_ut_fra_og_med <= :tidsgrense
+                                AND mk2.mottatt IS NULL
+                                AND mk2.deaktivert IS NULL
+                                AND mk2.varsel_id IS NOT NULL
+                                AND mk2.varsel_inaktivert IS FALSE
+                          )
+                        ORDER BY mp.fnr, mp.fra_og_med
+                        LIMIT :limit
                     """,
                     "limit" to limit,
                     "tidsgrense" to LocalDateTime.now(clock),
