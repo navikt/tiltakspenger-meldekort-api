@@ -21,11 +21,12 @@ class TmsVarselClientImpl(
 ) : TmsVarselClient {
     val logger = KotlinLogging.logger {}
 
-    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: VarselId) {
+    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: VarselId): SendtVarselMetadata {
         logger.info { "Sender varsel for meldekort ${meldekort.id} - varselId: $varselId" }
-        val varselHendelse = opprettVarselOppgave(meldekort, varselId)
-
+        val varselHendelse: String = opprettVarselOppgave(meldekort, varselId)
+        val sendtVarselMetadata = SendtVarselMetadata(jsonRequest = varselHendelse)
         kafkaProducer.produce(topicName, varselId.toString(), varselHendelse)
+        return sendtVarselMetadata
     }
 
     /**

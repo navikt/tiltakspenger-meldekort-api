@@ -11,6 +11,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
@@ -39,6 +40,8 @@ class MeldekortPostgresRepo(
                         journalføringstidspunkt,
                         varsel_id,
                         varsel_inaktivert,
+                        sendt_varsel_tidspunkt,
+                        sendt_varsel,
                         korrigering,
                         locale
                     ) values (
@@ -50,7 +53,9 @@ class MeldekortPostgresRepo(
                         :journalpost_id,
                         :journalforingstidspunkt,
                         :varsel_id,
-                        :erVarselInaktivert,
+                        :varsel_inaktivert,
+                        :sendt_varsel_tidspunkt,
+                        :sendt_varsel,
                         :korrigering,
                         :locale
                     )
@@ -62,7 +67,9 @@ class MeldekortPostgresRepo(
                         journalpost_id = :journalpost_id,
                         journalføringstidspunkt = :journalforingstidspunkt,
                         varsel_id = :varsel_id,
-                        varsel_inaktivert = :erVarselInaktivert,
+                        varsel_inaktivert = :varsel_inaktivert,
+                        sendt_varsel_tidspunkt = :sendt_varsel_tidspunkt,
+                        sendt_varsel = :sendt_varsel,
                         korrigering = :korrigering,
                         locale = :locale
                 """,
@@ -73,8 +80,10 @@ class MeldekortPostgresRepo(
                     "dager" to meldekort.dager.tilMeldekortDagDbJson(),
                     "journalpost_id" to meldekort.journalpostId?.toString(),
                     "journalforingstidspunkt" to meldekort.journalføringstidspunkt,
-                    "varsel_id" to meldekort.varselId?.toString(),
-                    "erVarselInaktivert" to meldekort.erVarselInaktivert,
+                    "varsel_id" to meldekort.varselId.toString(),
+                    "varsel_inaktivert" to meldekort.erVarselInaktivert,
+                    "sendt_varsel_tidspunkt" to meldekort.sendtVarselTidspunkt,
+                    "sendt_varsel" to meldekort.sendtVarsel,
                     "korrigering" to meldekort.korrigering,
                     "locale" to meldekort.locale,
                 ).asUpdate,
@@ -82,6 +91,9 @@ class MeldekortPostgresRepo(
         }
     }
 
+    /**
+     * @param deaktiverVarsel dersom true vil inaktiverjobben plukke opp og innaktivere denne.
+     */
     override fun deaktiver(meldekortId: MeldekortId, deaktiverVarsel: Boolean, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
@@ -94,6 +106,7 @@ class MeldekortPostgresRepo(
                     """,
                     "id" to meldekortId.toString(),
                     "deaktivert" to nå(clock),
+                    // TODO jah: Jeg beholder denne logikken som før, selv om den ikke er helt optimal. Inaktiverjobben plukker opp deaktiverte meldekort hvor varsel_inaktivert er false, derav `!deaktiverVarsel`. Hvis vi ikke ønsker at den skal bli inaktivert, sender man deaktiverVarsel false, slik at varsel_inaktivert er true. Ulempen med dette vil være en dobbel omgjøring hvor siste er et opphør av meldeperioden. Da vil aldri varselet bli inaktivert av systemet.
                     "varsel_inaktivert" to !deaktiverVarsel,
                 ).asUpdate,
             )
@@ -286,6 +299,7 @@ class MeldekortPostgresRepo(
                         where sendt_til_saksbehandling is null
                             and journalpost_id is not null
                             and mottatt is not null
+                            order by mottatt desc
                     """,
                 )
                     .map { row -> fromRow(row, session) }.asList,
@@ -371,7 +385,7 @@ class MeldekortPostgresRepo(
                         WHERE mp.kan_fylles_ut_fra_og_med <= :tidsgrense
                           AND mk.mottatt IS NULL
                           AND mk.deaktivert IS NULL
-                          AND mk.varsel_id IS NULL
+                          AND mk.sendt_varsel IS FALSE
                           AND mk.varsel_inaktivert IS FALSE
                           AND NOT EXISTS (
                               SELECT 1
@@ -381,7 +395,7 @@ class MeldekortPostgresRepo(
                                 AND mp2.kan_fylles_ut_fra_og_med <= :tidsgrense
                                 AND mk2.mottatt IS NULL
                                 AND mk2.deaktivert IS NULL
-                                AND mk2.varsel_id IS NOT NULL
+                                AND mk2.sendt_varsel IS TRUE
                                 AND mk2.varsel_inaktivert IS FALSE
                           )
                         ORDER BY mp.fnr, mp.fra_og_med
@@ -394,7 +408,31 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
+    override fun markerVarslet(
+        meldekortId: MeldekortId,
+        sendtVarselTidspunkt: LocalDateTime,
+        sendtVarselMetadata: SendtVarselMetadata,
+        sessionContext: SessionContext?,
+    ) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                        update meldekort_bruker set
+                            sendt_varsel_tidspunkt = :sendt_varsel_tidspunkt,
+                            sendt_varsel = true,
+                            sendt_varsel_json_request = :sendt_varsel_json_request
+                        where id = :id
+                    """,
+                    "id" to meldekortId.toString(),
+                    "sendt_varsel_tidspunkt" to sendtVarselTidspunkt,
+                    "sendt_varsel_json_request" to sendtVarselMetadata.jsonRequest,
+                ).asUpdate,
+            )
+        }
+    }
+
+    override fun henteMeldekortSomSkalInaktivereVarsel(
         limit: Int,
         sessionContext: SessionContext?,
     ): List<Meldekort> {
@@ -405,7 +443,7 @@ class MeldekortPostgresRepo(
                     """
                     select * from meldekort_bruker
                     where (mottatt is not null or deaktivert is not null) 
-                        and varsel_id is not null
+                        and sendt_varsel is true
                         and varsel_inaktivert is false
                     limit :limit
                     """.trimIndent(),
@@ -460,8 +498,10 @@ class MeldekortPostgresRepo(
                 dager = row.string("dager").toMeldekortDager(),
                 journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
                 journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
-                varselId = row.stringOrNull("varsel_id")?.let { VarselId(it) },
+                varselId = VarselId(row.string("varsel_id")),
                 erVarselInaktivert = row.boolean("varsel_inaktivert"),
+                sendtVarselTidspunkt = row.localDateTimeOrNull("sendt_varsel_tidspunkt"),
+                sendtVarsel = row.boolean("sendt_varsel"),
                 korrigering = row.boolean("korrigering"),
                 locale = row.stringOrNull("locale"),
             )
@@ -481,8 +521,10 @@ class MeldekortPostgresRepo(
                     dager = row.string("dager").toMeldekortDager(),
                     journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
                     journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
-                    varselId = row.stringOrNull("varsel_id")?.let { VarselId(it) },
+                    varselId = VarselId(row.string("varsel_id")),
                     erVarselInaktivert = row.boolean("varsel_inaktivert"),
+                    sendtVarselTidspunkt = row.localDateTimeOrNull("sendt_varsel_tidspunkt"),
+                    sendtVarsel = row.boolean("sendt_varsel"),
                     korrigering = row.boolean("korrigering"),
                     locale = row.stringOrNull("locale"),
                 ),

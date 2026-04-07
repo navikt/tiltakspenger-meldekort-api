@@ -4,6 +4,7 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
+import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
@@ -21,6 +22,11 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     )
 
+    /**
+     * Deaktiverer et ikke-mottatt/ikke-deaktivert meldekort ved å sette deaktiveringsdato til nå.
+     * Deaktiverte meldekort skal ikke vises i appen, og skal ikke kunne sendes inn.
+     * @param deaktiverVarsel dersom true vil også tilhørende varsel bli inaktivert (ved hjelp av en jobb).
+     */
     fun deaktiver(
         meldekortId: MeldekortId,
         deaktiverVarsel: Boolean,
@@ -78,7 +84,14 @@ interface MeldekortRepo {
 
     fun hentMeldekortDetSkalVarslesFor(limit: Int = 25, sessionContext: SessionContext? = null): List<Meldekort>
 
-    fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
+    fun markerVarslet(
+        meldekortId: MeldekortId,
+        sendtVarselTidspunkt: LocalDateTime,
+        sendtVarselMetadata: SendtVarselMetadata,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun henteMeldekortSomSkalInaktivereVarsel(
         limit: Int = 25,
         sessionContext: SessionContext? = null,
     ): List<Meldekort>

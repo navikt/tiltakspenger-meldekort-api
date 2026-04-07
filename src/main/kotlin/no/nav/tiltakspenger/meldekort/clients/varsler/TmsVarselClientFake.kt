@@ -7,8 +7,10 @@ import no.nav.tiltakspenger.meldekort.domene.VarselId
 class TmsVarselClientFake : TmsVarselClient {
     private val logger = KotlinLogging.logger {}
 
-    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: VarselId) {
+    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: VarselId): SendtVarselMetadata {
         logger.info { "Sender (ikke) event $varselId for meldekort ${meldekort.id}" }
+        // Ikke likt innhold som i Nais (vi bare lagrer den i basen)
+        return SendtVarselMetadata(""""json-request"""")
     }
 
     override fun inaktiverVarsel(varselId: VarselId) {

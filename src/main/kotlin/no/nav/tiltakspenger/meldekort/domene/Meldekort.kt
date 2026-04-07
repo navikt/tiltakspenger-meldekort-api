@@ -30,8 +30,14 @@ data class Meldekort(
     val dager: List<MeldekortDag>,
     val journalpostId: JournalpostId?,
     val journalføringstidspunkt: LocalDateTime?,
-    val varselId: VarselId? = null,
-    val erVarselInaktivert: Boolean = false,
+    val varselId: VarselId,
+    val erVarselInaktivert: Boolean,
+    /**
+     * Nullable fordi vi ikke vet nøyaktig tidspunkt for allerede sendte varsler i databasen.
+     * Når [sendtVarselTidspunkt] er satt betyr det at varselet er sendt.
+     */
+    val sendtVarselTidspunkt: LocalDateTime?,
+    val sendtVarsel: Boolean,
     /**
      * Ettersom meldekort ikke synkroniseres tilbake fra tiltakspenger-saksbehandling-api så vet vi ikke helt om meldekortet er en korrigering eller ikke.
      * Saksbehandler kan ha sendt inn meldekort for samme periode slik at brukes første innsendte meldekort for en gitt periode egentlig er en korrigering.
@@ -49,7 +55,7 @@ data class Meldekort(
     fun status(clock: Clock): MeldekortStatus = when {
         erInnsendt -> MeldekortStatus.INNSENDT
         deaktivert != null -> MeldekortStatus.DEAKTIVERT
-        LocalDateTime.now(clock).isAfter(meldeperiode.kanFyllesUtFraOgMed) -> MeldekortStatus.KAN_UTFYLLES
+        (LocalDateTime.now(clock) >= meldeperiode.kanFyllesUtFraOgMed) -> MeldekortStatus.KAN_UTFYLLES
         else -> MeldekortStatus.IKKE_KLAR
     }
 
@@ -122,14 +128,6 @@ data class Meldekort(
         )
     }
 
-    fun oppdaterVarselId(
-        nyttVarselId: VarselId,
-    ): Meldekort {
-        return this.copy(
-            varselId = nyttVarselId,
-        )
-    }
-
     init {
         val msgSuffix = "(id: $id - mpId: ${meldeperiode.id} - kjedeId: ${meldeperiode.kjedeId} - dager: $dager)"
 
@@ -159,6 +157,9 @@ data class Meldekort(
             require(journalføringstidspunkt == null)
             require(journalpostId == null)
         }
+        if (sendtVarselTidspunkt != null) {
+            require(sendtVarsel)
+        }
 
         if (erInnsendt) {
             require(deaktivert == null) {
@@ -182,8 +183,10 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         dager = this.girRett.tilMeldekortDager(),
         journalpostId = null,
         journalføringstidspunkt = null,
-        varselId = null,
+        varselId = VarselId.random(),
         erVarselInaktivert = false,
+        sendtVarselTidspunkt = null,
+        sendtVarsel = false,
         korrigering = false,
         locale = null,
     )
@@ -196,9 +199,19 @@ fun Map<LocalDate, Boolean>.tilMeldekortDager(): List<MeldekortDag> = this.map {
     )
 }
 
-// TODO: etter hvert vil vi kanskje sende nytt varsel til bruker for oppdaterte meldekort
-// da må vi sette varselId til null her, slik at nytt varsel kan genereres for meldekortet
-fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
+fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort?): Meldekort? {
+    if (!this.minstEnDagGirRettIPerioden) {
+        return null
+    }
+    if (forrigeMeldekort == null) {
+        return this.tilTomtMeldekort()
+    }
+    // Ikke lag et nytt meldekort dersom meldekortet allerede var mottatt
+    // Bruker må selv opprette en korrigering dersom det er endringer som påvirker allerede innsendte meldekort
+    if (forrigeMeldekort.erInnsendt) {
+        return null
+    }
+    // Vi beholder samme varselId, sendtVarsel, sendtVarselTidspunkt uavhengig om det er varslet allerede eller ikke.
     return forrigeMeldekort.copy(
         id = MeldekortId.random(),
         meldeperiode = this,
@@ -215,6 +228,8 @@ fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort): Meldekort {
         },
         journalpostId = null,
         journalføringstidspunkt = null,
+        // På grunn av "bug" i MeldekortPostgresRepo.deaktiver, kan vi ikke garantert vite om varselet er inaktivert enda eller skal inaktiveres. Så når vi mottar dette meldekortet eller det blir deaktivert, får vi muligheten til å inaktivere varselet. Det er null problem og "inaktivere" det 2 ganger.
+        erVarselInaktivert = false,
         locale = null,
     )
 }

@@ -59,10 +59,12 @@ data class MeldekortForKjede(
                 dager = command.korrigerteDager,
                 journalpostId = null,
                 journalføringstidspunkt = null,
-                varselId = null,
+                varselId = VarselId.random(),
                 erVarselInaktivert = false,
                 korrigering = true,
                 locale = command.locale,
+                sendtVarselTidspunkt = null,
+                sendtVarsel = false,
             )
         }.right()
     }

@@ -13,19 +13,24 @@ class InaktiverVarslerService(
 
     fun inaktiverVarslerForMottatteMeldekort() {
         Either.catch {
-            val mottatteMeldekort = meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor()
-            log.debug { "Fant ${mottatteMeldekort.size} mottatte meldekort som det varsles for" }
+            val meldekortSomSkalInaktiveres = meldekortRepo.henteMeldekortSomSkalInaktivereVarsel()
+            log.debug { "Fant ${meldekortSomSkalInaktiveres.size} meldekort vi skal inaktivere varsler for." }
 
-            mottatteMeldekort.forEach { meldekort ->
-                meldekort.varselId?.let { varselId ->
-                    log.info { "Inaktiverer varsel for meldekort med id ${meldekort.id} varselId=$varselId" }
+            meldekortSomSkalInaktiveres.forEach { meldekort ->
+                val varselId = meldekort.varselId
 
+                Either.catch {
+                    tmsVarselClient.inaktiverVarsel(varselId)
+                }.onLeft {
+                    log.error(it) { "Feil under inaktivering (publisering) av varsel for meldekort ${meldekort.id} / varsel id $varselId" }
+                }.onRight {
                     Either.catch {
-                        tmsVarselClient.inaktiverVarsel(varselId)
-                        meldekortRepo.lagre(meldekort.inaktiverVarsel())
-                        log.info { "Varsel inaktivert for meldekort med id ${meldekort.id} varselId=$varselId" }
+                        val meldekortMedInaktivertVarsel = meldekort.inaktiverVarsel()
+                        meldekortRepo.lagre(meldekortMedInaktivertVarsel)
                     }.onLeft {
-                        log.error(it) { "Kunne ikke inaktivere varsel for meldekort med id ${meldekort.id} varselId=$varselId, prøver igjen neste jobbkjøring" }
+                        log.error(it) { "Feil under lagring av inaktivert varsel for meldekort ${meldekort.id} / varsel id $varselId. Denne vil bli prøvd på nytt." }
+                    }.onRight {
+                        log.info { "Varsel $varselId inaktivert og lagret for meldekort ${meldekort.id}. Denne vil bli prøvd på nytt, men bør være idempotent på varslingteamet sin side." }
                     }
                 }
             }

@@ -28,9 +28,10 @@ interface MeldekortMother {
         saksnummer: String = Math.random().toString(),
         sakId: SakId = SakId.random(),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
-        varselId: VarselId? = null,
+        varselId: VarselId = VarselId.random(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
         erVarselInaktivert: Boolean = false,
+        sendtVarselTidspunkt: LocalDateTime? = null,
         maksAntallDagerForPeriode: Int = 10,
     ): Meldekort {
         return meldekort(
@@ -43,6 +44,7 @@ interface MeldekortMother {
             varselId = varselId,
             fnr = fnr,
             erVarselInaktivert = erVarselInaktivert,
+            sendtVarselTidspunkt = sendtVarselTidspunkt,
             meldeperiode = ObjectMother.meldeperiode(
                 periode = periode,
                 saksnummer = saksnummer,
@@ -61,9 +63,10 @@ interface MeldekortMother {
         saksnummer: String = Math.random().toString(),
         sakId: SakId = SakId.random(),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
-        varselId: VarselId? = null,
+        varselId: VarselId = VarselId.random(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
         erVarselInaktivert: Boolean = false,
+        sendtVarselTidspunkt: LocalDateTime? = null,
         meldeperiode: Meldeperiode = ObjectMother.meldeperiode(
             periode = periode,
             saksnummer = saksnummer,
@@ -93,6 +96,8 @@ interface MeldekortMother {
             journalføringstidspunkt = null,
             varselId = varselId,
             erVarselInaktivert = erVarselInaktivert,
+            sendtVarselTidspunkt = sendtVarselTidspunkt,
+            sendtVarsel = sendtVarselTidspunkt != null,
             deaktivert = deaktivert,
             korrigering = korrigering,
             locale = locale,
