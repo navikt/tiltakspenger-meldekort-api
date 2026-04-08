@@ -137,6 +137,7 @@ open class ApplicationContext(val clock: Clock) {
         SendVarslerService(
             meldekortRepo = meldekortRepo,
             tmsVarselClient = tmsVarselClient,
+            clock = clock,
         )
     }
 

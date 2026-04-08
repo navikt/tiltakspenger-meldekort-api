@@ -121,20 +121,6 @@ class LagreFraSaksbehandlingService(
         meldeperiode: Meldeperiode,
         eksisterendeMeldekort: Meldekort?,
     ): Meldekort? {
-        if (!meldeperiode.minstEnDagGirRettIPerioden) {
-            return null
-        }
-
-        if (eksisterendeMeldekort == null) {
-            return meldeperiode.tilTomtMeldekort()
-        }
-
-        // Ikke lag et nytt meldekort dersom meldekortet allerede var mottatt
-        // Bruker må selv opprette en korrigering dersom det er endringer som påvirker allerede innsendte meldekort
-        if (eksisterendeMeldekort.erInnsendt) {
-            return null
-        }
-
         return meldeperiode.tilOppdatertMeldekort(eksisterendeMeldekort)
     }
 }

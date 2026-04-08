@@ -2,25 +2,25 @@ package no.nav.tiltakspenger.meldekort.domene.varsler
 
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.justRun
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.random
+import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import java.util.UUID
+import java.time.LocalDateTime
 
 class SendVarslerServiceTest {
     private val meldekortRepo = mockk<MeldekortRepo>(relaxed = true)
     private val tmsVarselClient = mockk<TmsVarselClient>(relaxed = true)
-    private val service = SendVarslerService(meldekortRepo, tmsVarselClient)
+    private val service = SendVarslerService(meldekortRepo, tmsVarselClient, fixedClock)
+    private val forventetTidspunkt = LocalDateTime.now(fixedClock)
 
     @BeforeEach
     fun setup() {
@@ -28,33 +28,79 @@ class SendVarslerServiceTest {
     }
 
     @Test
-    fun `oppretter varsler for meldekort`() {
-        val meldekort = ObjectMother.meldekort()
-        val varselId = slot<VarselId>()
+    fun `sender varsel med riktig varselId og tidspunkt`() {
+        val varselId = VarselId.random()
+        val meldekort = ObjectMother.meldekort(varselId = varselId)
 
         every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns listOf(meldekort)
-        justRun { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, capture(varselId)) }
+        every { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId) } returns SendtVarselMetadata("\"json-request\"")
 
         service.sendVarselForMeldekort()
 
-        verify { meldekortRepo.lagre(any()) }
-        assertNotNull(UUID.fromString(varselId.captured.toString()), "VarselId ble satt til en gyldig UUID")
-        verify { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId.captured) }
+        verify(exactly = 1) { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId) }
+        verify(exactly = 1) { meldekortRepo.markerVarslet(meldekort.id, forventetTidspunkt, any()) }
     }
 
     @Test
-    fun `oppretter varsler for flere meldekort`() {
-        val meldekort1 = ObjectMother.meldekort(fnr = Fnr.random())
-        val meldekort2 = ObjectMother.meldekort(fnr = Fnr.random())
-        val meldekort3 = ObjectMother.meldekort(fnr = Fnr.random())
-        val meldekortList = listOf(meldekort1, meldekort2, meldekort3)
+    fun `sender varsler for flere meldekort`() {
+        val meldekortList = (1..3).map { ObjectMother.meldekort(fnr = Fnr.random()) }
 
         every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns meldekortList
-        justRun { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) }
+        every { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) } returns SendtVarselMetadata("\"json-request\"")
 
         service.sendVarselForMeldekort()
 
-        verify(exactly = meldekortList.size) { meldekortRepo.lagre(any()) }
-        verify(exactly = meldekortList.size) { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) }
+        meldekortList.forEach { meldekort ->
+            verify(exactly = 1) { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, meldekort.varselId) }
+            verify(exactly = 1) { meldekortRepo.markerVarslet(meldekort.id, forventetTidspunkt, any()) }
+        }
+    }
+
+    @Test
+    fun `gjør ingenting når det ikke finnes meldekort å varsle for`() {
+        every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns emptyList()
+
+        service.sendVarselForMeldekort()
+
+        verify(exactly = 0) { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) }
+        verify(exactly = 0) { meldekortRepo.markerVarslet(any(), any(), any()) }
+    }
+
+    @Test
+    fun `markerer ikke varsel som sendt når sending feiler`() {
+        val meldekort = ObjectMother.meldekort()
+
+        every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns listOf(meldekort)
+        every { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) } throws RuntimeException("Kafka feil")
+
+        service.sendVarselForMeldekort()
+
+        verify(exactly = 1) { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, meldekort.varselId) }
+        verify(exactly = 0) { meldekortRepo.markerVarslet(any(), any(), any()) }
+    }
+
+    @Test
+    fun `fortsetter å sende varsler for resterende meldekort når ett feiler`() {
+        val feiletMeldekort = ObjectMother.meldekort(fnr = Fnr.random())
+        val vellykketMeldekort = ObjectMother.meldekort(fnr = Fnr.random())
+
+        every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns listOf(feiletMeldekort, vellykketMeldekort)
+        every { tmsVarselClient.sendVarselForNyttMeldekort(feiletMeldekort, feiletMeldekort.varselId) } throws RuntimeException("Feil")
+        every { tmsVarselClient.sendVarselForNyttMeldekort(vellykketMeldekort, vellykketMeldekort.varselId) } returns SendtVarselMetadata("\"json-request\"")
+
+        service.sendVarselForMeldekort()
+
+        verify(exactly = 0) { meldekortRepo.markerVarslet(feiletMeldekort.id, any(), any()) }
+        verify(exactly = 1) { meldekortRepo.markerVarslet(vellykketMeldekort.id, forventetTidspunkt, any()) }
+    }
+
+    @Test
+    fun `håndterer feil ved henting av meldekort fra repo`() {
+        every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } throws RuntimeException("Database feil")
+
+        service.sendVarselForMeldekort()
+
+        verify(exactly = 0) { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) }
+        verify(exactly = 0) { meldekortRepo.markerVarslet(any(), any(), any()) }
     }
 }

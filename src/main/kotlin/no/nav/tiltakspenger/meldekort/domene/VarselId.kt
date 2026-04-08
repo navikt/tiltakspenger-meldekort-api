@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.domene
 
-import java.util.*
+import java.util.UUID
 
 @JvmInline
 value class VarselId(

@@ -28,7 +28,7 @@ class InaktiverVarslerServiceTest {
         val varselId = VarselId("varsel1")
         val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId)
 
-        every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort)
+        every { meldekortRepo.henteMeldekortSomSkalInaktivereVarsel() } returns listOf(meldekort)
         justRun { tmsVarselClient.inaktiverVarsel(varselId) }
 
         service.inaktiverVarslerForMottatteMeldekort()
@@ -44,7 +44,7 @@ class InaktiverVarslerServiceTest {
         val meldekort1 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId1)
         val meldekort2 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), varselId = varselId2)
 
-        every { meldekortRepo.hentMottatteEllerDeaktiverteSomDetVarslesFor() } returns listOf(meldekort1, meldekort2)
+        every { meldekortRepo.henteMeldekortSomSkalInaktivereVarsel() } returns listOf(meldekort1, meldekort2)
         every { tmsVarselClient.inaktiverVarsel(varselId1) } throws RuntimeException("Feil")
         justRun { tmsVarselClient.inaktiverVarsel(varselId2) }
 

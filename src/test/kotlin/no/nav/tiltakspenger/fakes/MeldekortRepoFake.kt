@@ -6,6 +6,7 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
+import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
@@ -18,6 +19,9 @@ class MeldekortRepoFake(
     private val clock: Clock,
 ) : MeldekortRepo {
     private val data = Atomic(mutableMapOf<MeldekortId, Meldekort>())
+
+    /** Sporer sendtTilSaksbehandling-tidspunkt, da dette kun er et DB-felt og ikke del av domenemodellen. */
+    private val sendtTilSaksbehandling = Atomic(mutableMapOf<MeldekortId, LocalDateTime>())
 
     override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
         data.get()[meldekort.id] = meldekort
@@ -70,15 +74,22 @@ class MeldekortRepoFake(
         sessionContext: SessionContext?,
     ): List<MeldekortMedSisteMeldeperiode> {
         return data.get().values
-            .filter {
-                it.fnr == fnr && it.meldeperiode.kanFyllesUtFraOgMed <= LocalDateTime.now(clock) && it.deaktivert == null
-            }
+            .filter { it.fnr == fnr && it.mottatt != null && it.deaktivert == null }
             .sortedWith(compareByDescending<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
-            .map { MeldekortMedSisteMeldeperiode(it, it.meldeperiode) }
+            .map { meldekort ->
+                val sisteMeldeperiode = data.get().values
+                    .filter { it.sakId == meldekort.sakId && it.meldeperiode.kjedeId == meldekort.meldeperiode.kjedeId }
+                    .maxByOrNull { it.meldeperiode.versjon }
+                    ?.meldeperiode
+                    ?: meldekort.meldeperiode
+                MeldekortMedSisteMeldeperiode(meldekort, sisteMeldeperiode)
+            }
     }
 
     override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
-        return emptyList()
+        return data.get().values
+            .filter { it.mottatt != null && it.journalpostId != null && sendtTilSaksbehandling.get()[it.id] == null }
+            .sortedByDescending { it.mottatt }
     }
 
     override fun markerSendtTilSaksbehandling(
@@ -86,6 +97,7 @@ class MeldekortRepoFake(
         sendtTidspunkt: LocalDateTime,
         sessionContext: SessionContext?,
     ) {
+        sendtTilSaksbehandling.get()[id] = sendtTidspunkt
     }
 
     override fun markerJournalført(
@@ -94,21 +106,67 @@ class MeldekortRepoFake(
         tidspunkt: LocalDateTime,
         sessionContext: SessionContext?,
     ) {
+        val meldekort = data.get()[meldekortId]
+        requireNotNull(meldekort) {
+            "Kan ikke markere journalført for meldekort $meldekortId - meldekortet finnes ikke"
+        }
+        data.get()[meldekortId] = meldekort.copy(journalpostId = journalpostId, journalføringstidspunkt = tidspunkt)
     }
 
     override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        return emptyList()
+        return data.get().values
+            .filter { it.mottatt != null && it.journalpostId == null && it.saksnummer.isNotBlank() }
+            .take(limit)
     }
 
     override fun hentMeldekortDetSkalVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        return emptyList()
+        val now = LocalDateTime.now(clock)
+        val alleMeldekort = data.get().values
+
+        return alleMeldekort
+            .filter { mk ->
+                mk.meldeperiode.kanFyllesUtFraOgMed <= now &&
+                    mk.mottatt == null &&
+                    mk.deaktivert == null &&
+                    !mk.sendtVarsel &&
+                    !mk.erVarselInaktivert &&
+                    alleMeldekort.none { other ->
+                        other.fnr == mk.fnr &&
+                            other.meldeperiode.kanFyllesUtFraOgMed <= now &&
+                            other.mottatt == null &&
+                            other.deaktivert == null &&
+                            other.sendtVarsel &&
+                            !other.erVarselInaktivert
+                    }
+            }
+            .sortedBy { it.periode.fraOgMed }
+            .distinctBy { it.fnr }
+            .take(limit)
     }
 
-    override fun hentMottatteEllerDeaktiverteSomDetVarslesFor(
+    override fun markerVarslet(
+        meldekortId: MeldekortId,
+        sendtVarselTidspunkt: LocalDateTime,
+        sendtVarselMetadata: SendtVarselMetadata,
+        sessionContext: SessionContext?,
+    ) {
+        val meldekort = data.get()[meldekortId]
+        requireNotNull(meldekort) {
+            "Kan ikke markere varsel sendt for meldekort $meldekortId - meldekortet finnes ikke"
+        }
+        data.get()[meldekortId] = meldekort.copy(
+            sendtVarselTidspunkt = sendtVarselTidspunkt,
+            sendtVarsel = true,
+        )
+    }
+
+    override fun henteMeldekortSomSkalInaktivereVarsel(
         limit: Int,
         sessionContext: SessionContext?,
     ): List<Meldekort> {
-        return emptyList()
+        return data.get().values
+            .filter { (it.mottatt != null || it.deaktivert != null) && it.sendtVarsel && !it.erVarselInaktivert }
+            .take(limit)
     }
 
     override fun hentSisteMeldekortForKjedeId(
@@ -116,17 +174,14 @@ class MeldekortRepoFake(
         fnr: Fnr,
         sessionContext: SessionContext?,
     ): Meldekort? {
-        return data.get()
-            .filter { it.value.meldeperiode.kjedeId == kjedeId && it.value.fnr == fnr }
-            .maxByOrNull { it.value.meldeperiode.versjon }
-            ?.value
+        return data.get().values
+            .filter { it.meldeperiode.kjedeId == kjedeId && it.fnr == fnr }
+            .maxByOrNull { it.meldeperiode.versjon }
     }
 
     override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
-        return data.get()
-            .values
-            .filter { it.klarTilInnsending(clock) }
+        return data.get().values
+            .filter { it.fnr == fnr && it.klarTilInnsending(clock) }
             .sortedBy { it.meldeperiode.periode.fraOgMed }
-            .toList()
     }
 }

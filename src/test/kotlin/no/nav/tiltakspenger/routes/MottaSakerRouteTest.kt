@@ -71,7 +71,7 @@ class MottaSakerRouteTest {
                 sak!!.meldeperioder.size shouldBe 2
                 sak.harSoknadUnderBehandling shouldBe false
 
-                tac.meldekortRepo.hentInnsendteMeldekortForBruker(sak.fnr).size shouldBe 2
+                tac.meldekortRepo.hentAlleMeldekortKlarTilInnsending(sak.fnr).size shouldBe 2
             }
         }
     }
