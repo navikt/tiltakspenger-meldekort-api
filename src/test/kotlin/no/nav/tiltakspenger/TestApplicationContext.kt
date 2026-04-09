@@ -4,8 +4,8 @@ import no.nav.tiltakspenger.fakes.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.MeldeperiodeRepoFake
 import no.nav.tiltakspenger.fakes.SakRepoFake
 import no.nav.tiltakspenger.fakes.TexasClientFakeTest
-import no.nav.tiltakspenger.libs.common.TestSessionFactory
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
+import no.nav.tiltakspenger.libs.persistering.test.common.TestSessionFactory
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import java.time.Clock

@@ -54,6 +54,7 @@ open class ApplicationContext(val clock: Clock) {
             introspectionUrl = Configuration.naisTokenIntrospectionEndpoint,
             tokenUrl = Configuration.naisTokenEndpoint,
             tokenExchangeUrl = Configuration.naisTokenExchangeEndpoint,
+            clock = clock,
         )
     }
 

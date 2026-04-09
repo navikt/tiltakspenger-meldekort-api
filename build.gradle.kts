@@ -6,7 +6,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
 
 val ktorVersion = "3.4.2"
 val mockkVersion = "1.14.9"
-val felleslibVersion = "0.0.737"
+val felleslibVersion = "0.0.752"
 val kotestVersion = "6.1.10"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.2.0"
@@ -124,6 +124,7 @@ dependencies {
 
     testImplementation("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
     testImplementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
+    testImplementation("com.github.navikt.tiltakspenger-libs:persistering-test-common:$felleslibVersion")
 }
 
 spotless {
