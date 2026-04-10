@@ -17,10 +17,10 @@ import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
- * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes]
- * Dto: [no.nav.tiltakspenger.meldekort.domene.BrukerDTO]
+ * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.hentBrukerRoute]
+ * Response DTO: [no.nav.tiltakspenger.meldekort.domene.BrukerDTO]
  */
-suspend fun ApplicationTestBuilder.meldekortBrukerRequest(
+suspend fun ApplicationTestBuilder.hentBruker(
     jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,

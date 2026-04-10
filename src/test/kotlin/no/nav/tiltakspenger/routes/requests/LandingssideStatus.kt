@@ -18,7 +18,7 @@ import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.fellesLandingssideRoutes]
- * Dto: [no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO]
+ * Response DTO: [no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO]
  */
 suspend fun ApplicationTestBuilder.landingssideStatusRequest(
     jwt: String? = JwtGenerator().createJwtForUser(),

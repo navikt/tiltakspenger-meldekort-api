@@ -2,43 +2,38 @@ package no.nav.tiltakspenger.routes.requests
 
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
-import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.KanKorrigereMeldekortDto
 import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
- * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.korrigerMeldekortRoute]
- * Request DTO: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortKorrigertDagDTO]
- * Response DTO: [no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO]
+ * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.kanKorrigeresRoute]
+ * Response DTO: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.KanKorrigereMeldekortDto]
  */
-suspend fun ApplicationTestBuilder.korrigerMeldekort(
+suspend fun ApplicationTestBuilder.kanMeldekortKorrigeres(
     meldekortId: String,
-    requestBody: String,
-    locale: String?,
     jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
     forventetContentType: ContentType = ContentType.Application.Json,
-): MeldekortTilBrukerDTO? {
+): KanKorrigereMeldekortDto? {
     this.defaultRequest(
-        method = io.ktor.http.HttpMethod.Patch,
-        uri = "/brukerfrontend/$meldekortId/korriger?locale=$locale",
+        method = HttpMethod.Get,
+        uri = "/brukerfrontend/$meldekortId/kan-korrigeres",
         jwt = jwt,
-    ) {
-        setBody(requestBody)
-    }.let { response ->
+    ).let { response ->
         val bodyAsText = response.bodyAsText()
         val contentType = response.contentType()
         val status = response.status
         val dto = if (status == HttpStatusCode.OK) {
-            deserialize<MeldekortTilBrukerDTO>(bodyAsText)
+            deserialize<KanKorrigereMeldekortDto>(bodyAsText)
         } else {
             null
         }

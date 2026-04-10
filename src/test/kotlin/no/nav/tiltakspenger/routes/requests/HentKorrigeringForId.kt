@@ -9,31 +9,31 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.meldekort.domene.AlleMeldekortDTO
-import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortTilKorrigeringDTO
 import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
- * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes] - `get("meldekort/innsendte")`
- * Dto: [no.nav.tiltakspenger.meldekort.domene.AlleMeldekortDTO]
+ * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.hentKorrigeringRoute]
+ * Response DTO: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortTilKorrigeringDTO]
  */
-suspend fun ApplicationTestBuilder.alleBrukersMeldekort(
+suspend fun ApplicationTestBuilder.hentKorrigeringForId(
+    meldekortId: String,
     jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
     forventetContentType: ContentType = ContentType.Application.Json,
-): AlleMeldekortDTO? {
+): MeldekortTilKorrigeringDTO? {
     this.defaultRequest(
         method = HttpMethod.Get,
-        uri = "/brukerfrontend/meldekort/innsendte",
+        uri = "/brukerfrontend/korrigering/$meldekortId",
         jwt = jwt,
     ).let { response ->
         val bodyAsText = response.bodyAsText()
         val contentType = response.contentType()
         val status = response.status
         val dto = if (status == HttpStatusCode.OK) {
-            deserialize<AlleMeldekortDTO>(bodyAsText)
+            deserialize<MeldekortTilKorrigeringDTO>(bodyAsText)
         } else {
             null
         }
@@ -57,20 +57,4 @@ suspend fun ApplicationTestBuilder.alleBrukersMeldekort(
         }
         return dto
     }
-}
-
-fun verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort: AlleMeldekortDTO) {
-    alleMeldekort.meldekortMedSisteMeldeperiode.single()
-}
-
-fun AlleMeldekortDTO.verifiserAntallMeldekortFraAlleMeldekort(antall: Int) {
-    this.meldekortMedSisteMeldeperiode.size shouldBe antall
-}
-
-fun AlleMeldekortDTO.hentFørsteMeldekortFraAlleMeldekort(): MeldekortTilBrukerDTO {
-    return this.meldekortMedSisteMeldeperiode.first().meldekort
-}
-
-fun AlleMeldekortDTO.hentSisteMeldekortFraAlleMeldekort(): MeldekortTilBrukerDTO {
-    return this.meldekortMedSisteMeldeperiode.last().meldekort
 }

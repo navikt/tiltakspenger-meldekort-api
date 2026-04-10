@@ -5,31 +5,27 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
-import no.nav.tiltakspenger.libs.json.deserialize
-import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
- * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.korrigerMeldekortRoute]
- * Request DTO: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortKorrigertDagDTO]
- * Response DTO: [no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO]
+ * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.sendInnMeldekortRoute]
+ * Request DTO: [no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO]
  */
-suspend fun ApplicationTestBuilder.korrigerMeldekort(
-    meldekortId: String,
+suspend fun ApplicationTestBuilder.sendInnMeldekort(
     requestBody: String,
-    locale: String?,
     jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
-    forventetContentType: ContentType = ContentType.Application.Json,
-): MeldekortTilBrukerDTO? {
+    forventetContentType: ContentType? = ContentType.Application.Json,
+): String {
     this.defaultRequest(
-        method = io.ktor.http.HttpMethod.Patch,
-        uri = "/brukerfrontend/$meldekortId/korriger?locale=$locale",
+        method = HttpMethod.Post,
+        uri = "/brukerfrontend/send-inn",
         jwt = jwt,
     ) {
         setBody(requestBody)
@@ -37,11 +33,6 @@ suspend fun ApplicationTestBuilder.korrigerMeldekort(
         val bodyAsText = response.bodyAsText()
         val contentType = response.contentType()
         val status = response.status
-        val dto = if (status == HttpStatusCode.OK) {
-            deserialize<MeldekortTilBrukerDTO>(bodyAsText)
-        } else {
-            null
-        }
         withClue(
             "Response details:\n" +
                 "Status: $status\n" +
@@ -60,6 +51,6 @@ suspend fun ApplicationTestBuilder.korrigerMeldekort(
             }
             contentType shouldBe forventetContentType
         }
-        return dto
+        return bodyAsText
     }
 }

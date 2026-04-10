@@ -2,9 +2,9 @@ package no.nav.tiltakspenger.routes.requests
 
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
-import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
@@ -14,26 +14,21 @@ import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
- * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.korrigerMeldekortRoute]
- * Request DTO: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortKorrigertDagDTO]
+ * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.hentMeldekortRoute]
  * Response DTO: [no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO]
  */
-suspend fun ApplicationTestBuilder.korrigerMeldekort(
+suspend fun ApplicationTestBuilder.hentMeldekortForId(
     meldekortId: String,
-    requestBody: String,
-    locale: String?,
     jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
-    forventetContentType: ContentType = ContentType.Application.Json,
+    forventetContentType: ContentType? = ContentType.Application.Json,
 ): MeldekortTilBrukerDTO? {
     this.defaultRequest(
-        method = io.ktor.http.HttpMethod.Patch,
-        uri = "/brukerfrontend/$meldekortId/korriger?locale=$locale",
+        method = HttpMethod.Get,
+        uri = "/brukerfrontend/meldekort/$meldekortId",
         jwt = jwt,
-    ) {
-        setBody(requestBody)
-    }.let { response ->
+    ).let { response ->
         val bodyAsText = response.bodyAsText()
         val contentType = response.contentType()
         val status = response.status

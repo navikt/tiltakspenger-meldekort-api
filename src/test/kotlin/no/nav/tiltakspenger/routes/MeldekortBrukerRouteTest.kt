@@ -23,11 +23,11 @@ import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.Meldek
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
-import no.nav.tiltakspenger.routes.requests.alleBrukersMeldekort
+import no.nav.tiltakspenger.routes.requests.hentAlleInnsendteMeldekort
+import no.nav.tiltakspenger.routes.requests.hentBruker
 import no.nav.tiltakspenger.routes.requests.hentFørsteMeldekortFraAlleMeldekort
 import no.nav.tiltakspenger.routes.requests.hentSisteMeldekortFraAlleMeldekort
 import no.nav.tiltakspenger.routes.requests.korrigerMeldekort
-import no.nav.tiltakspenger.routes.requests.meldekortBrukerRequest
 import no.nav.tiltakspenger.routes.requests.verifiserAntallMeldekortFraAlleMeldekort
 import no.nav.tiltakspenger.routes.requests.verifiserKunEtMeldekortFraAlleMeldekort
 import org.junit.jupiter.api.Test
@@ -68,7 +68,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(andreMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(andreMeldekort)
 
-            val body = meldekortBrukerRequest()!!
+            val body = hentBruker()!!
 
             body.nesteMeldekort shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO(clock = tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.KAN_UTFYLLES
@@ -107,7 +107,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
-            val body = meldekortBrukerRequest()!!
+            val body = hentBruker()!!
 
             body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
@@ -140,7 +140,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
-            val body = meldekortBrukerRequest()!!
+            val body = hentBruker()!!
 
             body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
@@ -159,7 +159,7 @@ class MeldekortBrukerRouteTest {
 
             tac.sakRepo.lagre(sak)
 
-            val body = meldekortBrukerRequest()!!
+            val body = hentBruker()!!
 
             body.nesteMeldekort shouldBe null
             body.forrigeMeldekort shouldBe null
@@ -184,7 +184,7 @@ class MeldekortBrukerRouteTest {
 
             lagreFraSaksbehandlingService.lagre(sakDto)
 
-            val body = meldekortBrukerRequest()!!
+            val body = hentBruker()!!
 
             body.nesteMeldekort!!.meldeperiodeId shouldBe andreDto.id
             body.nesteMeldekort.versjon shouldBe 2
@@ -221,7 +221,7 @@ class MeldekortBrukerRouteTest {
 
             lagreFraSaksbehandlingService.lagre(sakDto)
 
-            val body = meldekortBrukerRequest()!!
+            val body = hentBruker()!!
 
             body.nesteMeldekort shouldBe null
             body.forrigeMeldekort shouldBe null
@@ -238,7 +238,7 @@ class MeldekortBrukerRouteTest {
 
             tac.sakRepo.lagre(sak)
 
-            meldekortBrukerRequest(
+            hentBruker(
                 jwt = null,
                 forventetStatus = HttpStatusCode.Unauthorized,
                 forventetBody = "",
@@ -266,7 +266,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(innsendtMeldekort)
 
-            val alleMeldekort = this.alleBrukersMeldekort(forventetBody = null)
+            val alleMeldekort = this.hentAlleInnsendteMeldekort(forventetBody = null)
             verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort!!)
             val meldekortSomSkalKorrigeres = alleMeldekort.hentFørsteMeldekortFraAlleMeldekort()
             val idForMeldekortSomSkalKorrigeres = MeldekortId.fromString(meldekortSomSkalKorrigeres.id)
@@ -339,7 +339,7 @@ class MeldekortBrukerRouteTest {
 
             val korrigertMeldekort = responseBody!!
 
-            val alleMeldekortEtterKorrigering = this.alleBrukersMeldekort(forventetBody = null)!!
+            val alleMeldekortEtterKorrigering = this.hentAlleInnsendteMeldekort(forventetBody = null)!!
             alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(2)
             val korrigerteMeldekortFraAlleMeldekort = alleMeldekortEtterKorrigering.hentSisteMeldekortFraAlleMeldekort()
             korrigerteMeldekortFraAlleMeldekort.id shouldNotBe idForMeldekortSomSkalKorrigeres.toString()
@@ -412,7 +412,7 @@ class MeldekortBrukerRouteTest {
                 forventetBody = """{"melding":"Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.","kode":"kan_ikke_korrigere_uten_endring"}""",
             )
 
-            val alleMeldekortEtterKorrigering = this.alleBrukersMeldekort(forventetBody = null)!!
+            val alleMeldekortEtterKorrigering = this.hentAlleInnsendteMeldekort(forventetBody = null)!!
             alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(1)
         }
     }

@@ -22,7 +22,7 @@ import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute]
- * Dto: [no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO]
+ * Request DTO: [no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO]
  */
 suspend fun ApplicationTestBuilder.mottaSakRequest(
     fnr: Fnr,
@@ -54,7 +54,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute]
- * Dto: [no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO]
+ * Request DTO: [no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO]
  */
 suspend fun ApplicationTestBuilder.mottaSakRequest(
     requestDto: SakTilMeldekortApiDTO,
