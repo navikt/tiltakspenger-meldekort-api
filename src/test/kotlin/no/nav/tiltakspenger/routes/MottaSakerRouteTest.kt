@@ -45,7 +45,7 @@ class MottaSakerRouteTest {
             val id = SakId.fromString(sakDto.sakId)
 
             mottaSakRequest(
-                dto = sakDto,
+                requestDto = sakDto,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
                 val sak = tac.sakRepo.hent(id)
@@ -75,7 +75,7 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
-                dto = sakDto,
+                requestDto = sakDto,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
                 val sak = tac.sakRepo.hent(id)
@@ -98,12 +98,12 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
-                dto = sakDto,
+                requestDto = sakDto,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             mottaSakRequest(
-                dto = sakDto,
+                requestDto = sakDto,
                 forventetStatus = HttpStatusCode.OK,
                 forventetBody = "Saken var allerede lagret med samme data",
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
@@ -136,12 +136,12 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
-                dto = sakDto1,
+                requestDto = sakDto1,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             mottaSakRequest(
-                dto = sakDto2,
+                requestDto = sakDto2,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
                 val sak = tac.sakRepo.hent(SakId.fromString(sakDto2.sakId))!!
@@ -176,12 +176,12 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
-                dto = sakDto1,
+                requestDto = sakDto1,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             mottaSakRequest(
-                dto = sakDto2,
+                requestDto = sakDto2,
                 forventetStatus = HttpStatusCode.Conflict,
                 forventetBody = "Meldeperiode var allerede lagret med andre data",
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
@@ -211,12 +211,12 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
-                dto = sakDto1,
+                requestDto = sakDto1,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             mottaSakRequest(
-                dto = sakDto2,
+                requestDto = sakDto2,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
                 val (førsteMeldekort, andreMeldekort) =
@@ -253,7 +253,7 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
-                dto = sakDto1,
+                requestDto = sakDto1,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
                 val meldekort = tac.meldekortRepo.hentMeldekortForKjedeId(
@@ -280,7 +280,7 @@ class MottaSakerRouteTest {
             }
 
             mottaSakRequest(
-                dto = sakDto2,
+                requestDto = sakDto2,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
                 val meldekortFraKjede = tac.meldekortRepo.hentMeldekortForKjedeId(

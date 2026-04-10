@@ -31,12 +31,13 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
     meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = listOf(meldeperiodeDto()),
     harSoknadUnderBehandling: Boolean = false,
     kanSendeInnHelgForMeldekort: Boolean = false,
+    jwt: String? = JwtGenerator().createJwtForSystembruker(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "Sak lagret",
     forventetContentType: ContentType = ContentType.Application.Json,
 ): String {
     return mottaSakRequest(
-        dto = SakTilMeldekortApiDTO(
+        requestDto = SakTilMeldekortApiDTO(
             fnr = fnr.verdi,
             sakId = sakId.toString(),
             saksnummer = saksnummer,
@@ -44,6 +45,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
             harSoknadUnderBehandling = harSoknadUnderBehandling,
             kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
         ),
+        jwt = jwt,
         forventetStatus = forventetStatus,
         forventetBody = forventetBody,
         forventetContentType = forventetContentType,
@@ -55,7 +57,8 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
  * Dto: [no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO]
  */
 suspend fun ApplicationTestBuilder.mottaSakRequest(
-    dto: SakTilMeldekortApiDTO,
+    requestDto: SakTilMeldekortApiDTO,
+    jwt: String? = JwtGenerator().createJwtForSystembruker(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "Sak lagret",
     forventetContentType: ContentType = ContentType.Application.Json,
@@ -66,9 +69,9 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
             protocol = URLProtocol.HTTPS
             path("/saksbehandling/sak")
         },
-        jwt = JwtGenerator().createJwtForSystembruker(),
+        jwt = jwt,
     ) {
-        setBody(serialize(dto))
+        setBody(serialize(requestDto))
     }
     val bodyAsText = response.bodyAsText()
     val contentType = response.contentType()
@@ -81,6 +84,9 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
     ) {
         if (forventetBody == "") {
             contentType shouldBe null
+        }
+        if (contentType == null) {
+            bodyAsText shouldBe ""
         }
         status shouldBe forventetStatus
         if (forventetBody != null) {

@@ -21,6 +21,7 @@ import no.nav.tiltakspenger.routes.defaultRequest
  * Dto: [no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO]
  */
 suspend fun ApplicationTestBuilder.landingssideStatusRequest(
+    jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
     forventetContentType: ContentType? = ContentType.Application.Json,
@@ -31,7 +32,7 @@ suspend fun ApplicationTestBuilder.landingssideStatusRequest(
             protocol = URLProtocol.HTTPS
             path("/landingsside/status")
         },
-        jwt = JwtGenerator().createJwtForUser(),
+        jwt = jwt,
     )
     val bodyAsText = response.bodyAsText()
     val contentType = response.contentType()
@@ -49,6 +50,9 @@ suspend fun ApplicationTestBuilder.landingssideStatusRequest(
     ) {
         if (forventetBody == "") {
             contentType shouldBe null
+        }
+        if (contentType == null) {
+            bodyAsText shouldBe ""
         }
         status shouldBe forventetStatus
         if (forventetBody != null) {

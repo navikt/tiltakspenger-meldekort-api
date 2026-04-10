@@ -10,6 +10,7 @@ import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
+import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
@@ -18,8 +19,9 @@ import no.nav.tiltakspenger.routes.defaultRequest
  */
 suspend fun ApplicationTestBuilder.korrigerMeldekort(
     meldekortId: String,
-    dager: String,
+    requestBody: String,
     locale: String?,
+    jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
     forventetContentType: ContentType = ContentType.Application.Json,
@@ -27,8 +29,9 @@ suspend fun ApplicationTestBuilder.korrigerMeldekort(
     this.defaultRequest(
         method = io.ktor.http.HttpMethod.Patch,
         uri = "/brukerfrontend/$meldekortId/korriger?locale=$locale",
+        jwt = jwt,
     ) {
-        setBody(dager)
+        setBody(requestBody)
     }.let { response ->
         val bodyAsText = response.bodyAsText()
         val contentType = response.contentType()
@@ -46,6 +49,9 @@ suspend fun ApplicationTestBuilder.korrigerMeldekort(
         ) {
             if (forventetBody == "") {
                 contentType shouldBe null
+            }
+            if (contentType == null) {
+                bodyAsText shouldBe ""
             }
             status shouldBe forventetStatus
             if (forventetBody != null) {

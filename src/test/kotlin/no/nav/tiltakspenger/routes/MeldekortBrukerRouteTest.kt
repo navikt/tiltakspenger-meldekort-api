@@ -2,11 +2,7 @@ package no.nav.tiltakspenger.routes
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.URLProtocol
-import io.ktor.http.path
-import io.ktor.server.util.url
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
@@ -242,16 +238,12 @@ class MeldekortBrukerRouteTest {
 
             tac.sakRepo.lagre(sak)
 
-            defaultRequest(
-                HttpMethod.Get,
-                url {
-                    protocol = URLProtocol.HTTPS
-                    path("/brukerfrontend/bruker")
-                },
+            meldekortBrukerRequest(
                 jwt = null,
-            ).apply {
-                status shouldBe HttpStatusCode.Unauthorized
-            }
+                forventetStatus = HttpStatusCode.Unauthorized,
+                forventetBody = "",
+                forventetContentType = null,
+            )
         }
     }
 
@@ -282,7 +274,7 @@ class MeldekortBrukerRouteTest {
 
             val responseBody = this.korrigerMeldekort(
                 meldekortId = idForMeldekortSomSkalKorrigeres.toString(),
-                dager = """
+                requestBody = """
                         [
                             {
                               "dato": "2025-01-06",
@@ -414,7 +406,7 @@ class MeldekortBrukerRouteTest {
 
             this.korrigerMeldekort(
                 meldekortId = innsendtMeldekort.id.toString(),
-                dager = dagerUtenEndring,
+                requestBody = dagerUtenEndring,
                 locale = "nb",
                 forventetStatus = HttpStatusCode.BadRequest,
                 forventetBody = """{"melding":"Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.","kode":"kan_ikke_korrigere_uten_endring"}""",

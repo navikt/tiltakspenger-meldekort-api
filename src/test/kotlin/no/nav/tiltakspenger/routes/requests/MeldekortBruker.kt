@@ -21,9 +21,10 @@ import no.nav.tiltakspenger.routes.defaultRequest
  * Dto: [no.nav.tiltakspenger.meldekort.domene.BrukerDTO]
  */
 suspend fun ApplicationTestBuilder.meldekortBrukerRequest(
+    jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
-    forventetContentType: ContentType = ContentType.Application.Json,
+    forventetContentType: ContentType? = ContentType.Application.Json,
 ): BrukerDTO.MedSak? {
     val response = defaultRequest(
         HttpMethod.Get,
@@ -31,7 +32,7 @@ suspend fun ApplicationTestBuilder.meldekortBrukerRequest(
             protocol = URLProtocol.HTTPS
             path("/brukerfrontend/bruker")
         },
-        jwt = JwtGenerator().createJwtForUser(),
+        jwt = jwt,
     )
     val bodyAsText = response.bodyAsText()
     val contentType = response.contentType()
@@ -44,6 +45,9 @@ suspend fun ApplicationTestBuilder.meldekortBrukerRequest(
     ) {
         if (forventetBody == "") {
             contentType shouldBe null
+        }
+        if (contentType == null) {
+            bodyAsText shouldBe ""
         }
         status shouldBe forventetStatus
         if (forventetBody != null) {

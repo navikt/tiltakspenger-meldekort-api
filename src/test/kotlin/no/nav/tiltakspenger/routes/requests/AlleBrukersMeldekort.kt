@@ -11,6 +11,7 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.domene.AlleMeldekortDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
+import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequest
 
 /**
@@ -18,6 +19,7 @@ import no.nav.tiltakspenger.routes.defaultRequest
  * Dto: [no.nav.tiltakspenger.meldekort.domene.AlleMeldekortDTO]
  */
 suspend fun ApplicationTestBuilder.alleBrukersMeldekort(
+    jwt: String? = JwtGenerator().createJwtForUser(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
     forventetContentType: ContentType = ContentType.Application.Json,
@@ -25,6 +27,7 @@ suspend fun ApplicationTestBuilder.alleBrukersMeldekort(
     this.defaultRequest(
         method = HttpMethod.Get,
         uri = "/brukerfrontend/meldekort/innsendte",
+        jwt = jwt,
     ).let { response ->
         val bodyAsText = response.bodyAsText()
         val contentType = response.contentType()
@@ -42,6 +45,9 @@ suspend fun ApplicationTestBuilder.alleBrukersMeldekort(
         ) {
             if (forventetBody == "") {
                 contentType shouldBe null
+            }
+            if (contentType == null) {
+                bodyAsText shouldBe ""
             }
             status shouldBe forventetStatus
             if (forventetBody != null) {
