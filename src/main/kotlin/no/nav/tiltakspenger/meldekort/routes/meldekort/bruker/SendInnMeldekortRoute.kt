@@ -14,6 +14,9 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.routes.meldekort.logger
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
+/**
+ * Request DTO: [MeldekortFraBrukerDTO]
+ */
 fun Route.sendInnMeldekortRoute(
     meldekortService: MeldekortService,
 ) {

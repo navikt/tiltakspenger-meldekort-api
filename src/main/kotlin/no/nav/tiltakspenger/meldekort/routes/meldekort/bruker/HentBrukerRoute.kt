@@ -4,10 +4,14 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import no.nav.tiltakspenger.libs.texas.fnr
+import no.nav.tiltakspenger.meldekort.domene.BrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilBrukerDTO
 import no.nav.tiltakspenger.meldekort.service.BrukerService
 import java.time.Clock
 
+/**
+ * Response DTO: [BrukerDTO]
+ */
 fun Route.hentBrukerRoute(
     brukerService: BrukerService,
     clock: Clock,

@@ -7,6 +7,9 @@ import io.ktor.server.routing.get
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
+/**
+ * Response DTO: [LandingssideStatusDTO]
+ */
 fun Route.fellesLandingssideRoutes(
     meldekortService: MeldekortService,
 ) {

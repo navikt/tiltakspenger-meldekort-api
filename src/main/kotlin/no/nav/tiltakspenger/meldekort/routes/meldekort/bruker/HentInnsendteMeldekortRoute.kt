@@ -12,6 +12,9 @@ import no.nav.tiltakspenger.meldekort.service.BrukerService
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import java.time.Clock
 
+/**
+ * Response DTO: [AlleMeldekortDTO]
+ */
 fun Route.hentInnsendteMeldekortRoute(
     meldekortService: MeldekortService,
     brukerService: BrukerService,

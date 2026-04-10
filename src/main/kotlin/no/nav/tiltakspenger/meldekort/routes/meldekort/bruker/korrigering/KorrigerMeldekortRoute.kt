@@ -11,11 +11,16 @@ import no.nav.tiltakspenger.libs.ktor.common.ErrorJson
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.domene.FeilVedKorrigeringAvMeldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
+import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.service.KorrigerMeldekortCommand
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import java.time.Clock
 
+/**
+ * Request DTO: [MeldekortKorrigertDagDTO]
+ * Response DTO: [MeldekortTilBrukerDTO]
+ */
 fun Route.korrigerMeldekortRoute(
     meldekortService: MeldekortService,
     clock: Clock,

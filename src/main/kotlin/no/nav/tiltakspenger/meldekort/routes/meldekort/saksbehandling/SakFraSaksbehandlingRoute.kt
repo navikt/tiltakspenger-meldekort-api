@@ -14,6 +14,9 @@ import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.meldekort.service.FeilVedMottakAvSak
 import no.nav.tiltakspenger.meldekort.service.LagreFraSaksbehandlingService
 
+/**
+ * Request DTO: [SakTilMeldekortApiDTO]
+ */
 fun Route.sakFraSaksbehandlingRoute(
     lagreFraSaksbehandlingService: LagreFraSaksbehandlingService,
 ) {

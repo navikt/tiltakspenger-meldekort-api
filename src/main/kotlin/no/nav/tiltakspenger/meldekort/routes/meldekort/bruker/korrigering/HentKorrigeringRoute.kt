@@ -8,6 +8,9 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
+/**
+ * Response DTO: [MeldekortTilKorrigeringDTO]
+ */
 fun Route.hentKorrigeringRoute(
     meldekortService: MeldekortService,
     clock: java.time.Clock,

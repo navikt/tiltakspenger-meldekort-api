@@ -8,6 +8,9 @@ import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import java.time.Clock
 
+/**
+ * Response DTO: [MicrofrontendKortDTO]
+ */
 fun Route.microfrontendRoutes(
     meldekortService: MeldekortService,
     clock: Clock,

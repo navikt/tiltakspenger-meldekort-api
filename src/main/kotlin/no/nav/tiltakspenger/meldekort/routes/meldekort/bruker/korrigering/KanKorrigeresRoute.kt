@@ -9,6 +9,9 @@ import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 
+/**
+ * Response DTO: [KanKorrigereMeldekortDto]
+ */
 fun Route.kanKorrigeresRoute(
     meldekortService: MeldekortService,
 ) {
