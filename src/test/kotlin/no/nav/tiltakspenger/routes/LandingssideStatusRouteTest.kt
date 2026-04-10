@@ -95,7 +95,7 @@ class LandingssideStatusRouteTest {
 
     @Test
     fun `bruker med innsendte meldekort og ingen klare - returnerer harInnsendt uten meldekort til utfylling`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+        withTestApplicationContext { tac ->
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
             val meldeperiode = ObjectMother.meldeperiode(periode = periode)
 

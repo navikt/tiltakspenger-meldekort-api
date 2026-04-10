@@ -3,14 +3,16 @@ package no.nav.tiltakspenger.service
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
-import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClock
+import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.lagMeldekort
 import no.nav.tiltakspenger.objectmothers.lagMeldekortFraBrukerKommando
+import no.nav.tiltakspenger.routes.withTestApplicationContext
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
@@ -19,75 +21,76 @@ class MeldekortServiceTest {
 
     @Test
     fun `Kan lagre gyldig meldekort fra bruker`() {
-        val tac = TestApplicationContextMedInMemoryDb()
-        (tac.clock as TikkendeKlokke).spolTil(gyldigPeriode.tilOgMed)
+        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+            val meldekortRepo = tac.meldekortRepo
+            val meldekortService = tac.meldekortService
 
-        val meldekortRepo = tac.meldekortRepo
-        val meldekortService = tac.meldekortService
+            val meldekort = tac.lagMeldekort(ObjectMother.meldeperiode(periode = gyldigPeriode), locale = "en")
+            val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-        val meldekort = tac.lagMeldekort(ObjectMother.meldeperiode(periode = gyldigPeriode), locale = "en")
-        val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
+            meldekortService.lagreMeldekortFraBruker(lagreKommando)
 
-        meldekortService.lagreMeldekortFraBruker(lagreKommando)
+            val oppdatertMeldekort = meldekortRepo.hentForMeldekortId(meldekortId = meldekort.id, fnr = meldekort.fnr)
+            val forventetMeldekort =
+                meldekort.copy(dager = lagreKommando.dager.map { it.tilMeldekortDag() }, mottatt = oppdatertMeldekort?.mottatt, locale = "en")
 
-        val oppdatertMeldekort = meldekortRepo.hentForMeldekortId(meldekortId = meldekort.id, fnr = meldekort.fnr)
-        val forventetMeldekort =
-            meldekort.copy(dager = lagreKommando.dager.map { it.tilMeldekortDag() }, mottatt = oppdatertMeldekort?.mottatt, locale = "en")
-
-        oppdatertMeldekort shouldBe forventetMeldekort
+            oppdatertMeldekort shouldBe forventetMeldekort
+        }
     }
 
     @Test
     fun `Kan ikke lagre meldekort fra bruker for periode som ikke er klart til innsending`() {
-        val tac = TestApplicationContextMedInMemoryDb()
-        (tac.clock as TikkendeKlokke).spolTil(LocalDate.now())
-        val meldekortService = tac.meldekortService
+        withTestApplicationContext { tac ->
+            val meldekortService = tac.meldekortService
 
-        val meldekort = tac.lagMeldekort(
-            ObjectMother.meldeperiode(
-                periode = ObjectMother.periode(
-                    LocalDate.now(),
+            val meldekort = tac.lagMeldekort(
+                ObjectMother.meldeperiode(
+                    periode = ObjectMother.periode(
+                        LocalDate.now(),
+                    ),
                 ),
-            ),
-        )
-        val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
+            )
+            val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-        shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er ikke klar til innsending (status: IKKE_KLAR)") {
-            meldekortService.lagreMeldekortFraBruker(lagreKommando)
+            shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er ikke klar til innsending (status: IKKE_KLAR)") {
+                meldekortService.lagreMeldekortFraBruker(lagreKommando)
+            }
         }
     }
 
     @Test
     fun `Kan ikke lagre meldekort fra bruker som ikke matcher fnr på meldekortet`() {
-        val tac = TestApplicationContextMedInMemoryDb()
-        val meldekortService = tac.meldekortService
+        withTestApplicationContext { tac ->
+            val meldekortService = tac.meldekortService
 
-        val meldekort = tac.lagMeldekort(
-            ObjectMother.meldeperiode(
-                periode = ObjectMother.periode(LocalDate.of(2025, 1, 1)),
-            ),
-        )
-        val lagreKommando = lagMeldekortFraBrukerKommando(meldekort, fnr = Fnr.fromString("11111111111"))
+            val meldekort = tac.lagMeldekort(
+                ObjectMother.meldeperiode(
+                    periode = ObjectMother.periode(LocalDate.of(2025, 1, 1)),
+                ),
+            )
+            val lagreKommando = lagMeldekortFraBrukerKommando(meldekort, fnr = Fnr.fromString("11111111111"))
 
-        shouldThrow<NullPointerException> { meldekortService.lagreMeldekortFraBruker(lagreKommando) }
+            shouldThrow<NullPointerException> { meldekortService.lagreMeldekortFraBruker(lagreKommando) }
+        }
     }
 
     @Test
     fun `Kan ikke lagre meldekort fra bruker som allerede er mottatt`() {
-        val tac = TestApplicationContextMedInMemoryDb()
-        val meldekortService = tac.meldekortService
-        val mottatt = nå(fixedClock).plusSeconds(1)
+        withTestApplicationContext { tac ->
+            val meldekortService = tac.meldekortService
+            val mottatt = nå(fixedClock).plusSeconds(1)
 
-        val meldekort = tac.lagMeldekort(
-            ObjectMother.meldeperiode(
-                periode = ObjectMother.periode(LocalDate.now(fixedClock)),
-            ),
-            mottatt,
-        )
-        val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
+            val meldekort = tac.lagMeldekort(
+                ObjectMother.meldeperiode(
+                    periode = ObjectMother.periode(LocalDate.now(fixedClock)),
+                ),
+                mottatt,
+            )
+            val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-        shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt ($mottatt)") {
-            meldekortService.lagreMeldekortFraBruker(lagreKommando)
+            shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt ($mottatt)") {
+                meldekortService.lagreMeldekortFraBruker(lagreKommando)
+            }
         }
     }
 }

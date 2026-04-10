@@ -249,7 +249,7 @@ class MeldekortBrukerRouteTest {
 
     @Test
     fun `korrigerer et meldekort`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+        withTestApplicationContext { tac ->
             val førsteMeldeperiode =
                 ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
 
@@ -378,7 +378,7 @@ class MeldekortBrukerRouteTest {
 
     @Test
     fun `kan ikke korrigere uten endring på dager`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+        withTestApplicationContext { tac ->
             val førsteMeldeperiode =
                 ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
 

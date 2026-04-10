@@ -73,7 +73,7 @@ fun withTestApplicationContextAndPostgres(
  */
 fun withTestApplicationContext(
     additionalConfig: Application.() -> Unit = {},
-    clock: TikkendeKlokke = TikkendeKlokke(fixedClockAt(1.mai(2025))),
+    clock: TikkendeKlokke = TikkendeKlokke(),
     texasClient: TexasClientFakeTest = TexasClientFakeTest(),
     sessionFactory: TestSessionFactory = TestSessionFactory(),
     testBlock: suspend ApplicationTestBuilder.(TestApplicationContextMedInMemoryDb) -> Unit,

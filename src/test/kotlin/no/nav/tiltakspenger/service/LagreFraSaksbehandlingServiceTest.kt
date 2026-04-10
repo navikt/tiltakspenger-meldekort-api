@@ -2,72 +2,75 @@ package no.nav.tiltakspenger.service
 
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
+import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.getOrFail
+import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.lagMeldekortFraBrukerKommando
+import no.nav.tiltakspenger.routes.withTestApplicationContext
 import org.junit.jupiter.api.Test
 
 class LagreFraSaksbehandlingServiceTest {
 
     @Test
     fun `Skal generere meldekort for ny meldeperiode`() {
-        val tac = TestApplicationContextMedInMemoryDb()
-        val meldeperiodeDto = ObjectMother.meldeperiodeDto()
+        withTestApplicationContext { tac ->
+            val meldeperiodeDto = ObjectMother.meldeperiodeDto()
 
-        val sakDto = ObjectMother.sakDTO(
-            meldeperioder = listOf(
-                meldeperiodeDto,
-            ),
-        )
+            val sakDto = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    meldeperiodeDto,
+                ),
+            )
 
-        tac.lagreFraSaksbehandlingService.lagre(sakDto).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDto).getOrFail()
 
-        val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
+            val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
 
-        tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!.meldeperiode.id shouldBe MeldeperiodeId.fromString(
-            meldeperiodeDto.id,
-        )
+            tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!.meldeperiode.id shouldBe MeldeperiodeId.fromString(
+                meldeperiodeDto.id,
+            )
+        }
     }
 
     @Test
     fun `Skal ikke generere nytt meldekort for ny meldeperiode-versjon dersom meldekort allerede var mottatt for meldeperioden`() {
-        val tac = TestApplicationContextMedInMemoryDb()
-        val meldeperiodeDto = ObjectMother.meldeperiodeDto()
-        (tac.clock as TikkendeKlokke).spolTil(meldeperiodeDto.tilOgMed)
+        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+            val meldeperiodeDto = ObjectMother.meldeperiodeDto()
 
-        val sakDto = ObjectMother.sakDTO(
-            meldeperioder = listOf(
-                meldeperiodeDto,
-            ),
-        )
-
-        tac.lagreFraSaksbehandlingService.lagre(sakDto).getOrFail()
-
-        val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
-
-        val meldekort = tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!
-        val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
-        tac.meldekortService.lagreMeldekortFraBruker(lagreKommando)
-
-        val nesteMeldekort = tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)
-
-        nesteMeldekort.shouldBeNull()
-
-        val sakDtoOppdater = sakDto.copy(
-            meldeperioder = listOf(
-                meldeperiodeDto.copy(
-                    id = MeldeperiodeId.random().toString(),
-                    versjon = 2,
+            val sakDto = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    meldeperiodeDto,
                 ),
-            ),
-        )
+            )
 
-        tac.lagreFraSaksbehandlingService.lagre(sakDtoOppdater).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDto).getOrFail()
 
-        tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr).shouldBeNull()
+            val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
+
+            val meldekort = tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!
+            val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
+            tac.meldekortService.lagreMeldekortFraBruker(lagreKommando)
+
+            val nesteMeldekort = tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)
+
+            nesteMeldekort.shouldBeNull()
+
+            val sakDtoOppdater = sakDto.copy(
+                meldeperioder = listOf(
+                    meldeperiodeDto.copy(
+                        id = MeldeperiodeId.random().toString(),
+                        versjon = 2,
+                    ),
+                ),
+            )
+
+            tac.lagreFraSaksbehandlingService.lagre(sakDtoOppdater).getOrFail()
+
+            tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr).shouldBeNull()
+        }
     }
 }
