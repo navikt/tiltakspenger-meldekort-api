@@ -112,6 +112,8 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-json:$kotestVersion")
     testImplementation("io.kotest:kotest-extensions:$kotestVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$kotlinxCoroutinesVersion")
+
 
     testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
@@ -161,6 +163,7 @@ tasks {
         systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
         // https://github.com/mockito/mockito/issues/3037#issuecomment-1588199599
         jvmArgs("-XX:+EnableDynamicAgentLoading")
+        jvmArgs("-ea")
         testLogging {
             // We only want to log failed and skipped tests when running Gradle.
             events("skipped", "failed")

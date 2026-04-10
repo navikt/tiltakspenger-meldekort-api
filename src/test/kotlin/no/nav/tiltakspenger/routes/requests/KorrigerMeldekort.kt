@@ -20,7 +20,6 @@ suspend fun ApplicationTestBuilder.korrigerMeldekort(
         setBody(dager)
     }.let { response ->
         response.status shouldBe forventetStatus
-        val body = response.bodyAsText()
-        return body
+        return response.bodyAsText()
     }
 }

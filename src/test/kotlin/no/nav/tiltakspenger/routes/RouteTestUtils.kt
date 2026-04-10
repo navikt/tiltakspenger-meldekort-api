@@ -33,7 +33,19 @@ suspend fun ApplicationTestBuilder.defaultRequest(
         setup()
     }
 
-fun testMedMeldekortRoutes(context: TestApplicationContext, block: suspend ApplicationTestBuilder.() -> Unit) {
+inline fun testMedMeldekortRoutes(
+    context: TestApplicationContext,
+    crossinline block: suspend ApplicationTestBuilder.() -> Unit,
+) {
+    val callSite = Exception("Call site")
+    callSite.stackTrace = callSite.stackTrace
+        .filterNot {
+            it.className.startsWith("kotlin.coroutines") ||
+                it.className.startsWith("kotlinx.coroutines") ||
+                it.className.contains("\$\$")
+        }
+        .toTypedArray()
+
     runTest {
         testApplication {
             application {
@@ -49,7 +61,16 @@ fun testMedMeldekortRoutes(context: TestApplicationContext, block: suspend Appli
                 }
             }
 
-            block()
+            try {
+                block()
+            } catch (e: AssertionError) {
+                try {
+                    e.initCause(callSite)
+                } catch (_: IllegalStateException) {
+                    e.addSuppressed(callSite)
+                }
+                throw e
+            }
         }
     }
 }

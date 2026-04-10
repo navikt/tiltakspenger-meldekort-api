@@ -2,28 +2,21 @@ package no.nav.tiltakspenger.routes
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.ktor.client.request.setBody
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.URLProtocol
-import io.ktor.http.path
-import io.ktor.server.testing.ApplicationTestBuilder
-import io.ktor.server.util.url
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.dato.november
-import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
-import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
 import no.nav.tiltakspenger.meldekort.domene.tilSak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.lagreMeldekortFraBrukerKommando
+import no.nav.tiltakspenger.routes.requests.mottaSakRequest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -31,16 +24,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MottaSakerRouteTest {
-    private suspend fun ApplicationTestBuilder.mottaSakRequest(dto: SakTilMeldekortApiDTO) = defaultRequest(
-        HttpMethod.Post,
-        url {
-            protocol = URLProtocol.HTTPS
-            path("/saksbehandling/sak")
-        },
-        jwt = JwtGenerator().createJwtForSystembruker(),
-    ) {
-        setBody(serialize(dto))
-    }
 
     private val førstePeriode = Periode(
         fraOgMed = LocalDate.of(2025, 1, 6),
@@ -63,8 +46,6 @@ class MottaSakerRouteTest {
 
         testMedMeldekortRoutes(tac) {
             mottaSakRequest(sakDto).apply {
-                status shouldBe HttpStatusCode.OK
-
                 val sak = tac.sakRepo.hent(id)
 
                 sak shouldBe sakDto.tilSak()
@@ -94,8 +75,6 @@ class MottaSakerRouteTest {
 
         testMedMeldekortRoutes(tac) {
             mottaSakRequest(sakDto).apply {
-                status shouldBe HttpStatusCode.OK
-
                 val sak = tac.sakRepo.hent(id)
 
                 sak shouldBe sakDto.tilSak()
@@ -117,15 +96,14 @@ class MottaSakerRouteTest {
         )
 
         testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto).apply {
-                status shouldBe HttpStatusCode.OK
-            }
+            mottaSakRequest(sakDto)
 
-            mottaSakRequest(sakDto).apply {
-                status shouldBe HttpStatusCode.OK
-
-                tac.sakRepo.hent(SakId.fromString(sakDto.sakId)) shouldBe sakDto.tilSak()
-            }
+            mottaSakRequest(
+                sakDto,
+                forventetStatus = HttpStatusCode.OK,
+                forventetBody = "Saken var allerede lagret med samme data",
+            )
+            tac.sakRepo.hent(SakId.fromString(sakDto.sakId)) shouldBe sakDto.tilSak()
         }
     }
 
@@ -154,13 +132,9 @@ class MottaSakerRouteTest {
         )
 
         testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto1).apply {
-                status shouldBe HttpStatusCode.OK
-            }
+            mottaSakRequest(sakDto1)
 
             mottaSakRequest(sakDto2).apply {
-                status shouldBe HttpStatusCode.OK
-
                 val sak = tac.sakRepo.hent(SakId.fromString(sakDto2.sakId))!!
 
                 sak.meldeperioder.size shouldBe 2
@@ -193,17 +167,16 @@ class MottaSakerRouteTest {
             ),
         )
         testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto1).apply {
-                status shouldBe HttpStatusCode.OK
-            }
+            mottaSakRequest(sakDto1)
 
-            mottaSakRequest(sakDto2).apply {
-                status shouldBe HttpStatusCode.Conflict
+            mottaSakRequest(
+                sakDto2,
+                forventetStatus = HttpStatusCode.Conflict,
+                forventetBody = "Meldeperiode var allerede lagret med andre data",
+            )
 
-                val meldeperiode = tac.meldeperiodeRepo.hentForId(MeldeperiodeId.fromString(førsteMeldeperiode.id))!!
-
-                meldeperiode.opprettet shouldBe førsteMeldeperiode.opprettet
-            }
+            val meldeperiode = tac.meldeperiodeRepo.hentForId(MeldeperiodeId.fromString(førsteMeldeperiode.id))!!
+            meldeperiode.opprettet shouldBe førsteMeldeperiode.opprettet
         }
     }
 
@@ -228,13 +201,9 @@ class MottaSakerRouteTest {
         )
 
         testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto1).apply {
-                status shouldBe HttpStatusCode.OK
-            }
+            mottaSakRequest(sakDto1)
 
             mottaSakRequest(sakDto2).apply {
-                status shouldBe HttpStatusCode.OK
-
                 val (førsteMeldekort, andreMeldekort) =
                     tac.meldekortRepo.hentMeldekortForKjedeId(
                         MeldeperiodeKjedeId(meldeperiode.kjedeId),
@@ -272,8 +241,6 @@ class MottaSakerRouteTest {
 
         testMedMeldekortRoutes(tac) {
             mottaSakRequest(sakDto1).apply {
-                status shouldBe HttpStatusCode.OK
-
                 val meldekort = tac.meldekortRepo.hentMeldekortForKjedeId(
                     MeldeperiodeKjedeId(meldeperiode.kjedeId),
                     Fnr.fromString(sakDto1.fnr),
@@ -298,8 +265,6 @@ class MottaSakerRouteTest {
             }
 
             mottaSakRequest(sakDto2).apply {
-                status shouldBe HttpStatusCode.OK
-
                 val meldekortFraKjede = tac.meldekortRepo.hentMeldekortForKjedeId(
                     MeldeperiodeKjedeId(meldeperiode.kjedeId),
                     Fnr.fromString(sakDto1.fnr),
