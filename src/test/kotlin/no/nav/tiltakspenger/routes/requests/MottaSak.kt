@@ -4,6 +4,7 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
@@ -30,8 +31,10 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
     meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = listOf(meldeperiodeDto()),
     harSoknadUnderBehandling: Boolean = false,
     kanSendeInnHelgForMeldekort: Boolean = false,
-    forventetStatus: HttpStatusCode? = HttpStatusCode.OK,
-) {
+    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
+    forventetBody: String? = "Sak lagret",
+    forventetContentType: ContentType = ContentType.Application.Json,
+): String {
     return mottaSakRequest(
         dto = SakTilMeldekortApiDTO(
             fnr = fnr.verdi,
@@ -42,6 +45,8 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
             kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
         ),
         forventetStatus = forventetStatus,
+        forventetBody = forventetBody,
+        forventetContentType = forventetContentType,
     )
 }
 
@@ -51,10 +56,11 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
  */
 suspend fun ApplicationTestBuilder.mottaSakRequest(
     dto: SakTilMeldekortApiDTO,
-    forventetStatus: HttpStatusCode? = HttpStatusCode.OK,
+    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "Sak lagret",
-) {
-    defaultRequest(
+    forventetContentType: ContentType = ContentType.Application.Json,
+): String {
+    val response = defaultRequest(
         method = HttpMethod.Post,
         uri = url {
             protocol = URLProtocol.HTTPS
@@ -63,18 +69,24 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
         jwt = JwtGenerator().createJwtForSystembruker(),
     ) {
         setBody(serialize(dto))
-    }.run {
-        val bodyAsText = this.bodyAsText()
-        withClue(
-            "Response details:\n" +
-                "Status: ${this.status}\n" +
-                "Content-Type: ${this.contentType()}\n" +
-                "Body: $bodyAsText",
-        ) {
-            status shouldBe forventetStatus
-            if (forventetBody != null) {
-                bodyAsText shouldBe forventetBody
-            }
-        }
     }
+    val bodyAsText = response.bodyAsText()
+    val contentType = response.contentType()
+    val status = response.status
+    withClue(
+        "Response details:\n" +
+            "Status: $status\n" +
+            "Content-Type: $contentType\n" +
+            "Body: $bodyAsText",
+    ) {
+        if (forventetBody == "") {
+            contentType shouldBe null
+        }
+        status shouldBe forventetStatus
+        if (forventetBody != null) {
+            bodyAsText shouldBe forventetBody
+        }
+        contentType shouldBe forventetContentType
+    }
+    return bodyAsText
 }

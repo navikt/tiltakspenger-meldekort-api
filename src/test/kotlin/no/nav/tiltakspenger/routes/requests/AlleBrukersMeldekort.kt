@@ -1,38 +1,70 @@
 package no.nav.tiltakspenger.routes.requests
 
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
-import no.nav.tiltakspenger.libs.json.objectMapper
+import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.domene.AlleMeldekortDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.routes.defaultRequest
-import tools.jackson.module.kotlin.readValue
 
-suspend fun ApplicationTestBuilder.alleBrukersMeldekort(): String {
+/**
+ * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes] - `get("meldekort/innsendte")`
+ * Dto: [no.nav.tiltakspenger.meldekort.domene.AlleMeldekortDTO]
+ */
+suspend fun ApplicationTestBuilder.alleBrukersMeldekort(
+    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
+    forventetBody: String? = null,
+    forventetContentType: ContentType = ContentType.Application.Json,
+): AlleMeldekortDTO? {
     this.defaultRequest(
         method = HttpMethod.Get,
         uri = "/brukerfrontend/meldekort/innsendte",
     ).let { response ->
-        return response.bodyAsText()
+        val bodyAsText = response.bodyAsText()
+        val contentType = response.contentType()
+        val status = response.status
+        val dto = if (status == HttpStatusCode.OK) {
+            deserialize<AlleMeldekortDTO>(bodyAsText)
+        } else {
+            null
+        }
+        withClue(
+            "Response details:\n" +
+                "Status: $status\n" +
+                "Content-Type: $contentType\n" +
+                "Body: $bodyAsText",
+        ) {
+            if (forventetBody == "") {
+                contentType shouldBe null
+            }
+            status shouldBe forventetStatus
+            if (forventetBody != null) {
+                bodyAsText shouldBe forventetBody
+            }
+            contentType shouldBe forventetContentType
+        }
+        return dto
     }
 }
 
-fun verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort: String) {
-    alleMeldekort.tilAlleMeldekortDTO().meldekortMedSisteMeldeperiode.single()
+fun verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort: AlleMeldekortDTO) {
+    alleMeldekort.meldekortMedSisteMeldeperiode.single()
 }
 
-fun String.verifiserAntallMeldekortFraAlleMeldekort(antall: Int) {
-    this.tilAlleMeldekortDTO().meldekortMedSisteMeldeperiode.size shouldBe antall
+fun AlleMeldekortDTO.verifiserAntallMeldekortFraAlleMeldekort(antall: Int) {
+    this.meldekortMedSisteMeldeperiode.size shouldBe antall
 }
 
-fun String.hentFørsteMeldekortFraAlleMeldekort(): MeldekortTilBrukerDTO =
-    this.tilAlleMeldekortDTO().meldekortMedSisteMeldeperiode.first().meldekort
+fun AlleMeldekortDTO.hentFørsteMeldekortFraAlleMeldekort(): MeldekortTilBrukerDTO {
+    return this.meldekortMedSisteMeldeperiode.first().meldekort
+}
 
-fun String.hentSisteMeldekortFraAlleMeldekort(): MeldekortTilBrukerDTO =
-    this.tilAlleMeldekortDTO().meldekortMedSisteMeldeperiode.last().meldekort
-
-fun String.tilAlleMeldekortDTO(): AlleMeldekortDTO {
-    return objectMapper.readValue<AlleMeldekortDTO>(this)
+fun AlleMeldekortDTO.hentSisteMeldekortFraAlleMeldekort(): MeldekortTilBrukerDTO {
+    return this.meldekortMedSisteMeldeperiode.last().meldekort
 }

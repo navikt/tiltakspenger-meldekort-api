@@ -3,7 +3,7 @@ package no.nav.tiltakspenger.service
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
-import no.nav.tiltakspenger.TestApplicationContext
+import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -19,7 +19,7 @@ class MeldekortServiceTest {
 
     @Test
     fun `Kan lagre gyldig meldekort fra bruker`() {
-        val tac = TestApplicationContext()
+        val tac = TestApplicationContextMedInMemoryDb()
         (tac.clock as TikkendeKlokke).spolTil(gyldigPeriode.tilOgMed)
 
         val meldekortRepo = tac.meldekortRepo
@@ -39,7 +39,7 @@ class MeldekortServiceTest {
 
     @Test
     fun `Kan ikke lagre meldekort fra bruker for periode som ikke er klart til innsending`() {
-        val tac = TestApplicationContext()
+        val tac = TestApplicationContextMedInMemoryDb()
         (tac.clock as TikkendeKlokke).spolTil(LocalDate.now())
         val meldekortService = tac.meldekortService
 
@@ -59,7 +59,7 @@ class MeldekortServiceTest {
 
     @Test
     fun `Kan ikke lagre meldekort fra bruker som ikke matcher fnr på meldekortet`() {
-        val tac = TestApplicationContext()
+        val tac = TestApplicationContextMedInMemoryDb()
         val meldekortService = tac.meldekortService
 
         val meldekort = tac.lagMeldekort(
@@ -74,7 +74,7 @@ class MeldekortServiceTest {
 
     @Test
     fun `Kan ikke lagre meldekort fra bruker som allerede er mottatt`() {
-        val tac = TestApplicationContext()
+        val tac = TestApplicationContextMedInMemoryDb()
         val meldekortService = tac.meldekortService
         val mottatt = nå(fixedClock).plusSeconds(1)
 

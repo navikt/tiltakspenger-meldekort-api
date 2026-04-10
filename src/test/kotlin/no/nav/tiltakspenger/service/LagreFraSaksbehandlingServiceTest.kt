@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.service
 
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import no.nav.tiltakspenger.TestApplicationContext
+import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.getOrFail
@@ -15,7 +15,7 @@ class LagreFraSaksbehandlingServiceTest {
 
     @Test
     fun `Skal generere meldekort for ny meldeperiode`() {
-        val tac = TestApplicationContext()
+        val tac = TestApplicationContextMedInMemoryDb()
         val meldeperiodeDto = ObjectMother.meldeperiodeDto()
 
         val sakDto = ObjectMother.sakDTO(
@@ -35,7 +35,7 @@ class LagreFraSaksbehandlingServiceTest {
 
     @Test
     fun `Skal ikke generere nytt meldekort for ny meldeperiode-versjon dersom meldekort allerede var mottatt for meldeperioden`() {
-        val tac = TestApplicationContext()
+        val tac = TestApplicationContextMedInMemoryDb()
         val meldeperiodeDto = ObjectMother.meldeperiodeDto()
         (tac.clock as TikkendeKlokke).spolTil(meldeperiodeDto.tilOgMed)
 

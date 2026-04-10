@@ -7,7 +7,6 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C
 import java.time.Clock
 import javax.sql.DataSource
 

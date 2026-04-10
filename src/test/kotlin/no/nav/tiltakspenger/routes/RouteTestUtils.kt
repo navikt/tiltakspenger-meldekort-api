@@ -8,14 +8,24 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.append
-import io.ktor.server.routing.routing
+import io.ktor.server.application.Application
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.coroutines.test.runTest
-import no.nav.tiltakspenger.TestApplicationContext
-import no.nav.tiltakspenger.meldekort.routes.jacksonSerialization
-import no.nav.tiltakspenger.meldekort.routes.meldekort.meldekortRoutes
-import no.nav.tiltakspenger.meldekort.routes.setupAuthentication
+import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
+import no.nav.tiltakspenger.TestApplicationContextMedPostgres
+import no.nav.tiltakspenger.db.TestDatabaseManager
+import no.nav.tiltakspenger.fakes.TexasClientFakeTest
+import no.nav.tiltakspenger.libs.common.TikkendeKlokke
+import no.nav.tiltakspenger.libs.common.fixedClockAt
+import no.nav.tiltakspenger.libs.dato.mai
+import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
+import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
+import no.nav.tiltakspenger.libs.persistering.test.common.TestSessionFactory
+import no.nav.tiltakspenger.libs.texas.client.TexasClient
+import no.nav.tiltakspenger.meldekort.context.ApplicationContext
+import no.nav.tiltakspenger.meldekort.routes.meldekortApi
+import java.time.Clock
 
 suspend fun ApplicationTestBuilder.defaultRequest(
     method: HttpMethod,
@@ -33,10 +43,53 @@ suspend fun ApplicationTestBuilder.defaultRequest(
         setup()
     }
 
-inline fun testMedMeldekortRoutes(
-    context: TestApplicationContext,
-    crossinline block: suspend ApplicationTestBuilder.() -> Unit,
+private val dbManager = TestDatabaseManager()
+
+fun withTestApplicationContextAndPostgres(
+    additionalConfig: Application.() -> Unit = {},
+    clock: TikkendeKlokke = TikkendeKlokke(fixedClockAt(1.mai(2025))),
+    texasClient: TexasClient = TexasClientFakeTest(),
+    runIsolated: Boolean = false,
+    testBlock: suspend ApplicationTestBuilder.(TestApplicationContextMedPostgres) -> Unit,
 ) {
+    val callSite = captureCallSite()
+    runTest {
+        dbManager.withMigratedDb(
+            runIsolated = runIsolated,
+            clock = clock,
+        ) { sessionFactory: SessionFactory, _: Clock ->
+            val context = TestApplicationContextMedPostgres(
+                clock = clock,
+                texasClient = texasClient,
+                sessionFactory = sessionFactory as PostgresSessionFactory,
+            )
+            runTestApplication(context, additionalConfig, callSite, testBlock)
+        }
+    }
+}
+
+/**
+ * @param clock Merk at vi ikke kan behandle et meldekort før vi har passert meldekortets første dag.Derfor er det viktig at [clock] er satt til en dato etter den første meldekortdagen i testene som bruker denne eller bruk TikkendeKlokke.spolTil(...)
+ */
+fun withTestApplicationContext(
+    additionalConfig: Application.() -> Unit = {},
+    clock: TikkendeKlokke = TikkendeKlokke(fixedClockAt(1.mai(2025))),
+    texasClient: TexasClientFakeTest = TexasClientFakeTest(),
+    sessionFactory: TestSessionFactory = TestSessionFactory(),
+    testBlock: suspend ApplicationTestBuilder.(TestApplicationContextMedInMemoryDb) -> Unit,
+) {
+    val callSite = captureCallSite()
+    runTest {
+        val context = TestApplicationContextMedInMemoryDb(
+            clock = clock,
+            texasClient = texasClient,
+            sessionFactory = sessionFactory,
+        )
+        runTestApplication(context, additionalConfig, callSite, testBlock)
+    }
+}
+
+private fun captureCallSite(): Exception {
     val callSite = Exception("Call site")
     callSite.stackTrace = callSite.stackTrace
         .filterNot {
@@ -45,32 +98,29 @@ inline fun testMedMeldekortRoutes(
                 it.className.contains("\$\$")
         }
         .toTypedArray()
+    return callSite
+}
 
-    runTest {
-        testApplication {
-            application {
-                jacksonSerialization()
-                setupAuthentication(context.texasClient)
-                routing {
-                    meldekortRoutes(
-                        meldekortService = context.meldekortService,
-                        lagreFraSaksbehandlingService = context.lagreFraSaksbehandlingService,
-                        brukerService = context.brukerService,
-                        clock = context.clock,
-                    )
-                }
-            }
-
+private fun <T : ApplicationContext> runTestApplication(
+    context: T,
+    additionalConfig: Application.() -> Unit,
+    callSite: Exception,
+    testBlock: suspend ApplicationTestBuilder.(T) -> Unit,
+) {
+    testApplication {
+        application {
+            meldekortApi(context)
+            additionalConfig()
+        }
+        try {
+            testBlock(context)
+        } catch (e: AssertionError) {
             try {
-                block()
-            } catch (e: AssertionError) {
-                try {
-                    e.initCause(callSite)
-                } catch (_: IllegalStateException) {
-                    e.addSuppressed(callSite)
-                }
-                throw e
+                e.initCause(callSite)
+            } catch (_: IllegalStateException) {
+                e.addSuppressed(callSite)
             }
+            throw e
         }
     }
 }

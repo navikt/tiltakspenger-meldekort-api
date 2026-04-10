@@ -76,6 +76,7 @@ class SakRepoFake : SakRepo {
             it.meldeperioder
                 .last()
                 .periode
+                // TODO jah: Bytt til clock som man tar inn i ctor
                 .tilOgMed.isAfter(nå(fixedClock).minusMonths(6).toLocalDate())
         }
     }
@@ -85,6 +86,7 @@ class SakRepoFake : SakRepo {
             it.meldeperioder
                 .last()
                 .periode
+                // TODO jah: Bytt til clock som man tar inn i ctor
                 .tilOgMed.isBefore(nå(fixedClock).minusMonths(6).toLocalDate())
         }
     }

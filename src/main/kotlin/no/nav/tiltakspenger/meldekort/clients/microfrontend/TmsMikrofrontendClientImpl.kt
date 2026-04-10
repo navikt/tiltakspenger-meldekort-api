@@ -12,8 +12,8 @@ const val MICROFRONTEND_APP: String = "tiltakspenger-meldekort-microfrontend"
 const val MICROFRONTEND_TEAM: String = "tpts"
 
 class TmsMikrofrontendClientImpl(
-    val kafkaProducer: Producer<String, String>,
-    val topicName: String,
+    private val kafkaProducer: Producer<String, String>,
+    private val topicName: String,
 ) : TmsMikrofrontendClient {
     private val log = KotlinLogging.logger { }
 

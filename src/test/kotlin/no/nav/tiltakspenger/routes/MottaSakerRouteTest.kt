@@ -2,11 +2,13 @@ package no.nav.tiltakspenger.routes
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import no.nav.tiltakspenger.TestApplicationContext
+import io.ktor.http.withCharset
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
+import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.dato.november
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
@@ -32,20 +34,20 @@ class MottaSakerRouteTest {
 
     @Test
     fun `Skal lagre saken og opprette meldekort`() {
-        val tac = TestApplicationContext()
-        (tac.clock as TikkendeKlokke).spolTil(1.mars(2025))
+        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+            val sakDto = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode),
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager()),
+                ),
+            )
 
-        val sakDto = ObjectMother.sakDTO(
-            meldeperioder = listOf(
-                ObjectMother.meldeperiodeDto(periode = førstePeriode),
-                ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager()),
-            ),
-        )
+            val id = SakId.fromString(sakDto.sakId)
 
-        val id = SakId.fromString(sakDto.sakId)
-
-        testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto).apply {
+            mottaSakRequest(
+                dto = sakDto,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
                 val sak = tac.sakRepo.hent(id)
 
                 sak shouldBe sakDto.tilSak()
@@ -59,22 +61,23 @@ class MottaSakerRouteTest {
 
     @Test
     fun `Skal oppdatere sak hvis harSoknadUnderBehandling endres`() {
-        val tac = TestApplicationContext()
+        withTestApplicationContext { tac ->
+            val lagretSak = ObjectMother.sak(harSoknadUnderBehandling = false)
+            tac.sakRepo.lagre(lagretSak)
 
-        val lagretSak = ObjectMother.sak(harSoknadUnderBehandling = false)
-        tac.sakRepo.lagre(lagretSak)
+            val id = lagretSak.id
+            val sakDto = ObjectMother.sakDTO(
+                sakId = id.toString(),
+                saksnummer = lagretSak.saksnummer,
+                fnr = lagretSak.fnr.verdi,
+                meldeperioder = emptyList(),
+                harSoknadUnderBehandling = true,
+            )
 
-        val id = lagretSak.id
-        val sakDto = ObjectMother.sakDTO(
-            sakId = id.toString(),
-            saksnummer = lagretSak.saksnummer,
-            fnr = lagretSak.fnr.verdi,
-            meldeperioder = emptyList(),
-            harSoknadUnderBehandling = true,
-        )
-
-        testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto).apply {
+            mottaSakRequest(
+                dto = sakDto,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
                 val sak = tac.sakRepo.hent(id)
 
                 sak shouldBe sakDto.tilSak()
@@ -86,22 +89,24 @@ class MottaSakerRouteTest {
 
     @Test
     fun `Skal håndtere duplikate requests for lagring av sak og returnere ok`() {
-        val tac = TestApplicationContext()
-
-        val sakDto = ObjectMother.sakDTO(
-            meldeperioder = listOf(
-                ObjectMother.meldeperiodeDto(periode = førstePeriode),
-                ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager()),
-            ),
-        )
-
-        testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto)
+        withTestApplicationContext { tac ->
+            val sakDto = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode),
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager()),
+                ),
+            )
 
             mottaSakRequest(
-                sakDto,
+                dto = sakDto,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+
+            mottaSakRequest(
+                dto = sakDto,
                 forventetStatus = HttpStatusCode.OK,
                 forventetBody = "Saken var allerede lagret med samme data",
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
             tac.sakRepo.hent(SakId.fromString(sakDto.sakId)) shouldBe sakDto.tilSak()
         }
@@ -109,32 +114,36 @@ class MottaSakerRouteTest {
 
     @Test
     fun `Skal håndtere oppdatering av sak med nye meldeperioder`() {
-        val tac = TestApplicationContext()
+        withTestApplicationContext { tac ->
+            val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                opprettet = LocalDateTime.of(2025, 1, 5, 12, 0),
+            )
 
-        val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
-            periode = førstePeriode,
-            opprettet = LocalDateTime.of(2025, 1, 5, 12, 0),
-        )
+            val andreMeldeperiode = ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager())
 
-        val andreMeldeperiode = ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager())
+            val sakDto1 = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    førsteMeldeperiode,
+                ),
+            )
 
-        val sakDto1 = ObjectMother.sakDTO(
-            meldeperioder = listOf(
-                førsteMeldeperiode,
-            ),
-        )
+            val sakDto2 = sakDto1.copy(
+                meldeperioder = listOf(
+                    førsteMeldeperiode,
+                    andreMeldeperiode,
+                ),
+            )
 
-        val sakDto2 = sakDto1.copy(
-            meldeperioder = listOf(
-                førsteMeldeperiode,
-                andreMeldeperiode,
-            ),
-        )
+            mottaSakRequest(
+                dto = sakDto1,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
 
-        testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto1)
-
-            mottaSakRequest(sakDto2).apply {
+            mottaSakRequest(
+                dto = sakDto2,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
                 val sak = tac.sakRepo.hent(SakId.fromString(sakDto2.sakId))!!
 
                 sak.meldeperioder.size shouldBe 2
@@ -144,35 +153,38 @@ class MottaSakerRouteTest {
 
     @Test
     fun `Skal returnere 409 ved lagring av sak med ulike meldeperioder med samme meldeperiode-id`() {
-        val tac = TestApplicationContext()
+        withTestApplicationContext { tac ->
+            val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                opprettet = LocalDateTime.of(2025, 1, 5, 12, 0),
+            )
 
-        val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
-            periode = førstePeriode,
-            opprettet = LocalDateTime.of(2025, 1, 5, 12, 0),
-        )
+            val andreMeldeperiode = ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager())
 
-        val andreMeldeperiode = ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager())
+            val sakDto1 = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    førsteMeldeperiode,
+                    andreMeldeperiode,
+                ),
+            )
 
-        val sakDto1 = ObjectMother.sakDTO(
-            meldeperioder = listOf(
-                førsteMeldeperiode,
-                andreMeldeperiode,
-            ),
-        )
-
-        val sakDto2 = sakDto1.copy(
-            meldeperioder = listOf(
-                førsteMeldeperiode.copy(opprettet = LocalDateTime.of(2025, 1, 5, 13, 0)),
-                andreMeldeperiode,
-            ),
-        )
-        testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto1)
+            val sakDto2 = sakDto1.copy(
+                meldeperioder = listOf(
+                    førsteMeldeperiode.copy(opprettet = LocalDateTime.of(2025, 1, 5, 13, 0)),
+                    andreMeldeperiode,
+                ),
+            )
 
             mottaSakRequest(
-                sakDto2,
+                dto = sakDto1,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+
+            mottaSakRequest(
+                dto = sakDto2,
                 forventetStatus = HttpStatusCode.Conflict,
                 forventetBody = "Meldeperiode var allerede lagret med andre data",
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             val meldeperiode = tac.meldeperiodeRepo.hentForId(MeldeperiodeId.fromString(førsteMeldeperiode.id))!!
@@ -182,28 +194,31 @@ class MottaSakerRouteTest {
 
     @Test
     fun `Skal opprette nytt meldekort og deaktivere forrige ved ny meldeperiode-versjon`() {
-        val tac = TestApplicationContext()
+        withTestApplicationContext { tac ->
+            val meldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+            )
+            val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                versjon = 2,
+            )
 
-        val meldeperiode = ObjectMother.meldeperiodeDto(
-            periode = førstePeriode,
-        )
-        val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
+            val sakDto1 = ObjectMother.sakDTO(
+                meldeperioder = listOf(meldeperiode),
+            )
+            val sakDto2 = sakDto1.copy(
+                meldeperioder = listOf(nyMeldeperiodeVersjon),
+            )
 
-            periode = førstePeriode,
-            versjon = 2,
-        )
+            mottaSakRequest(
+                dto = sakDto1,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
 
-        val sakDto1 = ObjectMother.sakDTO(
-            meldeperioder = listOf(meldeperiode),
-        )
-        val sakDto2 = sakDto1.copy(
-            meldeperioder = listOf(nyMeldeperiodeVersjon),
-        )
-
-        testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto1)
-
-            mottaSakRequest(sakDto2).apply {
+            mottaSakRequest(
+                dto = sakDto2,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
                 val (førsteMeldekort, andreMeldekort) =
                     tac.meldekortRepo.hentMeldekortForKjedeId(
                         MeldeperiodeKjedeId(meldeperiode.kjedeId),
@@ -221,26 +236,26 @@ class MottaSakerRouteTest {
 
     @Test
     fun `Skal ikke opprette nytt meldekort for kjede der meldekort allerede er mottatt`() {
-        val tac = TestApplicationContext()
-        (tac.clock as TikkendeKlokke).spolTil(1.mars(2025))
+        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+            val meldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+            )
+            val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                versjon = 2,
+            )
 
-        val meldeperiode = ObjectMother.meldeperiodeDto(
-            periode = førstePeriode,
-        )
-        val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
-            periode = førstePeriode,
-            versjon = 2,
-        )
+            val sakDto1 = ObjectMother.sakDTO(
+                meldeperioder = listOf(meldeperiode),
+            )
+            val sakDto2 = sakDto1.copy(
+                meldeperioder = listOf(nyMeldeperiodeVersjon),
+            )
 
-        val sakDto1 = ObjectMother.sakDTO(
-            meldeperioder = listOf(meldeperiode),
-        )
-        val sakDto2 = sakDto1.copy(
-            meldeperioder = listOf(nyMeldeperiodeVersjon),
-        )
-
-        testMedMeldekortRoutes(tac) {
-            mottaSakRequest(sakDto1).apply {
+            mottaSakRequest(
+                dto = sakDto1,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
                 val meldekort = tac.meldekortRepo.hentMeldekortForKjedeId(
                     MeldeperiodeKjedeId(meldeperiode.kjedeId),
                     Fnr.fromString(sakDto1.fnr),
@@ -264,7 +279,10 @@ class MottaSakerRouteTest {
                 )
             }
 
-            mottaSakRequest(sakDto2).apply {
+            mottaSakRequest(
+                dto = sakDto2,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
                 val meldekortFraKjede = tac.meldekortRepo.hentMeldekortForKjedeId(
                     MeldeperiodeKjedeId(meldeperiode.kjedeId),
                     Fnr.fromString(sakDto1.fnr),

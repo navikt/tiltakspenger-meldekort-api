@@ -1,30 +1,24 @@
 package no.nav.tiltakspenger
 
-import no.nav.tiltakspenger.fakes.MeldekortRepoFake
-import no.nav.tiltakspenger.fakes.MeldeperiodeRepoFake
-import no.nav.tiltakspenger.fakes.SakRepoFake
-import no.nav.tiltakspenger.fakes.TexasClientFakeTest
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
-import no.nav.tiltakspenger.libs.persistering.test.common.TestSessionFactory
+import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClientFake
+import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientFake
+import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientFake
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import java.time.Clock
 
 /**
- * Oppretter en tom ApplicationContext for bruk i tester.
- * Dette vil tilsvare en tom intern database og tomme fakes for eksterne tjenester.
- * Bruk service-funksjoner og hjelpemetoder for å legge til data.
+ * Felles base for test-kontekster.
+ * Inneholder fakes for eksterne klienter som er felles for alle test-varianter.
+ * Bruk [TestApplicationContextMedInMemoryDb] for tester uten database,
+ * eller [TestApplicationContextMedPostgres] for tester med ekte Postgres.
  */
-class TestApplicationContext(clock: Clock = TikkendeKlokke()) : ApplicationContext(clock) {
-    override val sessionFactory: TestSessionFactory = TestSessionFactory()
-
-    override val texasClient = TexasClientFakeTest()
-
+sealed class TestApplicationContext(clock: Clock) : ApplicationContext(clock) {
+    /** Fungerer bare for tester som bruker [TikkendeKlokke] som clock */
+    val tikkendeKlokke: TikkendeKlokke by lazy { clock as TikkendeKlokke }
     override val tmsVarselClient = TmsVarselClientFake()
-
-    override val meldekortRepo = MeldekortRepoFake(clock)
-
-    override val meldeperiodeRepo = MeldeperiodeRepoFake()
-
-    override val sakRepo = SakRepoFake()
+    override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()
+    override val dokarkivClient = DokarkivClientFake()
+    override val saksbehandlingClient = SaksbehandlingClientFake()
 }
