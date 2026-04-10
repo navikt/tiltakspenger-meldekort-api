@@ -1,14 +1,12 @@
-package no.nav.tiltakspenger.routes
+package no.nav.tiltakspenger.routes.meldekortbruker
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
-import no.nav.tiltakspenger.libs.common.TikkendeKlokke
-import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.dato.januar
-import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
@@ -16,28 +14,28 @@ import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.domene.tilMeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortKorrigertDagDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
-import no.nav.tiltakspenger.routes.requests.hentAlleInnsendteMeldekort
-import no.nav.tiltakspenger.routes.requests.hentBruker
-import no.nav.tiltakspenger.routes.requests.hentFørsteMeldekortFraAlleMeldekort
-import no.nav.tiltakspenger.routes.requests.hentSisteMeldekortFraAlleMeldekort
-import no.nav.tiltakspenger.routes.requests.korrigerMeldekort
-import no.nav.tiltakspenger.routes.requests.verifiserAntallMeldekortFraAlleMeldekort
-import no.nav.tiltakspenger.routes.requests.verifiserKunEtMeldekortFraAlleMeldekort
+import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
+import no.nav.tiltakspenger.routes.hentbruker.hentBrukerRequest
+import no.nav.tiltakspenger.routes.hentinnsendtemeldekort.hentAlleInnsendteMeldekortRequest
+import no.nav.tiltakspenger.routes.korrigering.korrigermeldekort.korrigerMeldekortRequest
+import no.nav.tiltakspenger.routes.withTestApplicationContext
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class MeldekortBrukerRouteTest {
 
     @Test
-    fun `hent neste meldekort for utfylling`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+    fun `hent neste meldekort for utfylling`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
             val andrePeriode = førstePeriode.plus14Dager()
 
@@ -68,7 +66,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(andreMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(andreMeldekort)
 
-            val body = hentBruker()!!
+            val body = hentBrukerRequest()!!
 
             body.nesteMeldekort shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO(clock = tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.KAN_UTFYLLES
@@ -78,7 +76,7 @@ class MeldekortBrukerRouteTest {
     }
 
     @Test
-    fun `hent ikke klart meldekort og forrige innsendte meldekort`() {
+    fun `hent ikke klart meldekort og forrige innsendte meldekort`() = runTest {
         withTestApplicationContext { tac ->
             val førstePeriode = ObjectMother.periode(LocalDate.now().minusWeeks(2))
             val andrePeriode = førstePeriode.plus14Dager()
@@ -107,7 +105,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
-            val body = hentBruker()!!
+            val body = hentBrukerRequest()!!
 
             body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
@@ -120,7 +118,7 @@ class MeldekortBrukerRouteTest {
     }
 
     @Test
-    fun `returner ingen meldekort klare til utfylling eller tidligere utfylt`() {
+    fun `returner ingen meldekort klare til utfylling eller tidligere utfylt`() = runTest {
         withTestApplicationContext { tac ->
             val periode = ObjectMother.periode(LocalDate.now())
 
@@ -140,7 +138,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
-            val body = hentBruker()!!
+            val body = hentBrukerRequest()!!
 
             body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
@@ -150,7 +148,7 @@ class MeldekortBrukerRouteTest {
     }
 
     @Test
-    fun `har ingen meldekort, men søknad under behandling - harSoknadUnderBehandling er true`() {
+    fun `har ingen meldekort, men søknad under behandling - harSoknadUnderBehandling er true`() = runTest {
         withTestApplicationContext { tac ->
             val sak = ObjectMother.sak(
                 harSoknadUnderBehandling = true,
@@ -159,7 +157,7 @@ class MeldekortBrukerRouteTest {
 
             tac.sakRepo.lagre(sak)
 
-            val body = hentBruker()!!
+            val body = hentBrukerRequest()!!
 
             body.nesteMeldekort shouldBe null
             body.forrigeMeldekort shouldBe null
@@ -169,8 +167,8 @@ class MeldekortBrukerRouteTest {
     }
 
     @Test
-    fun `skal hente siste versjon av meldekort for en periode med flere versjoner`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+    fun `skal hente siste versjon av meldekort for en periode med flere versjoner`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val lagreFraSaksbehandlingService = tac.lagreFraSaksbehandlingService
 
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
@@ -184,7 +182,7 @@ class MeldekortBrukerRouteTest {
 
             lagreFraSaksbehandlingService.lagre(sakDto)
 
-            val body = hentBruker()!!
+            val body = hentBrukerRequest()!!
 
             body.nesteMeldekort!!.meldeperiodeId shouldBe andreDto.id
             body.nesteMeldekort.versjon shouldBe 2
@@ -195,7 +193,7 @@ class MeldekortBrukerRouteTest {
     }
 
     @Test
-    fun `skal ikke hente deaktivert meldekort`() {
+    fun `skal ikke hente deaktivert meldekort`() = runTest {
         withTestApplicationContext { tac ->
             val lagreFraSaksbehandlingService = tac.lagreFraSaksbehandlingService
 
@@ -221,7 +219,7 @@ class MeldekortBrukerRouteTest {
 
             lagreFraSaksbehandlingService.lagre(sakDto)
 
-            val body = hentBruker()!!
+            val body = hentBrukerRequest()!!
 
             body.nesteMeldekort shouldBe null
             body.forrigeMeldekort shouldBe null
@@ -229,7 +227,7 @@ class MeldekortBrukerRouteTest {
     }
 
     @Test
-    fun `request mangler token - returnerer Unauthorized`() {
+    fun `request mangler token - returnerer Unauthorized`() = runTest {
         withTestApplicationContext { tac ->
             val sak = ObjectMother.sak(
                 harSoknadUnderBehandling = true,
@@ -238,7 +236,7 @@ class MeldekortBrukerRouteTest {
 
             tac.sakRepo.lagre(sak)
 
-            hentBruker(
+            hentBrukerRequest(
                 jwt = null,
                 forventetStatus = HttpStatusCode.Unauthorized,
                 forventetBody = "",
@@ -248,7 +246,7 @@ class MeldekortBrukerRouteTest {
     }
 
     @Test
-    fun `korrigerer et meldekort`() {
+    fun `korrigerer et meldekort`() = runTest {
         withTestApplicationContext { tac ->
             val førsteMeldeperiode =
                 ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
@@ -266,13 +264,17 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(innsendtMeldekort)
 
-            val alleMeldekort = this.hentAlleInnsendteMeldekort(forventetBody = null)
-            verifiserKunEtMeldekortFraAlleMeldekort(alleMeldekort!!)
-            val meldekortSomSkalKorrigeres = alleMeldekort.hentFørsteMeldekortFraAlleMeldekort()
-            val idForMeldekortSomSkalKorrigeres = MeldekortId.fromString(meldekortSomSkalKorrigeres.id)
-            val meldeperiodeIdForMeldekortSomSkalKorrigeres = meldekortSomSkalKorrigeres.meldeperiodeId
+            val alleMeldekort = this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!
+            alleMeldekort.meldekortMedSisteMeldeperiode shouldBe listOf(
+                MeldekortMedSisteMeldeperiodeDTO(
+                    meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                    sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+                ),
+            )
+            val idForMeldekortSomSkalKorrigeres = innsendtMeldekort.id
+            val meldeperiodeIdForMeldekortSomSkalKorrigeres = innsendtMeldekort.meldeperiode.id.toString()
 
-            val responseBody = this.korrigerMeldekort(
+            val responseBody = this.korrigerMeldekortRequest(
                 meldekortId = idForMeldekortSomSkalKorrigeres.toString(),
                 requestBody = """
                         [
@@ -339,10 +341,17 @@ class MeldekortBrukerRouteTest {
 
             val korrigertMeldekort = responseBody!!
 
-            val alleMeldekortEtterKorrigering = this.hentAlleInnsendteMeldekort(forventetBody = null)!!
-            alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(2)
-            val korrigerteMeldekortFraAlleMeldekort = alleMeldekortEtterKorrigering.hentSisteMeldekortFraAlleMeldekort()
-            korrigerteMeldekortFraAlleMeldekort.id shouldNotBe idForMeldekortSomSkalKorrigeres.toString()
+            val alleMeldekortEtterKorrigering = this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!
+            alleMeldekortEtterKorrigering.meldekortMedSisteMeldeperiode shouldBe listOf(
+                MeldekortMedSisteMeldeperiodeDTO(
+                    meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                    sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+                ),
+                MeldekortMedSisteMeldeperiodeDTO(
+                    meldekort = korrigertMeldekort,
+                    sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+                ),
+            )
 
             tac.meldekortRepo.hentForMeldekortId(idForMeldekortSomSkalKorrigeres, Fnr.fromString(FAKE_FNR))?.status(
                 tac.clock,
@@ -355,29 +364,59 @@ class MeldekortBrukerRouteTest {
             korrigertMeldekort.tilOgMed shouldBe førsteMeldeperiode.periode.tilOgMed
             korrigertMeldekort.dager.size shouldBe 14
             korrigertMeldekort.dager shouldBe listOf(
-                MeldekortDagTilBrukerDTO(dag = 6.januar(2025), status = MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET),
-                MeldekortDagTilBrukerDTO(dag = 7.januar(2025), status = MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET),
+                MeldekortDagTilBrukerDTO(
+                    dag = 6.januar(2025),
+                    status = MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 7.januar(2025),
+                    status = MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET,
+                ),
                 MeldekortDagTilBrukerDTO(dag = 8.januar(2025), status = MeldekortDagStatusDTO.FRAVÆR_SYK),
                 MeldekortDagTilBrukerDTO(dag = 9.januar(2025), status = MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN),
-                MeldekortDagTilBrukerDTO(dag = 10.januar(2025), status = MeldekortDagStatusDTO.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU),
-                MeldekortDagTilBrukerDTO(dag = 11.januar(2025), status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER),
-                MeldekortDagTilBrukerDTO(dag = 12.januar(2025), status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER),
+                MeldekortDagTilBrukerDTO(
+                    dag = 10.januar(2025),
+                    status = MeldekortDagStatusDTO.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 11.januar(2025),
+                    status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 12.januar(2025),
+                    status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
+                ),
                 MeldekortDagTilBrukerDTO(dag = 13.januar(2025), status = MeldekortDagStatusDTO.FRAVÆR_ANNET),
-                MeldekortDagTilBrukerDTO(dag = 14.januar(2025), status = MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET),
-                MeldekortDagTilBrukerDTO(dag = 15.januar(2025), status = MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET),
+                MeldekortDagTilBrukerDTO(
+                    dag = 14.januar(2025),
+                    status = MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 15.januar(2025),
+                    status = MeldekortDagStatusDTO.DELTATT_MED_LØNN_I_TILTAKET,
+                ),
                 MeldekortDagTilBrukerDTO(dag = 16.januar(2025), status = MeldekortDagStatusDTO.FRAVÆR_SYK),
                 MeldekortDagTilBrukerDTO(dag = 17.januar(2025), status = MeldekortDagStatusDTO.FRAVÆR_SYKT_BARN),
-                MeldekortDagTilBrukerDTO(dag = 18.januar(2025), status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER),
-                MeldekortDagTilBrukerDTO(dag = 19.januar(2025), status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER),
+                MeldekortDagTilBrukerDTO(
+                    dag = 18.januar(2025),
+                    status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
+                ),
+                MeldekortDagTilBrukerDTO(
+                    dag = 19.januar(2025),
+                    status = MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
+                ),
             )
 
-            val korrigertMeldekortFraDb = tac.meldekortRepo.hentForMeldekortId(MeldekortId.fromString(korrigertMeldekort.id), Fnr.fromString(FAKE_FNR))
+            val korrigertMeldekortFraDb = tac.meldekortRepo.hentForMeldekortId(
+                MeldekortId.fromString(korrigertMeldekort.id),
+                Fnr.fromString(FAKE_FNR),
+            )
             korrigertMeldekortFraDb?.locale shouldBe "nb"
         }
     }
 
     @Test
-    fun `kan ikke korrigere uten endring på dager`() {
+    fun `kan ikke korrigere uten endring på dager`() = runTest {
         withTestApplicationContext { tac ->
             val førsteMeldeperiode =
                 ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
@@ -404,7 +443,7 @@ class MeldekortBrukerRouteTest {
                 },
             )
 
-            this.korrigerMeldekort(
+            this.korrigerMeldekortRequest(
                 meldekortId = innsendtMeldekort.id.toString(),
                 requestBody = dagerUtenEndring,
                 locale = "nb",
@@ -412,8 +451,13 @@ class MeldekortBrukerRouteTest {
                 forventetBody = """{"melding":"Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.","kode":"kan_ikke_korrigere_uten_endring"}""",
             )
 
-            val alleMeldekortEtterKorrigering = this.hentAlleInnsendteMeldekort(forventetBody = null)!!
-            alleMeldekortEtterKorrigering.verifiserAntallMeldekortFraAlleMeldekort(1)
+            val alleMeldekortEtterKorrigering = this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!
+            alleMeldekortEtterKorrigering.meldekortMedSisteMeldeperiode shouldBe listOf(
+                MeldekortMedSisteMeldeperiodeDTO(
+                    meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                    sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+                ),
+            )
         }
     }
 }

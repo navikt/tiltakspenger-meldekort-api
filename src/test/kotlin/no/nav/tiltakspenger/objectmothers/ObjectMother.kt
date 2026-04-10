@@ -1,7 +1,10 @@
 package no.nav.tiltakspenger.objectmothers
 
+import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClock
+import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.periode.Periode
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -30,4 +33,6 @@ object ObjectMother :
     }
 
     const val FAKE_FNR = "12345678911"
+
+    fun tikkendeKlokke1mars2025() = TikkendeKlokke(fixedClockAt(1.mars(2025)))
 }
