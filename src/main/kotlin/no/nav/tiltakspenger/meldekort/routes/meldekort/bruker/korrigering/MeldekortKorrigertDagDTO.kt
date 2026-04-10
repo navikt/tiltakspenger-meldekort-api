@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.routes.meldekort.bruker
+package no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering
 
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import java.time.LocalDate

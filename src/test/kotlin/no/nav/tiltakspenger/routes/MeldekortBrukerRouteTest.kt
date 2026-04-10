@@ -19,7 +19,7 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortDagTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
-import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.MeldekortKorrigertDagDTO
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortKorrigertDagDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto

@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.routes.meldekort.bruker
+package no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering
 
 import no.nav.tiltakspenger.libs.periode.PeriodeDTO
 import no.nav.tiltakspenger.libs.periode.toDTO
@@ -10,7 +10,7 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.toDto
-import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.MeldekortTilKorrigeringDTO.PreutfyltKorrigeringDTO
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortTilKorrigeringDTO.PreutfyltKorrigeringDTO
 import java.time.Clock
 import java.time.LocalDateTime
 

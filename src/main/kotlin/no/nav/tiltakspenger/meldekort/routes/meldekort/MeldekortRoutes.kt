@@ -5,8 +5,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
-import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortFraBrukerRoute
-import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.meldekortTilBrukerRoutes
+import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.brukerRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.fellesLandingssideRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort.microfrontend.microfrontendRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute
@@ -33,8 +32,7 @@ fun Route.meldekortRoutes(
     // Endepunkter som kalles fra brukers meldekort-frontend
     authenticate(IdentityProvider.TOKENX.value) {
         route("/brukerfrontend") {
-            meldekortTilBrukerRoutes(meldekortService, brukerService, clock)
-            meldekortFraBrukerRoute(meldekortService, clock)
+            brukerRoutes(meldekortService, brukerService, clock)
         }
     }
 
