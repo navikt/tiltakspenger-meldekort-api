@@ -6,7 +6,6 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
@@ -29,7 +28,6 @@ class MeldekortRepoFake(
 
     override fun deaktiver(
         meldekortId: MeldekortId,
-        deaktiverVarsel: Boolean,
         sessionContext: SessionContext?,
     ) {
         val meldekort = data.get()[meldekortId]
@@ -37,7 +35,9 @@ class MeldekortRepoFake(
             "Kan ikke deaktivere meldekort $meldekortId - meldekortet finnes ikke"
         }
 
-        data.get()[meldekortId] = meldekort.copy(deaktivert = nå(clock), erVarselInaktivert = !deaktiverVarsel)
+        data.get()[meldekortId] = meldekort.copy(
+            deaktivert = nå(clock),
+        )
     }
 
     override fun hentForMeldekortId(meldekortId: MeldekortId, fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
@@ -119,56 +119,6 @@ class MeldekortRepoFake(
             .take(limit)
     }
 
-    override fun hentMeldekortDetSkalVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        val now = nå(clock)
-        val alleMeldekort = data.get().values
-
-        return alleMeldekort
-            .filter { mk ->
-                mk.meldeperiode.kanFyllesUtFraOgMed <= now &&
-                    mk.mottatt == null &&
-                    mk.deaktivert == null &&
-                    !mk.sendtVarsel &&
-                    !mk.erVarselInaktivert &&
-                    alleMeldekort.none { other ->
-                        other.fnr == mk.fnr &&
-                            other.meldeperiode.kanFyllesUtFraOgMed <= now &&
-                            other.mottatt == null &&
-                            other.deaktivert == null &&
-                            other.sendtVarsel &&
-                            !other.erVarselInaktivert
-                    }
-            }
-            .sortedBy { it.periode.fraOgMed }
-            .distinctBy { it.fnr }
-            .take(limit)
-    }
-
-    override fun markerVarslet(
-        meldekortId: MeldekortId,
-        sendtVarselTidspunkt: LocalDateTime,
-        sendtVarselMetadata: SendtVarselMetadata,
-        sessionContext: SessionContext?,
-    ) {
-        val meldekort = data.get()[meldekortId]
-        requireNotNull(meldekort) {
-            "Kan ikke markere varsel sendt for meldekort $meldekortId - meldekortet finnes ikke"
-        }
-        data.get()[meldekortId] = meldekort.copy(
-            sendtVarselTidspunkt = sendtVarselTidspunkt,
-            sendtVarsel = true,
-        )
-    }
-
-    override fun henteMeldekortSomSkalInaktivereVarsel(
-        limit: Int,
-        sessionContext: SessionContext?,
-    ): List<Meldekort> {
-        return data.get().values
-            .filter { (it.mottatt != null || it.deaktivert != null) && it.sendtVarsel && !it.erVarselInaktivert }
-            .take(limit)
-    }
-
     override fun hentSisteMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
@@ -183,5 +133,9 @@ class MeldekortRepoFake(
         return data.get().values
             .filter { it.fnr == fnr && it.klarTilInnsending(clock) }
             .sortedBy { it.meldeperiode.periode.fraOgMed }
+    }
+
+    fun hentAlleForSakId(sakId: no.nav.tiltakspenger.libs.common.SakId): List<Meldekort> {
+        return data.get().values.filter { it.sakId == sakId }
     }
 }
