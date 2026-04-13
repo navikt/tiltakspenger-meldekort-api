@@ -20,7 +20,7 @@ class IdenthendelseServiceTest {
             val identhendelseService = IdenthendelseService(repo)
             val gammeltFnr = Fnr.random()
             val nyttFnr = Fnr.random()
-            val meldekort = ObjectMother.meldekort(fnr = gammeltFnr, mottatt = nå(fixedClock), varselId = VarselId("varsel1"))
+            val meldekort = ObjectMother.meldekort(fnr = gammeltFnr, mottatt = nå(fixedClock))
             repo.lagre(meldekort.meldeperiode)
 
             identhendelseService.behandleIdenthendelse(

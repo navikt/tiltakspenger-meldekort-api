@@ -19,7 +19,7 @@ import java.time.Clock
 sealed class TestApplicationContext(clock: Clock) : ApplicationContext(clock) {
     /** Fungerer bare for tester som bruker [TikkendeKlokke] som clock */
     val tikkendeKlokke: TikkendeKlokke by lazy { clock as TikkendeKlokke }
-    override val tmsVarselClient = TmsVarselClientFake()
+    override val varselClient = TmsVarselClientFake()
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()
     override val dokarkivClient = DokarkivClientFake()
     override val saksbehandlingClient = SaksbehandlingClientFake()

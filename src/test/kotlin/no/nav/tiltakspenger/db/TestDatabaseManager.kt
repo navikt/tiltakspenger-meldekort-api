@@ -4,6 +4,7 @@ import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.test.common.TestDatabaseConfig
 import java.time.Clock
+import javax.sql.DataSource
 import no.nav.tiltakspenger.libs.persistering.test.common.TestDatabaseManager as LibsTestDatabaseManager
 
 internal class TestDatabaseManager(
@@ -36,6 +37,16 @@ internal class TestDatabaseManager(
     ) {
         delegate.withMigratedDb(runIsolated = runIsolated, clock = clock) { sessionFactory, _, clk ->
             test(sessionFactory, clk)
+        }
+    }
+
+    fun withDataSource(
+        runIsolated: Boolean = false,
+        clock: Clock = TikkendeKlokke(),
+        test: (DataSource) -> Unit,
+    ) {
+        delegate.withMigratedDb(runIsolated = runIsolated, clock = clock) { _, _, _ ->
+            test(delegate.dataSource(runIsolated))
         }
     }
 }

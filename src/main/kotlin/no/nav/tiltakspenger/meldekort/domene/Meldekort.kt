@@ -21,7 +21,6 @@ import java.time.LocalDateTime
  * @param deaktivert settes dersom meldeperioden har fått en ny versjon (pga revurdering), og forrige meldekort-versjon ikke er mottatt fra bruker
  * @param mottatt Tidspunktet mottatt fra bruker
  * @param dager Et innslag per dag i meldeperioden. Må være sortert.
- *
  */
 data class Meldekort(
     val id: MeldekortId,
@@ -31,14 +30,6 @@ data class Meldekort(
     val dager: List<MeldekortDag>,
     val journalpostId: JournalpostId?,
     val journalføringstidspunkt: LocalDateTime?,
-    val varselId: VarselId,
-    val erVarselInaktivert: Boolean,
-    /**
-     * Nullable fordi vi ikke vet nøyaktig tidspunkt for allerede sendte varsler i databasen.
-     * Når [sendtVarselTidspunkt] er satt betyr det at varselet er sendt.
-     */
-    val sendtVarselTidspunkt: LocalDateTime?,
-    val sendtVarsel: Boolean,
     /**
      * Ettersom meldekort ikke synkroniseres tilbake fra tiltakspenger-saksbehandling-api så vet vi ikke helt om meldekortet er en korrigering eller ikke.
      * Saksbehandler kan ha sendt inn meldekort for samme periode slik at brukes første innsendte meldekort for en gitt periode egentlig er en korrigering.
@@ -123,12 +114,6 @@ data class Meldekort(
         )
     }
 
-    fun inaktiverVarsel(): Meldekort {
-        return this.copy(
-            erVarselInaktivert = true,
-        )
-    }
-
     init {
         val msgSuffix = "(id: $id - mpId: ${meldeperiode.id} - kjedeId: ${meldeperiode.kjedeId} - dager: $dager)"
 
@@ -158,10 +143,6 @@ data class Meldekort(
             require(journalføringstidspunkt == null)
             require(journalpostId == null)
         }
-        if (sendtVarselTidspunkt != null) {
-            require(sendtVarsel)
-        }
-
         if (erInnsendt) {
             require(deaktivert == null) {
                 "Meldekort ${this.id} kan ikke være både mottatt og deaktivert"
@@ -184,10 +165,6 @@ fun Meldeperiode.tilTomtMeldekort(): Meldekort {
         dager = this.girRett.tilMeldekortDager(),
         journalpostId = null,
         journalføringstidspunkt = null,
-        varselId = VarselId.random(),
-        erVarselInaktivert = false,
-        sendtVarselTidspunkt = null,
-        sendtVarsel = false,
         korrigering = false,
         locale = null,
     )
@@ -212,7 +189,7 @@ fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort?): Meldekort?
     if (forrigeMeldekort.erInnsendt) {
         return null
     }
-    // Vi beholder samme varselId, sendtVarsel, sendtVarselTidspunkt uavhengig om det er varslet allerede eller ikke.
+
     return forrigeMeldekort.copy(
         id = MeldekortId.random(),
         meldeperiode = this,
@@ -229,8 +206,6 @@ fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort?): Meldekort?
         },
         journalpostId = null,
         journalføringstidspunkt = null,
-        // På grunn av "bug" i MeldekortPostgresRepo.deaktiver, kan vi ikke garantert vite om varselet er inaktivert enda eller skal inaktiveres. Så når vi mottar dette meldekortet eller det blir deaktivert, får vi muligheten til å inaktivere varselet. Det er null problem og "inaktivere" det 2 ganger.
-        erVarselInaktivert = false,
         locale = null,
     )
 }

@@ -327,7 +327,7 @@ class HentMeldekortRepoTest {
 
                 lagreMeldekort(helper, meldekort)
 
-                repo.deaktiver(meldekort.id, deaktiverVarsel = false)
+                repo.deaktiver(meldekort.id)
 
                 val result = repo.hentInnsendteMeldekortForBruker(meldekort.fnr)
                 result shouldBe emptyList()

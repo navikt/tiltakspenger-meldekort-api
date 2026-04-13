@@ -1,5 +1,8 @@
 package no.nav.tiltakspenger
 
+import no.nav.tiltakspenger.fakes.SakVarselRepoFake
+import no.nav.tiltakspenger.fakes.VarselMeldekortRepoFake
+import no.nav.tiltakspenger.fakes.VarselRepoFake
 import no.nav.tiltakspenger.fakes.clients.TexasClientFakeTest
 import no.nav.tiltakspenger.fakes.repos.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldeperiodeRepoFake
@@ -17,7 +20,11 @@ class TestApplicationContextMedInMemoryDb(
     override val texasClient: TexasClientFakeTest = TexasClientFakeTest(),
     override val sessionFactory: TestSessionFactory = TestSessionFactory(),
 ) : TestApplicationContext(clock) {
-    override val meldekortRepo = MeldekortRepoFake(clock)
+    private val meldekortRepoFake = MeldekortRepoFake(clock)
+    override val meldekortRepo = meldekortRepoFake
+    override val varselRepo = VarselRepoFake(clock)
     override val meldeperiodeRepo = MeldeperiodeRepoFake()
     override val sakRepo = SakRepoFake(clock)
+    override val sakVarselRepo = SakVarselRepoFake(sakRepo)
+    override val varselMeldekortRepo = VarselMeldekortRepoFake(meldekortRepoFake, meldeperiodeRepo, clock)
 }

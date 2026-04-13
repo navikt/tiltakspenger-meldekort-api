@@ -5,6 +5,7 @@ import arrow.core.left
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.domene.FeilVedKorrigeringAvMeldekort
 import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
@@ -15,6 +16,7 @@ import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
+import no.nav.tiltakspenger.meldekort.repository.SakVarselRepo
 import java.time.Clock
 import java.time.LocalDateTime
 
@@ -22,6 +24,8 @@ class MeldekortService(
     val meldekortRepo: MeldekortRepo,
     val meldeperiodeRepo: MeldeperiodeRepo,
     val sakRepo: SakRepo,
+    val sakVarselRepo: SakVarselRepo,
+    val sessionFactory: SessionFactory,
     val clock: Clock,
 ) {
     fun lagreMeldekortFraBruker(kommando: LagreMeldekortFraBrukerKommando) {
@@ -41,13 +45,17 @@ class MeldekortService(
         }
 
         val nyeDager = kommando.dager.map { it.tilMeldekortDag() }
-        meldekortRepo.lagre(
-            meldekort.fyllUtMeldekortFraBruker(
-                brukerutfylteDager = nyeDager,
-                locale = kommando.locale,
-                clock = clock,
-            ),
+        val utfyltMeldekort = meldekort.fyllUtMeldekortFraBruker(
+            brukerutfylteDager = nyeDager,
+            locale = kommando.locale,
+            clock = clock,
         )
+        sessionFactory.withTransactionContext { tx ->
+            meldekortRepo.lagre(utfyltMeldekort, tx)
+
+            // Flagg saken for varselvurdering - den asynkrone jobben håndterer selve varselet
+            sakVarselRepo.flaggForVarselvurdering(utfyltMeldekort.sakId, tx)
+        }
     }
 
     fun hentForMeldekortId(id: MeldekortId, fnr: Fnr): Meldekort? {
@@ -93,7 +101,10 @@ class MeldekortService(
         )!!
 
         return meldekortForKjede.korriger(command, sisteMeldeperiode, clock).onRight {
-            meldekortRepo.lagre(it)
+            sessionFactory.withTransactionContext { tx ->
+                meldekortRepo.lagre(it, tx)
+                sakVarselRepo.flaggForVarselvurdering(it.sakId, tx)
+            }
         }
     }
 
@@ -110,11 +121,6 @@ class MeldekortService(
         requireNotNull(meldekort.mottatt) {
             "Meldekortet må være mottatt for å kunne korrigeres - id: $meldekortId"
         }
-
-        /**
-         *  Her kunne vi kanskje også validere at meldekortet er det siste innsendte, men da må frontend oppdateres til
-         *  ikke å kalle korrigering-endepunktet etter at korrigeringen er sendt inn
-         */
 
         val sisteMeldeperiode =
             meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(meldekort.meldeperiode.kjedeId, fnr)!!

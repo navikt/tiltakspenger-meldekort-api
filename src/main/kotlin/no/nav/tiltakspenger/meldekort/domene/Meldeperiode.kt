@@ -10,7 +10,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
-import kotlin.math.max
 
 /**
  * Se også Meldeperiode i tiltakspenger-saksbehandling-api
@@ -41,9 +40,6 @@ data class Meldeperiode(
     val minstEnDagGirRettIPerioden = girRett.any { it.value }
     val antallDagerSomIkkeGirRett: Int = girRett.count { !it.value }
     val antallDagerSomGirRett: Int = girRett.count { it.value }
-
-    // TODO Ramzi og John: Fjern denne når vi har fjernet den fra frontend.
-    val minAntallDagerForPeriode = max((maksAntallDagerForPeriode - antallDagerSomIkkeGirRett), 0)
 
     fun erLik(other: Meldeperiode): Boolean {
         // Enkelte felter er ikke relevante for å avgjøre om to saker er like, dermed kopierer vi disse feltene før sammenligningen
