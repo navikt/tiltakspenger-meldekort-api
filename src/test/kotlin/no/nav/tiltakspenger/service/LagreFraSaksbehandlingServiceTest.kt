@@ -106,11 +106,7 @@ class LagreFraSaksbehandlingServiceTest {
 
             gammeltMeldekort.id shouldBe opprinneligMeldekort.id
             gammeltMeldekort.deaktivert shouldNotBe null
-            gammeltMeldekort.erVarselInaktivert shouldBe true
             nyttMeldekort.deaktivert.shouldBeNull()
-            nyttMeldekort.varselId shouldBe opprinneligMeldekort.varselId
-            nyttMeldekort.sendtVarsel shouldBe false
-            nyttMeldekort.sendtVarselTidspunkt.shouldBeNull()
         }
     }
 
@@ -152,7 +148,6 @@ class LagreFraSaksbehandlingServiceTest {
             meldekortForKjede.single().also { deaktivertMeldekort ->
                 deaktivertMeldekort.id shouldBe opprinneligMeldekort.id
                 deaktivertMeldekort.deaktivert shouldNotBe null
-                deaktivertMeldekort.erVarselInaktivert shouldBe false
             }
         }
     }

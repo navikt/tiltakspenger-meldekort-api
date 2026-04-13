@@ -2,36 +2,43 @@ package no.nav.tiltakspenger.meldekort.domene.varsler
 
 import arrow.core.Either
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
-import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
+import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
+import no.nav.tiltakspenger.meldekort.clients.varsler.VarselClient
+import no.nav.tiltakspenger.meldekort.repository.SakVarselRepo
+import no.nav.tiltakspenger.meldekort.repository.VarselRepo
+import java.time.Clock
 
 class InaktiverVarslerService(
-    private val meldekortRepo: MeldekortRepo,
-    private val tmsVarselClient: TmsVarselClient,
+    private val varselRepo: VarselRepo,
+    private val sakVarselRepo: SakVarselRepo,
+    private val varselClient: VarselClient,
+    private val sessionFactory: SessionFactory,
+    private val clock: Clock,
 ) {
     private val log = KotlinLogging.logger { }
 
-    fun inaktiverVarslerForMottatteMeldekort() {
+    fun inaktiverVarsler() {
         Either.catch {
-            val meldekortSomSkalInaktiveres = meldekortRepo.henteMeldekortSomSkalInaktivereVarsel()
-            log.debug { "Fant ${meldekortSomSkalInaktiveres.size} meldekort vi skal inaktivere varsler for." }
+            val sakerMedVarslerSomSkalInaktiveres = varselRepo.hentSakerMedVarslerSomSkalInaktiveres()
+            log.debug { "Fant ${sakerMedVarslerSomSkalInaktiveres.size} saker med varsler som skal inaktiveres. sakIder: $sakerMedVarslerSomSkalInaktiveres" }
 
-            meldekortSomSkalInaktiveres.forEach { meldekort ->
-                val varselId = meldekort.varselId
-
+            sakerMedVarslerSomSkalInaktiveres.forEach { sakId ->
                 Either.catch {
-                    tmsVarselClient.inaktiverVarsel(varselId)
-                }.onLeft {
-                    log.error(it) { "Feil under inaktivering (publisering) av varsel for meldekort ${meldekort.id} / varsel id $varselId" }
-                }.onRight {
-                    Either.catch {
-                        val meldekortMedInaktivertVarsel = meldekort.inaktiverVarsel()
-                        meldekortRepo.lagre(meldekortMedInaktivertVarsel)
-                    }.onLeft {
-                        log.error(it) { "Feil under lagring av inaktivert varsel for meldekort ${meldekort.id} / varsel id $varselId. Denne vil bli prøvd på nytt." }
-                    }.onRight {
-                        log.info { "Varsel $varselId inaktivert og lagret for meldekort ${meldekort.id}. Denne vil bli prøvd på nytt, men bør være idempotent på varslingteamet sin side." }
+                    val inaktiveringstidspunkt = nå(clock)
+                    val varsler = varselRepo.hentVarslerForSakId(sakId)
+                    val varselSomSkalInaktiveres: Varsel.SkalInaktiveres = varsler.pågåendeInaktivering!!
+                    val varselId = varselSomSkalInaktiveres.varselId
+                    val inaktivertVarsel = varsler.inaktiver(varselId, inaktiveringstidspunkt).second
+                    varselClient.inaktiverVarsel(varselId)
+                    sessionFactory.withTransactionContext { tx ->
+                        varselRepo.lagre(varsel = inaktivertVarsel, sessionContext = tx)
+                        // Trigger en ny vurdering av saken.
+                        sakVarselRepo.flaggForVarselvurdering(sakId, tx)
                     }
+                    log.info { "Varsel $varselId inaktivert, lagret og sak $sakId re-flagget for vurdering" }
+                }.onLeft {
+                    log.error(it) { "Feil under inaktivering av varsel for sak $sakId. Denne vil bli prøvd på nytt." }
                 }
             }
         }.onLeft {

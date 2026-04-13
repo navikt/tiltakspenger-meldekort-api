@@ -1,13 +1,13 @@
 package no.nav.tiltakspenger.fakes.clients
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
-import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
+import no.nav.tiltakspenger.meldekort.clients.varsler.VarselClient
 import no.nav.tiltakspenger.meldekort.domene.VarselId
+import java.time.LocalDateTime
 
-class TmsVarselClientFake : TmsVarselClient {
+class TmsVarselClientFake : VarselClient {
     private val logger = KotlinLogging.logger {}
     private val sendteVarsler = mutableListOf<SendtVarsel>()
     private val inaktiverteVarsler = mutableListOf<VarselId>()
@@ -23,12 +23,17 @@ class TmsVarselClientFake : TmsVarselClient {
         )
     }
 
-    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: VarselId): SendtVarselMetadata {
-        logger.info { "Sender (ikke) event $varselId for meldekort ${meldekort.id}" }
+    override fun sendVarsel(
+        varselId: VarselId,
+        fnr: Fnr,
+        utsettSendingTil: LocalDateTime?,
+    ): SendtVarselMetadata {
+        logger.info { "Fake: Sender (ikke) varsel med id $varselId (utsettSendingTil=$utsettSendingTil)" }
         sendteVarsler.add(
             SendtVarsel(
-                meldekortId = meldekort.id,
                 varselId = varselId,
+                fnr = fnr,
+                utsettSendingTil = utsettSendingTil,
             ),
         )
         // Ikke likt innhold som i Nais (vi bare lagrer den i basen)
@@ -41,8 +46,9 @@ class TmsVarselClientFake : TmsVarselClient {
     }
 
     data class SendtVarsel(
-        val meldekortId: MeldekortId,
         val varselId: VarselId,
+        val fnr: Fnr,
+        val utsettSendingTil: LocalDateTime?,
     )
 
     data class Varselhendelser(

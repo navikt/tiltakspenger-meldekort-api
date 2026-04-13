@@ -80,8 +80,7 @@ fun start(
         tasks = listOf<suspend () -> Any?>(
             { applicationContext.sendMeldekortService.sendMeldekort() },
             { applicationContext.journalførMeldekortService.journalførNyeMeldekort() },
-            { applicationContext.sendVarslerService.sendVarselForMeldekort() },
-            { applicationContext.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort() },
+            { applicationContext.varselJobber.kjørAlle() },
             { applicationContext.arenaMeldekortStatusService.oppdaterArenaMeldekortStatusForSaker() },
             { applicationContext.aktiverMicrofrontendJob.aktiverMicrofrontendForBrukere() },
             { applicationContext.inaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere() },
