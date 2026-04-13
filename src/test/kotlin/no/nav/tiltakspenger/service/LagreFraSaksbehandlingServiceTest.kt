@@ -3,12 +3,10 @@ package no.nav.tiltakspenger.service
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.libs.common.SakId
-import no.nav.tiltakspenger.libs.common.TikkendeKlokke
-import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.getOrFail
-import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
+import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
 import no.nav.tiltakspenger.objectmothers.lagMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.routes.withTestApplicationContext
 import org.junit.jupiter.api.Test
@@ -38,7 +36,7 @@ class LagreFraSaksbehandlingServiceTest {
 
     @Test
     fun `Skal ikke generere nytt meldekort for ny meldeperiode-versjon dersom meldekort allerede var mottatt for meldeperioden`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val meldeperiodeDto = ObjectMother.meldeperiodeDto()
 
             val sakDto = ObjectMother.sakDTO(

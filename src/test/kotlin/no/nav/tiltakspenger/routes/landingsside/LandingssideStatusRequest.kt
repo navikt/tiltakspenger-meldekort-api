@@ -1,64 +1,44 @@
-package no.nav.tiltakspenger.routes.requests
+package no.nav.tiltakspenger.routes.landingsside
 
-import io.kotest.assertions.withClue
-import io.kotest.matchers.shouldBe
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
-import io.ktor.http.contentType
 import io.ktor.http.path
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.util.url
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO
+import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.routes.JwtGenerator
-import no.nav.tiltakspenger.routes.defaultRequest
+import no.nav.tiltakspenger.routes.defaultRequestWithAssertions
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.fellesLandingssideRoutes]
  * Response DTO: [no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO]
  */
 suspend fun ApplicationTestBuilder.landingssideStatusRequest(
-    jwt: String? = JwtGenerator().createJwtForUser(),
+    fnr: String = FAKE_FNR,
+    jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
     forventetContentType: ContentType? = ContentType.Application.Json,
 ): LandingssideStatusDTO? {
-    val response = defaultRequest(
-        HttpMethod.Get,
-        url {
+    val response = defaultRequestWithAssertions(
+        method = HttpMethod.Get,
+        uri = url {
             protocol = URLProtocol.HTTPS
             path("/landingsside/status")
         },
         jwt = jwt,
+        forventetStatus = forventetStatus,
+        forventetBody = forventetBody,
+        forventetContentType = forventetContentType,
     )
-    val bodyAsText = response.bodyAsText()
-    val contentType = response.contentType()
-    val status = response.status
-    val dto = if (status == HttpStatusCode.OK) {
-        deserialize<LandingssideStatusDTO>(bodyAsText)
+    return if (response.status == HttpStatusCode.OK) {
+        deserialize<LandingssideStatusDTO>(response.bodyAsText())
     } else {
         null
     }
-    withClue(
-        "Response details:\n" +
-            "Status: $status\n" +
-            "Content-Type: $contentType\n" +
-            "Body: $bodyAsText",
-    ) {
-        if (forventetBody == "") {
-            contentType shouldBe null
-        }
-        if (contentType == null) {
-            bodyAsText shouldBe ""
-        }
-        status shouldBe forventetStatus
-        if (forventetBody != null) {
-            bodyAsText shouldBe forventetBody
-        }
-        contentType shouldBe forventetContentType
-    }
-    return dto
 }

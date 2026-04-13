@@ -1,0 +1,32 @@
+package no.nav.tiltakspenger.routes.saksbehandling
+
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.withCharset
+import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.periode.til
+import no.nav.tiltakspenger.objectmothers.ObjectMother
+import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
+import no.nav.tiltakspenger.routes.withTestApplicationContext
+import org.junit.jupiter.api.Test
+
+class SakFraSaksbehandlingRouteTest {
+
+    private val periode = 6 til 19.januar(2025)
+
+    @Test
+    fun `mottaSak - oppretter sak og meldekort`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            mottaSakRequest(
+                tac = tac,
+                requestDto = ObjectMother.sakDTO(
+                    meldeperioder = listOf(ObjectMother.meldeperiodeDto(periode = periode)),
+                ),
+                forventetStatus = HttpStatusCode.OK,
+                forventetBody = "Sak lagret",
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+        }
+    }
+}

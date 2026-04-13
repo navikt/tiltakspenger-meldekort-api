@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger
 
+import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClientFake
 import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientFake
@@ -21,4 +22,8 @@ sealed class TestApplicationContext(clock: Clock) : ApplicationContext(clock) {
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()
     override val dokarkivClient = DokarkivClientFake()
     override val saksbehandlingClient = SaksbehandlingClientFake()
+
+    val saksnummergenerator = SaksnummerGeneratorForTest()
+
+    fun nesteSaksnummer(): String = saksnummergenerator.generer()
 }

@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.domene
 
+import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.clients.utils.toNorskUkenummer
 import no.nav.tiltakspenger.meldekort.domene.MeldekortStatusDTO.Companion.toDTO
 import java.time.Clock
@@ -20,7 +21,36 @@ data class MeldekortTilBrukerDTO(
     val innsendt: LocalDateTime?,
     val dager: List<MeldekortDagTilBrukerDTO>,
     val kanSendes: LocalDateTime?,
-)
+) {
+    constructor(
+        id: String,
+        meldeperiodeId: String,
+        kjedeId: String,
+        versjon: Int,
+        periode: Periode,
+        uke1: Int,
+        uke2: Int,
+        status: MeldekortStatusDTO,
+        maksAntallDager: Int,
+        innsendt: LocalDateTime?,
+        dager: List<MeldekortDagTilBrukerDTO>,
+        kanSendes: LocalDateTime?,
+    ) : this(
+        id = id,
+        meldeperiodeId = meldeperiodeId,
+        kjedeId = kjedeId,
+        versjon = versjon,
+        fraOgMed = periode.fraOgMed,
+        tilOgMed = periode.tilOgMed,
+        uke1 = uke1,
+        uke2 = uke2,
+        status = status,
+        maksAntallDager = maksAntallDager,
+        innsendt = innsendt,
+        dager = dager,
+        kanSendes = kanSendes,
+    )
+}
 
 enum class MeldekortStatusDTO {
     INNSENDT,

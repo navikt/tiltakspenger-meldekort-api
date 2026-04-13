@@ -1,13 +1,5 @@
 package no.nav.tiltakspenger.routes
 
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.headers
-import io.ktor.client.request.request
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.append
 import io.ktor.server.application.Application
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
@@ -27,24 +19,9 @@ import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import no.nav.tiltakspenger.meldekort.routes.meldekortApi
 import java.time.Clock
 
-suspend fun ApplicationTestBuilder.defaultRequest(
-    method: HttpMethod,
-    uri: String,
-    jwt: String? = JwtGenerator().createJwtForSaksbehandler(),
-    setup: HttpRequestBuilder.() -> Unit = {},
-): HttpResponse =
-    this.client.request(uri) {
-        this.method = method
-        this.headers {
-            append(HttpHeaders.XCorrelationId, "DEFAULT_CALL_ID")
-            append(HttpHeaders.ContentType, ContentType.Application.Json)
-            if (jwt != null) append(HttpHeaders.Authorization, "Bearer $jwt")
-        }
-        setup()
-    }
-
 private val dbManager = TestDatabaseManager()
 
+@Suppress("unused")
 fun withTestApplicationContextAndPostgres(
     additionalConfig: Application.() -> Unit = {},
     clock: TikkendeKlokke = TikkendeKlokke(fixedClockAt(1.mai(2025))),
@@ -79,20 +56,19 @@ fun withTestApplicationContext(
     testBlock: suspend ApplicationTestBuilder.(TestApplicationContextMedInMemoryDb) -> Unit,
 ) {
     val callSite = captureCallSite()
-    runTest {
-        val context = TestApplicationContextMedInMemoryDb(
-            clock = clock,
-            texasClient = texasClient,
-            sessionFactory = sessionFactory,
-        )
-        runTestApplication(context, additionalConfig, callSite, testBlock)
-    }
+    val context = TestApplicationContextMedInMemoryDb(
+        clock = clock,
+        texasClient = texasClient,
+        sessionFactory = sessionFactory,
+    )
+    runTestApplication(context, additionalConfig, callSite, testBlock)
 }
 
 private fun captureCallSite(): Exception {
     val callSite = Exception("Call site")
     callSite.stackTrace = callSite.stackTrace
         .filterNot {
+            @Suppress("CanConvertToMultiDollarString", "CanUnescapeDollarLiteral")
             it.className.startsWith("kotlin.coroutines") ||
                 it.className.startsWith("kotlinx.coroutines") ||
                 it.className.contains("\$\$")

@@ -1,15 +1,13 @@
-package no.nav.tiltakspenger.routes
+package no.nav.tiltakspenger.routes.saksbehandling
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.withCharset
+import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
-import no.nav.tiltakspenger.libs.common.TikkendeKlokke
-import no.nav.tiltakspenger.libs.common.fixedClockAt
-import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.dato.november
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
@@ -17,8 +15,8 @@ import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
 import no.nav.tiltakspenger.meldekort.domene.tilSak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
-import no.nav.tiltakspenger.objectmothers.ObjectMother.lagreMeldekortFraBrukerKommando
-import no.nav.tiltakspenger.routes.requests.mottaSakRequest
+import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
+import no.nav.tiltakspenger.routes.withTestApplicationContext
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -33,8 +31,8 @@ class MottaSakerRouteTest {
     )
 
     @Test
-    fun `Skal lagre saken og opprette meldekort`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+    fun `Skal lagre saken og opprette meldekort`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val sakDto = ObjectMother.sakDTO(
                 meldeperioder = listOf(
                     ObjectMother.meldeperiodeDto(periode = førstePeriode),
@@ -45,6 +43,7 @@ class MottaSakerRouteTest {
             val id = SakId.fromString(sakDto.sakId)
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
@@ -60,7 +59,7 @@ class MottaSakerRouteTest {
     }
 
     @Test
-    fun `Skal oppdatere sak hvis harSoknadUnderBehandling endres`() {
+    fun `Skal oppdatere sak hvis harSoknadUnderBehandling endres`() = runTest {
         withTestApplicationContext { tac ->
             val lagretSak = ObjectMother.sak(harSoknadUnderBehandling = false)
             tac.sakRepo.lagre(lagretSak)
@@ -75,6 +74,7 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
@@ -88,7 +88,7 @@ class MottaSakerRouteTest {
     }
 
     @Test
-    fun `Skal håndtere duplikate requests for lagring av sak og returnere ok`() {
+    fun `Skal håndtere duplikate requests for lagring av sak og returnere ok`() = runTest {
         withTestApplicationContext { tac ->
             val sakDto = ObjectMother.sakDTO(
                 meldeperioder = listOf(
@@ -98,11 +98,13 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto,
                 forventetStatus = HttpStatusCode.OK,
                 forventetBody = "Saken var allerede lagret med samme data",
@@ -113,7 +115,7 @@ class MottaSakerRouteTest {
     }
 
     @Test
-    fun `Skal håndtere oppdatering av sak med nye meldeperioder`() {
+    fun `Skal håndtere oppdatering av sak med nye meldeperioder`() = runTest {
         withTestApplicationContext { tac ->
             val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
@@ -136,11 +138,13 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto1,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto2,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
@@ -152,7 +156,7 @@ class MottaSakerRouteTest {
     }
 
     @Test
-    fun `Skal returnere 409 ved lagring av sak med ulike meldeperioder med samme meldeperiode-id`() {
+    fun `Skal returnere 409 ved lagring av sak med ulike meldeperioder med samme meldeperiode-id`() = runTest {
         withTestApplicationContext { tac ->
             val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
@@ -176,11 +180,13 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto1,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto2,
                 forventetStatus = HttpStatusCode.Conflict,
                 forventetBody = "Meldeperiode var allerede lagret med andre data",
@@ -193,7 +199,7 @@ class MottaSakerRouteTest {
     }
 
     @Test
-    fun `Skal opprette nytt meldekort og deaktivere forrige ved ny meldeperiode-versjon`() {
+    fun `Skal opprette nytt meldekort og deaktivere forrige ved ny meldeperiode-versjon`() = runTest {
         withTestApplicationContext { tac ->
             val meldeperiode = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
@@ -211,11 +217,13 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto1,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto2,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
@@ -235,8 +243,8 @@ class MottaSakerRouteTest {
     }
 
     @Test
-    fun `Skal ikke opprette nytt meldekort for kjede der meldekort allerede er mottatt`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+    fun `Skal ikke opprette nytt meldekort for kjede der meldekort allerede er mottatt`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val meldeperiode = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
             )
@@ -253,6 +261,7 @@ class MottaSakerRouteTest {
             )
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto1,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
@@ -263,7 +272,7 @@ class MottaSakerRouteTest {
 
                 val meldeperiode = meldekort.meldeperiode
 
-                val lagreKommando = lagreMeldekortFraBrukerKommando(
+                val lagreKommando = ObjectMother.lagreMeldekortFraBrukerKommando(
                     meldeperiode = meldeperiode,
                     meldekortId = meldekort.id,
                 )
@@ -280,6 +289,7 @@ class MottaSakerRouteTest {
             }
 
             mottaSakRequest(
+                tac = tac,
                 requestDto = sakDto2,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
@@ -296,7 +306,7 @@ class MottaSakerRouteTest {
     @Nested
     inner class FinnerNærmesteFredagInnenforPeriodenOgLeggerPåRiktigTidspunkt {
         @Test
-        fun `tilOgMed = torsdag - velger fredag som er '1 uke tilbake'`() {
+        fun `tilOgMed = torsdag - velger fredag som er '1 uke tilbake'`() = runTest {
             val periode = Periode(fraOgMed = 10.november(2025), tilOgMed = 20.november(2025))
 
             val actual = periode.kanFyllesUtFraOgMed()
@@ -305,7 +315,7 @@ class MottaSakerRouteTest {
         }
 
         @Test
-        fun `tilOgMed = lørdag - velger fredagen som er før lørdagen`() {
+        fun `tilOgMed = lørdag - velger fredagen som er før lørdagen`() = runTest {
             val periode = Periode(fraOgMed = 15.november(2025), tilOgMed = 22.november(2025))
 
             val actual = periode.kanFyllesUtFraOgMed()
@@ -314,7 +324,7 @@ class MottaSakerRouteTest {
         }
 
         @Test
-        fun `perioden inneholder ikke en fredag`() {
+        fun `perioden inneholder ikke en fredag`() = runTest {
             val periode = Periode(fraOgMed = 19.november(2025), tilOgMed = 20.november(2025))
 
             assertThrows<IllegalArgumentException> {

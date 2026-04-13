@@ -4,12 +4,10 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClock
-import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
-import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.objectmothers.ObjectMother
+import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
 import no.nav.tiltakspenger.objectmothers.lagMeldekort
 import no.nav.tiltakspenger.objectmothers.lagMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.routes.withTestApplicationContext
@@ -21,7 +19,7 @@ class MeldekortServiceTest {
 
     @Test
     fun `Kan lagre gyldig meldekort fra bruker`() {
-        withTestApplicationContext(clock = TikkendeKlokke(fixedClockAt(1.mars(2025)))) { tac ->
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val meldekortRepo = tac.meldekortRepo
             val meldekortService = tac.meldekortService
 
@@ -32,7 +30,11 @@ class MeldekortServiceTest {
 
             val oppdatertMeldekort = meldekortRepo.hentForMeldekortId(meldekortId = meldekort.id, fnr = meldekort.fnr)
             val forventetMeldekort =
-                meldekort.copy(dager = lagreKommando.dager.map { it.tilMeldekortDag() }, mottatt = oppdatertMeldekort?.mottatt, locale = "en")
+                meldekort.copy(
+                    dager = lagreKommando.dager.map { it.tilMeldekortDag() },
+                    mottatt = oppdatertMeldekort?.mottatt,
+                    locale = "en",
+                )
 
             oppdatertMeldekort shouldBe forventetMeldekort
         }
