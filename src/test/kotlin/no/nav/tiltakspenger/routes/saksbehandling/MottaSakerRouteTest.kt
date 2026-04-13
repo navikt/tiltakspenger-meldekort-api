@@ -8,6 +8,7 @@ import io.ktor.http.withCharset
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.november
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
@@ -35,8 +36,8 @@ class MottaSakerRouteTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val sakDto = ObjectMother.sakDTO(
                 meldeperioder = listOf(
-                    ObjectMother.meldeperiodeDto(periode = førstePeriode),
-                    ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager()),
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode, opprettet = nå(tac.clock)),
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager(), opprettet = nå(tac.clock)),
                 ),
             )
 
@@ -92,8 +93,8 @@ class MottaSakerRouteTest {
         withTestApplicationContext { tac ->
             val sakDto = ObjectMother.sakDTO(
                 meldeperioder = listOf(
-                    ObjectMother.meldeperiodeDto(periode = førstePeriode),
-                    ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager()),
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode, opprettet = nå(tac.clock)),
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager(), opprettet = nå(tac.clock)),
                 ),
             )
 
@@ -119,10 +120,13 @@ class MottaSakerRouteTest {
         withTestApplicationContext { tac ->
             val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
-                opprettet = LocalDateTime.of(2025, 1, 5, 12, 0),
+                opprettet = nå(tac.clock),
             )
 
-            val andreMeldeperiode = ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager())
+            val andreMeldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode.plus14Dager(),
+                opprettet = nå(tac.clock),
+            )
 
             val sakDto1 = ObjectMother.sakDTO(
                 meldeperioder = listOf(
@@ -160,10 +164,13 @@ class MottaSakerRouteTest {
         withTestApplicationContext { tac ->
             val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
-                opprettet = LocalDateTime.of(2025, 1, 5, 12, 0),
+                opprettet = nå(tac.clock),
             )
 
-            val andreMeldeperiode = ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager())
+            val andreMeldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode.plus14Dager(),
+                opprettet = nå(tac.clock),
+            )
 
             val sakDto1 = ObjectMother.sakDTO(
                 meldeperioder = listOf(
@@ -203,10 +210,12 @@ class MottaSakerRouteTest {
         withTestApplicationContext { tac ->
             val meldeperiode = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
+                opprettet = nå(tac.clock),
             )
             val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
                 versjon = 2,
+                opprettet = nå(tac.clock),
             )
 
             val sakDto1 = ObjectMother.sakDTO(
@@ -247,10 +256,12 @@ class MottaSakerRouteTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val meldeperiode = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
+                opprettet = nå(tac.clock),
             )
             val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
                 periode = førstePeriode,
                 versjon = 2,
+                opprettet = nå(tac.clock),
             )
 
             val sakDto1 = ObjectMother.sakDTO(

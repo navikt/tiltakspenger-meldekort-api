@@ -4,6 +4,7 @@ import arrow.core.left
 import arrow.core.right
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.getOrFail
@@ -24,9 +25,14 @@ class MeldekortForKjedeTest {
     inner class HarInnsendtMeldekort {
         @Test
         fun `true dersom minst 1 meldekort er innsendt`() {
-            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode())
+            val clock = TikkendeKlokke()
+            val meldekort1 =
+                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
             val meldekort2 =
-                ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = ObjectMother.meldeperiode())
+                ObjectMother.meldekort(
+                    mottatt = nå(clock),
+                    meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)),
+                )
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
             meldekortForKjede.harInnsendtMeldekort shouldBe true
@@ -34,9 +40,14 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `false dersom ingen meldekort er innsendt`() {
-            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode())
+            val clock = TikkendeKlokke()
+            val meldekort1 =
+                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
             val meldekort2 =
-                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(versjon = 2))
+                ObjectMother.meldekort(
+                    mottatt = null,
+                    meldeperiode = ObjectMother.meldeperiode(versjon = 2, opprettet = nå(clock)),
+                )
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
             meldekortForKjede.harInnsendtMeldekort shouldBe false
@@ -47,10 +58,11 @@ class MeldekortForKjedeTest {
     inner class ErSisteMeldekortKlarTilInnsending {
         @Test
         fun `true dersom siste meldekort er klar til innsending`() {
+            val clock = TikkendeKlokke()
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
             val meldekort1 = ObjectMother.meldekort(
                 mottatt = null,
-                meldeperiode = ObjectMother.meldeperiode(periode = periode),
+                meldeperiode = ObjectMother.meldeperiode(periode = periode, opprettet = nå(clock)),
             )
             val meldekort2 =
                 ObjectMother.meldekort(
@@ -58,6 +70,7 @@ class MeldekortForKjedeTest {
                     meldeperiode = ObjectMother.meldeperiode(
                         versjon = 2,
                         periode = periode,
+                        opprettet = nå(clock),
                     ),
                 )
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
@@ -69,12 +82,13 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `false dersom siste meldekort ikke er klar til innsending`() {
+            val clock = TikkendeKlokke()
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
             val meldekort1 =
-                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(periode = periode))
+                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(periode = periode, opprettet = nå(clock)))
             val meldekort2 =
-                ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, periode = periode))
+                ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, periode = periode, opprettet = nå(clock)))
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
             meldekortForKjede.erSisteMeldekortKlarTilInnsending(
@@ -96,9 +110,10 @@ class MeldekortForKjedeTest {
     inner class SisteInnsendteMeldekort {
         @Test
         fun `returnerer siste meldekort som er innsendt`() {
-            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode())
+            val clock = TikkendeKlokke()
+            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
             val meldekort2 =
-                ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = ObjectMother.meldeperiode())
+                ObjectMother.meldekort(mottatt = nå(clock), meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
             meldekortForKjede.sisteInnsendteMeldekort() shouldBe meldekort2
@@ -106,9 +121,10 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `returnerer null dersom det ikke finnes noen innsendte meldekort`() {
-            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode())
+            val clock = TikkendeKlokke()
+            val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
             val meldekort2 =
-                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(versjon = 2))
+                ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(versjon = 2, opprettet = nå(clock)))
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
             meldekortForKjede.sisteInnsendteMeldekort() shouldBe null
@@ -119,8 +135,9 @@ class MeldekortForKjedeTest {
     inner class Korrigering {
         @Test
         fun `må ha et innsendt meldekort for å korrigere`() {
+            val clock = TikkendeKlokke()
             assertThrows<IllegalArgumentException> {
-                val meldeperiode = ObjectMother.meldeperiode()
+                val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock))
                 val meldekort = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
                 MeldekortForKjede(listOf(meldekort)).korriger(
                     command = KorrigerMeldekortCommand(
@@ -130,17 +147,18 @@ class MeldekortForKjedeTest {
                         locale = "nb",
                     ),
                     sisteMeldeperiode = meldeperiode,
-                    clock = fixedClock,
+                    clock = clock,
                 )
             }
         }
 
         @Test
         fun `meldekortet som skal korrigeres må være den siste i kjeden`() {
-            val meldeperiode = ObjectMother.meldeperiode()
+            val clock = TikkendeKlokke()
+            val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock))
             val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
             val meldekort2 =
-                ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = meldeperiode)
+                ObjectMother.meldekort(mottatt = nå(clock), meldeperiode = meldeperiode)
 
             val actual = MeldekortForKjede(listOf(meldekort1, meldekort2)).korriger(
                 command = KorrigerMeldekortCommand(
@@ -150,7 +168,7 @@ class MeldekortForKjedeTest {
                     locale = "nb",
                 ),
                 sisteMeldeperiode = meldeperiode,
-                clock = fixedClock,
+                clock = clock,
             )
 
             actual shouldBe FeilVedKorrigeringAvMeldekort.IkkeSisteMeldekortIKjeden.left()
@@ -158,13 +176,15 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `korrigerer og fører til en oppdatering av et eksisterende meldekort til innsending`() {
-            val meldeperiode1 = ObjectMother.meldeperiode()
+            val clock = TikkendeKlokke()
+            val meldeperiode1 = ObjectMother.meldeperiode(opprettet = nå(clock))
             val meldeperiode2 = ObjectMother.meldeperiode(
                 sakId = meldeperiode1.sakId,
                 fnr = meldeperiode1.fnr,
                 periode = meldeperiode1.periode,
                 saksnummer = meldeperiode1.saksnummer,
                 versjon = 2,
+                opprettet = nå(clock),
             )
             val mottattMeldekort1 = ObjectMother.meldekort(meldeperiode = meldeperiode1)
             val åpentMeldekort2 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode2)
@@ -197,7 +217,8 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `korrigerer og fører til et nytt meldekort`() {
-            val sisteMeldeperiode = ObjectMother.meldeperiode()
+            val clock = TikkendeKlokke()
+            val sisteMeldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock))
             val meldekort = ObjectMother.meldekort(meldeperiode = sisteMeldeperiode)
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort))
 
@@ -214,7 +235,7 @@ class MeldekortForKjedeTest {
                     locale = "nb",
                 ),
                 sisteMeldeperiode = sisteMeldeperiode,
-                clock = fixedClock,
+                clock = clock,
             ).getOrFail()
             actualMeldekort.id shouldNotBe meldekort.id
         }
@@ -224,37 +245,39 @@ class MeldekortForKjedeTest {
     inner class Inits {
         @Test
         fun `for hver versjon av en meldeperiode, kan max 1 meldekort ikke være mottatt`() {
+            val clock = TikkendeKlokke()
             assertThrows<IllegalArgumentException> {
-                val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode())
-                val meldekort2 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode())
+                val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
+                val meldekort2 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
 
             assertDoesNotThrow {
-                val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode())
+                val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
                 val meldekort2 =
-                    ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(versjon = 2))
+                    ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(versjon = 2, opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
 
             assertDoesNotThrow {
-                val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode())
-                val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode())
+                val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
+                val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
         }
 
         @Test
         fun `meldekortene må være sortert på versjon`() {
+            val clock = TikkendeKlokke()
             assertThrows<IllegalArgumentException> {
-                val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2))
-                val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 1))
+                val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, opprettet = nå(clock)))
+                val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 1, opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
 
             assertDoesNotThrow {
-                val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 1))
-                val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2))
+                val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 1, opprettet = nå(clock)))
+                val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
         }
@@ -265,11 +288,11 @@ class MeldekortForKjedeTest {
                 val meldekort1 =
                     ObjectMother.meldekort(
                         mottatt = nå(fixedClock),
-                        meldeperiode = ObjectMother.meldeperiode(versjon = 1),
+                        meldeperiode = ObjectMother.meldeperiode(versjon = 1, opprettet = nå(fixedClock)),
                     )
                 val meldekort2 = ObjectMother.meldekort(
                     mottatt = nå(fixedClock).minus(1, ChronoUnit.SECONDS),
-                    meldeperiode = ObjectMother.meldeperiode(versjon = 1),
+                    meldeperiode = ObjectMother.meldeperiode(versjon = 1, opprettet = nå(fixedClock)),
                 )
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
@@ -286,9 +309,10 @@ class MeldekortForKjedeTest {
     inner class KanMeldekortKorrigeres {
         @Test
         fun `returnerer true dersom det finnes et innsendt meldekort i kjeden`() {
-            val meldeperiode = ObjectMother.meldeperiode()
+            val clock = TikkendeKlokke()
+            val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock))
             val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
-            val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = meldeperiode)
+            val meldekort2 = ObjectMother.meldekort(mottatt = nå(clock), meldeperiode = meldeperiode)
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2))
 
             meldekortForKjede.kanMeldekortKorrigeres(meldekort2.id) shouldBe true
@@ -296,7 +320,8 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `returnerer false dersom det ikke finnes et innsendt meldekort i kjeden`() {
-            val meldeperiode = ObjectMother.meldeperiode()
+            val clock = TikkendeKlokke()
+            val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock))
             val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1))
 
@@ -305,10 +330,11 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `returnerer false dersom meldekortet ikke er den siste`() {
-            val meldeperiode = ObjectMother.meldeperiode()
+            val clock = TikkendeKlokke()
+            val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock))
             val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
-            val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = meldeperiode)
-            val meldekort3 = ObjectMother.meldekort(mottatt = nå(fixedClock), meldeperiode = meldeperiode)
+            val meldekort2 = ObjectMother.meldekort(mottatt = nå(clock), meldeperiode = meldeperiode)
+            val meldekort3 = ObjectMother.meldekort(mottatt = nå(clock), meldeperiode = meldeperiode)
             val meldekortForKjede = MeldekortForKjede(listOf(meldekort1, meldekort2, meldekort3))
 
             meldekortForKjede.kanMeldekortKorrigeres(meldekort2.id) shouldBe false

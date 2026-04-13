@@ -23,7 +23,10 @@ class MeldekortServiceTest {
             val meldekortRepo = tac.meldekortRepo
             val meldekortService = tac.meldekortService
 
-            val meldekort = tac.lagMeldekort(ObjectMother.meldeperiode(periode = gyldigPeriode), locale = "en")
+            val meldekort = tac.lagMeldekort(
+                ObjectMother.meldeperiode(periode = gyldigPeriode, opprettet = nå(tac.clock)),
+                locale = "en",
+            )
             val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
             meldekortService.lagreMeldekortFraBruker(lagreKommando)
@@ -50,6 +53,7 @@ class MeldekortServiceTest {
                     periode = ObjectMother.periode(
                         LocalDate.now(),
                     ),
+                    opprettet = nå(tac.clock),
                 ),
             )
             val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
@@ -68,6 +72,7 @@ class MeldekortServiceTest {
             val meldekort = tac.lagMeldekort(
                 ObjectMother.meldeperiode(
                     periode = ObjectMother.periode(LocalDate.of(2025, 1, 1)),
+                    opprettet = nå(tac.clock),
                 ),
             )
             val lagreKommando = lagMeldekortFraBrukerKommando(meldekort, fnr = Fnr.fromString("11111111111"))
@@ -80,11 +85,12 @@ class MeldekortServiceTest {
     fun `Kan ikke lagre meldekort fra bruker som allerede er mottatt`() {
         withTestApplicationContext { tac ->
             val meldekortService = tac.meldekortService
-            val mottatt = nå(fixedClock).plusSeconds(1)
+            val mottatt = nå(tac.clock).plusSeconds(1)
 
             val meldekort = tac.lagMeldekort(
                 ObjectMother.meldeperiode(
                     periode = ObjectMother.periode(LocalDate.now(fixedClock)),
+                    opprettet = nå(tac.clock),
                 ),
                 mottatt,
             )

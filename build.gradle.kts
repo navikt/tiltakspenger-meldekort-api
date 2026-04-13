@@ -26,6 +26,7 @@ plugins {
     kotlin("plugin.serialization") version "2.3.20"
     id("com.diffplug.spotless") version "8.4.0"
     id("com.github.ben-manes.versions") version "0.53.0"
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
 repositories {
@@ -138,6 +139,19 @@ spotless {
                     "ktlint_standard_function-expression-body" to "disabled",
                 ),
             )
+    }
+}
+
+kover {
+    reports {
+        total {
+            html {
+                onCheck = true
+            }
+            xml {
+                onCheck = true
+            }
+        }
     }
 }
 

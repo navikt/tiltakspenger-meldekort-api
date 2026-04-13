@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.routes.landingsside
 
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.Configuration
@@ -44,7 +45,7 @@ class LandingssideStatusRouteTest {
     fun `bruker med klart meldekort men ingen innsendt - returnerer meldekort til utfylling`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
-            val meldeperiode = ObjectMother.meldeperiode(periode = periode)
+            val meldeperiode = ObjectMother.meldeperiode(periode = periode, opprettet = nå(tac.clock))
 
             val sak = ObjectMother.sak(meldeperioder = listOf(meldeperiode))
             tac.sakRepo.lagre(sak)
@@ -69,8 +70,8 @@ class LandingssideStatusRouteTest {
             val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
             val andrePeriode = førstePeriode.plus14Dager()
 
-            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode)
-            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode)
+            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode, opprettet = nå(tac.clock))
+            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode, opprettet = nå(tac.clock))
 
             val sak = ObjectMother.sak(meldeperioder = listOf(førsteMeldeperiode, andreMeldeperiode))
             tac.sakRepo.lagre(sak)
@@ -94,29 +95,28 @@ class LandingssideStatusRouteTest {
     }
 
     @Test
-    fun `bruker med innsendte meldekort og ingen klare - returnerer harInnsendt uten meldekort til utfylling`() =
-        runTest {
-            withTestApplicationContext { tac ->
-                val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
-                val meldeperiode = ObjectMother.meldeperiode(periode = periode)
+    fun `bruker med innsendte meldekort og ingen klare - returnerer harInnsendt uten meldekort til utfylling`() = runTest {
+        withTestApplicationContext { tac ->
+            val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+            val meldeperiode = ObjectMother.meldeperiode(periode = periode, opprettet = nå(tac.clock))
 
-                val sak = ObjectMother.sak(meldeperioder = listOf(meldeperiode))
-                tac.sakRepo.lagre(sak)
+            val sak = ObjectMother.sak(meldeperioder = listOf(meldeperiode))
+            tac.sakRepo.lagre(sak)
 
-                tac.lagMeldekort(
-                    meldeperiode = meldeperiode,
-                    mottatt = periode.tilOgMed.atStartOfDay(),
-                )
+            tac.lagMeldekort(
+                meldeperiode = meldeperiode,
+                mottatt = periode.tilOgMed.atStartOfDay(),
+            )
 
-                val body = landingssideStatusRequest()!!
+            val body = landingssideStatusRequest()!!
 
-                body.shouldBe(
-                    harInnsendteMeldekort = true,
-                    meldekortTilUtfylling = emptyList(),
-                    redirectUrl = Configuration.meldekortFrontendUrl,
-                )
-            }
+            body.shouldBe(
+                harInnsendteMeldekort = true,
+                meldekortTilUtfylling = emptyList(),
+                redirectUrl = Configuration.meldekortFrontendUrl,
+            )
         }
+    }
 
     @Test
     fun `flere meldekort klare til utfylling - returneres sortert etter kanSendesFra`() = runTest {
@@ -125,9 +125,9 @@ class LandingssideStatusRouteTest {
             val andrePeriode = førstePeriode.plus14Dager()
             val tredjePeriode = andrePeriode.plus14Dager()
 
-            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode)
-            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode)
-            val tredjeMeldeperiode = ObjectMother.meldeperiode(periode = tredjePeriode)
+            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode, opprettet = nå(tac.clock))
+            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode, opprettet = nå(tac.clock))
+            val tredjeMeldeperiode = ObjectMother.meldeperiode(periode = tredjePeriode, opprettet = nå(tac.clock))
 
             val sak = ObjectMother.sak(
                 meldeperioder = listOf(førsteMeldeperiode, andreMeldeperiode, tredjeMeldeperiode),

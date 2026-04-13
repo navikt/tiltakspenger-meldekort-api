@@ -35,7 +35,7 @@ class JournalførMeldekortService(
                     }
                     log.info { "Pdf generert for meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
                     val journalpostId = dokarkivClient.journalførMeldekort(
-                        request = meldekort.toJournalpostDokument(pdfOgJson = pdfOgJson),
+                        request = meldekort.toJournalpostDokument(pdfOgJson = pdfOgJson, clock = clock),
                         meldekort = meldekort,
                         callId = CorrelationId.generate(),
                     )

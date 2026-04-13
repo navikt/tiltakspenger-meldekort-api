@@ -23,6 +23,14 @@ object KjørJobberForTester {
         tac.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort()
     }
 
+    /**
+     * Kjører både send varsler og inaktiverer varsler i den rekkefølgen (slik som i prod)
+     */
+    fun kjørVarsler(tac: TestApplicationContext) {
+        kjørSendVarsler(tac)
+        kjørInaktiverVarsler(tac)
+    }
+
     suspend fun kjørOppdaterArenaMeldekortStatus(tac: TestApplicationContext) {
         tac.arenaMeldekortStatusService.oppdaterArenaMeldekortStatusForSaker()
     }

@@ -11,7 +11,9 @@ import no.nav.tiltakspenger.meldekort.domene.Sak
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
 import java.time.Clock
 
-class SakRepoFake : SakRepo {
+class SakRepoFake(
+    private val clock: Clock,
+) : SakRepo {
     private val data = Atomic(mutableMapOf<SakId, Sak>())
 
     override fun lagre(
@@ -71,23 +73,21 @@ class SakRepoFake : SakRepo {
         return data.get().values.filter { it.arenaMeldekortStatus == ArenaMeldekortStatus.UKJENT }
     }
 
-    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?): List<Sak> {
         return data.get().values.filter {
             it.meldeperioder
                 .last()
                 .periode
-                // TODO jah: Bytt til clock som man tar inn i ctor
-                .tilOgMed.isAfter(nå(fixedClock).minusMonths(6).toLocalDate())
+                .tilOgMed.isAfter(nå(clock).minusMonths(6).toLocalDate())
         }
     }
 
-    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?): List<Sak> {
         return data.get().values.filter {
             it.meldeperioder
                 .last()
                 .periode
-                // TODO jah: Bytt til clock som man tar inn i ctor
-                .tilOgMed.isBefore(nå(fixedClock).minusMonths(6).toLocalDate())
+                .tilOgMed.isBefore(nå(clock).minusMonths(6).toLocalDate())
         }
     }
 }

@@ -19,7 +19,7 @@ class TestDataHelper(
     val sessionFactory = PostgresSessionFactory(dataSource, sessionCounter)
     val meldeperiodeRepo = MeldeperiodePostgresRepo(sessionFactory)
     val meldekortPostgresRepo = MeldekortPostgresRepo(sessionFactory, clock)
-    val sakPostgresRepo = SakPostgresRepo(sessionFactory)
+    val sakPostgresRepo = SakPostgresRepo(sessionFactory, clock)
 }
 
 private val testDatabaseManager = TestDatabaseManager()

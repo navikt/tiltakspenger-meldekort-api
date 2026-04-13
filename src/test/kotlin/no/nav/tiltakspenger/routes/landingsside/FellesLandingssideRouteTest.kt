@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.routes.landingsside
 
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
@@ -16,7 +17,7 @@ class FellesLandingssideRouteTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             mottaSakRequest(
                 tac = tac,
-                meldeperioder = listOf(meldeperiodeDto(periode = 6 til 19.januar(2025))),
+                meldeperioder = listOf(meldeperiodeDto(periode = 6 til 19.januar(2025), opprettet = nå(tac.clock))),
             )
             landingssideStatusRequest()!!.shouldBe(
                 meldekortTilUtfylling = listOf(17.januar(2025).atTime(15, 0, 0)),

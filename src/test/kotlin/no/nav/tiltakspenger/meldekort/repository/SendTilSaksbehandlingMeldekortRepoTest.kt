@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.repository
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
@@ -36,7 +37,7 @@ class SendTilSaksbehandlingMeldekortRepoTest {
                 repo.markerJournalført(
                     meldekort.id,
                     JournalpostId("jp-789"),
-                    LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                    nå(fixedClock).truncatedTo(ChronoUnit.MICROS),
                 )
 
                 val result = repo.hentMeldekortForSendingTilSaksbehandling()
@@ -98,13 +99,13 @@ class SendTilSaksbehandlingMeldekortRepoTest {
                 repo.markerJournalført(
                     meldekort.id,
                     JournalpostId("jp-101"),
-                    LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                    nå(fixedClock).truncatedTo(ChronoUnit.MICROS),
                 )
 
                 // Verifiser at meldekortet dukker opp før markering
                 repo.hentMeldekortForSendingTilSaksbehandling().size shouldBe 1
 
-                val sendtTidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
+                val sendtTidspunkt = nå(fixedClock).truncatedTo(ChronoUnit.MICROS)
                 repo.markerSendtTilSaksbehandling(meldekort.id, sendtTidspunkt)
 
                 // Verifiser at meldekortet ikke lenger dukker opp
@@ -137,17 +138,17 @@ class SendTilSaksbehandlingMeldekortRepoTest {
                 repo.markerJournalført(
                     meldekort1.id,
                     JournalpostId("jp-201"),
-                    LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                    nå(fixedClock).truncatedTo(ChronoUnit.MICROS),
                 )
                 repo.markerJournalført(
                     meldekort2.id,
                     JournalpostId("jp-202"),
-                    LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                    nå(fixedClock).truncatedTo(ChronoUnit.MICROS),
                 )
 
                 repo.markerSendtTilSaksbehandling(
                     meldekort1.id,
-                    LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                    nå(fixedClock).truncatedTo(ChronoUnit.MICROS),
                 )
 
                 val result = repo.hentMeldekortForSendingTilSaksbehandling()

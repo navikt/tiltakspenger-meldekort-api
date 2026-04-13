@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.routes.hentbruker
 
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
@@ -19,20 +20,18 @@ class HentBrukerRouteTest {
     private val periode = 6 til 19.januar(2025)
 
     @Test
-    fun `hentBruker - returnerer bruker med neste meldekort som kan utfylles`() {
-        runTest {
-            withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
-                val sak = mottaSakRequest(
-                    tac = tac,
-                    meldeperioder = listOf(meldeperiodeDto(periode = periode)),
-                )
-                hentBrukerRequest()!!.shouldBe(
-                    nesteMeldekort = forventetMeldekort(
-                        periode = periode,
-                        meldeperiodeId = sak.meldeperioder.first().id,
-                    ),
-                )
-            }
+    fun `hentBruker - returnerer bruker med neste meldekort som kan utfylles`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val sak = mottaSakRequest(
+                tac = tac,
+                meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
+            )
+            hentBrukerRequest()!!.shouldBe(
+                nesteMeldekort = forventetMeldekort(
+                    periode = periode,
+                    meldeperiodeId = sak.meldeperioder.first().id,
+                ),
+            )
         }
     }
 
@@ -41,7 +40,7 @@ class HentBrukerRouteTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val sak = mottaSakRequest(
                 tac = tac,
-                meldeperioder = listOf(meldeperiodeDto(periode = periode)),
+                meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
             sendInnNesteMeldekort(tac = tac)
 
@@ -66,7 +65,7 @@ class HentBrukerRouteTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             mottaSakRequest(
                 tac = tac,
-                meldeperioder = listOf(meldeperiodeDto(periode = periode)),
+                meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
             hentBrukerRequest(
                 jwt = null,

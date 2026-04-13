@@ -30,12 +30,16 @@ class SakPostgresRepoTest {
     /**
      * Genererer en sak med en meldeperiode hvor vi setter tilOgMed
      */
-    private fun lagSakMedMeldeperiode(fraSisteMandagFør: LocalDate? = null, tilSisteSøndagEtter: LocalDate? = null, opprettet: LocalDate?): Sak {
+    private fun lagSakMedMeldeperiode(
+        fraSisteMandagFør: LocalDate? = null,
+        tilSisteSøndagEtter: LocalDate? = null,
+        opprettet: LocalDate,
+    ): Sak {
         var periode: Periode? = null
         fraSisteMandagFør?.let { periode = ObjectMother.periode(fraSisteMandagFør = fraSisteMandagFør) }
         tilSisteSøndagEtter?.let { periode = ObjectMother.periode(tilSisteSøndagEtter = tilSisteSøndagEtter) }
 
-        val meldeperiode = ObjectMother.meldeperiode(opprettet = opprettet?.atStartOfDay(), periode = periode!!)
+        val meldeperiode = ObjectMother.meldeperiode(opprettet = opprettet.atStartOfDay(), periode = periode!!)
         return ObjectMother.sak(id = meldeperiode.sakId, fnr = Fnr.random(), meldeperioder = listOf(meldeperiode))
     }
 
@@ -50,7 +54,7 @@ class SakPostgresRepoTest {
                 val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
                 lagreSak(helper, sak1, sak2)
 
-                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres()
 
                 withClue("Antall saker") { saker.size shouldBe 1 }
                 withClue("Sak") { saker.single().id shouldBe sak1.id }
@@ -65,7 +69,7 @@ class SakPostgresRepoTest {
                 val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
                 lagreSak(helper, sak1, sak2)
 
-                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres()
 
                 withClue("Antall saker") { saker.size shouldBe 1 }
                 withClue("Sak") { saker.single().id shouldBe sak1.id }
@@ -80,7 +84,7 @@ class SakPostgresRepoTest {
                 val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
                 lagreSak(helper, sak1, sak2)
 
-                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres()
 
                 withClue("Antall saker") { saker.size shouldBe 1 }
                 withClue("Sak") { saker.single().id shouldBe sak1.id }
@@ -99,7 +103,7 @@ class SakPostgresRepoTest {
                 val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = innenforOffset)
                 lagreSak(helper, sak1, sak2)
 
-                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres()
 
                 withClue("Antall saker") { saker.size shouldBe 1 }
                 withClue("Forventer at sak med opprettet utenfor offset returneres") { saker.single().id shouldBe sak1.id }
@@ -114,7 +118,7 @@ class SakPostgresRepoTest {
                 val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = utenforOffset)
                 lagreSak(helper, sak1, sak2)
 
-                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres()
 
                 withClue("Antall saker") { saker.size shouldBe 1 }
                 withClue("Forventer at sak med meldeperiode utenfor offset returneres") { saker.single().id shouldBe sak1.id }
@@ -129,7 +133,7 @@ class SakPostgresRepoTest {
                 val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = innenforOffset)
                 lagreSak(helper, sak1, sak2)
 
-                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock)
+                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres()
 
                 withClue("Antall saker") { saker.size shouldBe 1 }
                 withClue("Forventer at sak med begge felter utenfor offset returneres") { saker.single().id shouldBe sak1.id }

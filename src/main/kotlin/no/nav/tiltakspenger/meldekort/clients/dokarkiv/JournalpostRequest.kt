@@ -1,9 +1,11 @@
 package no.nav.tiltakspenger.meldekort.clients.dokarkiv
 
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.meldekort.clients.utils.toNorskDatoMedPunktum
 import no.nav.tiltakspenger.meldekort.clients.utils.toNorskUkenummer
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.journalføring.PdfOgJson
+import java.time.Clock
 import java.time.LocalDateTime
 
 enum class JournalpostTema(val value: String) {
@@ -33,12 +35,13 @@ data class JournalpostRequest(
 fun Meldekort.toJournalpostDokument(
     journalforendeEnhet: String? = JOURNALFORENDE_ENHET_AUTOMATISK_BEHANDLING,
     pdfOgJson: PdfOgJson,
+    clock: Clock,
 ): JournalpostRequest {
     val tittel = this.lagTittel()
     return JournalpostRequest(
         tittel = tittel,
         journalfoerendeEnhet = journalforendeEnhet,
-        datoMottatt = this.mottatt ?: LocalDateTime.now(),
+        datoMottatt = this.mottatt ?: nå(clock),
         avsenderMottaker = JournalpostAvsenderMottaker(id = fnr.verdi),
         bruker = JournalpostBruker(id = fnr.verdi),
         sak = this.meldeperiode.saksnummer.let {

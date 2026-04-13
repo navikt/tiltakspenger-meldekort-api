@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
@@ -14,13 +15,12 @@ import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
 
 class SendVarslerServiceTest {
     private val meldekortRepo = mockk<MeldekortRepo>(relaxed = true)
     private val tmsVarselClient = mockk<TmsVarselClient>(relaxed = true)
     private val service = SendVarslerService(meldekortRepo, tmsVarselClient, fixedClock)
-    private val forventetTidspunkt = LocalDateTime.now(fixedClock)
+    private val forventetTidspunkt = nå(fixedClock)
 
     @BeforeEach
     fun setup() {
@@ -33,7 +33,12 @@ class SendVarslerServiceTest {
         val meldekort = ObjectMother.meldekort(varselId = varselId)
 
         every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns listOf(meldekort)
-        every { tmsVarselClient.sendVarselForNyttMeldekort(meldekort, varselId) } returns SendtVarselMetadata("\"json-request\"")
+        every {
+            tmsVarselClient.sendVarselForNyttMeldekort(
+                meldekort,
+                varselId,
+            )
+        } returns SendtVarselMetadata("\"json-request\"")
 
         service.sendVarselForMeldekort()
 
@@ -46,7 +51,12 @@ class SendVarslerServiceTest {
         val meldekortList = (1..3).map { ObjectMother.meldekort(fnr = Fnr.random()) }
 
         every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns meldekortList
-        every { tmsVarselClient.sendVarselForNyttMeldekort(any(), any()) } returns SendtVarselMetadata("\"json-request\"")
+        every {
+            tmsVarselClient.sendVarselForNyttMeldekort(
+                any(),
+                any(),
+            )
+        } returns SendtVarselMetadata("\"json-request\"")
 
         service.sendVarselForMeldekort()
 
@@ -85,13 +95,58 @@ class SendVarslerServiceTest {
         val vellykketMeldekort = ObjectMother.meldekort(fnr = Fnr.random())
 
         every { meldekortRepo.hentMeldekortDetSkalVarslesFor() } returns listOf(feiletMeldekort, vellykketMeldekort)
-        every { tmsVarselClient.sendVarselForNyttMeldekort(feiletMeldekort, feiletMeldekort.varselId) } throws RuntimeException("Feil")
-        every { tmsVarselClient.sendVarselForNyttMeldekort(vellykketMeldekort, vellykketMeldekort.varselId) } returns SendtVarselMetadata("\"json-request\"")
+        every {
+            tmsVarselClient.sendVarselForNyttMeldekort(
+                feiletMeldekort,
+                feiletMeldekort.varselId,
+            )
+        } throws RuntimeException("Feil")
+        every {
+            tmsVarselClient.sendVarselForNyttMeldekort(
+                vellykketMeldekort,
+                vellykketMeldekort.varselId,
+            )
+        } returns SendtVarselMetadata("\"json-request\"")
 
         service.sendVarselForMeldekort()
 
         verify(exactly = 0) { meldekortRepo.markerVarslet(feiletMeldekort.id, any(), any()) }
         verify(exactly = 1) { meldekortRepo.markerVarslet(vellykketMeldekort.id, forventetTidspunkt, any()) }
+    }
+
+    @Test
+    fun `fortsetter å sende varsler når lagring av markert varsel feiler for et meldekort`() {
+        val meldekortMedLagringsfeil = ObjectMother.meldekort(fnr = Fnr.random())
+        val vellykketMeldekort = ObjectMother.meldekort(fnr = Fnr.random())
+        val sendtVarselMetadata = SendtVarselMetadata("\"json-request\"")
+
+        every {
+            meldekortRepo.hentMeldekortDetSkalVarslesFor()
+        } returns listOf(meldekortMedLagringsfeil, vellykketMeldekort)
+        every {
+            tmsVarselClient.sendVarselForNyttMeldekort(meldekortMedLagringsfeil, meldekortMedLagringsfeil.varselId)
+        } returns sendtVarselMetadata
+        every {
+            tmsVarselClient.sendVarselForNyttMeldekort(vellykketMeldekort, vellykketMeldekort.varselId)
+        } returns sendtVarselMetadata
+        every {
+            meldekortRepo.markerVarslet(meldekortMedLagringsfeil.id, forventetTidspunkt, sendtVarselMetadata)
+        } throws RuntimeException("Database feil")
+
+        service.sendVarselForMeldekort()
+
+        verify(exactly = 1) {
+            tmsVarselClient.sendVarselForNyttMeldekort(meldekortMedLagringsfeil, meldekortMedLagringsfeil.varselId)
+        }
+        verify(exactly = 1) {
+            tmsVarselClient.sendVarselForNyttMeldekort(vellykketMeldekort, vellykketMeldekort.varselId)
+        }
+        verify(exactly = 1) {
+            meldekortRepo.markerVarslet(meldekortMedLagringsfeil.id, forventetTidspunkt, sendtVarselMetadata)
+        }
+        verify(exactly = 1) {
+            meldekortRepo.markerVarslet(vellykketMeldekort.id, forventetTidspunkt, sendtVarselMetadata)
+        }
     }
 
     @Test

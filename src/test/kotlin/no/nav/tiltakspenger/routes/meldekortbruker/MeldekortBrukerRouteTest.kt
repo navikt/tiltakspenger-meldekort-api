@@ -6,6 +6,7 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
@@ -39,8 +40,8 @@ class MeldekortBrukerRouteTest {
             val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
             val andrePeriode = førstePeriode.plus14Dager()
 
-            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode)
-            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode)
+            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode, opprettet = nå(tac.clock))
+            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode, opprettet = nå(tac.clock))
 
             val sak = ObjectMother.sak(
                 meldeperioder = listOf(førsteMeldeperiode, andreMeldeperiode),
@@ -81,8 +82,8 @@ class MeldekortBrukerRouteTest {
             val førstePeriode = ObjectMother.periode(LocalDate.now().minusWeeks(2))
             val andrePeriode = førstePeriode.plus14Dager()
 
-            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode)
-            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode)
+            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode, opprettet = nå(tac.clock))
+            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode, opprettet = nå(tac.clock))
 
             val sak = ObjectMother.sak(
                 meldeperioder = listOf(førsteMeldeperiode, andreMeldeperiode),
@@ -124,6 +125,7 @@ class MeldekortBrukerRouteTest {
 
             val meldeperiode = ObjectMother.meldeperiode(
                 periode = periode,
+                opprettet = nå(tac.clock),
             )
 
             val sak = ObjectMother.sak(meldeperioder = listOf(meldeperiode))
@@ -173,8 +175,8 @@ class MeldekortBrukerRouteTest {
 
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
-            val førsteDto = meldeperiodeDto(periode = periode)
-            val andreDto = førsteDto.copy(id = MeldeperiodeId.random().toString(), versjon = 2)
+            val førsteDto = meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))
+            val andreDto = førsteDto.copy(id = MeldeperiodeId.random().toString(), versjon = 2, opprettet = nå(tac.clock))
 
             val sakDto = ObjectMother.sakDTO(
                 meldeperioder = listOf(førsteDto, andreDto),
@@ -204,11 +206,13 @@ class MeldekortBrukerRouteTest {
 
             val førsteDto = meldeperiodeDto(
                 periode = periode,
+                opprettet = nå(tac.clock),
             )
 
             val andreDto = førsteDto.copy(
                 id = MeldeperiodeId.random().toString(),
                 versjon = 2,
+                opprettet = førsteDto.opprettet.plusSeconds(1),
                 girRett = periode.tilDager().associateWith { false },
                 antallDagerForPeriode = 0,
             )
@@ -249,7 +253,10 @@ class MeldekortBrukerRouteTest {
     fun `korrigerer et meldekort`() = runTest {
         withTestApplicationContext { tac ->
             val førsteMeldeperiode =
-                ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
+                ObjectMother.meldeperiode(
+                    periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)),
+                    opprettet = nå(tac.clock),
+                )
 
             val sak = ObjectMother.sak(meldeperioder = listOf(førsteMeldeperiode))
 
@@ -419,7 +426,10 @@ class MeldekortBrukerRouteTest {
     fun `kan ikke korrigere uten endring på dager`() = runTest {
         withTestApplicationContext { tac ->
             val førsteMeldeperiode =
-                ObjectMother.meldeperiode(periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)))
+                ObjectMother.meldeperiode(
+                    periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)),
+                    opprettet = nå(tac.clock),
+                )
 
             val sak = ObjectMother.sak(meldeperioder = listOf(førsteMeldeperiode))
 

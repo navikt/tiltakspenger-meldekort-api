@@ -9,13 +9,12 @@ import java.time.Clock
 class InaktiverMicrofrontendJob(
     private val sakRepo: SakRepo,
     private val tmsMikrofrontendClient: TmsMikrofrontendClient,
-    private val clock: Clock,
 ) {
     private val log = KotlinLogging.logger { }
 
     fun inaktiverMicrofrontendForBrukere() {
         Either.catch {
-            val saker = sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = clock)
+            val saker = sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres()
             log.debug { "Fant ${saker.size} saker hvor microfrontend kan inaktiveres" }
 
             saker.forEach { sak ->
