@@ -11,11 +11,10 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
-import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
-import no.nav.tiltakspenger.meldekort.domene.VarselId
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.Clock
 import java.time.LocalDateTime
@@ -38,10 +37,6 @@ class MeldekortPostgresRepo(
                         dager,
                         journalpost_id,
                         journalføringstidspunkt,
-                        varsel_id,
-                        varsel_inaktivert,
-                        sendt_varsel_tidspunkt,
-                        sendt_varsel,
                         korrigering,
                         locale
                     ) values (
@@ -52,10 +47,6 @@ class MeldekortPostgresRepo(
                         to_jsonb(:dager::jsonb),
                         :journalpost_id,
                         :journalforingstidspunkt,
-                        :varsel_id,
-                        :varsel_inaktivert,
-                        :sendt_varsel_tidspunkt,
-                        :sendt_varsel,
                         :korrigering,
                         :locale
                     )
@@ -66,10 +57,6 @@ class MeldekortPostgresRepo(
                         dager = to_jsonb(:dager::jsonb),
                         journalpost_id = :journalpost_id,
                         journalføringstidspunkt = :journalforingstidspunkt,
-                        varsel_id = :varsel_id,
-                        varsel_inaktivert = :varsel_inaktivert,
-                        sendt_varsel_tidspunkt = :sendt_varsel_tidspunkt,
-                        sendt_varsel = :sendt_varsel,
                         korrigering = :korrigering,
                         locale = :locale
                 """,
@@ -80,10 +67,6 @@ class MeldekortPostgresRepo(
                     "dager" to meldekort.dager.tilMeldekortDagDbJson(),
                     "journalpost_id" to meldekort.journalpostId?.toString(),
                     "journalforingstidspunkt" to meldekort.journalføringstidspunkt,
-                    "varsel_id" to meldekort.varselId.toString(),
-                    "varsel_inaktivert" to meldekort.erVarselInaktivert,
-                    "sendt_varsel_tidspunkt" to meldekort.sendtVarselTidspunkt,
-                    "sendt_varsel" to meldekort.sendtVarsel,
                     "korrigering" to meldekort.korrigering,
                     "locale" to meldekort.locale,
                 ).asUpdate,
@@ -91,23 +74,17 @@ class MeldekortPostgresRepo(
         }
     }
 
-    /**
-     * @param deaktiverVarsel dersom true vil inaktiverjobben plukke opp og innaktivere denne.
-     */
-    override fun deaktiver(meldekortId: MeldekortId, deaktiverVarsel: Boolean, sessionContext: SessionContext?) {
+    override fun deaktiver(meldekortId: MeldekortId, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
                     """
                     update meldekort_bruker set
-                        deaktivert = :deaktivert,
-                        varsel_inaktivert = :varsel_inaktivert
+                        deaktivert = :deaktivert
                     where id = :id
                     """,
                     "id" to meldekortId.toString(),
                     "deaktivert" to nå(clock),
-                    // TODO jah: Jeg beholder denne logikken som før, selv om den ikke er helt optimal. Inaktiverjobben plukker opp deaktiverte meldekort hvor varsel_inaktivert er false, derav `!deaktiverVarsel`. Hvis vi ikke ønsker at den skal bli inaktivert, sender man deaktiverVarsel false, slik at varsel_inaktivert er true. Ulempen med dette vil være en dobbel omgjøring hvor siste er et opphør av meldeperioden. Da vil aldri varselet bli inaktivert av systemet.
-                    "varsel_inaktivert" to !deaktiverVarsel,
                 ).asUpdate,
             )
         }
@@ -268,8 +245,8 @@ class MeldekortPostgresRepo(
                             siste_mp.saksnummer as "siste_mp.saksnummer",
                             siste_mp.kan_fylles_ut_fra_og_med as "siste_mp.kan_fylles_ut_fra_og_med"
                         from meldekort_bruker mk
-                                 join meldeperiode mp on mp.id = mk.meldeperiode_id
-                                 left join lateral (
+                            join meldeperiode mp on mp.id = mk.meldeperiode_id
+                            left join lateral (
                             select *
                             from meldeperiode siste_mp
                             where siste_mp.sak_id = mk.sak_id
@@ -294,8 +271,8 @@ class MeldekortPostgresRepo(
                 sqlQuery(
                     """ 
                         select
-                            *
-                        from meldekort_bruker
+                            mk.*
+                        from meldekort_bruker mk
                         where sendt_til_saksbehandling is null
                             and journalpost_id is not null
                             and mottatt is not null
@@ -359,7 +336,7 @@ class MeldekortPostgresRepo(
                 queryOf(
                     //language=sql
                     """
-                    select u.*, mp.fnr as fnr, mp.saksnummer 
+                    select u.*
                     from meldekort_bruker u 
                     join meldeperiode mp on u.meldeperiode_id = mp.id
                     where mp.saksnummer is not null
@@ -373,85 +350,6 @@ class MeldekortPostgresRepo(
                 }.asList,
             )
         }
-
-    override fun hentMeldekortDetSkalVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                        SELECT DISTINCT ON (mp.fnr) mk.*, mp.fnr
-                        FROM meldekort_bruker mk
-                        JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
-                        WHERE mp.kan_fylles_ut_fra_og_med <= :tidsgrense
-                          AND mk.mottatt IS NULL
-                          AND mk.deaktivert IS NULL
-                          AND mk.sendt_varsel IS FALSE
-                          AND mk.varsel_inaktivert IS FALSE
-                          AND NOT EXISTS (
-                              SELECT 1
-                              FROM meldekort_bruker mk2
-                              JOIN meldeperiode mp2 ON mp2.id = mk2.meldeperiode_id
-                              WHERE mp2.fnr = mp.fnr
-                                AND mp2.kan_fylles_ut_fra_og_med <= :tidsgrense
-                                AND mk2.mottatt IS NULL
-                                AND mk2.deaktivert IS NULL
-                                AND mk2.sendt_varsel IS TRUE
-                                AND mk2.varsel_inaktivert IS FALSE
-                          )
-                        ORDER BY mp.fnr, mp.fra_og_med
-                        LIMIT :limit
-                    """,
-                    "limit" to limit,
-                    "tidsgrense" to nå(clock),
-                ).map { row -> fromRow(row, session) }.asList,
-            )
-        }
-    }
-
-    override fun markerVarslet(
-        meldekortId: MeldekortId,
-        sendtVarselTidspunkt: LocalDateTime,
-        sendtVarselMetadata: SendtVarselMetadata,
-        sessionContext: SessionContext?,
-    ) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                        update meldekort_bruker set
-                            sendt_varsel_tidspunkt = :sendt_varsel_tidspunkt,
-                            sendt_varsel = true,
-                            sendt_varsel_json_request = :sendt_varsel_json_request
-                        where id = :id
-                    """,
-                    "id" to meldekortId.toString(),
-                    "sendt_varsel_tidspunkt" to sendtVarselTidspunkt,
-                    "sendt_varsel_json_request" to sendtVarselMetadata.jsonRequest,
-                ).asUpdate,
-            )
-        }
-    }
-
-    override fun henteMeldekortSomSkalInaktivereVarsel(
-        limit: Int,
-        sessionContext: SessionContext?,
-    ): List<Meldekort> {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                queryOf(
-                    //language=sql
-                    """
-                    select * from meldekort_bruker
-                    where (mottatt is not null or deaktivert is not null) 
-                        and sendt_varsel is true
-                        and varsel_inaktivert is false
-                    limit :limit
-                    """.trimIndent(),
-                    mapOf("limit" to limit),
-                ).map { row -> fromRow(row, session) }.asList,
-            )
-        }
-    }
 
     override fun hentSisteMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
@@ -479,16 +377,11 @@ class MeldekortPostgresRepo(
     }
 
     companion object {
-        private fun fromRow(
+        private fun meldekortFraRow(
             row: Row,
-            session: Session,
+            meldeperiode: Meldeperiode,
         ): Meldekort {
             val id = MeldekortId.fromString(row.string("id"))
-            val meldeperiodeId = row.string("meldeperiode_id")
-
-            val meldeperiode = MeldeperiodePostgresRepo.hentForId(MeldeperiodeId.fromString(meldeperiodeId), session)
-
-            requireNotNull(meldeperiode) { "Fant ingen meldeperiode for $id" }
 
             return Meldekort(
                 id = id,
@@ -498,38 +391,46 @@ class MeldekortPostgresRepo(
                 dager = row.string("dager").toMeldekortDager(),
                 journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
                 journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
-                varselId = VarselId(row.string("varsel_id")),
-                erVarselInaktivert = row.boolean("varsel_inaktivert"),
-                sendtVarselTidspunkt = row.localDateTimeOrNull("sendt_varsel_tidspunkt"),
-                sendtVarsel = row.boolean("sendt_varsel"),
                 korrigering = row.boolean("korrigering"),
                 locale = row.stringOrNull("locale"),
             )
         }
+    }
 
-        private fun meldekortMedSisteMeldeperiodeFromRow(
-            row: Row,
-        ): MeldekortMedSisteMeldeperiode {
-            val id = MeldekortId.fromString(row.string("id"))
+    private fun fromRow(
+        row: Row,
+        session: Session,
+    ): Meldekort {
+        val id = MeldekortId.fromString(row.string("id"))
+        val meldeperiodeId = MeldeperiodeId.fromString(row.string("meldeperiode_id"))
 
-            return MeldekortMedSisteMeldeperiode(
-                meldekort = Meldekort(
-                    id = id,
-                    meldeperiode = MeldeperiodePostgresRepo.fromRow(row, alias = "mp"),
-                    mottatt = row.localDateTimeOrNull("mottatt"),
-                    deaktivert = row.localDateTimeOrNull("deaktivert"),
-                    dager = row.string("dager").toMeldekortDager(),
-                    journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
-                    journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
-                    varselId = VarselId(row.string("varsel_id")),
-                    erVarselInaktivert = row.boolean("varsel_inaktivert"),
-                    sendtVarselTidspunkt = row.localDateTimeOrNull("sendt_varsel_tidspunkt"),
-                    sendtVarsel = row.boolean("sendt_varsel"),
-                    korrigering = row.boolean("korrigering"),
-                    locale = row.stringOrNull("locale"),
-                ),
-                sisteMeldeperiode = MeldeperiodePostgresRepo.fromRow(row, alias = "siste_mp"),
-            )
-        }
+        val meldeperiode = MeldeperiodePostgresRepo.hentForId(meldeperiodeId, session)
+        requireNotNull(meldeperiode) { "Fant ingen meldeperiode for $id" }
+
+        return meldekortFraRow(
+            row = row,
+            meldeperiode = meldeperiode,
+        )
+    }
+
+    private fun meldekortMedSisteMeldeperiodeFromRow(
+        row: Row,
+    ): MeldekortMedSisteMeldeperiode {
+        val id = MeldekortId.fromString(row.string("id"))
+
+        return MeldekortMedSisteMeldeperiode(
+            meldekort = Meldekort(
+                id = id,
+                meldeperiode = MeldeperiodePostgresRepo.fromRow(row, alias = "mp"),
+                mottatt = row.localDateTimeOrNull("mottatt"),
+                deaktivert = row.localDateTimeOrNull("deaktivert"),
+                dager = row.string("dager").toMeldekortDager(),
+                journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
+                journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
+                korrigering = row.boolean("korrigering"),
+                locale = row.stringOrNull("locale"),
+            ),
+            sisteMeldeperiode = MeldeperiodePostgresRepo.fromRow(row, alias = "siste_mp"),
+        )
     }
 }

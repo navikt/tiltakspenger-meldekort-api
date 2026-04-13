@@ -20,6 +20,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequestWithAssertions
+import no.nav.tiltakspenger.routes.jobber.KjørJobberForTester
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute]
@@ -33,6 +34,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
     meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = listOf(meldeperiodeDto(opprettet = nå(tac.clock))),
     harSoknadUnderBehandling: Boolean = false,
     kanSendeInnHelgForMeldekort: Boolean = false,
+    runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForSystembruker(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "Sak lagret",
@@ -48,6 +50,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
             harSoknadUnderBehandling = harSoknadUnderBehandling,
             kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
         ),
+        runJobs = runJobs,
         jwt = jwt,
         forventetStatus = forventetStatus,
         forventetBody = forventetBody,
@@ -62,6 +65,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
 suspend fun ApplicationTestBuilder.mottaSakRequest(
     tac: TestApplicationContext,
     requestDto: SakTilMeldekortApiDTO,
+    runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForSystembruker(),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "Sak lagret",
@@ -79,6 +83,9 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
         forventetContentType = forventetContentType,
     ) {
         setBody(serialize(requestDto))
+    }
+    if (runJobs && forventetStatus == HttpStatusCode.OK) {
+        KjørJobberForTester.kjørVarsler(tac)
     }
     return tac.sakRepo.hent(SakId.fromString(requestDto.sakId))!!
 }

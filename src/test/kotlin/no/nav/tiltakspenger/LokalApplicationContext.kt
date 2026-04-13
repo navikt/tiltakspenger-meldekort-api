@@ -14,7 +14,7 @@ class LokalApplicationContext(clock: Clock) : ApplicationContext(clock) {
     override val texasClient =
         if (Configuration.brukFakeTexasClientLokalt) TexasClientFakeLokal() else super.texasClient
 
-    override val tmsVarselClient = TmsVarselClientFake()
+    override val varselClient = TmsVarselClientFake()
 
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()
 

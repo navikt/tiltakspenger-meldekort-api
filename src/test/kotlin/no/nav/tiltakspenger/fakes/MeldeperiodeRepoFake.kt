@@ -53,4 +53,8 @@ class MeldeperiodeRepoFake : MeldeperiodeRepo {
     ): Meldeperiode? {
         return data.get().filter { it.value.periode == periode }.values.lastOrNull()
     }
+
+    fun hentAllForSakId(sakId: no.nav.tiltakspenger.libs.common.SakId): List<Meldeperiode> {
+        return data.get().values.filter { it.sakId == sakId }
+    }
 }

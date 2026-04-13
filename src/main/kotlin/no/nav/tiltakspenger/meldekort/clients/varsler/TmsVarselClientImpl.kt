@@ -1,8 +1,8 @@
 package no.nav.tiltakspenger.meldekort.clients.varsler
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.kafka.Producer
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tms.varsel.action.EksternKanal
 import no.nav.tms.varsel.action.Sensitivitet
@@ -18,12 +18,12 @@ class TmsVarselClientImpl(
     val kafkaProducer: Producer<String, String>,
     val topicName: String,
     val meldekortFrontendUrl: String,
-) : TmsVarselClient {
+) : VarselClient {
     val logger = KotlinLogging.logger {}
 
-    override fun sendVarselForNyttMeldekort(meldekort: Meldekort, varselId: VarselId): SendtVarselMetadata {
-        logger.info { "Sender varsel for meldekort ${meldekort.id} - varselId: $varselId" }
-        val varselHendelse: String = opprettVarselOppgave(meldekort, varselId)
+    override fun sendVarsel(varselId: VarselId, fnr: Fnr): SendtVarselMetadata {
+        logger.info { "Sender varsel med id $varselId" }
+        val varselHendelse: String = opprettVarselOppgave(varselId, fnr)
         val sendtVarselMetadata = SendtVarselMetadata(jsonRequest = varselHendelse)
         kafkaProducer.produce(topicName, varselId.toString(), varselHendelse)
         return sendtVarselMetadata
@@ -39,11 +39,14 @@ class TmsVarselClientImpl(
         kafkaProducer.produce(topicName, varselId.toString(), inaktiveringHendelse)
     }
 
-    private fun opprettVarselOppgave(meldekort: Meldekort, varselId: VarselId): String {
+    private fun opprettVarselOppgave(
+        varselId: VarselId,
+        fnr: Fnr,
+    ): String {
         return VarselActionBuilder.opprett {
             this.type = Varseltype.Oppgave
             this.varselId = varselId.toString()
-            this.ident = meldekort.fnr.verdi
+            this.ident = fnr.verdi
             this.sensitivitet = Sensitivitet.Substantial
             this.link = meldekortFrontendUrl
             this.eksternVarsling {

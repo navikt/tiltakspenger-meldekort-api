@@ -6,6 +6,8 @@ import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.service.KorrigerMeldekortCommand
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
 import no.nav.tiltakspenger.objectmothers.lagMeldekort
@@ -99,6 +101,42 @@ class MeldekortServiceTest {
             shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt ($mottatt)") {
                 meldekortService.lagreMeldekortFraBruker(lagreKommando)
             }
+        }
+    }
+
+    @Test
+    fun `Korrigering flagger sak for varselvurdering`() {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val meldekortService = tac.meldekortService
+            val meldeperiode = ObjectMother.meldeperiode(periode = gyldigPeriode, opprettet = nå(tac.clock))
+            tac.sakRepo.lagre(
+                ObjectMother.sak(
+                    id = meldeperiode.sakId,
+                    saksnummer = meldeperiode.saksnummer,
+                    fnr = meldeperiode.fnr,
+                    meldeperioder = listOf(meldeperiode),
+                ),
+            )
+            val innsendtMeldekort = tac.lagMeldekort(meldeperiode = meldeperiode, mottatt = nå(tac.clock))
+
+            val korrigerteDager = innsendtMeldekort.dager.mapIndexed { index, dag ->
+                if (index == 0) {
+                    dag.copy(status = MeldekortDagStatus.FRAVÆR_SYK)
+                } else {
+                    dag
+                }
+            }
+
+            meldekortService.korriger(
+                KorrigerMeldekortCommand(
+                    meldekortId = innsendtMeldekort.id,
+                    fnr = innsendtMeldekort.fnr,
+                    korrigerteDager = korrigerteDager,
+                    locale = "nb",
+                ),
+            )
+
+            tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.id } shouldBe listOf(meldeperiode.sakId)
         }
     }
 }

@@ -19,6 +19,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.routes.hentbruker.hentBrukerRequest
+import no.nav.tiltakspenger.routes.jobber.KjørJobberForTester
 
 /**
  * Henter brukerens neste meldekort via [hentBrukerRequest], bygger request-body, sender inn via [sendInnMeldekortRequest],
@@ -28,6 +29,7 @@ suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
     tac: TestApplicationContext,
     fnr: String = FAKE_FNR,
     locale: String? = null,
+    runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "",
@@ -54,6 +56,7 @@ suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
         tac = tac,
         requestBody = requestBody,
         fnr = Fnr.fromString(fnr),
+        runJobs = runJobs,
         jwt = jwt,
         forventetStatus = forventetStatus,
         forventetBody = forventetBody,
@@ -72,6 +75,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(
     dager: List<MeldekortDagFraBrukerDTO>,
     locale: String? = null,
     fnr: String = FAKE_FNR,
+    runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "",
@@ -91,6 +95,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(
         tac = tac,
         requestBody = requestBody,
         fnr = Fnr.fromString(fnr),
+        runJobs = runJobs,
         jwt = jwt,
         forventetStatus = forventetStatus,
         forventetBody = forventetBody,
@@ -106,6 +111,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
     tac: TestApplicationContext,
     requestBody: MeldekortFraBrukerDTO,
     fnr: Fnr = Fnr.fromString(FAKE_FNR),
+    runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr.toString()),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "",
@@ -122,6 +128,9 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
         setBody(serialize(requestBody))
     }
     if (response.status != HttpStatusCode.OK) return null
+    if (runJobs) {
+        KjørJobberForTester.kjørVarsler(tac)
+    }
     val sak = tac.sakRepo.hentTilBruker(fnr, null)!!
     val innsendtMeldekort = tac.meldekortService.hentForMeldekortId(MeldekortId.fromString(requestBody.id), fnr)!!
     return sak to innsendtMeldekort

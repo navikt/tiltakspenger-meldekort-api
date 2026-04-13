@@ -15,20 +15,25 @@ object KjørJobberForTester {
         tac.journalførMeldekortService.journalførNyeMeldekort()
     }
 
-    fun kjørSendVarsler(tac: TestApplicationContext) {
-        tac.sendVarslerService.sendVarselForMeldekort()
+    fun kjørAktiverVarsler(tac: TestApplicationContext) {
+        tac.aktiverVarslerService.sendVarselForMeldekort()
     }
 
     fun kjørInaktiverVarsler(tac: TestApplicationContext) {
-        tac.inaktiverVarslerService.inaktiverVarslerForMottatteMeldekort()
+        tac.inaktiverVarslerService.inaktiverVarsler()
     }
 
     /**
      * Kjører både send varsler og inaktiverer varsler i den rekkefølgen (slik som i prod)
      */
     fun kjørVarsler(tac: TestApplicationContext) {
-        kjørSendVarsler(tac)
+        kjørVurderVarsler(tac)
+        kjørAktiverVarsler(tac)
         kjørInaktiverVarsler(tac)
+    }
+
+    fun kjørVurderVarsler(tac: TestApplicationContext) {
+        tac.vurderVarselService.vurderVarsler()
     }
 
     suspend fun kjørOppdaterArenaMeldekortStatus(tac: TestApplicationContext) {
