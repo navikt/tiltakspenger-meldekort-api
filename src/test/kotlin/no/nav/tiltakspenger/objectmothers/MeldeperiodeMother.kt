@@ -2,8 +2,6 @@ package no.nav.tiltakspenger.objectmothers
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
-import no.nav.tiltakspenger.libs.common.fixedClock
-import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
@@ -25,7 +23,7 @@ interface MeldeperiodeMother {
         sakId: SakId = SakId.random(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
         versjon: Int = 1,
-        opprettet: LocalDateTime? = null,
+        opprettet: LocalDateTime,
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
         antallDagerForPeriode: Int = girRett.filter { it.value }.size,
         kanFyllesUtFraOgMed: LocalDateTime = periode.kanFyllesUtFraOgMed(),
@@ -41,7 +39,7 @@ interface MeldeperiodeMother {
             fnr = fnr,
             kjedeId = kjedeId,
             versjon = versjon,
-            opprettet = opprettet ?: nå(fixedClock),
+            opprettet = opprettet,
             maksAntallDagerForPeriode = antallDagerForPeriode,
             girRett = girRett,
             kanFyllesUtFraOgMed = kanFyllesUtFraOgMed,
@@ -52,7 +50,7 @@ interface MeldeperiodeMother {
         id: String = MeldeperiodeId.random().toString(),
         periode: Periode = ObjectMother.periode(),
         versjon: Int = 1,
-        opprettet: LocalDateTime = nå(fixedClock),
+        opprettet: LocalDateTime,
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
         antallDagerForPeriode: Int = min(girRett.filter { it.value }.size, 10),
     ): SakTilMeldekortApiDTO.Meldeperiode {

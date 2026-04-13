@@ -120,7 +120,7 @@ class MeldekortRepoFake(
     }
 
     override fun hentMeldekortDetSkalVarslesFor(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
-        val now = LocalDateTime.now(clock)
+        val now = nå(clock)
         val alleMeldekort = data.get().values
 
         return alleMeldekort

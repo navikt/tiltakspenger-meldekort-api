@@ -12,6 +12,7 @@ import io.ktor.server.util.url
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.meldekort.domene.Sak
@@ -29,7 +30,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
     fnr: Fnr = Fnr.fromString(FAKE_FNR),
     sakId: SakId = SakId.random(),
     saksnummer: String = tac.nesteSaksnummer(),
-    meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = listOf(meldeperiodeDto()),
+    meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = listOf(meldeperiodeDto(opprettet = nå(tac.clock))),
     harSoknadUnderBehandling: Boolean = false,
     kanSendeInnHelgForMeldekort: Boolean = false,
     jwt: String? = JwtGenerator().createJwtForSystembruker(),

@@ -15,6 +15,7 @@ import java.time.Clock
 
 class SakPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
+    private val clock: Clock,
 ) : SakRepo {
 
     override fun lagre(
@@ -167,7 +168,7 @@ class SakPostgresRepo(
         }
     }
 
-    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -199,7 +200,7 @@ class SakPostgresRepo(
         }
     }
 
-    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?, clock: Clock): List<Sak> {
+    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(

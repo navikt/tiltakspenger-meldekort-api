@@ -4,6 +4,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.withCharset
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -21,7 +22,7 @@ class SakFraSaksbehandlingRouteTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = ObjectMother.sakDTO(
-                    meldeperioder = listOf(ObjectMother.meldeperiodeDto(periode = periode)),
+                    meldeperioder = listOf(ObjectMother.meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
                 ),
                 forventetStatus = HttpStatusCode.OK,
                 forventetBody = "Sak lagret",

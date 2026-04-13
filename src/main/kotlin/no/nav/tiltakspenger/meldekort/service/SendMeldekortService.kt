@@ -3,13 +3,15 @@ package no.nav.tiltakspenger.meldekort.service
 import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
-import java.time.LocalDateTime
+import java.time.Clock
 import java.time.temporal.ChronoUnit
 
 class SendMeldekortService(
     private val meldekortService: MeldekortService,
     private val saksbehandlingClient: SaksbehandlingClient,
+    private val clock: Clock,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -27,7 +29,7 @@ class SendMeldekortService(
                     logger.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
                     meldekortService.markerSendtTilSaksbehandling(
                         id = meldekort.id,
-                        sendtTidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS),
+                        sendtTidspunkt = nå(clock).truncatedTo(ChronoUnit.MICROS),
                     )
                     logger.info { "Meldekort oppdatert med innsendingstidspunkt ${meldekort.id}" }
                 }.onLeft {

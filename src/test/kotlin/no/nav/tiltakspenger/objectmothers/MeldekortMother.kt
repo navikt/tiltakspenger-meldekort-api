@@ -33,6 +33,7 @@ interface MeldekortMother {
         erVarselInaktivert: Boolean = false,
         sendtVarselTidspunkt: LocalDateTime? = null,
         maksAntallDagerForPeriode: Int = 10,
+        opprettet: LocalDateTime = nå(fixedClock),
     ): Meldekort {
         return meldekort(
             periode = periode,
@@ -52,6 +53,7 @@ interface MeldekortMother {
                 fnr = fnr,
                 girRett = periode.tilDager().associateWith { true },
                 antallDagerForPeriode = maksAntallDagerForPeriode,
+                opprettet = opprettet,
             ),
         )
     }
@@ -67,11 +69,13 @@ interface MeldekortMother {
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
         erVarselInaktivert: Boolean = false,
         sendtVarselTidspunkt: LocalDateTime? = null,
+        opprettet: LocalDateTime = nå(fixedClock),
         meldeperiode: Meldeperiode = ObjectMother.meldeperiode(
             periode = periode,
             saksnummer = saksnummer,
             sakId = sakId,
             fnr = fnr,
+            opprettet = opprettet,
         ),
         korrigering: Boolean = false,
         locale: String? = null,

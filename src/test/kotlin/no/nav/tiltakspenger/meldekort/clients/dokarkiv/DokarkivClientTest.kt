@@ -10,6 +10,7 @@ import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.common.CorrelationId
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.meldekort.clients.httpClientGeneric
 import no.nav.tiltakspenger.meldekort.domene.journalføring.PdfA
 import no.nav.tiltakspenger.meldekort.domene.journalføring.PdfOgJson
@@ -65,7 +66,10 @@ class DokarkivClientTest {
             val meldekort = ObjectMother.meldekort()
 
             val resp = dokarkivClient.journalførMeldekort(
-                request = meldekort.toJournalpostDokument(pdfOgJson = PdfOgJson(PdfA("pdf".toByteArray()), meldekort.toBrevMeldekortDTO())),
+                request = meldekort.toJournalpostDokument(
+                    clock = fixedClock,
+                    pdfOgJson = PdfOgJson(PdfA("pdf".toByteArray()), meldekort.toBrevMeldekortDTO()),
+                ),
                 meldekort = meldekort,
                 callId = CorrelationId.generate(),
             )
@@ -79,7 +83,13 @@ class DokarkivClientTest {
             val meldekort = ObjectMother.meldekort()
 
             val resp = dokarkivClient.journalførMeldekort(
-                request = meldekort.toJournalpostDokument(pdfOgJson = PdfOgJson(PdfA("pdf".toByteArray()), meldekort.toBrevMeldekortDTO())),
+                request = meldekort.toJournalpostDokument(
+                    pdfOgJson = PdfOgJson(
+                        PdfA("pdf".toByteArray()),
+                        meldekort.toBrevMeldekortDTO(),
+                    ),
+                    clock = fixedClock,
+                ),
                 meldekort = meldekort,
                 callId = CorrelationId.generate(),
             )

@@ -19,5 +19,5 @@ class TestApplicationContextMedInMemoryDb(
 ) : TestApplicationContext(clock) {
     override val meldekortRepo = MeldekortRepoFake(clock)
     override val meldeperiodeRepo = MeldeperiodeRepoFake()
-    override val sakRepo = SakRepoFake()
+    override val sakRepo = SakRepoFake(clock)
 }

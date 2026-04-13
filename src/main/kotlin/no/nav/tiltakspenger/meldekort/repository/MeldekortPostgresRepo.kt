@@ -225,7 +225,7 @@ class MeldekortPostgresRepo(
                         ORDER BY mp.fra_og_med;
                     """,
                     "fnr" to fnr.verdi,
-                    "tidsgrense" to LocalDateTime.now(clock),
+                    "tidsgrense" to nå(clock),
                 ).map { row ->
                     fromRow(row, session)
                 }.asList,
@@ -402,7 +402,7 @@ class MeldekortPostgresRepo(
                         LIMIT :limit
                     """,
                     "limit" to limit,
-                    "tidsgrense" to LocalDateTime.now(clock),
+                    "tidsgrense" to nå(clock),
                 ).map { row -> fromRow(row, session) }.asList,
             )
         }

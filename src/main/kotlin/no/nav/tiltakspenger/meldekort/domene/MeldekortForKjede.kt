@@ -4,9 +4,9 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.meldekort.service.KorrigerMeldekortCommand
 import java.time.Clock
-import java.time.LocalDateTime
 
 /**
  * Alle meldekortene for en meldeperiodekjede.
@@ -54,7 +54,7 @@ data class MeldekortForKjede(
             Meldekort(
                 id = MeldekortId.random(),
                 deaktivert = null,
-                mottatt = LocalDateTime.now(clock),
+                mottatt = nå(clock),
                 meldeperiode = sisteMeldeperiode,
                 dager = command.korrigerteDager,
                 journalpostId = null,

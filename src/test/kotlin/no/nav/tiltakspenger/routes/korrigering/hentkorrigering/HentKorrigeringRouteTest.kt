@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.routes.korrigering.hentkorrigering
 
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.libs.periode.toDTO
@@ -23,7 +24,7 @@ class HentKorrigeringRouteTest {
             val (sak, innsendtMeldekort) = run {
                 mottaSakRequest(
                     tac = tac,
-                    meldeperioder = listOf(meldeperiodeDto(periode = periode)),
+                    meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
                 )
                 sendInnNesteMeldekort(tac = tac)!!
             }

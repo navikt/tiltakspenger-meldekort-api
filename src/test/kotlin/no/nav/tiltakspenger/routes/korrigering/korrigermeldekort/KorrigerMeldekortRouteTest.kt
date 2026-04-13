@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.routes.korrigering.korrigermeldekort
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.periode.til
@@ -25,7 +26,7 @@ class KorrigerMeldekortRouteTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             mottaSakRequest(
                 tac = tac,
-                meldeperioder = listOf(meldeperiodeDto(periode = periode)),
+                meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
             val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
 

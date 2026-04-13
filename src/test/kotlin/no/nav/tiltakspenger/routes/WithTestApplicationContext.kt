@@ -3,7 +3,6 @@ package no.nav.tiltakspenger.routes
 import io.ktor.server.application.Application
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
-import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
 import no.nav.tiltakspenger.TestApplicationContextMedPostgres
 import no.nav.tiltakspenger.db.TestDatabaseManager
@@ -30,18 +29,16 @@ fun withTestApplicationContextAndPostgres(
     testBlock: suspend ApplicationTestBuilder.(TestApplicationContextMedPostgres) -> Unit,
 ) {
     val callSite = captureCallSite()
-    runTest {
-        dbManager.withMigratedDb(
-            runIsolated = runIsolated,
+    dbManager.withMigratedDb(
+        runIsolated = runIsolated,
+        clock = clock,
+    ) { sessionFactory: SessionFactory, _: Clock ->
+        val context = TestApplicationContextMedPostgres(
             clock = clock,
-        ) { sessionFactory: SessionFactory, _: Clock ->
-            val context = TestApplicationContextMedPostgres(
-                clock = clock,
-                texasClient = texasClient,
-                sessionFactory = sessionFactory as PostgresSessionFactory,
-            )
-            runTestApplication(context, additionalConfig, callSite, testBlock)
-        }
+            texasClient = texasClient,
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+        runTestApplication(context, additionalConfig, callSite, testBlock)
     }
 }
 

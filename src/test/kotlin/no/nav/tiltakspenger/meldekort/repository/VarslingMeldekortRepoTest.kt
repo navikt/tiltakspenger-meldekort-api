@@ -4,7 +4,9 @@ import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
@@ -13,7 +15,6 @@ import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 class VarslingMeldekortRepoTest {
@@ -25,10 +26,10 @@ class VarslingMeldekortRepoTest {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
 
-                val meldekort = ObjectMother.meldekort(mottatt = LocalDateTime.now(), sendtVarselTidspunkt = null)
+                val meldekort = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = null)
                 lagreMeldekort(helper, meldekort)
 
-                val tidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
+                val tidspunkt = nå(fixedClock).truncatedTo(ChronoUnit.MICROS)
                 val metadata = SendtVarselMetadata("\"json-request\"")
                 repo.markerVarslet(meldekort.id, tidspunkt, metadata)
 
@@ -100,7 +101,7 @@ class VarslingMeldekortRepoTest {
                 val meldekort2 = ObjectMother.meldekort(
                     fnr = Fnr.random(),
                     mottatt = null,
-                    sendtVarselTidspunkt = LocalDateTime.now(),
+                    sendtVarselTidspunkt = nå(fixedClock),
                     erVarselInaktivert = false,
                     periode = Periode(
                         fraOgMed = førstePeriode.fraOgMed.plusWeeks(2),
@@ -110,7 +111,7 @@ class VarslingMeldekortRepoTest {
                 val meldekort3 = ObjectMother.meldekort(
                     fnr = Fnr.random(),
                     mottatt = null,
-                    sendtVarselTidspunkt = LocalDateTime.now(),
+                    sendtVarselTidspunkt = nå(fixedClock),
                     erVarselInaktivert = true,
                     periode = Periode(
                         fraOgMed = førstePeriode.fraOgMed.plusWeeks(4),
@@ -119,8 +120,8 @@ class VarslingMeldekortRepoTest {
                 )
                 val meldekort4 = ObjectMother.meldekort(
                     fnr = Fnr.random(),
-                    mottatt = LocalDateTime.now(),
-                    sendtVarselTidspunkt = LocalDateTime.now(),
+                    mottatt = nå(fixedClock),
+                    sendtVarselTidspunkt = nå(fixedClock),
                     erVarselInaktivert = true,
                     periode = Periode(
                         fraOgMed = førstePeriode.fraOgMed.plusWeeks(6),
@@ -148,7 +149,7 @@ class VarslingMeldekortRepoTest {
                 val meldekort1 = ObjectMother.meldekort(
                     fnr = fnr,
                     mottatt = null,
-                    sendtVarselTidspunkt = LocalDateTime.now(),
+                    sendtVarselTidspunkt = nå(fixedClock),
                     erVarselInaktivert = false,
                     periode = førstePeriode,
                 )
@@ -181,8 +182,8 @@ class VarslingMeldekortRepoTest {
 
                 val meldekort1 = ObjectMother.meldekort(
                     fnr = fnr,
-                    mottatt = LocalDateTime.now(),
-                    sendtVarselTidspunkt = LocalDateTime.now(),
+                    mottatt = nå(fixedClock),
+                    sendtVarselTidspunkt = nå(fixedClock),
                     erVarselInaktivert = true,
                     periode = førstePeriode,
                 )
@@ -215,6 +216,67 @@ class VarslingMeldekortRepoTest {
                 result[0].id shouldBe meldekort2.id
             }
         }
+
+        @Test
+        fun `henter neste meldekort hvis forrige varsel allerede er inaktivert`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val repo = helper.meldekortPostgresRepo
+
+                val fnr = Fnr.random()
+                val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+
+                val meldekort1 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    mottatt = null,
+                    sendtVarselTidspunkt = nå(fixedClock),
+                    erVarselInaktivert = true,
+                    periode = førstePeriode,
+                )
+                val meldekort2 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    mottatt = null,
+                    sendtVarselTidspunkt = null,
+                    erVarselInaktivert = false,
+                    periode = førstePeriode.plus14Dager(),
+                )
+
+                lagreMeldekort(helper, meldekort1, meldekort2)
+
+                val result = repo.hentMeldekortDetSkalVarslesFor()
+
+                result.size shouldBe 1
+                result[0].id shouldBe meldekort2.id
+            }
+        }
+
+        @Test
+        fun `respekterer limit`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+
+                val meldekort1 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
+                    mottatt = null,
+                    sendtVarselTidspunkt = null,
+                    erVarselInaktivert = false,
+                    periode = førstePeriode,
+                )
+                val meldekort2 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
+                    mottatt = null,
+                    sendtVarselTidspunkt = null,
+                    erVarselInaktivert = false,
+                    periode = førstePeriode.plus14Dager(),
+                )
+
+                lagreMeldekort(helper, meldekort1, meldekort2)
+
+                val result = repo.hentMeldekortDetSkalVarslesFor(limit = 1)
+
+                result.size shouldBe 1
+            }
+        }
     }
 
     @Nested
@@ -223,8 +285,8 @@ class VarslingMeldekortRepoTest {
         fun `alle matcher kriteriene`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort1 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), sendtVarselTidspunkt = LocalDateTime.now())
-                val meldekort2 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), sendtVarselTidspunkt = LocalDateTime.now())
+                val meldekort1 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
 
                 lagreMeldekort(helper, meldekort1, meldekort2)
 
@@ -240,15 +302,15 @@ class VarslingMeldekortRepoTest {
         fun `henter bare ut relevante meldekort`() {
             withMigratedDb { helper ->
                 val meldekortRepo = helper.meldekortPostgresRepo
-                val meldekort1 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), sendtVarselTidspunkt = LocalDateTime.now())
-                val meldekort2 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), sendtVarselTidspunkt = LocalDateTime.now())
+                val meldekort1 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
                 val meldekort3 = ObjectMother.meldekort(
-                    mottatt = LocalDateTime.now(),
-                    sendtVarselTidspunkt = LocalDateTime.now(),
+                    mottatt = nå(fixedClock),
+                    sendtVarselTidspunkt = nå(fixedClock),
                     erVarselInaktivert = true,
                 )
-                val meldekort4 = ObjectMother.meldekort(mottatt = LocalDateTime.now(), sendtVarselTidspunkt = null)
-                val meldekort5 = ObjectMother.meldekort(mottatt = null, sendtVarselTidspunkt = LocalDateTime.now())
+                val meldekort4 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = null)
+                val meldekort5 = ObjectMother.meldekort(mottatt = null, sendtVarselTidspunkt = nå(fixedClock))
 
                 lagreMeldekort(helper, meldekort1, meldekort2, meldekort3, meldekort4, meldekort5)
 
@@ -266,7 +328,7 @@ class VarslingMeldekortRepoTest {
                 val repo = helper.meldekortPostgresRepo
                 val meldekort = ObjectMother.meldekort(
                     mottatt = null,
-                    sendtVarselTidspunkt = LocalDateTime.now(),
+                    sendtVarselTidspunkt = nå(fixedClock),
                     erVarselInaktivert = false,
                 )
 
@@ -279,6 +341,21 @@ class VarslingMeldekortRepoTest {
 
                 result.size shouldBe 1
                 result[0].id shouldBe meldekort.id
+            }
+        }
+
+        @Test
+        fun `respekterer limit`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort1 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+
+                lagreMeldekort(helper, meldekort1, meldekort2)
+
+                val result = repo.henteMeldekortSomSkalInaktivereVarsel(limit = 1)
+
+                result.size shouldBe 1
             }
         }
     }

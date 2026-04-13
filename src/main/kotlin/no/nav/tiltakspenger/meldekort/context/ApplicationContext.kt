@@ -87,6 +87,7 @@ open class ApplicationContext(val clock: Clock) {
     open val sakRepo: SakRepo by lazy {
         SakPostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
+            clock = clock,
         )
     }
 
@@ -115,6 +116,7 @@ open class ApplicationContext(val clock: Clock) {
         SendMeldekortService(
             meldekortService = meldekortService,
             saksbehandlingClient = saksbehandlingClient,
+            clock = clock,
         )
     }
 
@@ -211,7 +213,6 @@ open class ApplicationContext(val clock: Clock) {
         AktiverMicrofrontendJob(
             sakRepo = sakRepo,
             tmsMikrofrontendClient = tmsMikrofrontendClient,
-            clock = clock,
         )
     }
 
@@ -219,7 +220,6 @@ open class ApplicationContext(val clock: Clock) {
         InaktiverMicrofrontendJob(
             sakRepo = sakRepo,
             tmsMikrofrontendClient = tmsMikrofrontendClient,
-            clock = clock,
         )
     }
 }

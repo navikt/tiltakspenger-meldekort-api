@@ -293,6 +293,28 @@ class HentMeldekortRepoTest {
         }
 
         @Test
+        fun `returnerer journalpostId for journalført innsendt meldekort`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+                val meldekort = ObjectMother.meldekort(
+                    mottatt = nå(fixedClock),
+                    periode = periode,
+                )
+                val journalpostId = no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId("jp-999")
+                val journalføringstidspunkt = nå(fixedClock)
+
+                lagreMeldekort(helper, meldekort)
+                repo.markerJournalført(meldekort.id, journalpostId, journalføringstidspunkt)
+
+                val result = repo.hentInnsendteMeldekortForBruker(meldekort.fnr)
+
+                result.single().meldekort.journalpostId shouldBe journalpostId
+                result.single().meldekort.journalføringstidspunkt shouldBe journalføringstidspunkt
+            }
+        }
+
+        @Test
         fun `returnerer ikke deaktiverte meldekort`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 val repo = helper.meldekortPostgresRepo
@@ -355,7 +377,7 @@ class HentMeldekortRepoTest {
                 val forrigeForrigeMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(4))
                 val forrigeMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(2))
                 val nesteMeldekort = lagMeldekort(fnr, nærmesteSøndag.plusWeeks(2))
-                val innsendtMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(2), mottatt = LocalDateTime.now(fixedClockAt(nærmesteSøndag.minusWeeks(2))))
+                val innsendtMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(2), mottatt = nå(fixedClockAt(nærmesteSøndag.minusWeeks(2))))
                 val annenBrukersMeldekort = lagMeldekort(Fnr.random(), nærmesteSøndag)
 
                 lagreMeldekort(helper, nærmesteMeldekort, forrigeForrigeMeldekort, forrigeMeldekort, nesteMeldekort, innsendtMeldekort, annenBrukersMeldekort)

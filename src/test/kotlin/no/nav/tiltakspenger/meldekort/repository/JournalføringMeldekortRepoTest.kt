@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
@@ -34,7 +35,7 @@ class JournalføringMeldekortRepoTest {
                 lagreMeldekort(helper, meldekort)
 
                 val journalpostId = JournalpostId("jp-123")
-                val tidspunkt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
+                val tidspunkt = nå(fixedClock).truncatedTo(ChronoUnit.MICROS)
 
                 repo.markerJournalført(meldekort.id, journalpostId, tidspunkt)
 
@@ -98,7 +99,7 @@ class JournalføringMeldekortRepoTest {
 
                 lagreMeldekort(helper, meldekort)
 
-                repo.markerJournalført(meldekort.id, JournalpostId("jp-456"), LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
+                repo.markerJournalført(meldekort.id, JournalpostId("jp-456"), nå(fixedClock).truncatedTo(ChronoUnit.MICROS))
 
                 val result = repo.hentDeSomSkalJournalføres()
                 result shouldBe emptyList()

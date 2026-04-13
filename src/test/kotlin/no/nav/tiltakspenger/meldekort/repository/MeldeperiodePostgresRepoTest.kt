@@ -3,6 +3,8 @@ package no.nav.tiltakspenger.meldekort.repository
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.fixedClock
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
@@ -12,7 +14,7 @@ class MeldeperiodePostgresRepoTest {
     @Test
     fun `henter siste meldeperiode for en kjede`() {
         withMigratedDb { helper ->
-            val meldeperiode1 = ObjectMother.meldeperiode()
+            val meldeperiode1 = ObjectMother.meldeperiode(opprettet = nå(fixedClock))
             helper.meldeperiodeRepo.lagre(meldeperiode1)
             helper.meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(meldeperiode1.kjedeId, meldeperiode1.fnr) shouldBe meldeperiode1
             val meldeperiode2 = ObjectMother.meldeperiode(
@@ -34,7 +36,7 @@ class MeldeperiodePostgresRepoTest {
         withMigratedDb { helper ->
             val periode = ObjectMother.periode()
             val fnr = Fnr.random()
-            val meldeperiode = ObjectMother.meldeperiode(periode = periode, fnr = fnr)
+            val meldeperiode = ObjectMother.meldeperiode(periode = periode, fnr = fnr, opprettet = nå(fixedClock))
             helper.meldeperiodeRepo.lagre(meldeperiode)
             val hentetMeldeperiode = helper.meldeperiodeRepo.hentMeldeperiodeForPeriode(periode, fnr)
             hentetMeldeperiode shouldBe meldeperiode

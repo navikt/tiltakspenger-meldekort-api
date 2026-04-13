@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -65,6 +66,23 @@ class LagreMeldekortRepoTest {
                 val result = repo.hentForMeldekortId(meldekort.id, Fnr.random())
 
                 result shouldBe null
+            }
+        }
+
+        @Test
+        fun `lagrer og henter meldekort med journalpostId`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val journalførtMeldekort = ObjectMother.meldekort(mottatt = nå(fixedClock)).copy(
+                    journalpostId = JournalpostId("jp-123"),
+                    journalføringstidspunkt = nå(fixedClock),
+                )
+
+                lagreMeldekort(helper, journalførtMeldekort)
+
+                val result = repo.hentForMeldekortId(journalførtMeldekort.id, journalførtMeldekort.meldeperiode.fnr)
+
+                result shouldBe journalførtMeldekort
             }
         }
     }

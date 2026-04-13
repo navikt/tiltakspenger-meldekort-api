@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.routes.hentinnsendtemeldekort
 
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiodeDTO
@@ -23,7 +24,7 @@ class HentInnsendteMeldekortRouteTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             mottaSakRequest(
                 tac = tac,
-                meldeperioder = listOf(meldeperiodeDto(periode = periode)),
+                meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
             val (sak, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
 

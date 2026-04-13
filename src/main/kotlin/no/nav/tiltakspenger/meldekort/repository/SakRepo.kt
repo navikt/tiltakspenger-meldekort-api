@@ -46,6 +46,6 @@ interface SakRepo {
     ): Boolean
 
     fun hentSakerUtenArenaStatus(sessionContext: SessionContext? = null): List<Sak>
-    fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext? = null, clock: Clock): List<Sak>
-    fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext? = null, clock: Clock): List<Sak>
+    fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext? = null): List<Sak>
+    fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext? = null): List<Sak>
 }

@@ -2,10 +2,10 @@ package no.nav.tiltakspenger.meldekort.domene.varsler
 
 import arrow.core.Either
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import java.time.Clock
-import java.time.LocalDateTime
 
 class SendVarslerService(
     private val meldekortRepo: MeldekortRepo,
@@ -28,7 +28,7 @@ class SendVarslerService(
                     log.error(it) { "Feil under sending av varsel for meldekort ${meldekort.id} / varsel id $varselId. Denne vil bli prøvd på nytt." }
                 }.onRight { sendtVarselMetadata ->
                     Either.catch {
-                        meldekortRepo.markerVarslet(meldekort.id, LocalDateTime.now(clock), sendtVarselMetadata)
+                        meldekortRepo.markerVarslet(meldekort.id, nå(clock), sendtVarselMetadata)
                     }.onLeft {
                         log.error(it) { "Feil under lagring av marker varslet for meldekort ${meldekort.id} / varsel id $varselId. Denne vil bli publisert på nytt, men skal bli deduplisert av varslingsteamet." }
                     }.onRight {

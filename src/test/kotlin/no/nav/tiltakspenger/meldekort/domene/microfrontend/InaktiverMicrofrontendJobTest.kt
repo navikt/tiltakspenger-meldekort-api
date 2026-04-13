@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 class InaktiverMicrofrontendJobTest {
     private val sakRepo = mockk<SakRepo>(relaxed = true)
     private val tmsMikrofrontendClient = mockk<TmsMikrofrontendClient>()
-    private val service = InaktiverMicrofrontendJob(sakRepo, tmsMikrofrontendClient, fixedClock)
+    private val service = InaktiverMicrofrontendJob(sakRepo, tmsMikrofrontendClient)
 
     @BeforeEach
     fun setup() {
@@ -28,9 +28,9 @@ class InaktiverMicrofrontendJobTest {
     @Test
     fun `inaktiverer for bruker med siste meldeperiode med rett bakover i tid`() {
         val periode = ObjectMother.periode(fraSisteMandagFør = offset)
-        val sak = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
+        val sak = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode, opprettet = nå(fixedClock))))
 
-        every { sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock) } returns listOf(sak)
+        every { sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres() } returns listOf(sak)
         justRun { tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(sak.fnr, sak.id) }
 
         service.inaktiverMicrofrontendForBrukere()
@@ -42,10 +42,10 @@ class InaktiverMicrofrontendJobTest {
     @Test
     fun `slutter ikke å forsøke inaktivering selv om exception kastes ved en av inaktiveringene`() {
         val periode = ObjectMother.periode(fraSisteMandagFør = offset)
-        val sak1 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
-        val sak2 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode)))
+        val sak1 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode, opprettet = nå(fixedClock))))
+        val sak2 = ObjectMother.sak(meldeperioder = listOf(ObjectMother.meldeperiode(periode = periode, opprettet = nå(fixedClock))))
 
-        every { sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres(clock = fixedClock) } returns listOf(sak1, sak2)
+        every { sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres() } returns listOf(sak1, sak2)
         every { tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(sak1.fnr, sak1.id) } throws RuntimeException("Feil")
         justRun { tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(sak2.fnr, sak2.id) }
 

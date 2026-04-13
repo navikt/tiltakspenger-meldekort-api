@@ -4,6 +4,7 @@ package no.nav.tiltakspenger.meldekort.domene
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import java.time.Clock
@@ -55,7 +56,7 @@ data class Meldekort(
     fun status(clock: Clock): MeldekortStatus = when {
         erInnsendt -> MeldekortStatus.INNSENDT
         deaktivert != null -> MeldekortStatus.DEAKTIVERT
-        (LocalDateTime.now(clock) >= meldeperiode.kanFyllesUtFraOgMed) -> MeldekortStatus.KAN_UTFYLLES
+        (nå(clock) >= meldeperiode.kanFyllesUtFraOgMed) -> MeldekortStatus.KAN_UTFYLLES
         else -> MeldekortStatus.IKKE_KLAR
     }
 
@@ -96,7 +97,7 @@ data class Meldekort(
         }
         return this.copy(
             meldeperiode = sisteMeldeperiode,
-            mottatt = LocalDateTime.now(clock),
+            mottatt = nå(clock),
             dager = brukerutfylteDager,
             korrigering = korrigering,
             locale = locale,
@@ -116,7 +117,7 @@ data class Meldekort(
         }
 
         return this.copy(
-            mottatt = LocalDateTime.now(clock),
+            mottatt = nå(clock),
             dager = brukerutfylteDager,
             locale = locale,
         )
