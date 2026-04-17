@@ -42,6 +42,7 @@ class KorrigerMeldekortRouteTest {
             }
 
             val korrigertMeldekort = korrigerMeldekortRequest(
+                tac = tac,
                 meldekortId = innsendtMeldekort.id.toString(),
                 requestBody = serialize(korrigerteDager),
                 locale = "nb",

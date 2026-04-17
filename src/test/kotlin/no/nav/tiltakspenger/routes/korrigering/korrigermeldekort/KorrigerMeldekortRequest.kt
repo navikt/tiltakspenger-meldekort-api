@@ -6,11 +6,13 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
+import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.domene.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.routes.JwtGenerator
 import no.nav.tiltakspenger.routes.defaultRequestWithAssertions
+import no.nav.tiltakspenger.routes.jobber.KjørJobberForTester
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.korrigerMeldekortRoute]
@@ -18,10 +20,12 @@ import no.nav.tiltakspenger.routes.defaultRequestWithAssertions
  * Response DTO: [MeldekortTilBrukerDTO]
  */
 suspend fun ApplicationTestBuilder.korrigerMeldekortRequest(
+    tac: TestApplicationContext,
     meldekortId: String,
     requestBody: String,
     locale: String?,
     fnr: String = FAKE_FNR,
+    runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
@@ -38,6 +42,9 @@ suspend fun ApplicationTestBuilder.korrigerMeldekortRequest(
         setBody(requestBody)
     }
     return if (response.status == HttpStatusCode.OK) {
+        if (runJobs) {
+            KjørJobberForTester.kjørVarsler(tac)
+        }
         deserialize<MeldekortTilBrukerDTO>(response.bodyAsText())
     } else {
         null

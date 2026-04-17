@@ -282,6 +282,7 @@ class MeldekortBrukerRouteTest {
             val meldeperiodeIdForMeldekortSomSkalKorrigeres = innsendtMeldekort.meldeperiode.id.toString()
 
             val responseBody = this.korrigerMeldekortRequest(
+                tac = tac,
                 meldekortId = idForMeldekortSomSkalKorrigeres.toString(),
                 requestBody = """
                         [
@@ -454,6 +455,7 @@ class MeldekortBrukerRouteTest {
             )
 
             this.korrigerMeldekortRequest(
+                tac = tac,
                 meldekortId = innsendtMeldekort.id.toString(),
                 requestBody = dagerUtenEndring,
                 locale = "nb",
