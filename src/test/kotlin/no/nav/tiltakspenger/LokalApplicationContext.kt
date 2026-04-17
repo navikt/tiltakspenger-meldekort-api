@@ -1,12 +1,12 @@
 package no.nav.tiltakspenger
 
-import no.nav.tiltakspenger.fakes.TexasClientFakeLokal
+import no.nav.tiltakspenger.fakes.clients.DokarkivClientFake
+import no.nav.tiltakspenger.fakes.clients.SaksbehandlingClientFake
+import no.nav.tiltakspenger.fakes.clients.TexasClientFakeLokal
+import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
+import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.Configuration
-import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClientFake
-import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientFake
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
-import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientFake
-import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import java.time.Clock
 

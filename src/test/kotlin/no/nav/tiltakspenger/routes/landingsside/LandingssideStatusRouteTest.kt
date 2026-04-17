@@ -1,11 +1,13 @@
 package no.nav.tiltakspenger.routes.landingsside
 
+import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.Configuration
+import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO.LandingssideMeldekortDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
 import no.nav.tiltakspenger.objectmothers.lagMeldekort
@@ -148,6 +150,57 @@ class LandingssideStatusRouteTest {
                     andreMeldekort.meldeperiode.kanFyllesUtFraOgMed,
                     tredjeMeldekort.meldeperiode.kanFyllesUtFraOgMed,
                 ),
+                redirectUrl = Configuration.meldekortFrontendUrl,
+            )
+        }
+    }
+
+    @Test
+    fun `kanFyllesUtFra er lik kanSendesFra og fristForInnsending er 10 år frem`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+            val meldeperiode = ObjectMother.meldeperiode(periode = periode, opprettet = nå(tac.clock))
+
+            val sak = ObjectMother.sak(meldeperioder = listOf(meldeperiode))
+            tac.sakRepo.lagre(sak)
+
+            val meldekort = tac.lagMeldekort(meldeperiode = meldeperiode, mottatt = null)
+
+            val body = landingssideStatusRequest()!!
+            val dto = body.meldekortTilUtfylling.single()
+
+            val forventet = LandingssideMeldekortDTO(kanSendesFra = meldekort.meldeperiode.kanFyllesUtFraOgMed)
+            dto.kanSendesFra shouldBe forventet.kanSendesFra
+            dto.kanFyllesUtFra shouldBe forventet.kanSendesFra
+            dto.fristForInnsending shouldBe forventet.kanSendesFra.plusYears(10)
+        }
+    }
+
+    @Test
+    fun `bruker med flere innsendte meldekort og ett klart - harInnsendteMeldekort er true`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+            val andrePeriode = førstePeriode.plus14Dager()
+            val tredjePeriode = andrePeriode.plus14Dager()
+
+            val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode, opprettet = nå(tac.clock))
+            val andreMeldeperiode = ObjectMother.meldeperiode(periode = andrePeriode, opprettet = nå(tac.clock))
+            val tredjeMeldeperiode = ObjectMother.meldeperiode(periode = tredjePeriode, opprettet = nå(tac.clock))
+
+            val sak = ObjectMother.sak(
+                meldeperioder = listOf(førsteMeldeperiode, andreMeldeperiode, tredjeMeldeperiode),
+            )
+            tac.sakRepo.lagre(sak)
+
+            tac.lagMeldekort(meldeperiode = førsteMeldeperiode, mottatt = førstePeriode.tilOgMed.atStartOfDay())
+            tac.lagMeldekort(meldeperiode = andreMeldeperiode, mottatt = andrePeriode.tilOgMed.atStartOfDay())
+            val tredjeMeldekort = tac.lagMeldekort(meldeperiode = tredjeMeldeperiode, mottatt = null)
+
+            val body = landingssideStatusRequest()!!
+
+            body.shouldBe(
+                harInnsendteMeldekort = true,
+                meldekortTilUtfylling = listOf(tredjeMeldekort.meldeperiode.kanFyllesUtFraOgMed),
                 redirectUrl = Configuration.meldekortFrontendUrl,
             )
         }

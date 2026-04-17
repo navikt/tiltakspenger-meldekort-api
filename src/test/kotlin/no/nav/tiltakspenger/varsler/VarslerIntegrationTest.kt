@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import io.ktor.server.testing.ApplicationTestBuilder
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.TestApplicationContext
+import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.nå
@@ -13,7 +14,6 @@ import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.libs.periode.til
-import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.VarselId

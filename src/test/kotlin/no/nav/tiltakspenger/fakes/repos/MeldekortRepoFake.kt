@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.fakes
+package no.nav.tiltakspenger.fakes.repos
 
 import arrow.atomic.Atomic
 import no.nav.tiltakspenger.libs.common.Fnr

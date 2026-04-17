@@ -1,18 +1,17 @@
-package no.nav.tiltakspenger.fakes
+package no.nav.tiltakspenger.fakes.clients
 
 import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.libs.texas.client.TexasIntrospectionResponse
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.Instant
 
-class TexasClientFakeTest : TexasClient {
+class TexasClientFakeLokal : TexasClient {
     override suspend fun introspectToken(
         token: String,
         identityProvider: IdentityProvider,
     ): TexasIntrospectionResponse {
-        return godkjentResponse()
+        return godkjentResponse(token)
     }
 
     override suspend fun getSystemToken(
@@ -37,13 +36,16 @@ class TexasClientFakeTest : TexasClient {
         invaliderCache = { },
     )
 
-    private fun godkjentResponse(): TexasIntrospectionResponse {
+    /**
+     *  Bruker tokenet som fnr for enkelt å bytte mellom forskjellige brukere i frontend
+     * */
+    private fun godkjentResponse(fnrOgToken: String): TexasIntrospectionResponse {
         return TexasIntrospectionResponse(
             active = true,
             error = null,
             groups = null,
             roles = null,
-            other = mutableMapOf("pid" to FAKE_FNR),
+            other = mutableMapOf("pid" to fnrOgToken),
         )
     }
 }

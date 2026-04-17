@@ -51,6 +51,7 @@ fun Application.meldekortApi(
             meldekortService = applicationContext.meldekortService,
             brukerService = applicationContext.brukerService,
             lagreFraSaksbehandlingService = applicationContext.lagreFraSaksbehandlingService,
+            fellesLandingssideService = applicationContext.fellesLandingssideService,
             clock = applicationContext.clock,
         )
     }

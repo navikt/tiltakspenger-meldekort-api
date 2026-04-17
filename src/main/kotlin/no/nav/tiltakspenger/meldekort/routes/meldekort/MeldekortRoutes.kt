@@ -10,6 +10,7 @@ import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.fellesLandin
 import no.nav.tiltakspenger.meldekort.routes.meldekort.microfrontend.microfrontendRoutes
 import no.nav.tiltakspenger.meldekort.routes.meldekort.saksbehandling.sakFraSaksbehandlingRoute
 import no.nav.tiltakspenger.meldekort.service.BrukerService
+import no.nav.tiltakspenger.meldekort.service.FellesLandingssideService
 import no.nav.tiltakspenger.meldekort.service.LagreFraSaksbehandlingService
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import java.time.Clock
@@ -20,6 +21,7 @@ fun Route.meldekortRoutes(
     meldekortService: MeldekortService,
     lagreFraSaksbehandlingService: LagreFraSaksbehandlingService,
     brukerService: BrukerService,
+    fellesLandingssideService: FellesLandingssideService,
     clock: Clock,
 ) {
     // Endepunkter som kalles fra saksbehandling-api
@@ -46,7 +48,7 @@ fun Route.meldekortRoutes(
     // Endepunkter som kalles fra felles landingsside for meldekortytelsene
     authenticate(IdentityProvider.TOKENX.value) {
         route("/landingsside") {
-            fellesLandingssideRoutes(meldekortService)
+            fellesLandingssideRoutes(fellesLandingssideService)
         }
     }
 }

@@ -5,18 +5,18 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import no.nav.tiltakspenger.libs.texas.fnr
-import no.nav.tiltakspenger.meldekort.service.MeldekortService
+import no.nav.tiltakspenger.meldekort.service.FellesLandingssideService
 
 /**
  * Response DTO: [LandingssideStatusDTO]
  */
 fun Route.fellesLandingssideRoutes(
-    meldekortService: MeldekortService,
+    fellesLandingssideService: FellesLandingssideService,
 ) {
     // Serverer status for meldekort for en bruker
     get("/status") {
         val fnr = call.fnr()
-        val landingssideStatus = meldekortService.hentLandingssideStatus(fnr)
+        val landingssideStatus = fellesLandingssideService.hentLandingssideStatus(fnr)
 
         if (landingssideStatus == null) {
             call.respond(HttpStatusCode.NotFound)

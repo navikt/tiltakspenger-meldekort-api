@@ -1,9 +1,8 @@
-package no.nav.tiltakspenger.fakes
+package no.nav.tiltakspenger.fakes.repos
 
 import arrow.atomic.Atomic
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
-import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus

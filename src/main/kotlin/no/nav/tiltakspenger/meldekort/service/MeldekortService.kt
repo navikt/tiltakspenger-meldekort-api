@@ -15,7 +15,6 @@ import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
-import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO
 import java.time.Clock
 import java.time.LocalDateTime
 
@@ -135,26 +134,6 @@ class MeldekortService(
         val nesteMuligeInnsending = meldekortRepo.hentNesteMeldekortTilUtfylling(fnr)?.klarTilInnsendingDateTime(clock)
 
         return Pair(antallMeldekortKlarTilInnsending, nesteMuligeInnsending)
-    }
-
-    fun hentLandingssideStatus(fnr: Fnr): LandingssideStatusDTO? {
-        if (!sakRepo.harSak(fnr)) {
-            return null
-        }
-
-        val meldekortKlarTilInnsending = meldekortRepo.hentAlleMeldekortKlarTilInnsending(fnr)
-        val harInnsendteMeldekort = meldekortRepo.hentSisteUtfylteMeldekort(fnr) != null
-
-        return LandingssideStatusDTO(
-            harInnsendteMeldekort = harInnsendteMeldekort,
-            meldekortTilUtfylling = meldekortKlarTilInnsending
-                .sortedBy { it.periode.fraOgMed }
-                .map { meldekort ->
-                    LandingssideStatusDTO.LandingssideMeldekortDTO(
-                        kanSendesFra = meldekort.meldeperiode.kanFyllesUtFraOgMed,
-                    )
-                },
-        )
     }
 
     fun kanMeldekortKorrigeres(meldekortId: MeldekortId, fnr: Fnr): Boolean {

@@ -6,7 +6,7 @@ import io.ktor.server.testing.testApplication
 import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
 import no.nav.tiltakspenger.TestApplicationContextMedPostgres
 import no.nav.tiltakspenger.db.TestDatabaseManager
-import no.nav.tiltakspenger.fakes.TexasClientFakeTest
+import no.nav.tiltakspenger.fakes.clients.TexasClientFakeTest
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.dato.mai
