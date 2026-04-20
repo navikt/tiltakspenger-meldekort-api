@@ -11,6 +11,7 @@ import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.libs.texas.client.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortClient
+import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortHttpClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
 import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClientImpl
 import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClient
@@ -36,6 +37,7 @@ import no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
 import no.nav.tiltakspenger.meldekort.service.ArenaMeldekortStatusService
 import no.nav.tiltakspenger.meldekort.service.BrukerService
+import no.nav.tiltakspenger.meldekort.service.FellesLandingssideService
 import no.nav.tiltakspenger.meldekort.service.LagreFraSaksbehandlingService
 import no.nav.tiltakspenger.meldekort.service.MeldekortService
 import no.nav.tiltakspenger.meldekort.service.SendMeldekortService
@@ -97,6 +99,14 @@ open class ApplicationContext(val clock: Clock) {
             meldeperiodeRepo = meldeperiodeRepo,
             sakRepo = sakRepo,
             clock = clock,
+        )
+    }
+
+    open val fellesLandingssideService: FellesLandingssideService by lazy {
+        FellesLandingssideService(
+            meldekortRepo = meldekortRepo,
+            sakRepo = sakRepo,
+            arenaMeldekortClient = arenaMeldekortClient,
         )
     }
 
@@ -173,8 +183,8 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    open val arenaMeldekortClient by lazy {
-        ArenaMeldekortClient(
+    open val arenaMeldekortClient: ArenaMeldekortClient by lazy {
+        ArenaMeldekortHttpClient(
             baseUrl = Configuration.arenaMeldekortServiceUrl,
             getToken = {
                 texasClient.getSystemToken(

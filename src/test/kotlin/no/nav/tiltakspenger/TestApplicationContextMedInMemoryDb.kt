@@ -1,9 +1,9 @@
 package no.nav.tiltakspenger
 
-import no.nav.tiltakspenger.fakes.MeldekortRepoFake
-import no.nav.tiltakspenger.fakes.MeldeperiodeRepoFake
-import no.nav.tiltakspenger.fakes.SakRepoFake
-import no.nav.tiltakspenger.fakes.TexasClientFakeTest
+import no.nav.tiltakspenger.fakes.clients.TexasClientFakeTest
+import no.nav.tiltakspenger.fakes.repos.MeldekortRepoFake
+import no.nav.tiltakspenger.fakes.repos.MeldeperiodeRepoFake
+import no.nav.tiltakspenger.fakes.repos.SakRepoFake
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.persistering.test.common.TestSessionFactory
 import java.time.Clock

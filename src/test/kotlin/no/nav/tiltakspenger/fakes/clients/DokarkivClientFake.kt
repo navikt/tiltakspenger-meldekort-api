@@ -1,6 +1,8 @@
-package no.nav.tiltakspenger.meldekort.clients.dokarkiv
+package no.nav.tiltakspenger.fakes.clients
 
 import no.nav.tiltakspenger.libs.common.CorrelationId
+import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClient
+import no.nav.tiltakspenger.meldekort.clients.dokarkiv.JournalpostRequest
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
 import org.slf4j.LoggerFactory

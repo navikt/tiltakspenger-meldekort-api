@@ -1,11 +1,12 @@
 package no.nav.tiltakspenger
 
+import no.nav.tiltakspenger.fakes.clients.ArenaMeldekortClientFake
+import no.nav.tiltakspenger.fakes.clients.DokarkivClientFake
+import no.nav.tiltakspenger.fakes.clients.SaksbehandlingClientFake
+import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
+import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
 import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
-import no.nav.tiltakspenger.meldekort.clients.dokarkiv.DokarkivClientFake
-import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClientFake
-import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientFake
-import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import java.time.Clock
 
@@ -22,6 +23,7 @@ sealed class TestApplicationContext(clock: Clock) : ApplicationContext(clock) {
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()
     override val dokarkivClient = DokarkivClientFake()
     override val saksbehandlingClient = SaksbehandlingClientFake()
+    override val arenaMeldekortClient = ArenaMeldekortClientFake()
 
     val saksnummergenerator = SaksnummerGeneratorForTest()
 

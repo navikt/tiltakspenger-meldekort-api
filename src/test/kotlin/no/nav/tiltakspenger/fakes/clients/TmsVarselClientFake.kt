@@ -1,7 +1,9 @@
-package no.nav.tiltakspenger.meldekort.clients.varsler
+package no.nav.tiltakspenger.fakes.clients
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
+import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.domene.Meldekort
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 

@@ -122,7 +122,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
         setBody(serialize(requestBody))
     }
     if (response.status != HttpStatusCode.OK) return null
-    val sak = tac.sakRepo.hentTilBruker(fnr, null)!!
+    val sak = tac.sakRepo.hentForBruker(fnr, null)!!
     val innsendtMeldekort = tac.meldekortService.hentForMeldekortId(MeldekortId.fromString(requestBody.id), fnr)!!
     return sak to innsendtMeldekort
 }

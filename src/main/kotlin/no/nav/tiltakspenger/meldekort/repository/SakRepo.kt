@@ -5,7 +5,6 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.domene.Sak
-import java.time.Clock
 
 interface SakRepo {
     fun lagre(
@@ -35,7 +34,7 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     ): Sak?
 
-    fun hentTilBruker(
+    fun hentForBruker(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): Sak?
