@@ -12,9 +12,9 @@ import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.Landingsside
 import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO.LandingssideMeldekortDTO
 
 class FellesLandingssideService(
-    val meldekortRepo: MeldekortRepo,
-    val sakRepo: SakRepo,
-    val arenaMeldekortClient: ArenaMeldekortClient,
+    private val meldekortRepo: MeldekortRepo,
+    private val sakRepo: SakRepo,
+    private val arenaMeldekortClient: ArenaMeldekortClient,
 ) {
     private val logger = KotlinLogging.logger {}
 
