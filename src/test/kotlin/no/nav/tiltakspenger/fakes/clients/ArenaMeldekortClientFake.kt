@@ -9,9 +9,14 @@ import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortServiceFeil
 
 class ArenaMeldekortClientFake : ArenaMeldekortClient {
     private val meldekortResponses = mutableMapOf<String, ArenaMeldekortResponse>()
+    private val historiskeMeldekortResponses = mutableMapOf<String, ArenaMeldekortResponse>()
 
     fun leggTilMeldekort(fnr: Fnr, response: ArenaMeldekortResponse) {
         meldekortResponses[fnr.verdi] = response
+    }
+
+    fun leggTilHistoriskMeldekort(fnr: Fnr, response: ArenaMeldekortResponse) {
+        historiskeMeldekortResponses[fnr.verdi] = response
     }
 
     override suspend fun hentMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
@@ -22,6 +27,6 @@ class ArenaMeldekortClientFake : ArenaMeldekortClient {
         fnr: Fnr,
         antallMeldeperioder: Int,
     ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
-        return meldekortResponses[fnr.verdi].right()
+        return historiskeMeldekortResponses[fnr.verdi].right()
     }
 }
