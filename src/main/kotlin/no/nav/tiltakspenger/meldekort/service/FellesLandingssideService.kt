@@ -1,14 +1,15 @@
 package no.nav.tiltakspenger.meldekort.service
 
 import ArenaMeldekortClient
+import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortResponse
+import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekort
+import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
 import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO
-
-private const val TILTAKSPENGER_MELDEGRUPPE = "INDIV"
+import no.nav.tiltakspenger.meldekort.routes.meldekort.landingsside.LandingssideStatusDTO.LandingssideMeldekortDTO
 
 class FellesLandingssideService(
     val meldekortRepo: MeldekortRepo,
@@ -18,50 +19,76 @@ class FellesLandingssideService(
     private val logger = KotlinLogging.logger {}
 
     suspend fun hentLandingssideStatus(fnr: Fnr): LandingssideStatusDTO? {
-        if (!sakRepo.harSak(fnr)) {
+        val sak = sakRepo.hentForBruker(fnr)
+
+        // Vi trenger ikke spørre arena på nytt dersom saken allerede har sjekket at brukeren ikke har meldekort der
+        val statusFraArena = if (sak?.arenaMeldekortStatus != ArenaMeldekortStatus.HAR_IKKE_MELDEKORT) {
+            hentFraArena(fnr)
+        } else {
+            null
+        }
+
+        if (sak == null && statusFraArena == null) {
             return null
         }
 
-        val meldekortKlarTilInnsending = meldekortRepo.hentAlleMeldekortKlarTilInnsending(fnr)
         val harInnsendteMeldekort = meldekortRepo.hentSisteUtfylteMeldekort(fnr) != null
 
-        val arenaMeldekort = hentArenaTiltakspengerMeldekort(fnr)
-        val arenaMeldekortTilUtfylling = hentArenaMeldekortTilUtfylling(arenaMeldekort)
-        val harInnsendteArenaMeldekort = harInnsendteArenaMeldekort(arenaMeldekort)
+        val meldekortTilUtfylling = meldekortRepo
+            .hentAlleMeldekortKlarTilInnsending(fnr)
+            .map {
+                LandingssideMeldekortDTO(
+                    kanSendesFra = it.meldeperiode.kanFyllesUtFraOgMed,
+                )
+            }
 
         return LandingssideStatusDTO(
-            harInnsendteMeldekort = harInnsendteMeldekort || harInnsendteArenaMeldekort,
-            meldekortTilUtfylling = meldekortKlarTilInnsending
-                .sortedBy { it.periode.fraOgMed }
-                .map { meldekort ->
-                    LandingssideStatusDTO.LandingssideMeldekortDTO(
-                        kanSendesFra = meldekort.meldeperiode.kanFyllesUtFraOgMed,
-                    )
-                } + arenaMeldekortTilUtfylling,
+            harInnsendteMeldekort = harInnsendteMeldekort || statusFraArena?.harInnsendteMeldekort == true,
+            meldekortTilUtfylling = meldekortTilUtfylling.plus(
+                statusFraArena?.meldekortTilUtfylling.orEmpty(),
+            ).sortedBy { it.kanSendesFra },
         )
     }
 
-    private suspend fun hentArenaTiltakspengerMeldekort(fnr: Fnr): ArenaMeldekortResponse? {
-        return arenaMeldekortClient.hentMeldekort(fnr)
-            .onLeft { logger.warn { "Kunne ikke hente meldekort fra arena for landingsside - $it" } }
-            .getOrNull()
-            ?.takeIf { it.harTiltakspengerMeldekort() }
-    }
+    private suspend fun hentFraArena(fnr: Fnr): LandingssideStatusDTO? {
+        val arenaMeldekortResponse = arenaMeldekortClient.hentMeldekort(fnr).getOrElse {
+            logger.warn { "Henting av meldekort fra arena til landingsside feilet - $it" }
+            null
+        }
 
-    private fun hentArenaMeldekortTilUtfylling(response: ArenaMeldekortResponse?): List<LandingssideStatusDTO.LandingssideMeldekortDTO> {
-        return response?.meldekortListe
-            ?.filter { it.hoyesteMeldegruppe == TILTAKSPENGER_MELDEGRUPPE && it.mottattDato == null }
-            ?.sortedBy { it.fraDato }
-            ?.map { arenaMeldekort ->
-                LandingssideStatusDTO.LandingssideMeldekortDTO(
-                    kanSendesFra = arenaMeldekort.tilDato.plusDays(1).atStartOfDay(),
+        if (arenaMeldekortResponse == null) {
+            return null
+        }
+
+        val meldekortFraArena = arenaMeldekortResponse.hentTiltakspengerMeldekort()
+
+        val harInnsendteMeldekort =
+            meldekortFraArena?.harInnsendteMeldekort() == true || harInnsendteHistoriskeArenaMeldekort(fnr)
+
+        return LandingssideStatusDTO(
+            harInnsendteMeldekort = harInnsendteMeldekort,
+            meldekortTilUtfylling = meldekortFraArena?.mapNotNull {
+                if (it.mottattDato != null) {
+                    return@mapNotNull null
+                }
+
+                LandingssideMeldekortDTO(
+                    kanSendesFra = it.kanSendesFra(),
                 )
-            } ?: emptyList()
+            } ?: emptyList(),
+        )
     }
 
-    private fun harInnsendteArenaMeldekort(response: ArenaMeldekortResponse?): Boolean {
-        return response?.meldekortListe
-            ?.any { it.hoyesteMeldegruppe == TILTAKSPENGER_MELDEGRUPPE && it.mottattDato != null }
-            ?: false
+    private suspend fun harInnsendteHistoriskeArenaMeldekort(fnr: Fnr): Boolean {
+        return arenaMeldekortClient.hentHistoriskeMeldekort(fnr).map {
+            it?.meldekortListe?.harInnsendteMeldekort() == true
+        }.getOrElse {
+            logger.warn { "Kunne ikke hente historiske meldekort fra arena - $it" }
+            false
+        }
+    }
+
+    private fun List<ArenaMeldekort>.harInnsendteMeldekort(): Boolean {
+        return this.any { it.erTiltakspengerMeldekort() && it.mottattDato != null }
     }
 }

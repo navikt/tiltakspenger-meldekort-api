@@ -11,7 +11,7 @@ class BrukerService(
     private val arenaMeldekortStatusService: ArenaMeldekortStatusService,
 ) {
     suspend fun hentBruker(fnr: Fnr): Bruker {
-        val sak = sakRepo.hentTilBruker(fnr)
+        val sak = sakRepo.hentForBruker(fnr)
 
         return if (sak != null) {
             hentBrukerMedSak(sak)

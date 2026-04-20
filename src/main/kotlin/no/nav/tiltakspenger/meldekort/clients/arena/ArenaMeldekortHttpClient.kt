@@ -26,6 +26,7 @@ class ArenaMeldekortHttpClient(
 ) : ArenaMeldekortClient {
     private val logger = KotlinLogging.logger {}
 
+    // Returnerer null.right dersom det ikke finnes meldekort for brukeren i arena
     override suspend fun hentMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
         val response = request(fnr, "meldekortservice/api/v2/meldekort").getOrElse {
             return it.left()

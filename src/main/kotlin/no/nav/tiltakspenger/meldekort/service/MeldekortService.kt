@@ -119,7 +119,7 @@ class MeldekortService(
         val sisteMeldeperiode =
             meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(meldekort.meldeperiode.kjedeId, fnr)!!
 
-        val sak = sakRepo.hentTilBruker(sisteMeldeperiode.fnr)!!
+        val sak = sakRepo.hentForBruker(sisteMeldeperiode.fnr)!!
 
         return Triple(meldekort, sisteMeldeperiode, sak.kanSendeInnHelgForMeldekort)
     }

@@ -129,7 +129,7 @@ class SakPostgresRepo(
         }
     }
 
-    override fun hentTilBruker(
+    override fun hentForBruker(
         fnr: Fnr,
         sessionContext: SessionContext?,
     ): Sak? {

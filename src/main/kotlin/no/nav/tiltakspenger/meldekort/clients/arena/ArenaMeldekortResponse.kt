@@ -1,6 +1,9 @@
 package no.nav.tiltakspenger.meldekort.clients.arena
 
+import arrow.core.NonEmptyList
+import arrow.core.toNonEmptyListOrNull
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class ArenaMeldekortResponse(
     val personId: Long,
@@ -14,7 +17,13 @@ data class ArenaMeldekortResponse(
 ) {
 
     fun harTiltakspengerMeldekort(): Boolean {
-        return meldekortListe?.any { it.hoyesteMeldegruppe == TILTAKSPENGER_MELDEGRUPPE } ?: false
+        return meldekortListe?.any { it.erTiltakspengerMeldekort() } ?: false
+    }
+
+    fun hentTiltakspengerMeldekort(): NonEmptyList<ArenaMeldekort>? {
+        return meldekortListe
+            ?.filter { it.erTiltakspengerMeldekort() }
+            ?.toNonEmptyListOrNull()
     }
 }
 
@@ -29,12 +38,24 @@ data class ArenaMeldekort(
     val forskudd: Boolean,
     val mottattDato: LocalDate? = null,
     val bruttoBelop: Float = 0F,
-)
+) {
+
+    fun erTiltakspengerMeldekort(): Boolean {
+        return hoyesteMeldegruppe == TILTAKSPENGER_MELDEGRUPPE
+    }
+
+    // Åpnes for innsending fra midnatt siste lørdag
+    fun kanSendesFra(): LocalDateTime {
+        return tilDato.minusDays(1).atStartOfDay()
+    }
+
+    companion object {
+        private const val TILTAKSPENGER_MELDEGRUPPE = "INDIV"
+    }
+}
 
 data class ArenaFravaerType(
     val fraDato: LocalDate,
     val tilDato: LocalDate,
     val type: String,
 )
-
-private const val TILTAKSPENGER_MELDEGRUPPE = "INDIV"
