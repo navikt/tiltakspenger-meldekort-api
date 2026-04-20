@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.meldekort.clients.arena
 
-import ArenaMeldekortClient
 import arrow.core.Either
 import arrow.core.getOrElse
 import arrow.core.left
@@ -50,7 +49,10 @@ class ArenaMeldekortHttpClient(
         fnr: Fnr,
         antallMeldeperioder: Int,
     ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortResponse?> {
-        val response = request(fnr, "meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder").getOrElse {
+        val response = request(
+            fnr,
+            "meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder",
+        ).getOrElse {
             return it.left()
         }
 

@@ -1,9 +1,9 @@
 package no.nav.tiltakspenger.fakes.clients
 
-import ArenaMeldekortClient
 import arrow.core.Either
 import arrow.core.right
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortResponse
 import no.nav.tiltakspenger.meldekort.clients.arena.ArenaMeldekortServiceFeil
 
