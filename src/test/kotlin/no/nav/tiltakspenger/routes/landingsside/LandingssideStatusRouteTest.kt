@@ -163,7 +163,7 @@ class LandingssideStatusRouteTest {
     }
 
     @Test
-    fun `kanFyllesUtFra er lik kanSendesFra og fristForInnsending er 10 år frem`() = runTest {
+    fun `kanFyllesUtFra er lik kanSendesFra og fristForInnsending er null`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
@@ -180,7 +180,7 @@ class LandingssideStatusRouteTest {
             val forventet = LandingssideMeldekortDTO(kanSendesFra = meldekort.meldeperiode.kanFyllesUtFraOgMed)
             dto.kanSendesFra shouldBe forventet.kanSendesFra
             dto.kanFyllesUtFra shouldBe forventet.kanSendesFra
-            dto.fristForInnsending shouldBe forventet.kanSendesFra.plusYears(10)
+            dto.fristForInnsending shouldBe null
         }
     }
 

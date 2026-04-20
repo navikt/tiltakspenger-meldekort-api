@@ -22,7 +22,7 @@ interface LandingssideStatusKontrakt {
     interface LandingssideMeldekort {
         val kanSendesFra: LocalDateTime
         val kanFyllesUtFra: LocalDateTime?
-        val fristForInnsending: LocalDateTime
+        val fristForInnsending: LocalDateTime?
     }
 }
 
@@ -40,6 +40,6 @@ data class LandingssideStatusDTO(
         override val kanSendesFra: LocalDateTime,
     ) : LandingssideMeldekort {
         override val kanFyllesUtFra: LocalDateTime = kanSendesFra
-        override val fristForInnsending: LocalDateTime = kanSendesFra.plusYears(10)
+        override val fristForInnsending: LocalDateTime? = null
     }
 }
