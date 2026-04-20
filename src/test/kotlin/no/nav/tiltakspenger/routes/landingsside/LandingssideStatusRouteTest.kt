@@ -318,6 +318,36 @@ class LandingssideStatusRouteTest {
     }
 
     @Test
+    fun `arena-meldekort som ikke er tiltakspenger-meldekort inkluderes ikke i responsen`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val sakPeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+            val arenaPeriode = sakPeriode.plus14Dager()
+
+            tac.arenaMeldekortClient.leggTilMeldekort(
+                fnr,
+                arenaMeldekortResponse(
+                    listOf(arenaMeldekort(periode = arenaPeriode, erTiltakspengerMeldekort = false)),
+                ),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                meldeperioder = listOf(meldeperiodeDto(periode = sakPeriode, opprettet = nå(tac.clock))),
+            )
+
+            val sakMeldekort = tac.meldekortRepo.hentAlleMeldekortKlarTilInnsending(fnr).single()
+
+            val body = landingssideStatusRequest()!!
+
+            body.shouldBe(
+                harInnsendteMeldekort = false,
+                meldekortTilUtfylling = listOf(sakMeldekort.meldeperiode.kanFyllesUtFraOgMed),
+                redirectUrl = Configuration.meldekortFrontendUrl,
+            )
+        }
+    }
+
+    @Test
     fun `historisk innsendt arena-meldekort gir harInnsendteMeldekort true selv om aktive ikke er innsendt`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val aktivPeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
@@ -373,6 +403,26 @@ class LandingssideStatusRouteTest {
                 harInnsendteMeldekort = false,
                 meldekortTilUtfylling = listOf(aktivPeriode.tilOgMed.minusDays(1).atStartOfDay()),
                 redirectUrl = Configuration.meldekortFrontendUrl,
+            )
+        }
+    }
+
+    @Test
+    fun `bruker uten sak og kun ikke-tiltakspenger-meldekort i arena - returnerer 404`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+
+            tac.arenaMeldekortClient.leggTilMeldekort(
+                fnr,
+                arenaMeldekortResponse(
+                    listOf(arenaMeldekort(periode = periode, erTiltakspengerMeldekort = false)),
+                ),
+            )
+
+            landingssideStatusRequest(
+                forventetStatus = HttpStatusCode.NotFound,
+                forventetBody = "",
+                forventetContentType = null,
             )
         }
     }

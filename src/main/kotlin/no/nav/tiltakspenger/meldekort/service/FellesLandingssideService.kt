@@ -65,6 +65,10 @@ class FellesLandingssideService(
         val harInnsendteMeldekort =
             meldekortFraArena?.harInnsendteMeldekort() == true || harInnsendteHistoriskeArenaMeldekort(fnr)
 
+        if (!harInnsendteMeldekort && meldekortFraArena == null) {
+            return null
+        }
+
         return LandingssideStatusDTO(
             harInnsendteMeldekort = harInnsendteMeldekort,
             meldekortTilUtfylling = meldekortFraArena?.mapNotNull {
