@@ -22,14 +22,14 @@ class FellesLandingssideService(
         val sak = sakRepo.hentForBruker(fnr)
 
         // Vi trenger ikke spørre arena på nytt dersom saken allerede har sjekket at brukeren ikke har meldekort der
-        val statusFraArena = if (sak?.arenaMeldekortStatus != ArenaMeldekortStatus.HAR_IKKE_MELDEKORT) {
-            hentFraArena(fnr)
-        } else {
+        val statusFraArena = if (sak?.arenaMeldekortStatus == ArenaMeldekortStatus.HAR_IKKE_MELDEKORT) {
             null
+        } else {
+            hentFraArena(fnr)
         }
 
-        if (sak == null && statusFraArena == null) {
-            return null
+        if (sak == null) {
+            return statusFraArena
         }
 
         val harInnsendteMeldekort = meldekortRepo.hentSisteUtfylteMeldekort(fnr) != null
@@ -37,9 +37,7 @@ class FellesLandingssideService(
         val meldekortTilUtfylling = meldekortRepo
             .hentAlleMeldekortKlarTilInnsending(fnr)
             .map {
-                LandingssideMeldekortDTO(
-                    kanSendesFra = it.meldeperiode.kanFyllesUtFraOgMed,
-                )
+                LandingssideMeldekortDTO(kanSendesFra = it.meldeperiode.kanFyllesUtFraOgMed)
             }
 
         return LandingssideStatusDTO(
@@ -79,7 +77,7 @@ class FellesLandingssideService(
                 LandingssideMeldekortDTO(
                     kanSendesFra = it.kanSendesFra(),
                 )
-            } ?: emptyList(),
+            }?.sortedBy { it.kanSendesFra } ?: emptyList(),
         )
     }
 
