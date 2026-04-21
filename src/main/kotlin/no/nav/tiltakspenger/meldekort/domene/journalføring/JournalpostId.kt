@@ -1,8 +1,3 @@
 package no.nav.tiltakspenger.meldekort.domene.journalføring
 
-@JvmInline
-value class JournalpostId(
-    private val value: String,
-) {
-    override fun toString() = value
-}
+typealias JournalpostId = no.nav.tiltakspenger.libs.common.JournalpostId
