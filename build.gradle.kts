@@ -11,7 +11,7 @@ val kotestVersion = "6.1.11"
 val kotlinxCoroutinesVersion = "1.10.2"
 val tmsVarselBuilderVersion = "2.2.0"
 val tmsMikrofrontendSelectorBuilderVersion = "3.0.0"
-val testContainersVersion = "2.0.4"
+val testContainersVersion = "2.0.5"
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
