@@ -99,7 +99,7 @@ dependencies {
 
     // Auth
     api("com.auth0:java-jwt:4.5.1")
-    api("com.auth0:jwks-rsa:0.23.0")
+    api("com.auth0:jwks-rsa:0.23.1")
 
     // Test
     testImplementation(platform("org.junit:junit-bom:6.0.3"))
