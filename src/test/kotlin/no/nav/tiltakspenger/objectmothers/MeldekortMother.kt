@@ -14,7 +14,6 @@ import no.nav.tiltakspenger.meldekort.domene.MeldekortDagFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
-import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -28,10 +27,7 @@ interface MeldekortMother {
         saksnummer: String = Math.random().toString(),
         sakId: SakId = SakId.random(),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
-        varselId: VarselId = VarselId.random(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
-        erVarselInaktivert: Boolean = false,
-        sendtVarselTidspunkt: LocalDateTime? = null,
         maksAntallDagerForPeriode: Int = 10,
         opprettet: LocalDateTime = nå(fixedClock),
     ): Meldekort {
@@ -42,10 +38,7 @@ interface MeldekortMother {
             saksnummer = saksnummer,
             sakId = sakId,
             statusMap = statusMap,
-            varselId = varselId,
             fnr = fnr,
-            erVarselInaktivert = erVarselInaktivert,
-            sendtVarselTidspunkt = sendtVarselTidspunkt,
             meldeperiode = ObjectMother.meldeperiode(
                 periode = periode,
                 saksnummer = saksnummer,
@@ -65,10 +58,7 @@ interface MeldekortMother {
         saksnummer: String = Math.random().toString(),
         sakId: SakId = SakId.random(),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
-        varselId: VarselId = VarselId.random(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
-        erVarselInaktivert: Boolean = false,
-        sendtVarselTidspunkt: LocalDateTime? = null,
         opprettet: LocalDateTime = nå(fixedClock),
         meldeperiode: Meldeperiode = ObjectMother.meldeperiode(
             periode = periode,
@@ -91,17 +81,15 @@ interface MeldekortMother {
             )
         }
 
+        val meldekortId = MeldekortId.random()
+
         return Meldekort(
-            id = MeldekortId.random(),
+            id = meldekortId,
             mottatt = mottatt,
             meldeperiode = meldeperiode,
             dager = dager,
             journalpostId = null,
             journalføringstidspunkt = null,
-            varselId = varselId,
-            erVarselInaktivert = erVarselInaktivert,
-            sendtVarselTidspunkt = sendtVarselTidspunkt,
-            sendtVarsel = sendtVarselTidspunkt != null,
             deaktivert = deaktivert,
             korrigering = korrigering,
             locale = locale,

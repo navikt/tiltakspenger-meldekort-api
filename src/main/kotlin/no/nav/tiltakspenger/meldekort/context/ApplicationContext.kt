@@ -19,14 +19,16 @@ import no.nav.tiltakspenger.meldekort.clients.microfrontend.TmsMikrofrontendClie
 import no.nav.tiltakspenger.meldekort.clients.pdfgen.PdfgenClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClientImpl
-import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClient
 import no.nav.tiltakspenger.meldekort.clients.varsler.TmsVarselClientImpl
+import no.nav.tiltakspenger.meldekort.clients.varsler.VarselClient
 import no.nav.tiltakspenger.meldekort.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalførMeldekortService
 import no.nav.tiltakspenger.meldekort.domene.microfrontend.AktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.domene.microfrontend.InaktiverMicrofrontendJob
+import no.nav.tiltakspenger.meldekort.domene.varsler.AktiverVarslerService
 import no.nav.tiltakspenger.meldekort.domene.varsler.InaktiverVarslerService
-import no.nav.tiltakspenger.meldekort.domene.varsler.SendVarslerService
+import no.nav.tiltakspenger.meldekort.domene.varsler.VarselJobber
+import no.nav.tiltakspenger.meldekort.domene.varsler.VurderVarselService
 import no.nav.tiltakspenger.meldekort.identhendelse.IdenthendelseConsumer
 import no.nav.tiltakspenger.meldekort.identhendelse.IdenthendelseService
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
@@ -35,6 +37,12 @@ import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.SakRepo
+import no.nav.tiltakspenger.meldekort.repository.SakVarselPostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.SakVarselRepo
+import no.nav.tiltakspenger.meldekort.repository.VarselMeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.VarselMeldekortRepo
+import no.nav.tiltakspenger.meldekort.repository.VarselPostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.VarselRepo
 import no.nav.tiltakspenger.meldekort.service.ArenaMeldekortStatusService
 import no.nav.tiltakspenger.meldekort.service.BrukerService
 import no.nav.tiltakspenger.meldekort.service.FellesLandingssideService
@@ -60,7 +68,7 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    open val tmsVarselClient: TmsVarselClient by lazy {
+    open val varselClient: VarselClient by lazy {
         TmsVarselClientImpl(
             kafkaProducer = Producer(KafkaConfigImpl()),
             topicName = Configuration.varselHendelseTopic,
@@ -74,6 +82,15 @@ open class ApplicationContext(val clock: Clock) {
             topicName = Configuration.microfrontendTopic,
         )
     }
+
+    open val varselPostgresRepo by lazy {
+        VarselPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+            clock = clock,
+        )
+    }
+
+    open val varselRepo: VarselRepo by lazy { varselPostgresRepo }
 
     open val meldekortRepo: MeldekortRepo by lazy {
         MeldekortPostgresRepo(
@@ -93,11 +110,25 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
+    open val sakVarselRepo: SakVarselRepo by lazy {
+        SakVarselPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
+
+    open val varselMeldekortRepo: VarselMeldekortRepo by lazy {
+        VarselMeldekortPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
+
     open val meldekortService: MeldekortService by lazy {
         MeldekortService(
             meldekortRepo = meldekortRepo,
             meldeperiodeRepo = meldeperiodeRepo,
             sakRepo = sakRepo,
+            sakVarselRepo = sakVarselRepo,
+            sessionFactory = sessionFactory,
             clock = clock,
         )
     }
@@ -141,15 +172,20 @@ open class ApplicationContext(val clock: Clock) {
 
     open val inaktiverVarslerService: InaktiverVarslerService by lazy {
         InaktiverVarslerService(
-            meldekortRepo = meldekortRepo,
-            tmsVarselClient = tmsVarselClient,
+            varselRepo = varselRepo,
+            sakVarselRepo = sakVarselRepo,
+            varselClient = varselClient,
+            sessionFactory = sessionFactory,
+            clock = clock,
         )
     }
 
-    open val sendVarslerService: SendVarslerService by lazy {
-        SendVarslerService(
-            meldekortRepo = meldekortRepo,
-            tmsVarselClient = tmsVarselClient,
+    open val aktiverVarslerService: AktiverVarslerService by lazy {
+        AktiverVarslerService(
+            varselRepo = varselRepo,
+            sakVarselRepo = sakVarselRepo,
+            varselClient = varselClient,
+            sessionFactory = sessionFactory,
             clock = clock,
         )
     }
@@ -215,7 +251,26 @@ open class ApplicationContext(val clock: Clock) {
             sakRepo = sakRepo,
             meldeperiodeRepo = meldeperiodeRepo,
             meldekortRepo = meldekortRepo,
+            sakVarselRepo = sakVarselRepo,
             sessionFactory = sessionFactory,
+        )
+    }
+
+    open val vurderVarselService: VurderVarselService by lazy {
+        VurderVarselService(
+            sakVarselRepo = sakVarselRepo,
+            varselMeldekortRepo = varselMeldekortRepo,
+            varselRepo = varselRepo,
+            sessionFactory = sessionFactory,
+            clock = clock,
+        )
+    }
+
+    open val varselJobber: VarselJobber by lazy {
+        VarselJobber(
+            vurderVarselService = vurderVarselService,
+            aktiverVarslerService = aktiverVarslerService,
+            inaktiverVarslerService = inaktiverVarslerService,
         )
     }
 
