@@ -12,10 +12,11 @@ import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
 import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
 import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
+import no.nav.tiltakspenger.libs.jobber.TaskExecutor
 import no.nav.tiltakspenger.libs.tid.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
-import no.nav.tiltakspenger.meldekort.jobber.TaskExecutor
+import no.nav.tiltakspenger.meldekort.routes.CALL_ID_MDC_KEY
 import no.nav.tiltakspenger.meldekort.routes.meldekortApi
 import java.time.Clock
 import kotlin.time.Duration.Companion.minutes
@@ -77,6 +78,7 @@ fun start(
     TaskExecutor.startJob(
         initialDelay = if (isNais) 1.minutes else 1.seconds,
         runCheckFactory = runCheckFactory,
+        mdcCallIdKey = CALL_ID_MDC_KEY,
         tasks = listOf<suspend () -> Any?>(
             { applicationContext.sendMeldekortService.sendMeldekort() },
             { applicationContext.journalførMeldekortService.journalførNyeMeldekort() },
