@@ -113,7 +113,7 @@ class VarselPostgresRepo(
             )
             if (antallOppdatert == 0) {
                 throw OptimistiskLåsFeil(
-                    "Optimistisk lås slo til for varsel ${varsel.varselId}: forventet at eksisterende rad var i tilstand ${varsel.forventetForrigeDatabaseType() ?: "<ingen, dvs. ny rad>"} før overgang til ${varsel.databaseType()}, men raden er enten allerede i målttilstanden eller endret av en annen transaksjon. Transaksjonen rulles tilbake og saken vurderes på nytt i neste kjøring.",
+                    "Optimistisk lås slo til for varsel ${varsel.varselId}: forventet at eksisterende rad var i tilstand ${varsel.forventetForrigeDatabaseType() ?: "<ingen, dvs. ny rad>"} før overgang til ${varsel.databaseType()}, men raden er enten allerede i måltilstanden eller endret av en annen transaksjon. Transaksjonen rulles tilbake og saken vurderes på nytt i neste kjøring.",
                 )
             }
         }

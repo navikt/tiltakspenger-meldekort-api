@@ -249,7 +249,7 @@ private fun forberedInaktiveringHvisNødvendig(
     //
     // Også for SkalAktiveres går vi rett til SkalInaktiveres (uten å gå via Aktiv). Vi kan ha
     // publisert aktiveringen på Kafka uten at lagringen lyktes, så for sikkerhets skyld må vi
-    // alltid publisere en inaktivering mot Min side. InaktiverVarslerService håndterer dette
+    // alltid publisere en inaktivering mot Min side (som er idempotent og ignorerer varselId den ikke kjenner til). InaktiverVarslerService håndterer dette
     // basert på SkalInaktiveres-tilstanden.
     when (val pågående = varsler.pågåendeOppretting) {
         is Varsel.SkalAktiveres, is Varsel.Aktiv -> {

@@ -4,7 +4,9 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
@@ -12,10 +14,14 @@ import no.nav.tiltakspenger.libs.dato.april
 import no.nav.tiltakspenger.libs.dato.februar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.periode.til
+import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
+import no.nav.tiltakspenger.meldekort.domene.varsler.AktiverVarslerService
 import no.nav.tiltakspenger.meldekort.domene.varsler.Varsel
+import no.nav.tiltakspenger.meldekort.domene.varsler.Varsler
 import no.nav.tiltakspenger.meldekort.repository.OptimistiskLåsFeil
+import no.nav.tiltakspenger.meldekort.repository.VarselRepo
 import no.nav.tiltakspenger.meldekort.routes.meldekort.bruker.korrigering.MeldekortKorrigertDagDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import no.nav.tiltakspenger.routes.jobber.KjørJobberForTester
@@ -575,6 +581,118 @@ class VarselPostgresEndToEndTest {
             // 5. Saken forblir flagget slik at den plukkes opp på nytt i neste kjøring.
             tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId } shouldBe listOf(sak.id)
         }
+    }
+
+    @Test
+    fun `A3 - stale aktivering etter at vurdering forberedte inaktivering kaster og sender ikke Kafka`() {
+        val periode = 24.februar(2025) til 9.mars(2025)
+        val klokke = TikkendeKlokke(fixedClockAt(10.mars(2025).atHour(10)))
+
+        withTestApplicationContextAndPostgres(clock = klokke, runIsolated = true) { tac ->
+            val sak = mottaSakRequest(
+                tac = tac,
+                meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = 1.mars(2025).atHour(10))),
+                runJobs = false,
+            )
+            KjørJobberForTester.kjørVurderVarsler(tac)
+            val opprinneligVarsel = tac.varselRepo.hentVarslerForSakId(sak.id)
+                .single()
+                .shouldBeInstanceOf<Varsel.SkalAktiveres>()
+
+            val varselRepoMedKonkurrerendeVurdering = VarselRepoSomForberederInaktiveringEtterLesing(
+                delegate = tac.varselRepo,
+                varselSomSkalInaktiveres = opprinneligVarsel,
+                skalInaktiveresTidspunkt = nå(klokke),
+            )
+            val aktiverVarslerService = AktiverVarslerService(
+                varselRepo = varselRepoMedKonkurrerendeVurdering,
+                sakVarselRepo = tac.sakVarselRepo,
+                varselClient = tac.varselClient,
+                sessionFactory = tac.sessionFactory,
+                clock = klokke,
+            )
+
+            aktiverVarslerService.aktiverVarsler()
+
+            val lagretVarsel = tac.varselRepo.hentVarslerForSakId(sak.id).single()
+            lagretVarsel.shouldBeInstanceOf<Varsel.SkalInaktiveres>()
+            lagretVarsel.varselId shouldBe opprinneligVarsel.varselId
+            tac.varselClient.snapshotVarselhendelser().sendteVarsler shouldHaveSize 0
+        }
+    }
+
+    @Test
+    fun `A3 - stale direkte inaktivering etter aktivering kaster og beholder aktivt varsel`() {
+        val periode = 24.februar(2025) til 9.mars(2025)
+        val klokke = TikkendeKlokke(fixedClockAt(10.mars(2025).atHour(10)))
+
+        withTestApplicationContextAndPostgres(clock = klokke, runIsolated = true) { tac ->
+            val sak = mottaSakRequest(
+                tac = tac,
+                meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = 1.mars(2025).atHour(10))),
+                runJobs = false,
+            )
+            KjørJobberForTester.kjørVurderVarsler(tac)
+            val varslerLestAvVurdering = tac.varselRepo.hentVarslerForSakId(sak.id)
+            val varselLestAvVurdering = varslerLestAvVurdering.single().shouldBeInstanceOf<Varsel.SkalAktiveres>()
+
+            KjørJobberForTester.kjørAktiverVarsler(tac)
+            tac.varselRepo.hentVarslerForSakId(sak.id).single().shouldBeInstanceOf<Varsel.Aktiv>()
+
+            val (_, staleSkalInaktiveres) = varslerLestAvVurdering.forberedInaktivering(
+                varselId = varselLestAvVurdering.varselId,
+                skalInaktiveresTidspunkt = nå(klokke),
+                skalInaktiveresBegrunnelse = "A3-regresjonstest: vurdering basert på stale SkalAktiveres",
+            )
+            val feil = shouldThrow<OptimistiskLåsFeil> {
+                tac.varselRepo.lagre(staleSkalInaktiveres)
+            }
+
+            feil.message shouldContain "forventet at eksisterende rad var i tilstand SkalAktiveres før overgang til SkalInaktiveres"
+            val lagretVarsel = tac.varselRepo.hentVarslerForSakId(sak.id).single()
+            lagretVarsel.shouldBeInstanceOf<Varsel.Aktiv>()
+            lagretVarsel.varselId shouldBe varselLestAvVurdering.varselId
+            tac.varselClient.snapshotVarselhendelser().sendteVarsler shouldHaveSize 1
+        }
+    }
+}
+
+private class VarselRepoSomForberederInaktiveringEtterLesing(
+    private val delegate: VarselRepo,
+    private val varselSomSkalInaktiveres: Varsel.SkalAktiveres,
+    private val skalInaktiveresTidspunkt: LocalDateTime,
+) : VarselRepo {
+    private var harForberedtInaktivering = false
+
+    override fun lagre(
+        varsel: Varsel,
+        aktiveringsmetadata: String?,
+        inaktiveringsmetadata: String?,
+        sessionContext: SessionContext?,
+    ) {
+        delegate.lagre(varsel, aktiveringsmetadata, inaktiveringsmetadata, sessionContext)
+    }
+
+    override fun hentVarslerForSakId(sakId: SakId, sessionContext: SessionContext?): Varsler {
+        val varsler = delegate.hentVarslerForSakId(sakId, sessionContext)
+        if (!harForberedtInaktivering && sakId == varselSomSkalInaktiveres.sakId) {
+            harForberedtInaktivering = true
+            delegate.lagre(
+                varselSomSkalInaktiveres.forberedInaktivering(
+                    skalInaktiveresTidspunkt = skalInaktiveresTidspunkt,
+                    skalInaktiveresBegrunnelse = "A3-regresjonstest: vurdering vant før aktivering lagret",
+                ),
+            )
+        }
+        return varsler
+    }
+
+    override fun hentSakerMedVarslerSomSkalAktiveres(limit: Int, sessionContext: SessionContext?): List<SakId> {
+        return delegate.hentSakerMedVarslerSomSkalAktiveres(limit, sessionContext)
+    }
+
+    override fun hentSakerMedVarslerSomSkalInaktiveres(limit: Int, sessionContext: SessionContext?): List<SakId> {
+        return delegate.hentSakerMedVarslerSomSkalInaktiveres(limit, sessionContext)
     }
 }
 
