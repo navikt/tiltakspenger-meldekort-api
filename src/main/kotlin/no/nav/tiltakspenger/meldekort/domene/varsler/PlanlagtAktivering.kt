@@ -24,6 +24,34 @@ internal data class PlanlagtAktivering(
     val skalAktiveresEksterntTidspunkt: LocalDateTime,
     val begrunnelse: String,
 ) {
+    companion object {
+        /**
+         * Lager planen for nytt varsel basert på den tidligste kjeden som mangler innsending.
+         * [skalAktiveresTidspunkt] kan ligge tilbake i tid, mens [skalAktiveresEksterntTidspunkt]
+         * alltid vil være nå eller frem i tid og beregnes av [Varsler].
+         */
+        fun forManglendeInnsending(
+            førsteKjedeSomManglerInnsending: KjedeSomManglerInnsending,
+            antallKjederSomManglerInnsending: Int,
+            varsler: Varsler,
+            clock: Clock,
+        ): PlanlagtAktivering {
+            val vurderingstidspunkt = nå(clock)
+            val skalAktiveresTidspunkt = førsteKjedeSomManglerInnsending.kanFyllesUtFraOgMed
+            val skalAktiveresEksterntTidspunkt = varsler.finnTidspunktForEksternVarsling(
+                ønsketTidspunkt = skalAktiveresTidspunkt,
+                nå = vurderingstidspunkt,
+            )
+            val kjederInfo =
+                "(meldeperiodeId=${førsteKjedeSomManglerInnsending.meldeperiodeId}, kjedeId=${førsteKjedeSomManglerInnsending.kjedeId}, versjon=${førsteKjedeSomManglerInnsending.nyesteVersjon}, kanFyllesUtFraOgMed=${førsteKjedeSomManglerInnsending.kanFyllesUtFraOgMed})"
+            return PlanlagtAktivering(
+                skalAktiveresTidspunkt = skalAktiveresTidspunkt,
+                skalAktiveresEksterntTidspunkt = skalAktiveresEksterntTidspunkt,
+                begrunnelse = "Automatisk vurdert - skalAktiveresTidspunkt=$skalAktiveresTidspunkt, skalAktiveresEksterntTidspunkt=$skalAktiveresEksterntTidspunkt, vurderingstidspunkt=$vurderingstidspunkt, valgtKjedeId=${førsteKjedeSomManglerInnsending.kjedeId}, antallKjeder=$antallKjederSomManglerInnsending, manglendeKjeder=$kjederInfo",
+            )
+        }
+    }
+
     fun vurderPågåendeVarsel(
         clock: Clock,
         pågående: Varsel,

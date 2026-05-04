@@ -78,7 +78,7 @@ private fun opprettEllerOppdaterVarselHvisNødvendig(
     lagreVarsel: (Varsel, SessionContext) -> Unit,
     logger: KLogger,
 ): Either<VurderVarselUtfall, Unit> {
-    val planlagtAktivering = beregnPlanlagtAktivering(
+    val planlagtAktivering = PlanlagtAktivering.forManglendeInnsending(
         førsteKjedeSomManglerInnsending = førsteKjedeSomManglerInnsending,
         antallKjederSomManglerInnsending = antallKjederSomManglerInnsending,
         varsler = varsler,
@@ -205,33 +205,6 @@ private fun håndterPågåendeMedKjeder(
         error("Kunne ikke opprette nytt varsel for sak $sakId: ${feil.melding}")
     }
     return Unit.right()
-}
-
-/**
- * Merk at denne kan finne tidspunkter tilbake i tid for skalAktiveresTidspunkt, mens skalAktiveresEksterntTidspunkt alltid vil være nå eller frem i tid.
- */
-private fun beregnPlanlagtAktivering(
-    førsteKjedeSomManglerInnsending: KjedeSomManglerInnsending,
-    antallKjederSomManglerInnsending: Int,
-    varsler: Varsler,
-    clock: Clock,
-): PlanlagtAktivering {
-    val vurderingstidspunkt = nå(clock)
-    // Denne kan være tilbake i tid, men ikke frem i tid.
-    val skalAktiveresTidspunkt = førsteKjedeSomManglerInnsending.kanFyllesUtFraOgMed
-
-    // Denne vil enten være nå eller frem i tid, aldri tilbake i tid.
-    val skalAktiveresEksterntTidspunkt = varsler.finnTidspunktForEksternVarsling(
-        ønsketTidspunkt = skalAktiveresTidspunkt,
-        nå = vurderingstidspunkt,
-    )
-    val kjederInfo =
-        "(meldeperiodeId=${førsteKjedeSomManglerInnsending.meldeperiodeId}, kjedeId=${førsteKjedeSomManglerInnsending.kjedeId}, versjon=${førsteKjedeSomManglerInnsending.nyesteVersjon}, kanFyllesUtFraOgMed=${førsteKjedeSomManglerInnsending.kanFyllesUtFraOgMed})"
-    return PlanlagtAktivering(
-        skalAktiveresTidspunkt = skalAktiveresTidspunkt,
-        skalAktiveresEksterntTidspunkt = skalAktiveresEksterntTidspunkt,
-        begrunnelse = "Automatisk vurdert - skalAktiveresTidspunkt=$skalAktiveresTidspunkt, skalAktiveresEksterntTidspunkt=$skalAktiveresEksterntTidspunkt, vurderingstidspunkt=$vurderingstidspunkt, valgtKjedeId=${førsteKjedeSomManglerInnsending.kjedeId}, antallKjeder=$antallKjederSomManglerInnsending, manglendeKjeder=$kjederInfo",
-    )
 }
 
 private fun forberedInaktiveringHvisNødvendig(
