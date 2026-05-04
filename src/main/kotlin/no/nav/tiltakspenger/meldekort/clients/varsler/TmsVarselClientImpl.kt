@@ -30,23 +30,29 @@ class TmsVarselClientImpl(
     private val logger = KotlinLogging.logger {}
 
     /**
-     * Aktiverer varsel internt for bruker.
-     * Dersom [utsettSendingTil] er null eller tilbake i tid sendes eksternt varsel til Altinn asap.
+     * Bygger varselhendelsen (uten Kafka-publisering). Trygg å kalle utenfor transaksjon.
      */
-    override fun sendVarsel(
+    override fun byggVarsel(
         varselId: VarselId,
         fnr: Fnr,
         utsettSendingTil: LocalDateTime?,
     ): SendtVarselMetadata {
-        logger.info { "Sender varsel med id $varselId (utsettSendingTil=$utsettSendingTil)" }
         val varselHendelse: String = opprettVarselOppgave(
             varselId = varselId,
             fnr = fnr,
             utsettSendingTil = utsettSendingTil?.atZone(zoneIdOslo),
         )
-        val sendtVarselMetadata = SendtVarselMetadata(jsonRequest = varselHendelse)
-        kafkaProducer.produce(topicName, varselId.toString(), varselHendelse)
-        return sendtVarselMetadata
+        return SendtVarselMetadata(jsonRequest = varselHendelse)
+    }
+
+    /**
+     * Publiserer en allerede bygd varselhendelse på Kafka.
+     * Dersom `utsettSendingTil` (i payloaden) er null eller tilbake i tid sender Min side
+     * eksternt varsel til Altinn umiddelbart.
+     */
+    override fun sendVarsel(varselId: VarselId, metadata: SendtVarselMetadata) {
+        logger.info { "Sender varsel med id $varselId" }
+        kafkaProducer.produce(topicName, varselId.toString(), metadata.jsonRequest)
     }
 
     /**

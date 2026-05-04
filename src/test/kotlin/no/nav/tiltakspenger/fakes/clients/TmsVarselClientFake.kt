@@ -12,6 +12,10 @@ class TmsVarselClientFake : VarselClient {
     private val sendteVarsler = mutableListOf<SendtVarsel>()
     private val inaktiverteVarsler = mutableListOf<VarselId>()
 
+    // Mellomlagrer fnr/utsettSendingTil pr varselId mellom byggVarsel og sendVarsel,
+    // slik at vi kan rapportere disse i [SendtVarsel] når sendVarsel faktisk publiserer.
+    private val byggetMenIkkeSendt = mutableMapOf<VarselId, ByggetVarsel>()
+
     fun hentSendteVarsler(): List<SendtVarsel> = sendteVarsler.toList()
 
     fun hentInaktiverteVarsler(): List<VarselId> = inaktiverteVarsler.toList()
@@ -23,27 +27,39 @@ class TmsVarselClientFake : VarselClient {
         )
     }
 
-    override fun sendVarsel(
+    override fun byggVarsel(
         varselId: VarselId,
         fnr: Fnr,
         utsettSendingTil: LocalDateTime?,
     ): SendtVarselMetadata {
-        logger.info { "Fake: Sender (ikke) varsel med id $varselId (utsettSendingTil=$utsettSendingTil)" }
+        logger.info { "Fake: Bygger varsel med id $varselId (utsettSendingTil=$utsettSendingTil)" }
+        byggetMenIkkeSendt[varselId] = ByggetVarsel(fnr = fnr, utsettSendingTil = utsettSendingTil)
+        // Ikke likt innhold som i Nais (vi bare lagrer den i basen)
+        return SendtVarselMetadata(""""json-request"""")
+    }
+
+    override fun sendVarsel(varselId: VarselId, metadata: SendtVarselMetadata) {
+        logger.info { "Fake: Sender (ikke) varsel med id $varselId" }
+        val bygget = byggetMenIkkeSendt.remove(varselId)
+            ?: error("Fake: sendVarsel($varselId) kalt uten foregående byggVarsel")
         sendteVarsler.add(
             SendtVarsel(
                 varselId = varselId,
-                fnr = fnr,
-                utsettSendingTil = utsettSendingTil,
+                fnr = bygget.fnr,
+                utsettSendingTil = bygget.utsettSendingTil,
             ),
         )
-        // Ikke likt innhold som i Nais (vi bare lagrer den i basen)
-        return SendtVarselMetadata(""""json-request"""")
     }
 
     override fun inaktiverVarsel(varselId: VarselId) {
         logger.info { "Inaktiverer (ikke) varsel $varselId" }
         inaktiverteVarsler.add(varselId)
     }
+
+    private data class ByggetVarsel(
+        val fnr: Fnr,
+        val utsettSendingTil: LocalDateTime?,
+    )
 
     data class SendtVarsel(
         val varselId: VarselId,

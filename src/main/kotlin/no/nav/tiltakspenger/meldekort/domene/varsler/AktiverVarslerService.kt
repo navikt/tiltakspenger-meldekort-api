@@ -31,13 +31,15 @@ class AktiverVarslerService(
                     val varselId = varselSomSkalAktiveres.varselId
 
                     val aktivertVarsel: Varsel.Aktiv = varsler.aktiver(varselId, aktiveringstidspunkt).second
-                    val metadata = varselClient.sendVarsel(
+                    // Bygg varselhendelsen utenfor transaksjonen – ren funksjon, ingen Kafka-kall.
+                    val metadata = varselClient.byggVarsel(
                         varselId = varselId,
                         fnr = aktivertVarsel.fnr,
                         utsettSendingTil = aktivertVarsel.eksternAktiveringstidspunkt,
                     )
-                    // Det gjør ikke noe dersom transaksjonen feiler. Da vil bare jobben kjøre igjen og vi vil sende varselet på nytt med samme varselId. Team Min side dedupliserer dette.
                     sessionFactory.withTransactionContext { tx ->
+                        // Lagre først – hvis optimistisk lås slår til kastes det her, og vi
+                        // produserer aldri noe på Kafka.
                         varselRepo.lagre(
                             varsel = aktivertVarsel,
                             aktiveringsmetadata = metadata.jsonRequest,
@@ -45,6 +47,11 @@ class AktiverVarslerService(
                         )
                         // Trigger en ny vurdering av saken.
                         sakVarselRepo.flaggForVarselvurdering(sakId, tx)
+                        // Publiser på Kafka inne i transaksjonen, etter lagre. Hvis Kafka-
+                        // produsenten kaster ruller vi tilbake både lagre og flagg, og jobben
+                        // kjører på nytt. Hvis lagre lyktes men commit feiler etter Kafka-
+                        // produksjonen vil Min side dedupliserer på varselId ved retry.
+                        varselClient.sendVarsel(varselId = varselId, metadata = metadata)
                     }
                     log.info { "Varsel $varselId aktivert og lagret, sak $sakId re-flagget for vurdering" }
                 }.onLeft {

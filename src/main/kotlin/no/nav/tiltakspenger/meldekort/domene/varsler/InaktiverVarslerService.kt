@@ -30,13 +30,18 @@ class InaktiverVarslerService(
                     val varselSomSkalInaktiveres: Varsel.SkalInaktiveres = varsler.pågåendeInaktivering!!
                     val varselId = varselSomSkalInaktiveres.varselId
                     val inaktivertVarsel = varsler.inaktiver(varselId, inaktiveringstidspunkt).second
-                    // Merk at vi også inaktiverer varsler som aldri har blitt sendt, hvis de har gått fra SkalAktiveres til SkalInaktiveres. Dette i tilfelle vi har aktivert et varsel uten å fått lagret det. Team Min Side forkaster bare disse siden de ikke kjenner igjen varselId.
-                    varselClient.inaktiverVarsel(varselId)
-                    // Det gjør ikke noe dersom transaksjonen feiler. Da vil bare jobben kjøre igjen og vi vil sende varselet på nytt med samme varselId. Team Min side dedupliserer dette.
                     sessionFactory.withTransactionContext { tx ->
+                        // Lagre først – hvis optimistisk lås slår til kastes det her, og vi
+                        // produserer aldri noe på Kafka.
                         varselRepo.lagre(varsel = inaktivertVarsel, sessionContext = tx)
                         // Trigger en ny vurdering av saken.
                         sakVarselRepo.flaggForVarselvurdering(sakId, tx)
+                        // Publiser inaktiveringen på Kafka inne i transaksjonen, etter lagre.
+                        // Merk at vi også inaktiverer varsler som aldri har blitt sendt, hvis
+                        // de har gått fra SkalAktiveres til SkalInaktiveres. Dette i tilfelle
+                        // vi har aktivert et varsel uten å fått lagret det. Team Min Side
+                        // forkaster bare disse siden de ikke kjenner igjen varselId.
+                        varselClient.inaktiverVarsel(varselId)
                     }
                     log.info { "Varsel $varselId inaktivert, lagret og sak $sakId re-flagget for vurdering" }
                 }.onLeft {

@@ -43,7 +43,9 @@ class TmsVarselClientImplTest {
         val payloads = mutableListOf<String>()
         val client = nyClient(payloads)
 
-        val metadata = client.sendVarsel(VarselId.random(), fnr, utsettSendingTil = null)
+        val varselId = VarselId.random()
+        val metadata = client.byggVarsel(varselId, fnr, utsettSendingTil = null)
+        client.sendVarsel(varselId, metadata)
 
         payloads shouldBe listOf(metadata.jsonRequest)
         metadata.jsonRequest.shouldNotContain("utsettSendingTil")
@@ -56,10 +58,22 @@ class TmsVarselClientImplTest {
         val tidspunkt = LocalDateTime.of(2025, 3, 10, 9, 0)
         val forventet = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(tidspunkt.atZone(zoneId))
 
-        val metadata = client.sendVarsel(VarselId.random(), fnr, utsettSendingTil = tidspunkt)
+        val varselId = VarselId.random()
+        val metadata = client.byggVarsel(varselId, fnr, utsettSendingTil = tidspunkt)
+        client.sendVarsel(varselId, metadata)
 
         payloads shouldBe listOf(metadata.jsonRequest)
         metadata.jsonRequest.shouldContain("\"utsettSendingTil\":\"$forventet\"")
+    }
+
+    @Test
+    fun `byggVarsel publiserer ikke noe paa Kafka`() {
+        val payloads = mutableListOf<String>()
+        val client = nyClient(payloads)
+
+        client.byggVarsel(VarselId.random(), fnr, utsettSendingTil = null)
+
+        payloads shouldBe emptyList()
     }
 
     private fun nyClient(payloads: MutableList<String>): TmsVarselClientImpl {
