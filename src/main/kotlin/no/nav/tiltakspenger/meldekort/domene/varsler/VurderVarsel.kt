@@ -139,9 +139,8 @@ private fun opprettNyttVarsel(
         lagreVarsel(nyttVarsel, sessionContext)
         logger.info { "Opprettet varsel ${nyttVarsel.varselId} for sak $sakId" }
     }.onLeft { feil ->
-        // Vi har allerede sjekket at det ikke finnes noe pågående varsel, og
-        // finnPlanlagtAktiveringstidspunkt håndterer cooldown. Hvis vi likevel ender her
-        // er det et invariantbrudd – kast og rull tilbake transaksjonen for retry.
+        // Vi har allerede sjekket at det ikke finnes noe pågående varsel. Hvis vi likevel ender
+        // her er det et invariantbrudd – kast og rull tilbake transaksjonen for retry.
         logger.warn { "Kunne ikke opprette varsel for sak $sakId: ${feil.melding}" }
         error("Kunne ikke opprette varsel for sak $sakId: ${feil.melding}")
     }
@@ -152,6 +151,8 @@ private fun opprettNyttVarsel(
  * Vi gjør en sammenligning av det pågående varselet og den planlagte aktiveringen basert på den tidligste kjeden som mangler innsending
  * for å avgjøre om vi er fornøyd med nåværende varsel eller om vi vil inaktivere det og opprette et nytt som samsvarer med
  * oppdatert kanFyllesUtFraOgMed.
+ *
+ * Returnerer left/right kun for at den kan testes lettere.
  */
 private fun håndterPågåendeMedKjeder(
     sakId: SakId,
@@ -170,7 +171,7 @@ private fun håndterPågåendeMedKjeder(
         return it.left()
     }
     if (varsler.pågåendeInaktivering != null) {
-        logger.info { "Sak $sakId har allerede pågående inaktivering og venter med å opprette nytt varsel" }
+        logger.info { "Sak $sakId har allerede pågående inaktivering. Vi flagger saken som vurdert og venter på at inaktiveringsjobben sender inaktivering og flagger jobben som skal vurderes igjen." }
         return VurderVarselUtfall.HarPågåendeInaktivering.left()
     }
     val vurderingstidspunkt = nå(clock)
@@ -201,10 +202,6 @@ private fun håndterPågåendeMedKjeder(
         lagreVarsel(nyttVarsel, sessionContext)
         logger.info { "Opprettet nytt varsel ${nyttVarsel.varselId} for sak $sakId etter varsel ${pågående.varselId}" }
     }.onLeft { feil ->
-        if (feil is Varsler.KanIkkeLeggeTilVarsel.CooldownIkkeUtløpt) {
-            logger.info { "Beholder pågående varsel ${pågående.varselId} for sak $sakId siden nytt varsel ville brutt cooldown samme dag" }
-            return VurderVarselUtfall.KanIkkeErstattePåGrunnAvCooldown.left()
-        }
         error("Kunne ikke opprette nytt varsel for sak $sakId: ${feil.melding}")
     }
     return Unit.right()
@@ -224,7 +221,7 @@ private fun beregnPlanlagtAktivering(
     val skalAktiveresTidspunkt = førsteKjedeSomManglerInnsending.kanFyllesUtFraOgMed
 
     // Denne vil enten være nå eller frem i tid, aldri tilbake i tid.
-    val skalAktiveresEksterntTidspunkt = varsler.finnSkalAktiveresEksterntTidspunkt(
+    val skalAktiveresEksterntTidspunkt = varsler.finnTidspunktForEksternVarsling(
         ønsketTidspunkt = skalAktiveresTidspunkt,
         nå = vurderingstidspunkt,
     )

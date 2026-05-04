@@ -12,7 +12,6 @@ import no.nav.tiltakspenger.meldekort.domene.varsler.Varsel.Inaktivert
 import no.nav.tiltakspenger.meldekort.domene.varsler.Varsel.SkalAktiveres
 import no.nav.tiltakspenger.meldekort.domene.varsler.Varsel.SkalInaktiveres
 import java.time.Clock
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
@@ -125,13 +124,6 @@ data class Varsler(
         if (pågåendeOppretting != null) {
             return KanIkkeLeggeTilVarsel.HarPågåendeOppretting.left()
         }
-        val varselDato = varsel.skalAktiveresTidspunkt.toLocalDate()
-        // Cooldown gjelder kun dersom det faktisk er sendt (aktivert) et varsel samme dag.
-        // Et Inaktivert varsel kan ha vært aktivert på en annen dato enn skalAktiveresTidspunkt.
-        // Vi må derfor sjekke faktisk aktiveringstidspunkt, ellers risikerer vi å droppe hendelser.
-        if (harAktivertVarselSammeDag(varselDato)) {
-            return KanIkkeLeggeTilVarsel.CooldownIkkeUtløpt(varselDato).left()
-        }
         return (this + varsel).right()
     }
 
@@ -165,11 +157,6 @@ data class Varsler(
 
         data object HarPågåendeOppretting : KanIkkeLeggeTilVarsel {
             override val melding = "Kan ikke legge til varsel når det finnes et pågående varsel (SkalAktiveres/Aktiv)"
-        }
-
-        data class CooldownIkkeUtløpt(val dato: LocalDate) : KanIkkeLeggeTilVarsel {
-            override val melding =
-                "Kan ikke legge til varsel med aktiveringsdato $dato - det finnes allerede et varsel for denne datoen"
         }
     }
 

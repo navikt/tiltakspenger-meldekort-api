@@ -33,6 +33,7 @@ class VarslerTest {
 
     private fun skalAktiveres(
         skalAktiveresTidspunkt: LocalDateTime = mandagKl10,
+        skalAktiveresEksterntTidspunkt: LocalDateTime = skalAktiveresTidspunkt,
         varselId: VarselId = VarselId.random(),
         clock: Clock = nyClock(),
         opprettet: LocalDateTime = nå(clock),
@@ -43,7 +44,7 @@ class VarslerTest {
             fnr = fnr,
             varselId = varselId,
             skalAktiveresTidspunkt = skalAktiveresTidspunkt,
-            skalAktiveresEksterntTidspunkt = skalAktiveresTidspunkt,
+            skalAktiveresEksterntTidspunkt = skalAktiveresEksterntTidspunkt,
             skalAktiveresBegrunnelse = "test",
             opprettet = opprettet,
             sistEndret = opprettet,
@@ -53,6 +54,7 @@ class VarslerTest {
     private fun aktiv(
         skalAktiveresTidspunkt: LocalDateTime = mandagKl10,
         aktiveringstidspunkt: LocalDateTime = skalAktiveresTidspunkt,
+        eksternAktiveringstidspunkt: LocalDateTime = aktiveringstidspunkt,
         varselId: VarselId = VarselId.random(),
         clock: Clock = nyClock(),
         opprettet: LocalDateTime = nå(clock),
@@ -63,10 +65,10 @@ class VarslerTest {
             fnr = fnr,
             varselId = varselId,
             skalAktiveresTidspunkt = skalAktiveresTidspunkt,
-            skalAktiveresEksterntTidspunkt = skalAktiveresTidspunkt,
+            skalAktiveresEksterntTidspunkt = eksternAktiveringstidspunkt,
             skalAktiveresBegrunnelse = "test",
             aktiveringstidspunkt = aktiveringstidspunkt,
-            eksternAktiveringstidspunkt = aktiveringstidspunkt,
+            eksternAktiveringstidspunkt = eksternAktiveringstidspunkt,
             opprettet = opprettet,
             sistEndret = opprettet,
         )
@@ -75,6 +77,8 @@ class VarslerTest {
     private fun inaktivert(
         clock: Clock = nyClock(),
         opprettet: LocalDateTime = nå(clock),
+        eksternAktiveringstidspunkt: LocalDateTime = mandagKl10,
+        inaktiveringstidspunkt: LocalDateTime = mandagKl10.plusHours(1),
     ): Varsel.Inaktivert {
         return Varsel.Inaktivert(
             sakId = sakId,
@@ -82,13 +86,13 @@ class VarslerTest {
             fnr = fnr,
             varselId = VarselId.random(),
             skalAktiveresTidspunkt = mandagKl10,
-            skalAktiveresEksterntTidspunkt = mandagKl10,
+            skalAktiveresEksterntTidspunkt = eksternAktiveringstidspunkt,
             skalAktiveresBegrunnelse = "test",
             aktiveringstidspunkt = mandagKl10,
-            eksternAktiveringstidspunkt = mandagKl10,
-            skalInaktiveresTidspunkt = mandagKl10.plusHours(1),
+            eksternAktiveringstidspunkt = eksternAktiveringstidspunkt,
+            skalInaktiveresTidspunkt = inaktiveringstidspunkt,
             skalInaktiveresBegrunnelse = "mottatt",
-            inaktiveringstidspunkt = mandagKl10.plusHours(1),
+            inaktiveringstidspunkt = inaktiveringstidspunkt,
             opprettet = opprettet,
             sistEndret = opprettet,
         )
@@ -251,7 +255,7 @@ class VarslerTest {
         }
 
         @Test
-        fun `kan ikke legge til varsel med samme dato som eksisterende aktivert`() {
+        fun `kan legge til varsel selv om ekstern varsling allerede er antatt sendt samme dag`() {
             val eksisterendeOpprettet = 6.januar(2025).atHour(9)
             val eksisterende = inaktivert(opprettet = eksisterendeOpprettet)
             val varsler = Varsler(listOf(eksisterende))
@@ -262,7 +266,7 @@ class VarslerTest {
 
             val resultat = varsler.leggTil(nyttVarsel)
 
-            resultat.shouldBeInstanceOf<arrow.core.Either.Left<Varsler.KanIkkeLeggeTilVarsel.CooldownIkkeUtløpt>>()
+            resultat.isRight() shouldBe true
         }
 
         @Test
@@ -425,11 +429,11 @@ class VarslerTest {
     }
 
     @Nested
-    inner class PlanlagtAktivering {
+    inner class EksternVarslingstidspunkt {
 
         @Test
         fun `bruker ønsket tidspunkt når det allerede er gyldig og ingen varsel er sendt samme dag`() {
-            Varsler(emptyList()).finnSkalAktiveresEksterntTidspunkt(
+            Varsler(emptyList()).finnTidspunktForEksternVarsling(
                 ønsketTidspunkt = tirsdagKl10,
                 nå = mandagKl10,
             ) shouldBe tirsdagKl10
@@ -437,31 +441,76 @@ class VarslerTest {
 
         @Test
         fun `bruker nå normalisert til åpningstid når ønsket tidspunkt er passert`() {
-            Varsler(emptyList()).finnSkalAktiveresEksterntTidspunkt(
+            Varsler(emptyList()).finnTidspunktForEksternVarsling(
                 ønsketTidspunkt = 3.januar(2025).atHour(15),
                 nå = 6.januar(2025).atTime(8, 30),
             ) shouldBe 6.januar(2025).atHour(9)
         }
 
         @Test
-        fun `utsetter til neste virkedag når et varsel allerede er aktivert samme dag`() {
+        fun `utsetter til neste virkedag når ekstern varsling allerede er antatt sendt samme dag`() {
             val aktivtVarsel = aktiv(
                 skalAktiveresTidspunkt = 6.januar(2025).atHour(9),
                 aktiveringstidspunkt = 6.januar(2025).atTime(9, 5),
+                eksternAktiveringstidspunkt = 6.januar(2025).atTime(9, 5),
                 opprettet = 6.januar(2025).atHour(9),
             )
 
-            Varsler(listOf(aktivtVarsel)).finnSkalAktiveresEksterntTidspunkt(
+            Varsler(listOf(aktivtVarsel)).finnTidspunktForEksternVarsling(
                 ønsketTidspunkt = 3.januar(2025).atHour(15),
                 nå = 6.januar(2025).atHour(10),
             ) shouldBe 7.januar(2025).atHour(9)
         }
 
         @Test
+        fun `utsetter ikke når tidligere varsel ble inaktivert før ekstern varsling kunne gå ut`() {
+            val inaktivertFørEksternVarsling = inaktivert(
+                opprettet = 6.januar(2025).atHour(9),
+                eksternAktiveringstidspunkt = 6.januar(2025).atHour(15),
+                inaktiveringstidspunkt = 6.januar(2025).atTime(14, 30),
+            )
+            val nå = 6.januar(2025).atTime(14, 30)
+
+            Varsler(listOf(inaktivertFørEksternVarsling)).finnTidspunktForEksternVarsling(
+                ønsketTidspunkt = 3.januar(2025).atHour(15),
+                nå = nå,
+            ) shouldBe nå
+        }
+
+        @Test
+        fun `utsetter når tidligere varsel ble inaktivert rett før ekstern varslingstidspunkt`() {
+            val inaktivertRettFørEksternVarsling = inaktivert(
+                opprettet = 6.januar(2025).atHour(9),
+                eksternAktiveringstidspunkt = 6.januar(2025).atHour(15),
+                inaktiveringstidspunkt = 6.januar(2025).atTime(14, 50),
+            )
+
+            Varsler(listOf(inaktivertRettFørEksternVarsling)).finnTidspunktForEksternVarsling(
+                ønsketTidspunkt = 3.januar(2025).atHour(15),
+                nå = 6.januar(2025).atTime(14, 50),
+            ) shouldBe 7.januar(2025).atHour(9)
+        }
+
+        @Test
+        fun `historisk skalAktiveresTidspunkt blokkerer ikke ekstern varsling i dag`() {
+            val tidligereVarsel = inaktivert(
+                opprettet = 6.januar(2025).atHour(9),
+                eksternAktiveringstidspunkt = 6.januar(2025).atHour(10),
+                inaktiveringstidspunkt = 6.januar(2025).atHour(11),
+            )
+            val nå = 13.januar(2025).atHour(10)
+
+            Varsler(listOf(tidligereVarsel)).finnTidspunktForEksternVarsling(
+                ønsketTidspunkt = 6.januar(2025).atHour(10),
+                nå = nå,
+            ) shouldBe nå
+        }
+
+        @Test
         fun `bruker nå når ønsket tidspunkt er passert og nå er innenfor åpningstid`() {
             val nå = 6.januar(2025).atTime(10, 30)
 
-            Varsler(emptyList()).finnSkalAktiveresEksterntTidspunkt(
+            Varsler(emptyList()).finnTidspunktForEksternVarsling(
                 ønsketTidspunkt = 3.januar(2025).atHour(15),
                 nå = nå,
             ) shouldBe nå
@@ -469,7 +518,7 @@ class VarslerTest {
 
         @Test
         fun `bruker neste virkedag klokken ni når nå er etter åpningstid`() {
-            Varsler(emptyList()).finnSkalAktiveresEksterntTidspunkt(
+            Varsler(emptyList()).finnTidspunktForEksternVarsling(
                 ønsketTidspunkt = 3.januar(2025).atHour(15),
                 nå = 3.januar(2025).atHour(18),
             ) shouldBe 6.januar(2025).atHour(9)
@@ -477,7 +526,7 @@ class VarslerTest {
 
         @Test
         fun `bruker neste virkedag klokken ni når nå er i helgen`() {
-            Varsler(emptyList()).finnSkalAktiveresEksterntTidspunkt(
+            Varsler(emptyList()).finnTidspunktForEksternVarsling(
                 ønsketTidspunkt = 3.januar(2025).atHour(15),
                 nå = 4.januar(2025).atHour(12),
             ) shouldBe 6.januar(2025).atHour(9)

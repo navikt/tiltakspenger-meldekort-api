@@ -16,9 +16,9 @@ import java.time.ZonedDateTime
 /**
  * Tjeneste for å sende varsel til bruker.
  *
- * All logikk rundt *når* varselet skal leveres til bruker ligger i domenet (typisk
- * `Varsel.SkalAktiveresTidspunkt`). Klienten oversetter kun fra [LocalDateTime] til [ZonedDateTime]
- * og lener seg på Min side' `utsettSendingTil` for utsatt levering.
+ * All logikk rundt *når* ekstern varsling (SMS/e-post via Altinn) skal leveres til bruker
+ * ligger i domenet. Klienten oversetter kun domenets eksterne varslingstidspunkt fra
+ * [LocalDateTime] til [ZonedDateTime] og sender det videre som Min side' `utsettSendingTil`.
  *
  * @link https://navikt.github.io/tms-dokumentasjon/varsler/
  */

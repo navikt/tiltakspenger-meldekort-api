@@ -4,12 +4,14 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
 internal val VARSEL_ÅPNER: LocalTime = LocalTime.of(9, 0)
 internal val VARSEL_STENGER: LocalTime = LocalTime.of(17, 0)
+private val EKSTERN_VARSLING_ANTATT_SENDT_SLINGRINGSMONN: Duration = Duration.ofMinutes(15)
 
 /**
  * Et varsel som skal sendes til en bruker i forbindelse med utfylling av et eller flere meldekort.
@@ -85,9 +87,6 @@ sealed interface Varsel {
     /** True hvis vi er i tilstanden [Inaktivert]. */
     val erInaktivert: Boolean get() = this is Inaktivert
 
-    /** True hvis varselet faktisk ble aktivert på [dato]. */
-    fun erAktivertPå(dato: LocalDate): Boolean = aktiveringstidspunkt?.toLocalDate() == dato
-
     /** Ikke produsert på Kafka enda. Min side får hendelsen først når varselet går over i [Aktiv]. */
     data class SkalAktiveres(
         override val sakId: SakId,
@@ -108,18 +107,10 @@ sealed interface Varsel {
         override val inaktiveringstidspunkt = null
 
         init {
-            if (skalAktiveresEksterntTidspunkt.isBefore(skalAktiveresTidspunkt)) {
-                throw IllegalArgumentException("Varsel.SkalAktiveres: skalAktiveresEksterntTidspunkt $skalAktiveresEksterntTidspunkt kan ikke være før skalAktiveresTidspunkt $skalAktiveresTidspunkt")
+            require(skalAktiveresEksterntTidspunkt >= skalAktiveresTidspunkt) {
+                "Varsel.SkalAktiveres: skalAktiveresEksterntTidspunkt $skalAktiveresEksterntTidspunkt kan ikke være før skalAktiveresTidspunkt $skalAktiveresTidspunkt"
             }
-            require(
-                !skalAktiveresEksterntTidspunkt.toLocalTime().isBefore(VARSEL_ÅPNER) &&
-                    skalAktiveresEksterntTidspunkt.toLocalTime().isBefore(VARSEL_STENGER),
-            ) {
-                "Varsel.SkalAktiveres: skalAktiveresEksterntTidspunkt $skalAktiveresEksterntTidspunkt er utenfor tillatt tidsrom (09:00-17:00)"
-            }
-            require(!skalAktiveresEksterntTidspunkt.toLocalDate().erHelg()) {
-                "Varsel.SkalAktiveres: skalAktiveresEksterntTidspunkt $skalAktiveresEksterntTidspunkt er på en helgedag"
-            }
+            skalAktiveresEksterntTidspunkt.krevGyldigEksternVarslingstidspunkt("Varsel.SkalAktiveres", "skalAktiveresEksterntTidspunkt")
         }
 
         /**
@@ -127,8 +118,6 @@ sealed interface Varsel {
          *
          * Produksjonskode skal gå via [Varsler.aktiver] slik at hele aggregatet valideres før persistering.
          * Denne funksjonen er ment som en ren tilstandsovergang på enkeltobjektet.
-         *
-         * @param eksternAktiveringstidspunkt må være innenfor åpningstid (09:00-17:00) på en virkedag, og kan ikke være før [aktiveringstidspunkt].
          */
         fun aktiver(
             aktiveringstidspunkt: LocalDateTime,
@@ -205,6 +194,8 @@ sealed interface Varsel {
             require(skalAktiveresEksterntTidspunkt >= skalAktiveresTidspunkt)
             require(aktiveringstidspunkt >= skalAktiveresTidspunkt)
             require(eksternAktiveringstidspunkt >= aktiveringstidspunkt)
+            skalAktiveresEksterntTidspunkt.krevGyldigEksternVarslingstidspunkt("Varsel.Aktiv", "skalAktiveresEksterntTidspunkt")
+            eksternAktiveringstidspunkt.krevGyldigEksternVarslingstidspunkt("Varsel.Aktiv", "eksternAktiveringstidspunkt")
         }
 
         /**
@@ -261,6 +252,11 @@ sealed interface Varsel {
 
         override val inaktiveringstidspunkt = null
 
+        init {
+            skalAktiveresEksterntTidspunkt.krevGyldigEksternVarslingstidspunkt("Varsel.SkalInaktiveres", "skalAktiveresEksterntTidspunkt")
+            eksternAktiveringstidspunkt?.krevGyldigEksternVarslingstidspunkt("Varsel.SkalInaktiveres", "eksternAktiveringstidspunkt")
+        }
+
         /**
          * Inaktiverer varselet. [inaktiveringstidspunkt] kan være lik eller etter
          * [skalInaktiveresTidspunkt].
@@ -307,29 +303,73 @@ sealed interface Varsel {
         override val sistEndret: LocalDateTime,
     ) : Varsel {
 
+        init {
+            skalAktiveresEksterntTidspunkt.krevGyldigEksternVarslingstidspunkt("Varsel.Inaktivert", "skalAktiveresEksterntTidspunkt")
+            eksternAktiveringstidspunkt?.krevGyldigEksternVarslingstidspunkt("Varsel.Inaktivert", "eksternAktiveringstidspunkt")
+        }
+
         override fun toString(): String =
             "Varsel.Inaktivert(varselId=$varselId, sakId=$sakId, saksnummer='$saksnummer', fnr=*****, skalAktiveresTidspunkt=$skalAktiveresTidspunkt, skalAktiveresBegrunnelse=$skalAktiveresBegrunnelse, aktiveringstidspunkt=$aktiveringstidspunkt, skalInaktiveresTidspunkt=$skalInaktiveresTidspunkt, skalInaktiveresBegrunnelse=$skalInaktiveresBegrunnelse, inaktiveringstidspunkt=$inaktiveringstidspunkt)"
     }
 }
 
-/** Er det aktivert et varsel i denne samlingen på [dato]? */
-fun List<Varsel>.harAktivertVarselSammeDag(dato: LocalDate): Boolean = any { it.erAktivertPå(dato) }
+private fun LocalDateTime.krevGyldigEksternVarslingstidspunkt(
+    typeNavn: String,
+    feltnavn: String,
+) {
+    require(toLocalTime() in VARSEL_ÅPNER..<VARSEL_STENGER) {
+        "$typeNavn: $feltnavn $this er utenfor tillatt tidsrom (09:00-17:00)"
+    }
+    require(!toLocalDate().erHelg()) {
+        "$typeNavn: $feltnavn $this er på en helgedag"
+    }
+}
+
+/** Er det antatt at ekstern varsling (SMS/e-post via Altinn) har gått ut på [dato]? */
+fun List<Varsel>.harAntattSendtEksternVarslingSammeDag(
+    dato: LocalDate,
+    nå: LocalDateTime,
+): Boolean = any { it.erEksternVarslingAntattSendtPå(dato = dato, nå = nå) }
+
+private fun Varsel.erEksternVarslingAntattSendtPå(
+    dato: LocalDate,
+    nå: LocalDateTime,
+): Boolean {
+    val eksternVarslingstidspunkt = eksternAktiveringstidspunkt ?: return false
+    if (eksternVarslingstidspunkt.toLocalDate() != dato) {
+        return false
+    }
+    val tidspunktSomAvgjørOmEksternVarslingKanHaGåttUt = when (this) {
+        is Varsel.SkalAktiveres -> return false
+        is Varsel.Aktiv -> nå
+        is Varsel.SkalInaktiveres -> skalInaktiveresTidspunkt
+        is Varsel.Inaktivert -> inaktiveringstidspunkt
+    }
+
+    // Når Kafka-hendelsen er sendt til Min side kan vi ikke vite sikkert om Altinn/SMS faktisk
+    // rakk å gå ut før en eventuell inaktivering. Vi bruker et lite slingringsmonn i konservativ
+    // retning: hvis inaktivering/vurdering skjer rett før utsettSendingTil, antar vi at ekstern
+    // varsling kan ha gått ut og utsetter neste eksterne varsling til neste virkedag. Det er bedre
+    // at et fåtall brukere får SMS én dag senere enn at samme bruker får to SMS-er samme dag.
+    return tidspunktSomAvgjørOmEksternVarslingKanHaGåttUt
+        .plus(EKSTERN_VARSLING_ANTATT_SENDT_SLINGRINGSMONN) >= eksternVarslingstidspunkt
+}
 
 /**
- * Finner det planlagte aktiveringstidspunktet for et nytt varsel, justert til:
+ * Finner tidspunktet som skal sendes som utsettSendingTil for ekstern varsling, justert til:
  *  - neste gyldige varseltidspunkt (virkedag 09:00-17:00)
- *  - neste virkedag dersom det allerede er aktivert et varsel samme dag (cooldown)
+ *  - neste virkedag dersom ekstern varsling allerede er antatt sendt samme dag
  *
  *  Merk at denne ikke tar høyde for helligdager.
  */
-fun List<Varsel>.finnSkalAktiveresEksterntTidspunkt(
+fun List<Varsel>.finnTidspunktForEksternVarsling(
     ønsketTidspunkt: LocalDateTime,
     nå: LocalDateTime,
 ): LocalDateTime {
     val planlagtTidspunkt = maxOf(ønsketTidspunkt, nå).nesteGyldigeEksternVarseltidspunkt()
 
-    return if (harAktivertVarselSammeDag(nå.toLocalDate()) && planlagtTidspunkt.toLocalDate() == nå.toLocalDate()) {
-        nå.toLocalDate().nesteVirkedagKlNi()
+    return if (harAntattSendtEksternVarslingSammeDag(planlagtTidspunkt.toLocalDate(), nå)) {
+        planlagtTidspunkt.toLocalDate().nesteVirkedagKlNi()
     } else {
         planlagtTidspunkt
     }
@@ -346,7 +386,7 @@ internal fun LocalDateTime.nesteGyldigeEksternVarseltidspunkt(): LocalDateTime {
     return when {
         dato.erHelg() -> dato.nesteVirkedagKlNi()
         klokkeslett.isBefore(VARSEL_ÅPNER) -> dato.atTime(VARSEL_ÅPNER)
-        !klokkeslett.isBefore(VARSEL_STENGER) -> dato.nesteVirkedagKlNi()
+        klokkeslett >= VARSEL_STENGER -> dato.nesteVirkedagKlNi()
         else -> this
     }
 }

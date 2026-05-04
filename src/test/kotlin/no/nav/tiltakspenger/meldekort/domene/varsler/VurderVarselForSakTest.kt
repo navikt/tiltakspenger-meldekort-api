@@ -262,7 +262,7 @@ class VurderVarselForSakTest {
     }
 
     @Test
-    fun `aktivt varsel med senere tidspunkt samme dag kan ikke erstattes når cooldown ville blitt brutt`() {
+    fun `aktivt varsel kan erstattes samme dag mens ekstern varsling utsettes til neste virkedag`() {
         val aktiveringsTidspunkt = LocalDateTime.of(2025, 3, 10, 9, 0)
         val nå = LocalDateTime.of(2025, 3, 10, 10, 0)
         val aktivtVarsel = aktivVarsel(
@@ -294,8 +294,12 @@ class VurderVarselForSakTest {
             markerVarselVurdert = { _, _, _ -> },
         )
 
-        resultat shouldBe VurderVarselUtfall.KanIkkeErstattePåGrunnAvCooldown.left()
-        lagredeVarsler shouldBe emptyList()
+        resultat shouldBe Unit.right()
+        lagredeVarsler shouldHaveSize 2
+        lagredeVarsler.filterIsInstance<Varsel.SkalInaktiveres>().single().varselId shouldBe aktivtVarsel.varselId
+        val nyttVarsel = lagredeVarsler.filterIsInstance<Varsel.SkalAktiveres>().single()
+        nyttVarsel.skalAktiveresTidspunkt shouldBe LocalDateTime.of(2025, 3, 10, 12, 1)
+        nyttVarsel.skalAktiveresEksterntTidspunkt shouldBe LocalDateTime.of(2025, 3, 11, 9, 0)
     }
 
     @Test
@@ -312,14 +316,14 @@ class VurderVarselForSakTest {
             saksnummer = sak.saksnummer,
             fnr = sak.fnr,
             varselId = VarselId.random(),
-            skalAktiveresTidspunkt = LocalDateTime.of(2025, 3, 9, 9, 0),
-            skalAktiveresEksterntTidspunkt = LocalDateTime.of(2025, 3, 9, 9, 0),
+            skalAktiveresTidspunkt = LocalDateTime.of(2025, 3, 7, 9, 0),
+            skalAktiveresEksterntTidspunkt = LocalDateTime.of(2025, 3, 7, 9, 0),
             skalAktiveresBegrunnelse = "test",
-            aktiveringstidspunkt = LocalDateTime.of(2025, 3, 9, 9, 1),
-            eksternAktiveringstidspunkt = LocalDateTime.of(2025, 3, 9, 9, 1),
+            aktiveringstidspunkt = LocalDateTime.of(2025, 3, 7, 9, 1),
+            eksternAktiveringstidspunkt = LocalDateTime.of(2025, 3, 7, 9, 1),
             skalInaktiveresTidspunkt = nå.minusMinutes(5),
             skalInaktiveresBegrunnelse = "test",
-            opprettet = LocalDateTime.of(2025, 3, 9, 9, 0),
+            opprettet = LocalDateTime.of(2025, 3, 7, 9, 0),
             sistEndret = nå.minusMinutes(5),
         )
         val lagredeVarsler = mutableListOf<Varsel>()

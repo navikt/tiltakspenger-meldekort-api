@@ -329,7 +329,7 @@ class VarselPostgresEndToEndTest {
             val nyttAktivtVarsel = varsler.filterIsInstance<Varsel.Aktiv>().single()
             // skalAktiveresTidspunkt = kanFyllesUtFraOgMed (fredag 7. mars 15:00) – uendret.
             // Det er skalAktiveresEksterntTidspunkt / utsettSendingTil som flyttes til neste virkedag
-            // kl. 09 (cooldown fordi gammelt varsel ble aktivert samme dag).
+            // kl. 09 fordi ekstern varsling allerede er antatt sendt samme dag.
             nyttAktivtVarsel.skalAktiveresTidspunkt shouldBe 7.mars(2025).atTime(15, 0)
             nyttAktivtVarsel.skalAktiveresEksterntTidspunkt shouldBe 11.mars(2025).atHour(9)
 
