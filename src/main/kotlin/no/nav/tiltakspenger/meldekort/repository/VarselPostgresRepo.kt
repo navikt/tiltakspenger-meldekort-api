@@ -25,6 +25,14 @@ class VarselPostgresRepo(
     /**
      * @param aktiveringsmetadata overlagres bare dersom den ikke er null
      * @param inaktiveringsmetadata overlagres bare dersom den ikke er null
+     *
+     * Optimistisk lås basert på tilstand: tilstandsmaskinen er fremoverrettet (SkalAktiveres →
+     * Aktiv? → SkalInaktiveres → Inaktivert) og hver tilstand besøkes maks én gang. Vi krever
+     * derfor at eksisterende rad har den forventede forrige tilstanden ved oppdatering. Hvis en
+     * konkurrerende skriving har endret tilstanden i mellomtiden, kastes [OptimistiskLåsFeil]
+     * og hele transaksjonen rulles tilbake. For [SkalAktiveres] (initial tilstand) finnes det
+     * ingen gyldig forrige tilstand, så enhver konflikt på `varsel_id` regnes som en samtidig
+     * skriving og fører til [OptimistiskLåsFeil].
      */
     override fun lagre(
         varsel: Varsel,
@@ -33,7 +41,7 @@ class VarselPostgresRepo(
         sessionContext: SessionContext?,
     ) {
         sessionFactory.withSession(sessionContext) { session ->
-            session.run(
+            val antallOppdatert = session.run(
                 sqlQuery(
                     """
                     insert into varsel (
@@ -60,7 +68,7 @@ class VarselPostgresRepo(
                         :skal_aktiveres_eksternt_tidspunkt,
                         :skal_aktiveres_begrunnelse,
                         :aktiveringstidspunkt,
-                         :ekstern_aktiveringstidspunkt,
+                        :ekstern_aktiveringstidspunkt,
                         :skal_inaktiveres_tidspunkt,
                         :skal_inaktiveres_begrunnelse,
                         :inaktiveringstidspunkt,
@@ -83,15 +91,11 @@ class VarselPostgresRepo(
                         aktiveringsmetadata = coalesce(:aktiveringsmetadata, varsel.aktiveringsmetadata),
                         inaktiveringsmetadata = coalesce(:inaktiveringsmetadata, varsel.inaktiveringsmetadata),
                         sist_endret = :sist_endret
+                    where varsel.type = :forventet_forrige_type
                     """,
                     "varsel_id" to varsel.varselId.toString(),
                     "sak_id" to varsel.sakId.toString(),
-                    "type" to when (varsel) {
-                        is SkalAktiveres -> "SkalAktiveres"
-                        is Aktiv -> "Aktiv"
-                        is SkalInaktiveres -> "SkalInaktiveres"
-                        is Inaktivert -> "Inaktivert"
-                    },
+                    "type" to varsel.databaseType(),
                     "skal_aktiveres_tidspunkt" to varsel.skalAktiveresTidspunkt,
                     "skal_aktiveres_eksternt_tidspunkt" to varsel.skalAktiveresEksterntTidspunkt,
                     "skal_aktiveres_begrunnelse" to varsel.skalAktiveresBegrunnelse,
@@ -104,9 +108,40 @@ class VarselPostgresRepo(
                     "inaktiveringsmetadata" to inaktiveringsmetadata,
                     "opprettet" to varsel.opprettet,
                     "sist_endret" to varsel.sistEndret,
+                    "forventet_forrige_type" to varsel.forventetForrigeDatabaseType(),
                 ).asUpdate,
             )
+            if (antallOppdatert == 0) {
+                throw OptimistiskLåsFeil(
+                    "Optimistisk lås slo til for varsel ${varsel.varselId}: forventet at eksisterende rad var i tilstand ${varsel.forventetForrigeDatabaseType() ?: "<ingen, dvs. ny rad>"} før overgang til ${varsel.databaseType()}, men raden er enten allerede i målttilstanden eller endret av en annen transaksjon. Transaksjonen rulles tilbake og saken vurderes på nytt i neste kjøring.",
+                )
+            }
         }
+    }
+
+    private fun Varsel.databaseType(): String = when (this) {
+        is SkalAktiveres -> "SkalAktiveres"
+        is Aktiv -> "Aktiv"
+        is SkalInaktiveres -> "SkalInaktiveres"
+        is Inaktivert -> "Inaktivert"
+    }
+
+    /**
+     * Forventet tilstand i databasen før den nye tilstanden lagres. Følger tilstandsmaskinen i
+     * [Varsel]. Returnerer null for [SkalAktiveres] siden dette er initialtilstanden og kun kan
+     * lagres via insert.
+     */
+    private fun Varsel.forventetForrigeDatabaseType(): String? = when (this) {
+        is SkalAktiveres -> null
+
+        is Aktiv -> "SkalAktiveres"
+
+        is SkalInaktiveres ->
+            // Vi kan gå direkte fra SkalAktiveres til SkalInaktiveres uten å innom Aktiv,
+            // f.eks. dersom vi oppdager at varselet ikke skulle vært sendt før det ble aktivert.
+            if (aktiveringstidspunkt == null) "SkalAktiveres" else "Aktiv"
+
+        is Inaktivert -> "SkalInaktiveres"
     }
 
     override fun hentVarslerForSakId(sakId: SakId, sessionContext: SessionContext?): Varsler {

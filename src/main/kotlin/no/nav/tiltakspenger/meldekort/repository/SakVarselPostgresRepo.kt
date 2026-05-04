@@ -104,10 +104,3 @@ class SakVarselPostgresRepo(
         }
     }
 }
-
-/**
- * Kastes av [SakVarselPostgresRepo.markerVarselVurdert] når sist_flagget_tidspunkt har endret
- * seg siden varseljobben leste saken. Signaliserer at hele varseltransaksjonen skal rulles
- * tilbake og saken vurderes på nytt i neste kjøring.
- */
-class OptimistiskLåsFeil(message: String) : RuntimeException(message)

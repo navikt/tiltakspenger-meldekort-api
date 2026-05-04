@@ -1,9 +1,11 @@
 package no.nav.tiltakspenger.meldekort.repository.varsel
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
@@ -16,6 +18,7 @@ import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.meldekort.domene.varsler.Varsel
+import no.nav.tiltakspenger.meldekort.repository.OptimistiskLåsFeil
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -305,6 +308,146 @@ class VarselPostgresRepoTest {
             lagredeVarsler shouldHaveSize 2
             lagredeVarsler.filterIsInstance<Varsel.SkalInaktiveres>().single().varselId shouldBe aktivtVarsel.varselId
             lagredeVarsler.filterIsInstance<Varsel.SkalAktiveres>().single().shouldBeInstanceOf<Varsel.SkalAktiveres>()
+        }
+    }
+
+    @Test
+    fun `optimistisk lås - normal sekvens av tilstandsoverganger oppdaterer type monotont`() {
+        withMigratedDb(clock = fixedClockAt(startTid)) { helper ->
+            val sakId = SakId.random()
+            val varselId = VarselId.random()
+            val fnr = Fnr.random()
+            lagreSak(helper, sakId = sakId, saksnummer = "sak-tilstand", fnr = fnr)
+            val skalAktiveres = skalAktiveres(
+                sakId = sakId,
+                saksnummer = "sak-tilstand",
+                varselId = varselId,
+                fnr = fnr,
+                skalAktiveresTidspunkt = startTid.plusHours(1),
+            )
+            helper.varselPostgresRepo.lagre(skalAktiveres)
+            hentType(helper, varselId) shouldBe "SkalAktiveres"
+
+            val aktiv = skalAktiveres.aktiver(skalAktiveres.skalAktiveresTidspunkt.plusMinutes(5))
+            helper.varselPostgresRepo.lagre(aktiv)
+            hentType(helper, varselId) shouldBe "Aktiv"
+
+            val skalInaktiveres = aktiv.forberedInaktivering(
+                skalInaktiveresTidspunkt = aktiv.aktiveringstidspunkt.plusHours(1),
+                skalInaktiveresBegrunnelse = "mottatt",
+            )
+            helper.varselPostgresRepo.lagre(skalInaktiveres)
+            hentType(helper, varselId) shouldBe "SkalInaktiveres"
+
+            val inaktivert = skalInaktiveres.inaktiver(skalInaktiveres.skalInaktiveresTidspunkt)
+            helper.varselPostgresRepo.lagre(inaktivert)
+            hentType(helper, varselId) shouldBe "Inaktivert"
+
+            helper.varselPostgresRepo.hentVarslerForSakId(sakId).single().shouldBeInstanceOf<Varsel.Inaktivert>()
+        }
+    }
+
+    @Test
+    fun `optimistisk lås - to konkurrerende lagre fra samme tilstand, andre kaster`() {
+        withMigratedDb(clock = fixedClockAt(startTid)) { helper ->
+            val sakId = SakId.random()
+            val varselId = VarselId.random()
+            val fnr = Fnr.random()
+            lagreSak(helper, sakId = sakId, saksnummer = "sak-konkurrent", fnr = fnr)
+
+            val opprinnelig = skalAktiveres(
+                sakId = sakId,
+                saksnummer = "sak-konkurrent",
+                varselId = varselId,
+                fnr = fnr,
+                skalAktiveresTidspunkt = startTid.plusHours(1),
+            )
+            helper.varselPostgresRepo.lagre(opprinnelig)
+
+            // Begge transaksjonene leser samme tilstand (SkalAktiveres) og produserer
+            // hver sin neste tilstand basert på den.
+            val grenA = opprinnelig.aktiver(opprinnelig.skalAktiveresTidspunkt.plusMinutes(5))
+            val grenB = opprinnelig.forberedInaktivering(
+                skalInaktiveresTidspunkt = opprinnelig.skalAktiveresTidspunkt.plusHours(2),
+                skalInaktiveresBegrunnelse = "samtidig endring",
+            )
+
+            helper.varselPostgresRepo.lagre(grenA)
+
+            // grenB forventer at DB fortsatt er i SkalAktiveres, men grenA har flyttet den til Aktiv.
+            val feil = shouldThrow<OptimistiskLåsFeil> {
+                helper.varselPostgresRepo.lagre(grenB)
+            }
+            feil.message!! shouldContain varselId.toString()
+
+            // Databasen skal beholde første skriving (Aktiv), ikke gren B.
+            val lagret = helper.varselPostgresRepo.hentVarslerForSakId(sakId).single()
+            lagret.shouldBeInstanceOf<Varsel.Aktiv>()
+        }
+    }
+
+    @Test
+    fun `optimistisk lås - lagre samme SkalAktiveres to ganger kaster på andre lagre`() {
+        withMigratedDb(clock = fixedClockAt(startTid)) { helper ->
+            val sakId = SakId.random()
+            val varselId = VarselId.random()
+            val fnr = Fnr.random()
+            lagreSak(helper, sakId = sakId, saksnummer = "sak-replay", fnr = fnr)
+
+            val varsel = skalAktiveres(
+                sakId = sakId,
+                saksnummer = "sak-replay",
+                varselId = varselId,
+                fnr = fnr,
+                skalAktiveresTidspunkt = startTid.plusHours(1),
+            )
+            // Første lagre: insert lykkes.
+            helper.varselPostgresRepo.lagre(varsel)
+
+            // Andre lagre: SkalAktiveres er initialtilstanden og har ingen gyldig forrige tilstand,
+            // så enhver konflikt på varsel_id skal regnes som samtidig skriving og kaste.
+            shouldThrow<OptimistiskLåsFeil> {
+                helper.varselPostgresRepo.lagre(varsel)
+            }
+        }
+    }
+
+    @Test
+    fun `optimistisk lås - lagre samme tilstandsovergang to ganger kaster på andre lagre`() {
+        withMigratedDb(clock = fixedClockAt(startTid)) { helper ->
+            val sakId = SakId.random()
+            val varselId = VarselId.random()
+            val fnr = Fnr.random()
+            lagreSak(helper, sakId = sakId, saksnummer = "sak-replay-aktiv", fnr = fnr)
+
+            val skalAktiveres = skalAktiveres(
+                sakId = sakId,
+                saksnummer = "sak-replay-aktiv",
+                varselId = varselId,
+                fnr = fnr,
+                skalAktiveresTidspunkt = startTid.plusHours(1),
+            )
+            helper.varselPostgresRepo.lagre(skalAktiveres)
+
+            val aktiv = skalAktiveres.aktiver(skalAktiveres.skalAktiveresTidspunkt.plusMinutes(5))
+            helper.varselPostgresRepo.lagre(aktiv)
+
+            // Andre lagre av samme Aktiv-overgang skal kaste fordi DB nå er i Aktiv,
+            // mens overgangen forventer at DB var i SkalAktiveres.
+            shouldThrow<OptimistiskLåsFeil> {
+                helper.varselPostgresRepo.lagre(aktiv)
+            }
+        }
+    }
+
+    private fun hentType(helper: TestDataHelper, varselId: VarselId): String {
+        return helper.sessionFactory.withSession(null) { session ->
+            session.run(
+                sqlQuery(
+                    "select type from varsel where varsel_id = :varsel_id",
+                    "varsel_id" to varselId.toString(),
+                ).map { row -> row.string("type") }.asSingle,
+            )!!
         }
     }
 
