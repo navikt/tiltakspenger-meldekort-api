@@ -26,5 +26,5 @@ class TestApplicationContextMedInMemoryDb(
     override val meldeperiodeRepo = MeldeperiodeRepoFake()
     override val sakRepo = SakRepoFake(clock)
     override val sakVarselRepo = SakVarselRepoFake(sakRepo)
-    override val varselMeldekortRepo = VarselMeldekortRepoFake(meldekortRepoFake, meldeperiodeRepo, clock)
+    override val varselMeldekortRepo = VarselMeldekortRepoFake(meldekortRepoFake, meldeperiodeRepo)
 }
