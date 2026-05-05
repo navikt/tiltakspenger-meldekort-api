@@ -25,11 +25,11 @@ interface MeldekortMother {
         periode: Periode = ObjectMother.periode(),
         mottatt: LocalDateTime? = nå(fixedClock),
         deaktivert: LocalDateTime? = null,
-        saksnummer: String = Math.random().toString(),
-        sakId: SakId = SakId.random(),
+        fnr: Fnr = Fnr.fromString(FAKE_FNR),
+        sakId: SakId = sakIdForFnr(fnr),
+        saksnummer: String = saksnummerForSakId(sakId),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         varselId: VarselId = VarselId.random(),
-        fnr: Fnr = Fnr.fromString(FAKE_FNR),
         erVarselInaktivert: Boolean = false,
         sendtVarselTidspunkt: LocalDateTime? = null,
         maksAntallDagerForPeriode: Int = 10,
@@ -62,11 +62,11 @@ interface MeldekortMother {
         periode: Periode = ObjectMother.periode(),
         mottatt: LocalDateTime? = nå(fixedClock),
         deaktivert: LocalDateTime? = null,
-        saksnummer: String = Math.random().toString(),
-        sakId: SakId = SakId.random(),
+        fnr: Fnr = Fnr.fromString(FAKE_FNR),
+        sakId: SakId = sakIdForFnr(fnr),
+        saksnummer: String = saksnummerForSakId(sakId),
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         varselId: VarselId = VarselId.random(),
-        fnr: Fnr = Fnr.fromString(FAKE_FNR),
         erVarselInaktivert: Boolean = false,
         sendtVarselTidspunkt: LocalDateTime? = null,
         opprettet: LocalDateTime = nå(fixedClock),
@@ -144,6 +144,15 @@ fun TestApplicationContext.lagMeldekort(
         locale = locale,
     )
 
+    if (sakRepo.hent(meldekort.sakId) == null) {
+        sakRepo.lagre(
+            ObjectMother.sak(
+                id = meldekort.sakId,
+                saksnummer = meldekort.saksnummer,
+                fnr = meldekort.fnr,
+            ),
+        )
+    }
     meldeperiodeRepo.lagre(meldekort.meldeperiode)
     meldekortRepo.lagre(meldekort)
 

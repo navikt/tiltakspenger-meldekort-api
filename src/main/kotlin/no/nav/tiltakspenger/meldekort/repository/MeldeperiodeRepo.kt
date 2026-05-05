@@ -16,8 +16,6 @@ interface MeldeperiodeRepo {
 
     fun hentForId(id: MeldeperiodeId, sessionContext: SessionContext? = null): Meldeperiode?
 
-    fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr, sessionContext: SessionContext? = null)
-
     fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(
         id: MeldeperiodeKjedeId,
         fnr: Fnr,

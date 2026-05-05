@@ -17,6 +17,12 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     )
 
+    fun oppdaterFnr(
+        gammeltFnr: Fnr,
+        nyttFnr: Fnr,
+        sessionContext: SessionContext? = null,
+    )
+
     fun oppdaterStatusForMicrofrontend(
         sakId: SakId,
         aktiv: Boolean,

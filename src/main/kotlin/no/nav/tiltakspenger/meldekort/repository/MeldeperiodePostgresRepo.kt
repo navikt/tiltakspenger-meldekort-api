@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.repository
 
 import kotliquery.Row
 import kotliquery.Session
-import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.json.objectMapper
@@ -33,8 +32,6 @@ class MeldeperiodePostgresRepo(
                         kjede_id,
                         versjon,
                         sak_id,
-                        saksnummer,
-                        fnr,
                         opprettet,
                         fra_og_med,
                         til_og_med,
@@ -46,8 +43,6 @@ class MeldeperiodePostgresRepo(
                         :kjede_id,
                         :versjon,
                         :sak_id,
-                        :saksnummer,
-                        :fnr,
                         :opprettet,
                         :fra_og_med,
                         :til_og_med,
@@ -60,8 +55,6 @@ class MeldeperiodePostgresRepo(
                     "kjede_id" to meldeperiode.kjedeId.toString(),
                     "versjon" to meldeperiode.versjon,
                     "sak_id" to meldeperiode.sakId.toString(),
-                    "saksnummer" to meldeperiode.saksnummer,
-                    "fnr" to meldeperiode.fnr.verdi,
                     "opprettet" to meldeperiode.opprettet,
                     "fra_og_med" to meldeperiode.periode.fraOgMed,
                     "til_og_med" to meldeperiode.periode.tilOgMed,
@@ -79,20 +72,6 @@ class MeldeperiodePostgresRepo(
         }
     }
 
-    override fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr, sessionContext: SessionContext?) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                queryOf(
-                    """update meldeperiode set fnr = :nytt_fnr where fnr = :gammelt_fnr""",
-                    mapOf(
-                        "nytt_fnr" to nyttFnr.verdi,
-                        "gammelt_fnr" to gammeltFnr.verdi,
-                    ),
-                ).asUpdate,
-            )
-        }
-    }
-
     override fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(
         id: MeldeperiodeKjedeId,
         fnr: Fnr,
@@ -100,19 +79,17 @@ class MeldeperiodePostgresRepo(
     ): Meldeperiode? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
-                queryOf(
-                    //language=sql
+                sqlQuery(
                     """
-                    SELECT DISTINCT ON (fnr, kjede_id) *
-                    FROM meldeperiode
-                    where fnr = :fnr
-                      and kjede_id = :id
-                    ORDER BY fnr, kjede_id, versjon DESC;
+                    SELECT DISTINCT ON (s.fnr, mp.kjede_id) mp.*, s.fnr, s.saksnummer
+                    FROM meldeperiode mp
+                    JOIN sak s ON s.id = mp.sak_id
+                    WHERE s.fnr = :fnr
+                      AND mp.kjede_id = :id
+                    ORDER BY s.fnr, mp.kjede_id, mp.versjon DESC;
                     """.trimIndent(),
-                    mapOf(
-                        "id" to id.verdi,
-                        "fnr" to fnr.verdi,
-                    ),
+                    "id" to id.verdi,
+                    "fnr" to fnr.verdi,
                 ).map { fromRow(it) }.asSingle,
             )
         }
@@ -127,12 +104,13 @@ class MeldeperiodePostgresRepo(
             session.run(
                 sqlQuery(
                     """
-                        SELECT DISTINCT ON (fnr, kjede_id) *
-                        from meldeperiode
-                        where fra_og_med = :fra_og_med
-                          and til_og_med = :til_og_med
-                          and fnr = :fnr
-                        order by fnr, kjede_id, versjon desc
+                        SELECT DISTINCT ON (s.fnr, mp.kjede_id) mp.*, s.fnr, s.saksnummer
+                        FROM meldeperiode mp
+                        JOIN sak s ON s.id = mp.sak_id
+                        WHERE mp.fra_og_med = :fra_og_med
+                          AND mp.til_og_med = :til_og_med
+                          AND s.fnr = :fnr
+                        ORDER BY s.fnr, mp.kjede_id, mp.versjon DESC
                     """.trimIndent(),
                     "fra_og_med" to periode.fraOgMed,
                     "til_og_med" to periode.tilOgMed,
@@ -159,7 +137,12 @@ class MeldeperiodePostgresRepo(
         ): Meldeperiode? {
             return session.run(
                 sqlQuery(
-                    "select * from meldeperiode where id = :id",
+                    """
+                    SELECT mp.*, s.fnr, s.saksnummer
+                    FROM meldeperiode mp
+                    JOIN sak s ON s.id = mp.sak_id
+                    WHERE mp.id = :id
+                    """.trimIndent(),
                     "id" to id.toString(),
                 ).map { row -> fromRow(row) }.asSingle,
             )
@@ -173,8 +156,11 @@ class MeldeperiodePostgresRepo(
                 sqlQuery(
                     """
                     select distinct on (fra_og_med)
-                        * from meldeperiode where sak_id = :sak_id
-                    order by fra_og_med, versjon desc
+                        mp.*, s.fnr, s.saksnummer
+                    from meldeperiode mp
+                    join sak s on s.id = mp.sak_id
+                    where mp.sak_id = :sak_id
+                    order by mp.fra_og_med, mp.versjon desc
                     """,
                     "sak_id" to sakId.toString(),
                 ).map { row -> fromRow(row) }.asList,

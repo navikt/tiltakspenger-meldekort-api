@@ -285,8 +285,8 @@ class VarslingMeldekortRepoTest {
         fun `alle matcher kriteriene`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort1 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
-                val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort1 = ObjectMother.meldekort(fnr = Fnr.random(), mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort2 = ObjectMother.meldekort(fnr = Fnr.random(), mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
 
                 lagreMeldekort(helper, meldekort1, meldekort2)
 
@@ -302,15 +302,16 @@ class VarslingMeldekortRepoTest {
         fun `henter bare ut relevante meldekort`() {
             withMigratedDb { helper ->
                 val meldekortRepo = helper.meldekortPostgresRepo
-                val meldekort1 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
-                val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort1 = ObjectMother.meldekort(fnr = Fnr.random(), mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort2 = ObjectMother.meldekort(fnr = Fnr.random(), mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
                 val meldekort3 = ObjectMother.meldekort(
+                    fnr = Fnr.random(),
                     mottatt = nå(fixedClock),
                     sendtVarselTidspunkt = nå(fixedClock),
                     erVarselInaktivert = true,
                 )
-                val meldekort4 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = null)
-                val meldekort5 = ObjectMother.meldekort(mottatt = null, sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort4 = ObjectMother.meldekort(fnr = Fnr.random(), mottatt = nå(fixedClock), sendtVarselTidspunkt = null)
+                val meldekort5 = ObjectMother.meldekort(fnr = Fnr.random(), mottatt = null, sendtVarselTidspunkt = nå(fixedClock))
 
                 lagreMeldekort(helper, meldekort1, meldekort2, meldekort3, meldekort4, meldekort5)
 
@@ -348,8 +349,8 @@ class VarslingMeldekortRepoTest {
         fun `respekterer limit`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort1 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
-                val meldekort2 = ObjectMother.meldekort(mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort1 = ObjectMother.meldekort(fnr = Fnr.random(), mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
+                val meldekort2 = ObjectMother.meldekort(fnr = Fnr.random(), mottatt = nå(fixedClock), sendtVarselTidspunkt = nå(fixedClock))
 
                 lagreMeldekort(helper, meldekort1, meldekort2)
 
