@@ -208,7 +208,7 @@ open class ApplicationContext(val clock: Clock) {
 
     open val identhendelseService: IdenthendelseService by lazy {
         IdenthendelseService(
-            meldeperiodeRepo = meldeperiodeRepo,
+            sakRepo = sakRepo,
         )
     }
 

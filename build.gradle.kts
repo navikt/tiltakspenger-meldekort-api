@@ -1,5 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import kotlinx.kover.gradle.plugin.dsl.AggregationType
+import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 
 val jvmVersion = JvmTarget.JVM_21
 val mainClassFile = "no.nav.tiltakspenger.meldekort.ApplicationKt"
@@ -71,7 +73,7 @@ dependencies {
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMikrofrontendSelectorBuilderVersion")
 
     // DB
-    implementation("org.flywaydb:flyway-database-postgresql:12.4.0")
+    implementation("org.flywaydb:flyway-database-postgresql:12.5.0")
     implementation("com.zaxxer:HikariCP:7.0.2")
     implementation("org.postgresql:postgresql:42.7.10")
     implementation("com.github.seratch:kotliquery:1.9.1")
@@ -145,11 +147,30 @@ spotless {
 kover {
     reports {
         total {
+            filters {
+                includes {
+                    classes(
+                        "no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo*",
+                        "no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo*",
+                        "no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo*",
+                    )
+                }
+            }
             html {
                 onCheck = true
             }
             xml {
                 onCheck = true
+            }
+            verify {
+                onCheck = true
+                rule("postgres repos have full line coverage") {
+                    bound {
+                        minValue = 100
+                        coverageUnits = CoverageUnit.LINE
+                        aggregationForGroup = AggregationType.COVERED_PERCENTAGE
+                    }
+                }
             }
         }
     }

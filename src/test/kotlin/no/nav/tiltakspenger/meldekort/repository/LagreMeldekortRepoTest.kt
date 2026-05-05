@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.repository
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import kotliquery.queryOf
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
@@ -87,6 +86,25 @@ class LagreMeldekortRepoTest {
         }
 
         @Test
+        fun `lagre oppdaterer eksisterende meldekort med samme id`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort = ObjectMother.meldekort(mottatt = null, locale = null)
+                lagreMeldekort(helper, meldekort)
+
+                val oppdatertMeldekort = meldekort.copy(
+                    mottatt = nå(fixedClock),
+                    korrigering = true,
+                    locale = "nb",
+                )
+
+                repo.lagre(oppdatertMeldekort)
+
+                repo.hentForMeldekortId(meldekort.id, meldekort.fnr) shouldBe oppdatertMeldekort
+            }
+        }
+
+        @Test
         fun `lagrer korrigering`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
@@ -111,6 +129,26 @@ class LagreMeldekortRepoTest {
 
     @Nested
     inner class Deaktiver {
+        @Test
+        fun `deaktiver setter deaktivert`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort = ObjectMother.meldekort(mottatt = null)
+
+                lagreMeldekort(helper, meldekort)
+                repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
+                    result shouldNotBe null
+                    result!!.deaktivert shouldBe null
+                }
+                repo.deaktiver(meldekort.id)
+
+                repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
+                    result shouldNotBe null
+                    result!!.deaktivert shouldNotBe null
+                }
+            }
+        }
+
         @Test
         fun `deaktiver setter deaktivert tidspunkt`() {
             withMigratedDb { helper ->
@@ -195,10 +233,7 @@ class LagreMeldekortRepoTest {
                     mottatt = null,
                 )
 
-                helper.meldeperiodeRepo.lagre(meldeperiode1)
-                helper.meldekortPostgresRepo.lagre(meldekort1)
-                helper.meldeperiodeRepo.lagre(meldeperiode2)
-                helper.meldekortPostgresRepo.lagre(meldekort2)
+                lagreMeldekort(helper, meldekort1, meldekort2)
 
                 val kjede = repo.hentMeldekortForKjedeId(kjedeId, fnr)
 

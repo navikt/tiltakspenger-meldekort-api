@@ -24,10 +24,10 @@ interface MeldekortMother {
         periode: Periode = ObjectMother.periode(),
         mottatt: LocalDateTime? = nå(fixedClock),
         deaktivert: LocalDateTime? = null,
-        saksnummer: String = Math.random().toString(),
-        sakId: SakId = SakId.random(),
-        statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
+        sakId: SakId = sakIdForFnr(fnr),
+        saksnummer: String = saksnummerForSakId(sakId),
+        statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         maksAntallDagerForPeriode: Int = 10,
         opprettet: LocalDateTime = nå(fixedClock),
     ): Meldekort {
@@ -55,10 +55,10 @@ interface MeldekortMother {
         periode: Periode = ObjectMother.periode(),
         mottatt: LocalDateTime? = nå(fixedClock),
         deaktivert: LocalDateTime? = null,
-        saksnummer: String = Math.random().toString(),
-        sakId: SakId = SakId.random(),
-        statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
+        sakId: SakId = sakIdForFnr(fnr),
+        saksnummer: String = saksnummerForSakId(sakId),
+        statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         opprettet: LocalDateTime = nå(fixedClock),
         meldeperiode: Meldeperiode = ObjectMother.meldeperiode(
             periode = periode,
@@ -132,6 +132,15 @@ fun TestApplicationContext.lagMeldekort(
         locale = locale,
     )
 
+    if (sakRepo.hent(meldekort.sakId) == null) {
+        sakRepo.lagre(
+            ObjectMother.sak(
+                id = meldekort.sakId,
+                saksnummer = meldekort.saksnummer,
+                fnr = meldekort.fnr,
+            ),
+        )
+    }
     meldeperiodeRepo.lagre(meldekort.meldeperiode)
     meldekortRepo.lagre(meldekort)
 

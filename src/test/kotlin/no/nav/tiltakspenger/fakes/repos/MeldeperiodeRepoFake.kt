@@ -9,7 +9,6 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodeRepo
 import kotlin.collections.filter
-import kotlin.collections.find
 import kotlin.collections.lastOrNull
 import kotlin.collections.maxByOrNull
 import kotlin.collections.mutableMapOf
@@ -24,15 +23,6 @@ class MeldeperiodeRepoFake : MeldeperiodeRepo {
 
     override fun hentForId(id: MeldeperiodeId, sessionContext: SessionContext?): Meldeperiode? {
         return data.get()[id]
-    }
-
-    override fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr, sessionContext: SessionContext?) {
-        val meldeperiode = data.get().values.find { it.fnr == gammeltFnr }
-        meldeperiode?.let {
-            data.get()[it.id] = it.copy(
-                fnr = nyttFnr,
-            )
-        }
     }
 
     override fun hentSisteMeldeperiodeForMeldeperiodeKjedeId(

@@ -12,9 +12,9 @@ interface SakMother {
 
     fun sak(
         id: SakId = SakId.random(),
+        meldeperioder: List<Meldeperiode> = emptyList(),
         saksnummer: String = Math.random().toString(),
         fnr: Fnr = Fnr.fromString(FAKE_FNR),
-        meldeperioder: List<Meldeperiode> = emptyList(),
         arenaMeldekortStatus: ArenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
         harSoknadUnderBehandling: Boolean = false,
         kanSendeInnHelgForMeldekort: Boolean = false,

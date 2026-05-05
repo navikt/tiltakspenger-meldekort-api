@@ -155,8 +155,8 @@ class SakVarselPostgresRepoTest {
 
     private fun lagreSak(helper: TestDataHelper, vararg saker: Sak) {
         saker.forEach { sak ->
-            sak.meldeperioder.forEach { meldeperiode -> helper.meldeperiodeRepo.lagre(meldeperiode) }
             helper.sakPostgresRepo.lagre(sak)
+            sak.meldeperioder.forEach { meldeperiode -> helper.meldeperiodeRepo.lagre(meldeperiode) }
         }
     }
 

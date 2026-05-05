@@ -7,29 +7,37 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
-import no.nav.tiltakspenger.meldekort.domene.VarselId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class IdenthendelseServiceTest {
     @Test
-    fun `behandleIdenthendelse - finnes meldeperiode for gammelt fnr - oppdaterer`() {
+    fun `behandleIdenthendelse - finnes sak for gammelt fnr - oppdaterer sak`() {
         withMigratedDb { helper ->
-            val repo = helper.meldeperiodeRepo
-            val identhendelseService = IdenthendelseService(repo)
+            val identhendelseService = IdenthendelseService(helper.sakPostgresRepo)
             val gammeltFnr = Fnr.random()
             val nyttFnr = Fnr.random()
-            val meldekort = ObjectMother.meldekort(fnr = gammeltFnr, mottatt = nå(fixedClock))
-            repo.lagre(meldekort.meldeperiode)
+            val meldeperiode = ObjectMother.meldeperiode(fnr = gammeltFnr, opprettet = nå(fixedClock))
+            val sak = ObjectMother.sak(
+                id = meldeperiode.sakId,
+                fnr = gammeltFnr,
+                saksnummer = meldeperiode.saksnummer,
+                meldeperioder = listOf(meldeperiode),
+            )
+            helper.sakPostgresRepo.lagre(sak)
+            helper.meldeperiodeRepo.lagre(meldeperiode)
 
             identhendelseService.behandleIdenthendelse(
                 id = UUID.randomUUID(),
                 identhendelseDto = IdenthendelseDto(gammeltFnr = gammeltFnr.verdi, nyttFnr = nyttFnr.verdi),
             )
 
-            val oppdatertMeldeperiode = repo.hentForId(meldekort.meldeperiode.id)
+            val oppdatertSak = helper.sakPostgresRepo.hent(sak.id)
+            val oppdatertMeldeperiode = helper.meldeperiodeRepo.hentForId(meldeperiode.id)
 
+            oppdatertSak shouldNotBe null
+            oppdatertSak?.fnr shouldBe nyttFnr
             oppdatertMeldeperiode shouldNotBe null
             oppdatertMeldeperiode?.fnr shouldBe nyttFnr
         }

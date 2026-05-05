@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.repository.varsel
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
@@ -13,6 +14,7 @@ import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.repository.lagreMeldekort
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
@@ -90,6 +92,7 @@ class VarselMeldekortPostgresRepoTest {
                     mottatt = nå(fixedClock),
                     meldeperiode = meldeperiodeV1,
                 )
+                lagreSak(helper, meldeperiodeV1)
                 helper.meldeperiodeRepo.lagre(meldeperiodeV1)
                 helper.meldekortPostgresRepo.lagre(meldekortV1)
 
@@ -130,6 +133,7 @@ class VarselMeldekortPostgresRepoTest {
                     periode = førstePeriode,
                     opprettet = nå(fixedClock),
                 )
+                lagreSak(helper, meldeperiodeV1)
                 helper.meldeperiodeRepo.lagre(meldeperiodeV1)
                 helper.meldekortPostgresRepo.lagre(
                     ObjectMother.meldekort(
@@ -177,6 +181,7 @@ class VarselMeldekortPostgresRepoTest {
                     girRett = førstePeriode.tilDager().associateWith { false },
                     antallDagerForPeriode = 0,
                 )
+                lagreSak(helper, meldeperiode)
                 helper.meldeperiodeRepo.lagre(meldeperiode)
 
                 val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
@@ -196,15 +201,8 @@ class VarselMeldekortPostgresRepoTest {
                     periode = førstePeriode,
                     opprettet = nå(fixedClock),
                 )
+                lagreSak(helper, meldeperiode)
                 helper.meldeperiodeRepo.lagre(meldeperiode)
-                helper.sakPostgresRepo.lagre(
-                    ObjectMother.sak(
-                        id = sakId,
-                        saksnummer = saksnummer,
-                        fnr = fnr,
-                        meldeperioder = listOf(meldeperiode),
-                    ),
-                )
 
                 val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
 
@@ -236,6 +234,7 @@ class VarselMeldekortPostgresRepoTest {
                     mottatt = null,
                     meldeperiode = meldeperiode,
                 )
+                lagreSak(helper, meldeperiode)
                 helper.meldeperiodeRepo.lagre(meldeperiode)
                 helper.meldekortPostgresRepo.lagre(meldekort)
 
@@ -262,6 +261,7 @@ class VarselMeldekortPostgresRepoTest {
                     periode = førstePeriode,
                     opprettet = nå(fixedClock),
                 )
+                lagreSak(helper, meldeperiodeV1)
                 helper.meldeperiodeRepo.lagre(meldeperiodeV1)
                 val meldekortV1 = ObjectMother.meldekort(
                     sakId = sakId,
@@ -407,3 +407,17 @@ class VarselMeldekortPostgresRepoTest {
 }
 
 private fun LocalDate.atHour(time: Int) = this.atTime(time, 0)
+
+private fun lagreSak(helper: TestDataHelper, vararg meldeperioder: Meldeperiode) {
+    val meldeperiode = requireNotNull(meldeperioder.firstOrNull()) { "Må ha minst én meldeperiode" }
+    if (helper.sakPostgresRepo.hent(meldeperiode.sakId) == null) {
+        helper.sakPostgresRepo.lagre(
+            ObjectMother.sak(
+                id = meldeperiode.sakId,
+                saksnummer = meldeperiode.saksnummer,
+                fnr = meldeperiode.fnr,
+                meldeperioder = meldeperioder.toList(),
+            ),
+        )
+    }
+}

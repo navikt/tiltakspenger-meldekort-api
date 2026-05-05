@@ -77,6 +77,26 @@ class SakPostgresRepo(
         }
     }
 
+    override fun oppdaterFnr(
+        gammeltFnr: Fnr,
+        nyttFnr: Fnr,
+        sessionContext: SessionContext?,
+    ) {
+        sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update sak set
+                        fnr = :nytt_fnr
+                    where fnr = :gammelt_fnr
+                    """,
+                    "nytt_fnr" to nyttFnr.verdi,
+                    "gammelt_fnr" to gammeltFnr.verdi,
+                ).asUpdate,
+            )
+        }
+    }
+
     override fun oppdaterStatusForMicrofrontend(
         sakId: SakId,
         aktiv: Boolean,
