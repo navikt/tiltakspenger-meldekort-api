@@ -33,6 +33,14 @@ class SakRepoFake(
         )
     }
 
+    override fun oppdaterFnr(gammeltFnr: Fnr, nyttFnr: Fnr, sessionContext: SessionContext?) {
+        data.get()
+            .filterValues { it.fnr == gammeltFnr }
+            .forEach { (sakId, sak) ->
+                data.get()[sakId] = sak.copy(fnr = nyttFnr)
+            }
+    }
+
     override fun oppdaterStatusForMicrofrontend(sakId: SakId, aktiv: Boolean, sessionContext: SessionContext?) {
         // Ingen operasjon i kode ettersom det bare er et db-flagg
     }

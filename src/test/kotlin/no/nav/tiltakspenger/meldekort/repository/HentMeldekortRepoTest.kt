@@ -84,6 +84,30 @@ class HentMeldekortRepoTest {
                 result shouldBe andreMeldekort
             }
         }
+
+        @Test
+        fun `filtrerer siste mottatte meldekort på fnr`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val fnr = Fnr.random()
+                val annenFnr = Fnr.random()
+                val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+                val brukersMeldekort = ObjectMother.meldekort(
+                    fnr = fnr,
+                    mottatt = nå(fixedClock).minusWeeks(2),
+                    periode = førstePeriode,
+                )
+                val annenBrukersNyereMeldekort = ObjectMother.meldekort(
+                    fnr = annenFnr,
+                    mottatt = nå(fixedClock),
+                    periode = førstePeriode.plus14Dager(),
+                )
+
+                lagreMeldekort(helper, brukersMeldekort, annenBrukersNyereMeldekort)
+
+                repo.hentSisteUtfylteMeldekort(fnr) shouldBe brukersMeldekort
+            }
+        }
     }
 
     @Nested
@@ -245,6 +269,56 @@ class HentMeldekortRepoTest {
                 alleInnsendteMeldekort shouldBe emptyList()
             }
         }
+
+        @Test
+        fun `skal hente nyeste versjon når flere meldekort for samme periode kan utfylles`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val fnr = Fnr.random()
+                val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+                val meldekortVersjon1 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    periode = periode,
+                    mottatt = null,
+                )
+                val meldeperiodeVersjon2 = ObjectMother.meldeperiode(
+                    periode = periode,
+                    fnr = fnr,
+                    sakId = meldekortVersjon1.sakId,
+                    saksnummer = meldekortVersjon1.saksnummer,
+                    versjon = 2,
+                    opprettet = meldekortVersjon1.meldeperiode.opprettet.plusSeconds(1),
+                )
+                val meldekortVersjon2 = ObjectMother.meldekort(
+                    fnr = fnr,
+                    sakId = meldekortVersjon1.sakId,
+                    saksnummer = meldekortVersjon1.saksnummer,
+                    periode = periode,
+                    meldeperiode = meldeperiodeVersjon2,
+                    mottatt = null,
+                )
+
+                lagreMeldekort(helper, meldekortVersjon1, meldekortVersjon2)
+
+                repo.hentNesteMeldekortTilUtfylling(fnr) shouldBe meldekortVersjon2
+            }
+        }
+
+        @Test
+        fun `filtrerer neste meldekort til utfylling på fnr`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val fnr = Fnr.random()
+                val annenFnr = Fnr.random()
+                val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+                val brukersMeldekort = ObjectMother.meldekort(fnr = fnr, periode = førstePeriode.plus14Dager(), mottatt = null)
+                val annenBrukersTidligereMeldekort = ObjectMother.meldekort(fnr = annenFnr, periode = førstePeriode, mottatt = null)
+
+                lagreMeldekort(helper, brukersMeldekort, annenBrukersTidligereMeldekort)
+
+                repo.hentNesteMeldekortTilUtfylling(fnr) shouldBe brukersMeldekort
+            }
+        }
     }
 
     @Nested
@@ -342,8 +416,7 @@ class HentMeldekortRepoTest {
             withMigratedDb { helper ->
                 val meldekort = ObjectMother.meldekort()
                 val kjedeId = meldekort.meldeperiode.kjedeId
-                helper.meldeperiodeRepo.lagre(meldekort.meldeperiode)
-                helper.meldekortPostgresRepo.lagre(meldekort)
+                lagreMeldekort(helper, meldekort)
                 val hentetMeldekort = helper.meldekortPostgresRepo.hentSisteMeldekortForKjedeId(kjedeId, meldekort.fnr)
                 hentetMeldekort shouldBe meldekort
             }
@@ -359,6 +432,46 @@ class HentMeldekortRepoTest {
 
                 val result = repo.hentSisteMeldekortForKjedeId(ukjentKjedeId, fnr)
                 result shouldBe null
+            }
+        }
+
+        @Test
+        fun `returnerer siste meldekortversjon for kjede`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+                val meldekortVersjon1 = ObjectMother.meldekort(periode = periode, mottatt = null)
+                val meldeperiodeVersjon2 = ObjectMother.meldeperiode(
+                    periode = periode,
+                    fnr = meldekortVersjon1.fnr,
+                    sakId = meldekortVersjon1.sakId,
+                    saksnummer = meldekortVersjon1.saksnummer,
+                    versjon = 2,
+                    opprettet = meldekortVersjon1.meldeperiode.opprettet.plusSeconds(1),
+                )
+                val meldekortVersjon2 = ObjectMother.meldekort(
+                    periode = periode,
+                    fnr = meldekortVersjon1.fnr,
+                    sakId = meldekortVersjon1.sakId,
+                    saksnummer = meldekortVersjon1.saksnummer,
+                    meldeperiode = meldeperiodeVersjon2,
+                    mottatt = null,
+                )
+
+                lagreMeldekort(helper, meldekortVersjon1, meldekortVersjon2)
+
+                repo.hentSisteMeldekortForKjedeId(meldekortVersjon1.meldeperiode.kjedeId, meldekortVersjon1.fnr) shouldBe meldekortVersjon2
+            }
+        }
+
+        @Test
+        fun `returnerer null for feil fnr`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort = ObjectMother.meldekort()
+                lagreMeldekort(helper, meldekort)
+
+                repo.hentSisteMeldekortForKjedeId(meldekort.meldeperiode.kjedeId, Fnr.random()) shouldBe null
             }
         }
     }
@@ -377,7 +490,10 @@ class HentMeldekortRepoTest {
                 val forrigeForrigeMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(4))
                 val forrigeMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(2))
                 val nesteMeldekort = lagMeldekort(fnr, nærmesteSøndag.plusWeeks(2))
-                val innsendtMeldekort = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(2), mottatt = nå(fixedClockAt(nærmesteSøndag.minusWeeks(2))))
+                val innsendtMeldekort = ObjectMother.meldekort(
+                    meldeperiode = forrigeMeldekort.meldeperiode,
+                    mottatt = nå(fixedClockAt(nærmesteSøndag.minusWeeks(2))),
+                )
                 val annenBrukersMeldekort = lagMeldekort(Fnr.random(), nærmesteSøndag)
 
                 lagreMeldekort(helper, nærmesteMeldekort, forrigeForrigeMeldekort, forrigeMeldekort, nesteMeldekort, innsendtMeldekort, annenBrukersMeldekort)
@@ -416,6 +532,22 @@ class HentMeldekortRepoTest {
 
                 val resultat = repo.hentAlleMeldekortKlarTilInnsending(fnr)
                 resultat shouldBe emptyList()
+            }
+        }
+
+        @Test
+        fun `returnerer ikke deaktiverte meldekort som ellers er klare til innsending`() {
+            val clock = fixedClockAt(1.mars(2025))
+            withMigratedDb(clock = clock) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val fnr = Fnr.random()
+                val nærmesteSøndag = LocalDate.now(clock).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+                val meldekort = lagMeldekort(fnr, nærmesteSøndag)
+                lagreMeldekort(helper, meldekort)
+
+                repo.deaktiver(meldekort.id, deaktiverVarsel = false)
+
+                repo.hentAlleMeldekortKlarTilInnsending(fnr) shouldBe emptyList()
             }
         }
 

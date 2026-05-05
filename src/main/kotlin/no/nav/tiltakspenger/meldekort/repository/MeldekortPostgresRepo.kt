@@ -126,8 +126,9 @@ class MeldekortPostgresRepo(
                         mk.*
                     from meldekort_bruker mk
                     join meldeperiode mp on mk.meldeperiode_id = mp.id
+                    join sak s on s.id = mp.sak_id
                     where mp.kjede_id = :kjede_id
-                        and mp.fnr = :fnr
+                        and s.fnr = :fnr
                     order by mp.versjon, mk.mottatt
                     """,
                     "kjede_id" to kjedeId.verdi,
@@ -152,8 +153,9 @@ class MeldekortPostgresRepo(
                         mk.*
                     from meldekort_bruker mk
                     join meldeperiode mp on mp.id = mk.meldeperiode_id
+                    join sak s on s.id = mp.sak_id
                     where mk.id = :id 
-                    and mp.fnr = :fnr
+                    and s.fnr = :fnr
                     """,
                     "id" to meldekortId.toString(),
                     "fnr" to fnr.verdi,
@@ -174,7 +176,8 @@ class MeldekortPostgresRepo(
                             mk.*
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.id = mk.meldeperiode_id
-                        where mp.fnr = :fnr
+                        join sak s on s.id = mp.sak_id
+                        where s.fnr = :fnr
                             and mk.mottatt is not null
                         order by mottatt desc
                         limit 1
@@ -195,7 +198,8 @@ class MeldekortPostgresRepo(
                             mk.*
                         from meldekort_bruker mk
                         join meldeperiode mp on mp.id = mk.meldeperiode_id
-                        where mp.fnr = :fnr
+                        join sak s on s.id = mp.sak_id
+                        where s.fnr = :fnr
                             and mk.mottatt is null
                             and mk.deaktivert is null
                         order by fra_og_med, versjon desc
@@ -218,7 +222,8 @@ class MeldekortPostgresRepo(
                         SELECT mb.*
                         FROM meldekort_bruker mb
                         JOIN meldeperiode mp ON mp.id = mb.meldeperiode_id
-                        WHERE mp.fnr = :fnr
+                        JOIN sak s ON s.id = mp.sak_id
+                        WHERE s.fnr = :fnr
                           AND mb.mottatt IS NULL
                           AND mb.deaktivert IS NULL
                           AND mp.kan_fylles_ut_fra_og_med <= :tidsgrense
@@ -247,28 +252,29 @@ class MeldekortPostgresRepo(
                             mp.kjede_id as "mp.kjede_id",
                             mp.versjon as "mp.versjon",
                             mp.sak_id as "mp.sak_id",
-                            mp.fnr as "mp.fnr",
+                             s.fnr as "mp.fnr",
                             mp.opprettet as "mp.opprettet",
                             mp.fra_og_med as "mp.fra_og_med",
                             mp.til_og_med as "mp.til_og_med",
                             mp.maks_antall_dager_for_periode as "mp.maks_antall_dager_for_periode",
                             mp.gir_rett as "mp.gir_rett",
-                            mp.saksnummer as "mp.saksnummer",
+                             s.saksnummer as "mp.saksnummer",
                             mp.kan_fylles_ut_fra_og_med as "mp.kan_fylles_ut_fra_og_med",
                             siste_mp.id as "siste_mp.id",
                             siste_mp.kjede_id as "siste_mp.kjede_id",
                             siste_mp.versjon as "siste_mp.versjon",
                             siste_mp.sak_id as "siste_mp.sak_id",
-                            siste_mp.fnr as "siste_mp.fnr",
+                             siste_s.fnr as "siste_mp.fnr",
                             siste_mp.opprettet as "siste_mp.opprettet",
                             siste_mp.fra_og_med as "siste_mp.fra_og_med",
                             siste_mp.til_og_med as "siste_mp.til_og_med",
                             siste_mp.maks_antall_dager_for_periode as "siste_mp.maks_antall_dager_for_periode",
                             siste_mp.gir_rett as "siste_mp.gir_rett",
-                            siste_mp.saksnummer as "siste_mp.saksnummer",
+                             siste_s.saksnummer as "siste_mp.saksnummer",
                             siste_mp.kan_fylles_ut_fra_og_med as "siste_mp.kan_fylles_ut_fra_og_med"
                         from meldekort_bruker mk
                                  join meldeperiode mp on mp.id = mk.meldeperiode_id
+                                  join sak s on s.id = mp.sak_id
                                  left join lateral (
                             select *
                             from meldeperiode siste_mp
@@ -277,9 +283,10 @@ class MeldekortPostgresRepo(
                             order by siste_mp.versjon desc
                             limit 1
                             ) siste_mp on true
+                                  left join sak siste_s on siste_s.id = siste_mp.sak_id
                         where mk.deaktivert is null
                           and mk.mottatt is not null
-                          and mp.fnr = :fnr
+                          and s.fnr = :fnr
                         order by mp.fra_og_med desc, mp.versjon desc
                     """,
                     "fnr" to fnr.verdi,
@@ -359,12 +366,10 @@ class MeldekortPostgresRepo(
                 queryOf(
                     //language=sql
                     """
-                    select u.*, mp.fnr as fnr, mp.saksnummer 
-                    from meldekort_bruker u 
-                    join meldeperiode mp on u.meldeperiode_id = mp.id
-                    where mp.saksnummer is not null
-                    and u.journalpost_id is null
-                    and u.mottatt is not null
+                    select mk.*
+                    from meldekort_bruker mk
+                    where mk.journalpost_id is null
+                      and mk.mottatt is not null
                     limit :limit
                     """.trimIndent(),
                     mapOf("limit" to limit),
@@ -379,9 +384,10 @@ class MeldekortPostgresRepo(
             session.run(
                 sqlQuery(
                     """
-                        SELECT DISTINCT ON (mp.fnr) mk.*, mp.fnr
+                        SELECT DISTINCT ON (s.fnr) mk.*
                         FROM meldekort_bruker mk
                         JOIN meldeperiode mp ON mp.id = mk.meldeperiode_id
+                        JOIN sak s ON s.id = mp.sak_id
                         WHERE mp.kan_fylles_ut_fra_og_med <= :tidsgrense
                           AND mk.mottatt IS NULL
                           AND mk.deaktivert IS NULL
@@ -391,14 +397,15 @@ class MeldekortPostgresRepo(
                               SELECT 1
                               FROM meldekort_bruker mk2
                               JOIN meldeperiode mp2 ON mp2.id = mk2.meldeperiode_id
-                              WHERE mp2.fnr = mp.fnr
+                              JOIN sak s2 ON s2.id = mp2.sak_id
+                              WHERE s2.fnr = s.fnr
                                 AND mp2.kan_fylles_ut_fra_og_med <= :tidsgrense
                                 AND mk2.mottatt IS NULL
                                 AND mk2.deaktivert IS NULL
                                 AND mk2.sendt_varsel IS TRUE
                                 AND mk2.varsel_inaktivert IS FALSE
                           )
-                        ORDER BY mp.fnr, mp.fra_og_med
+                        ORDER BY s.fnr, mp.fra_og_med
                         LIMIT :limit
                     """,
                     "limit" to limit,
@@ -466,8 +473,9 @@ class MeldekortPostgresRepo(
                         mk.*
                     from meldekort_bruker mk
                     join meldeperiode mp on mp.id = mk.meldeperiode_id
+                    join sak s on s.id = mp.sak_id
                     where mp.kjede_id = :kjede_id
-                        and mp.fnr = :fnr
+                        and s.fnr = :fnr
                     order by mp.versjon desc
                     limit 1
                     """,

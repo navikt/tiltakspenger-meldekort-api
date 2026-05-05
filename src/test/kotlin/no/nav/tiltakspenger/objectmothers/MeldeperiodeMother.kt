@@ -2,26 +2,29 @@ package no.nav.tiltakspenger.objectmothers
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
 import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
+
+private val sakIdPerFnr = ConcurrentHashMap<Fnr, SakId>()
 
 interface MeldeperiodeMother {
     fun meldeperiode(
         id: MeldeperiodeId = MeldeperiodeId.random(),
         periode: Periode = ObjectMother.periode(),
         kjedeId: MeldeperiodeKjedeId = MeldeperiodeKjedeId.fraPeriode(periode),
-        saksnummer: String = Math.random().toString(),
-        sakId: SakId = SakId.random(),
-        fnr: Fnr = Fnr.fromString(FAKE_FNR),
+        fnr: Fnr = Fnr.random(),
+        sakId: SakId = sakIdForFnr(fnr),
+        saksnummer: String = saksnummerForSakId(sakId),
         versjon: Int = 1,
         opprettet: LocalDateTime,
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
@@ -68,4 +71,12 @@ interface MeldeperiodeMother {
 
     private fun Periode.tilGirRett(): Map<LocalDate, Boolean> = tilDager()
         .associateWith { value -> listOf(value.dayOfWeek).none { it == DayOfWeek.SATURDAY || it == DayOfWeek.SUNDAY } }
+}
+
+fun sakIdForFnr(fnr: Fnr): SakId {
+    return sakIdPerFnr.computeIfAbsent(fnr) { SakId.random() }
+}
+
+fun saksnummerForSakId(sakId: SakId): String {
+    return "SAK-$sakId"
 }

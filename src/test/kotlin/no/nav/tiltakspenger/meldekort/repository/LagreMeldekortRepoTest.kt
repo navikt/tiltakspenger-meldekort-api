@@ -85,6 +85,25 @@ class LagreMeldekortRepoTest {
                 result shouldBe journalførtMeldekort
             }
         }
+
+        @Test
+        fun `lagre oppdaterer eksisterende meldekort med samme id`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort = ObjectMother.meldekort(mottatt = null, locale = null)
+                lagreMeldekort(helper, meldekort)
+
+                val oppdatertMeldekort = meldekort.copy(
+                    mottatt = nå(fixedClock),
+                    korrigering = true,
+                    locale = "nb",
+                )
+
+                repo.lagre(oppdatertMeldekort)
+
+                repo.hentForMeldekortId(meldekort.id, meldekort.fnr) shouldBe oppdatertMeldekort
+            }
+        }
     }
 
     @Nested
@@ -206,10 +225,7 @@ class LagreMeldekortRepoTest {
                     mottatt = null,
                 )
 
-                helper.meldeperiodeRepo.lagre(meldeperiode1)
-                helper.meldekortPostgresRepo.lagre(meldekort1)
-                helper.meldeperiodeRepo.lagre(meldeperiode2)
-                helper.meldekortPostgresRepo.lagre(meldekort2)
+                lagreMeldekort(helper, meldekort1, meldekort2)
 
                 val kjede = repo.hentMeldekortForKjedeId(kjedeId, fnr)
 
