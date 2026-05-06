@@ -1,7 +1,5 @@
 package no.nav.tiltakspenger.meldekort.repository.varsel
 
-import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
@@ -43,20 +41,18 @@ class VarselMeldekortPostgresRepoTest {
                 )
                 lagreMeldekort(helper, meldekort)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat shouldHaveSize 1
-                resultat.single().also {
+                requireNotNull(resultat).also {
                     it.sakId shouldBe sakId
                     it.kjedeId shouldBe meldekort.meldeperiode.kjedeId
-                    it.nyesteVersjon shouldBe 1
                     it.kanFyllesUtFraOgMed shouldBe meldekort.meldeperiode.kanFyllesUtFraOgMed
                 }
             }
         }
 
         @Test
-        fun `returnerer tom liste når meldekort er innsendt for nyeste versjon`() {
+        fun `returnerer null når meldekort er innsendt for nyeste versjon`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 val meldekort = ObjectMother.meldekort(
                     sakId = sakId,
@@ -67,14 +63,14 @@ class VarselMeldekortPostgresRepoTest {
                 )
                 lagreMeldekort(helper, meldekort)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat.shouldBeEmpty()
+                resultat shouldBe null
             }
         }
 
         @Test
-        fun `returnerer kjede når revurdering (versjon 2) mangler innsending selv om versjon 1 var innsendt`() {
+        fun `returnerer null når revurdering (versjon 2) mangler innsending men versjon 1 var innsendt`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 // Versjon 1 med innsendt meldekort
                 val meldeperiodeV1 = ObjectMother.meldeperiode(
@@ -112,18 +108,14 @@ class VarselMeldekortPostgresRepoTest {
                 helper.meldeperiodeRepo.lagre(meldeperiodeV2)
                 helper.meldekortPostgresRepo.lagre(meldekortV2)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat shouldHaveSize 1
-                resultat.single().also {
-                    it.kjedeId shouldBe meldeperiodeV1.kjedeId
-                    it.nyesteVersjon shouldBe 2
-                }
+                resultat shouldBe null
             }
         }
 
         @Test
-        fun `returnerer tom liste når revurdering (versjon 2) har innsendt meldekort`() {
+        fun `returnerer null når revurdering (versjon 2) har innsendt meldekort`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 val meldeperiodeV1 = ObjectMother.meldeperiode(
                     sakId = sakId,
@@ -161,14 +153,14 @@ class VarselMeldekortPostgresRepoTest {
                     ),
                 )
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat.shouldBeEmpty()
+                resultat shouldBe null
             }
         }
 
         @Test
-        fun `returnerer tom liste når nyeste meldeperiode har maks_antall_dager_for_periode lik 0`() {
+        fun `returnerer null når nyeste meldeperiode har maks_antall_dager_for_periode lik 0`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 // Meldeperiode uten rett - det opprettes aldri et meldekort for denne
                 val meldeperiode = ObjectMother.meldeperiode(
@@ -184,9 +176,9 @@ class VarselMeldekortPostgresRepoTest {
                 lagreSak(helper, meldeperiode)
                 helper.meldeperiodeRepo.lagre(meldeperiode)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat.shouldBeEmpty()
+                resultat shouldBe null
             }
         }
 
@@ -204,13 +196,11 @@ class VarselMeldekortPostgresRepoTest {
                 lagreSak(helper, meldeperiode)
                 helper.meldeperiodeRepo.lagre(meldeperiode)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat shouldHaveSize 1
-                resultat.single().also {
+                requireNotNull(resultat).also {
                     it.meldeperiodeId shouldBe meldeperiode.id
                     it.kjedeId shouldBe meldeperiode.kjedeId
-                    it.nyesteVersjon shouldBe meldeperiode.versjon
                 }
             }
         }
@@ -238,10 +228,9 @@ class VarselMeldekortPostgresRepoTest {
                 helper.meldeperiodeRepo.lagre(meldeperiode)
                 helper.meldekortPostgresRepo.lagre(meldekort)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat shouldHaveSize 1
-                resultat.single().also {
+                requireNotNull(resultat).also {
                     it.meldeperiodeId shouldBe meldeperiode.id
                     it.kjedeId shouldBe meldeperiode.kjedeId
                     it.kanFyllesUtFraOgMed shouldBe meldeperiode.kanFyllesUtFraOgMed
@@ -250,7 +239,7 @@ class VarselMeldekortPostgresRepoTest {
         }
 
         @Test
-        fun `returnerer tom liste når meldekort er deaktivert og nyeste meldeperiode har maks 0`() {
+        fun `returnerer null når meldekort er deaktivert og nyeste meldeperiode har maks 0`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 // Versjon 1 med rett (meldekort deaktivert pga revurdering)
                 val meldeperiodeV1 = ObjectMother.meldeperiode(
@@ -283,14 +272,14 @@ class VarselMeldekortPostgresRepoTest {
                 )
                 helper.meldeperiodeRepo.lagre(meldeperiodeV2)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat.shouldBeEmpty()
+                resultat shouldBe null
             }
         }
 
         @Test
-        fun `returnerer kjede når innsendt meldekort på nyeste versjon er deaktivert`() {
+        fun `returnerer null når mottatt meldekort på nyeste versjon er deaktivert`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 val meldekort = ObjectMother.meldekort(
                     sakId = sakId,
@@ -302,15 +291,14 @@ class VarselMeldekortPostgresRepoTest {
                 lagreMeldekort(helper, meldekort)
                 helper.meldekortPostgresRepo.deaktiver(meldekort.id)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat shouldHaveSize 1
-                resultat.single().kjedeId shouldBe meldekort.meldeperiode.kjedeId
+                resultat shouldBe null
             }
         }
 
         @Test
-        fun `returnerer flere kjeder som mangler innsending sortert på kanFyllesUtFraOgMed`() {
+        fun `returnerer første kjede som mangler innsending sortert på kanFyllesUtFraOgMed`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 val andrePeriode = førstePeriode.plus14Dager()
 
@@ -330,16 +318,14 @@ class VarselMeldekortPostgresRepoTest {
                 )
                 lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat shouldHaveSize 2
-                resultat[0].kjedeId shouldBe førsteMeldekort.meldeperiode.kjedeId
-                resultat[1].kjedeId shouldBe andreMeldekort.meldeperiode.kjedeId
+                requireNotNull(resultat).kjedeId shouldBe førsteMeldekort.meldeperiode.kjedeId
             }
         }
 
         @Test
-        fun `returnerer bare kjeder som mangler innsending - ignorerer innsendt kjede`() {
+        fun `returnerer første kjede som mangler innsending - ignorerer innsendt kjede`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 val andrePeriode = førstePeriode.plus14Dager()
 
@@ -359,24 +345,23 @@ class VarselMeldekortPostgresRepoTest {
                 )
                 lagreMeldekort(helper, innsendtMeldekort, uinnsendtMeldekort)
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat shouldHaveSize 1
-                resultat.single().kjedeId shouldBe uinnsendtMeldekort.meldeperiode.kjedeId
+                requireNotNull(resultat).kjedeId shouldBe uinnsendtMeldekort.meldeperiode.kjedeId
             }
         }
 
         @Test
-        fun `returnerer tom liste for ukjent sakId`() {
+        fun `returnerer null for ukjent sakId`() {
             withMigratedDb { helper ->
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(SakId.random())
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(SakId.random())
 
-                resultat.shouldBeEmpty()
+                resultat shouldBe null
             }
         }
 
         @Test
-        fun `returnerer bare kjeder for angitt sak`() {
+        fun `returnerer første kjede for angitt sak`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 val annetSakId = SakId.random()
                 lagreMeldekort(
@@ -397,10 +382,9 @@ class VarselMeldekortPostgresRepoTest {
                     ),
                 )
 
-                val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
-                resultat shouldHaveSize 1
-                resultat.single().sakId shouldBe sakId
+                requireNotNull(resultat).sakId shouldBe sakId
             }
         }
     }

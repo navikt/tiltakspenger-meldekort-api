@@ -38,7 +38,7 @@ class VurderVarselService(
                 clock = clock,
                 sessionFactory = sessionFactory,
                 hentVarsler = { varselRepo.hentVarslerForSakId(sakId) },
-                hentKjederSomManglerInnsending = { varselMeldekortRepo.hentKjederSomManglerInnsending(sakId) },
+                hentFørsteKjedeSomManglerInnsending = { varselMeldekortRepo.hentFørsteKjedeSomManglerInnsending(sakId) },
                 lagreVarsel = { varsel, sessionContext -> varselRepo.lagre(varsel, sessionContext = sessionContext) },
                 markerVarselVurdert = { vurdertTidspunkt, sistFlagget, sessionContext ->
                     sakVarselRepo.markerVarselVurdert(sakId, vurdertTidspunkt, sistFlagget, sessionContext)

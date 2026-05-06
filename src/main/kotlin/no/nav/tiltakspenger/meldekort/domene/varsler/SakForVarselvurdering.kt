@@ -10,7 +10,7 @@ import java.time.LocalDateTime
  *
  * Vi henter ikke meldeperioder her: jobben kjører hvert 10. sek og en N+1-spørring per sak ville
  * vært unødvendig dyrt. Per-sak-arbeidet (kjeder som mangler innsending) gjøres i
- * [no.nav.tiltakspenger.meldekort.repository.VarselMeldekortRepo.hentKjederSomManglerInnsending].
+ * [no.nav.tiltakspenger.meldekort.repository.VarselMeldekortRepo.hentFørsteKjedeSomManglerInnsending].
  *
  * [sistFlaggetTidspunkt] brukes som optimistisk lås: når jobben fullfører og kaller
  * [no.nav.tiltakspenger.meldekort.repository.SakVarselRepo.markerVarselVurdert], oppdateres
