@@ -32,7 +32,7 @@ class AktiverVarslerService(
 
                     val aktivertVarsel: Varsel.Aktiv = varsler.aktiver(varselId, aktiveringstidspunkt).second
                     // Bygg varselhendelsen utenfor transaksjonen – ren funksjon, ingen Kafka-kall.
-                    val metadata = varselClient.byggVarsel(
+                    val metadata = varselClient.byggNyttMeldekortVarsel(
                         varselId = varselId,
                         fnr = aktivertVarsel.fnr,
                         utsettSendingTil = aktivertVarsel.eksternAktiveringstidspunkt,

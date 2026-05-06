@@ -12,7 +12,7 @@ class TmsVarselClientFake : VarselClient {
     private val sendteVarsler = mutableListOf<SendtVarsel>()
     private val inaktiverteVarsler = mutableListOf<VarselId>()
 
-    // Mellomlagrer fnr/utsettSendingTil pr varselId mellom byggVarsel og sendVarsel,
+    // Mellomlagrer fnr/utsettSendingTil pr varselId mellom bygg* og sendVarsel,
     // slik at vi kan rapportere disse i [SendtVarsel] når sendVarsel faktisk publiserer.
     private val byggetMenIkkeSendt = mutableMapOf<VarselId, ByggetVarsel>()
 
@@ -27,13 +27,36 @@ class TmsVarselClientFake : VarselClient {
         )
     }
 
-    override fun byggVarsel(
+    override fun byggNyttMeldekortVarsel(
         varselId: VarselId,
         fnr: Fnr,
         utsettSendingTil: LocalDateTime?,
+    ): SendtVarselMetadata = byggVarsel(
+        varselId = varselId,
+        fnr = fnr,
+        utsettSendingTil = utsettSendingTil,
+        type = Varseltype.NyttMeldekort,
+    )
+
+    override fun byggMeldeperiodeEndretBeskjed(
+        varselId: VarselId,
+        fnr: Fnr,
+        utsettSendingTil: LocalDateTime?,
+    ): SendtVarselMetadata = byggVarsel(
+        varselId = varselId,
+        fnr = fnr,
+        utsettSendingTil = utsettSendingTil,
+        type = Varseltype.MeldeperiodeEndret,
+    )
+
+    private fun byggVarsel(
+        varselId: VarselId,
+        fnr: Fnr,
+        utsettSendingTil: LocalDateTime?,
+        type: Varseltype,
     ): SendtVarselMetadata {
-        logger.info { "Fake: Bygger varsel med id $varselId (utsettSendingTil=$utsettSendingTil)" }
-        byggetMenIkkeSendt[varselId] = ByggetVarsel(fnr = fnr, utsettSendingTil = utsettSendingTil)
+        logger.info { "Fake: Bygger varsel med id $varselId (type=$type, utsettSendingTil=$utsettSendingTil)" }
+        byggetMenIkkeSendt[varselId] = ByggetVarsel(fnr = fnr, utsettSendingTil = utsettSendingTil, type = type)
         // Ikke likt innhold som i Nais (vi bare lagrer den i basen)
         return SendtVarselMetadata(""""json-request"""")
     }
@@ -47,6 +70,7 @@ class TmsVarselClientFake : VarselClient {
                 varselId = varselId,
                 fnr = bygget.fnr,
                 utsettSendingTil = bygget.utsettSendingTil,
+                type = bygget.type,
             ),
         )
     }
@@ -59,13 +83,20 @@ class TmsVarselClientFake : VarselClient {
     private data class ByggetVarsel(
         val fnr: Fnr,
         val utsettSendingTil: LocalDateTime?,
+        val type: Varseltype,
     )
 
     data class SendtVarsel(
         val varselId: VarselId,
         val fnr: Fnr,
         val utsettSendingTil: LocalDateTime?,
+        val type: Varseltype,
     )
+
+    enum class Varseltype {
+        NyttMeldekort,
+        MeldeperiodeEndret,
+    }
 
     data class Varselhendelser(
         val sendteVarsler: List<SendtVarsel>,

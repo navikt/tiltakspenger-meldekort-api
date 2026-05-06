@@ -30,14 +30,27 @@ class TmsVarselClientImpl(
     private val logger = KotlinLogging.logger {}
 
     /**
-     * Bygger varselhendelsen (uten Kafka-publisering). Trygg å kalle utenfor transaksjon.
+     * Bygger oppgave for nytt meldekort (uten Kafka-publisering). Trygg å kalle utenfor transaksjon.
      */
-    override fun byggVarsel(
+    override fun byggNyttMeldekortVarsel(
         varselId: VarselId,
         fnr: Fnr,
         utsettSendingTil: LocalDateTime?,
     ): SendtVarselMetadata {
-        val varselHendelse: String = opprettVarselOppgave(
+        val varselHendelse: String = opprettNyttMeldekortOppgave(
+            varselId = varselId,
+            fnr = fnr,
+            utsettSendingTil = utsettSendingTil?.atZone(zoneIdOslo),
+        )
+        return SendtVarselMetadata(jsonRequest = varselHendelse)
+    }
+
+    override fun byggMeldeperiodeEndretBeskjed(
+        varselId: VarselId,
+        fnr: Fnr,
+        utsettSendingTil: LocalDateTime?,
+    ): SendtVarselMetadata {
+        val varselHendelse: String = opprettMeldeperiodeEndretBeskjed(
             varselId = varselId,
             fnr = fnr,
             utsettSendingTil = utsettSendingTil?.atZone(zoneIdOslo),
@@ -65,7 +78,7 @@ class TmsVarselClientImpl(
         kafkaProducer.produce(topicName, varselId.toString(), inaktiveringHendelse)
     }
 
-    private fun opprettVarselOppgave(
+    private fun opprettNyttMeldekortOppgave(
         varselId: VarselId,
         fnr: Fnr,
         utsettSendingTil: ZonedDateTime?,
@@ -84,6 +97,29 @@ class TmsVarselClientImpl(
                 spraakkode = "nb",
                 default = true,
                 tekst = "Du har fått et nytt meldekort for tiltakspenger. Du må fylle ut og sende inn meldekortet før du kan få tiltakspengene dine.",
+            )
+        }
+    }
+
+    private fun opprettMeldeperiodeEndretBeskjed(
+        varselId: VarselId,
+        fnr: Fnr,
+        utsettSendingTil: ZonedDateTime?,
+    ): String {
+        return VarselActionBuilder.opprett {
+            this.type = Varseltype.Beskjed
+            this.varselId = varselId.toString()
+            this.ident = fnr.verdi
+            this.sensitivitet = Sensitivitet.Substantial
+            this.link = meldekortFrontendUrl
+            this.eksternVarsling {
+                preferertKanal = EksternKanal.SMS
+                this.utsettSendingTil = utsettSendingTil
+            }
+            this.tekster += Tekst(
+                spraakkode = "nb",
+                default = true,
+                tekst = "Vedtaket ditt om tiltakspenger er endret. Du må selv endre meldekortet for å få riktig utbetaling når endringen gjelder for en periode du allerede har sendt inn meldekort for.",
             )
         }
     }

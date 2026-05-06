@@ -44,10 +44,11 @@ class TmsVarselClientImplTest {
         val client = nyClient(payloads)
 
         val varselId = VarselId.random()
-        val metadata = client.byggVarsel(varselId, fnr, utsettSendingTil = null)
+        val metadata = client.byggNyttMeldekortVarsel(varselId, fnr, utsettSendingTil = null)
         client.sendVarsel(varselId, metadata)
 
         payloads shouldBe listOf(metadata.jsonRequest)
+        metadata.jsonRequest.shouldContain("\"type\":\"oppgave\"")
         metadata.jsonRequest.shouldNotContain("utsettSendingTil")
     }
 
@@ -59,7 +60,7 @@ class TmsVarselClientImplTest {
         val forventet = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(tidspunkt.atZone(zoneId))
 
         val varselId = VarselId.random()
-        val metadata = client.byggVarsel(varselId, fnr, utsettSendingTil = tidspunkt)
+        val metadata = client.byggNyttMeldekortVarsel(varselId, fnr, utsettSendingTil = tidspunkt)
         client.sendVarsel(varselId, metadata)
 
         payloads shouldBe listOf(metadata.jsonRequest)
@@ -67,13 +68,25 @@ class TmsVarselClientImplTest {
     }
 
     @Test
-    fun `byggVarsel publiserer ikke noe paa Kafka`() {
+    fun `byggNyttMeldekortVarsel publiserer ikke noe paa Kafka`() {
         val payloads = mutableListOf<String>()
         val client = nyClient(payloads)
 
-        client.byggVarsel(VarselId.random(), fnr, utsettSendingTil = null)
+        client.byggNyttMeldekortVarsel(VarselId.random(), fnr, utsettSendingTil = null)
 
         payloads shouldBe emptyList()
+    }
+
+    @Test
+    fun `byggMeldeperiodeEndretBeskjed lager beskjed om endret meldeperiode`() {
+        val payloads = mutableListOf<String>()
+        val client = nyClient(payloads)
+
+        val metadata = client.byggMeldeperiodeEndretBeskjed(VarselId.random(), fnr, utsettSendingTil = null)
+
+        payloads shouldBe emptyList()
+        metadata.jsonRequest.shouldContain("\"type\":\"beskjed\"")
+        metadata.jsonRequest.shouldContain("Vedtaket ditt om tiltakspenger er endret")
     }
 
     private fun nyClient(payloads: MutableList<String>): TmsVarselClientImpl {

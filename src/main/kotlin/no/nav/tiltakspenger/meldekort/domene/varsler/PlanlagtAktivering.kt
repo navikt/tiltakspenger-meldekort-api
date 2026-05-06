@@ -12,6 +12,7 @@ private val EN_TIME: Duration = Duration.ofHours(1)
 private val TI_MINUTTER: Duration = Duration.ofMinutes(10)
 
 internal sealed interface BeholderPågåendeVarselÅrsak : VurderVarselUtfall {
+
     data object PlanlagtAktiveringErNærNokEllerLikSkalAktiveres : BeholderPågåendeVarselÅrsak
 
     data object PlanlagtAktiveringErIkkeTidligNokTilÅErstatteSkalAktiveres : BeholderPågåendeVarselÅrsak
@@ -26,7 +27,8 @@ internal data class PlanlagtAktivering(
 ) {
     companion object {
         /**
-         * Lager planen for nytt varsel basert på den tidligste kjeden som mangler innsending.
+         * Lager planen for nytt oppgave-varsel basert på den tidligste kjeden som mangler innsending.
+         *
          * [skalAktiveresTidspunkt] kan ligge tilbake i tid, mens [skalAktiveresEksterntTidspunkt]
          * alltid vil være nå eller frem i tid og beregnes av [Varsler].
          */

@@ -496,7 +496,6 @@ class VarselPostgresRepoTest {
         varselId: VarselId = VarselId.random(),
         fnr: Fnr = Fnr.random(),
         skalAktiveresTidspunkt: LocalDateTime = 6.januar(2025).atHour(10),
-        clock: Clock = nyClock(),
         opprettet: LocalDateTime = nesteOpprettet(),
     ): Varsel.SkalAktiveres {
         return Varsel.SkalAktiveres(
@@ -518,7 +517,6 @@ class VarselPostgresRepoTest {
         varselId: VarselId = VarselId.random(),
         fnr: Fnr = Fnr.random(),
         skalAktiveresTidspunkt: LocalDateTime = 6.januar(2025).atHour(10),
-        clock: Clock = nyClock(),
         opprettet: LocalDateTime = nesteOpprettet(),
     ): Varsel.Aktiv {
         return skalAktiveres(
@@ -527,7 +525,6 @@ class VarselPostgresRepoTest {
             varselId = varselId,
             fnr = fnr,
             skalAktiveresTidspunkt = skalAktiveresTidspunkt,
-            clock = clock,
             opprettet = opprettet,
         ).aktiver(skalAktiveresTidspunkt.plusMinutes(5))
     }
@@ -538,7 +535,6 @@ class VarselPostgresRepoTest {
         varselId: VarselId = VarselId.random(),
         fnr: Fnr = Fnr.random(),
         skalAktiveresTidspunkt: LocalDateTime = 6.januar(2025).atHour(10),
-        clock: Clock = nyClock(),
         opprettet: LocalDateTime = nesteOpprettet(),
     ): Varsel.SkalInaktiveres {
         val aktivtVarsel = aktiv(
@@ -547,7 +543,6 @@ class VarselPostgresRepoTest {
             varselId = varselId,
             fnr = fnr,
             skalAktiveresTidspunkt = skalAktiveresTidspunkt,
-            clock = clock,
             opprettet = opprettet,
         )
         return aktivtVarsel.forberedInaktivering(
@@ -562,7 +557,6 @@ class VarselPostgresRepoTest {
         varselId: VarselId = VarselId.random(),
         fnr: Fnr = Fnr.random(),
         skalAktiveresTidspunkt: LocalDateTime = 6.januar(2025).atHour(10),
-        clock: Clock = nyClock(),
         opprettet: LocalDateTime = nesteOpprettet(),
     ): Varsel.Inaktivert {
         val skalInaktiveresVarsel = skalInaktiveres(
@@ -571,7 +565,6 @@ class VarselPostgresRepoTest {
             varselId = varselId,
             fnr = fnr,
             skalAktiveresTidspunkt = skalAktiveresTidspunkt,
-            clock = clock,
             opprettet = opprettet,
         )
         return skalInaktiveresVarsel.inaktiver(skalInaktiveresVarsel.skalInaktiveresTidspunkt)

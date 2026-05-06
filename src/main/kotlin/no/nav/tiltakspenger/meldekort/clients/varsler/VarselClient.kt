@@ -15,7 +15,21 @@ interface VarselClient {
      *   [no.nav.tiltakspenger.meldekort.domene.varsler.Varsel.skalAktiveresTidspunkt]) – klienten
      *   har ingen egen tidsberegning.
      */
-    fun byggVarsel(varselId: VarselId, fnr: Fnr, utsettSendingTil: LocalDateTime?): SendtVarselMetadata
+    fun byggNyttMeldekortVarsel(
+        varselId: VarselId,
+        fnr: Fnr,
+        utsettSendingTil: LocalDateTime?,
+    ): SendtVarselMetadata
+
+    /**
+     * Bygger en enklere beskjed for tilfeller der endringer på rammevedtak har gitt en ny versjon
+     * av meldeperioden. Bruker kan selv deaktivere/lukke denne på Min side.
+     */
+    fun byggMeldeperiodeEndretBeskjed(
+        varselId: VarselId,
+        fnr: Fnr,
+        utsettSendingTil: LocalDateTime?,
+    ): SendtVarselMetadata
 
     /**
      * Publiserer en allerede bygd varselhendelse på Kafka. Skal kalles innenfor samme transaksjon

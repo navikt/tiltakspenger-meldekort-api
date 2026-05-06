@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.repository
 
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
+import no.nav.tiltakspenger.meldekort.domene.varsler.BeskjedMeldeperiode
 import no.nav.tiltakspenger.meldekort.domene.varsler.KjedeSomManglerInnsending
 
 /**
@@ -22,4 +23,13 @@ interface VarselMeldekortRepo {
         sakId: SakId,
         sessionContext: SessionContext? = null,
     ): List<KjedeSomManglerInnsending>
+
+    /**
+     * Finner meldeperioder hvor bruker har sendt inn en eldre versjon, nyeste versjon er endret,
+     * og vi ikke allerede har sendt beskjed for nyeste (kjede, versjon).
+     */
+    fun hentMeldeperioderSomSkalHaBeskjed(
+        sakId: SakId,
+        sessionContext: SessionContext? = null,
+    ): List<BeskjedMeldeperiode>
 }

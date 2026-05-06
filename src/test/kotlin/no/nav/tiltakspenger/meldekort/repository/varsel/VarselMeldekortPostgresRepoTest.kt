@@ -74,7 +74,7 @@ class VarselMeldekortPostgresRepoTest {
         }
 
         @Test
-        fun `returnerer kjede når revurdering (versjon 2) mangler innsending selv om versjon 1 var innsendt`() {
+        fun `returnerer ikke oppgave-kjede når revurdering mangler innsending men versjon 1 var innsendt`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
                 // Versjon 1 med innsendt meldekort
                 val meldeperiodeV1 = ObjectMother.meldeperiode(
@@ -114,10 +114,57 @@ class VarselMeldekortPostgresRepoTest {
 
                 val resultat = helper.varselMeldekortPostgresRepo.hentKjederSomManglerInnsending(sakId)
 
+                resultat.shouldBeEmpty()
+            }
+        }
+
+        @Test
+        fun `returnerer beskjed-kandidat når nyeste meldeperiode er endret etter innsendt versjon`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val meldeperiodeV1 = ObjectMother.meldeperiode(
+                    sakId = sakId,
+                    saksnummer = saksnummer,
+                    fnr = fnr,
+                    versjon = 1,
+                    periode = førstePeriode,
+                    opprettet = nå(fixedClock),
+                ).copy(maksAntallDagerForPeriode = 10)
+                val meldekortV1 = ObjectMother.meldekort(
+                    sakId = sakId,
+                    saksnummer = saksnummer,
+                    fnr = fnr,
+                    mottatt = nå(fixedClock),
+                    meldeperiode = meldeperiodeV1,
+                )
+                lagreSak(helper, meldeperiodeV1)
+                helper.meldeperiodeRepo.lagre(meldeperiodeV1)
+                helper.meldekortPostgresRepo.lagre(meldekortV1)
+
+                val meldeperiodeV2 = meldeperiodeV1.copy(
+                    id = MeldeperiodeId.random(),
+                    versjon = 2,
+                    opprettet = nå(fixedClock).plusHours(1),
+                    maksAntallDagerForPeriode = 9,
+                )
+                val meldekortV2 = ObjectMother.meldekort(
+                    sakId = sakId,
+                    saksnummer = saksnummer,
+                    fnr = fnr,
+                    mottatt = null,
+                    meldeperiode = meldeperiodeV2,
+                )
+                helper.meldeperiodeRepo.lagre(meldeperiodeV2)
+                helper.meldekortPostgresRepo.lagre(meldekortV2)
+
+                val resultat = helper.varselMeldekortPostgresRepo.hentMeldeperioderSomSkalHaBeskjed(sakId)
+
                 resultat shouldHaveSize 1
                 resultat.single().also {
                     it.kjedeId shouldBe meldeperiodeV1.kjedeId
-                    it.nyesteVersjon shouldBe 2
+                    it.versjon shouldBe 2
+                    it.sisteInnsendteVersjon shouldBe 1
+                    it.endring.maksAntallDagerForPeriode?.fra shouldBe 10
+                    it.endring.maksAntallDagerForPeriode?.til shouldBe 9
                 }
             }
         }

@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger
 
+import no.nav.tiltakspenger.fakes.BeskjedVarselRepoFake
 import no.nav.tiltakspenger.fakes.SakVarselRepoFake
 import no.nav.tiltakspenger.fakes.VarselMeldekortRepoFake
 import no.nav.tiltakspenger.fakes.VarselRepoFake
@@ -23,6 +24,7 @@ class TestApplicationContextMedInMemoryDb(
     private val meldekortRepoFake = MeldekortRepoFake(clock)
     override val meldekortRepo = meldekortRepoFake
     override val varselRepo = VarselRepoFake(clock)
+    override val beskjedVarselRepo = BeskjedVarselRepoFake()
     override val meldeperiodeRepo = MeldeperiodeRepoFake()
     override val sakRepo = SakRepoFake(clock)
     override val sakVarselRepo = SakVarselRepoFake(sakRepo)

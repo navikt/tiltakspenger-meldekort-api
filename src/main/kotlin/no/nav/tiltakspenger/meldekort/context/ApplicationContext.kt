@@ -31,6 +31,8 @@ import no.nav.tiltakspenger.meldekort.domene.varsler.VarselJobber
 import no.nav.tiltakspenger.meldekort.domene.varsler.VurderVarselService
 import no.nav.tiltakspenger.meldekort.identhendelse.IdenthendelseConsumer
 import no.nav.tiltakspenger.meldekort.identhendelse.IdenthendelseService
+import no.nav.tiltakspenger.meldekort.repository.BeskjedVarselPostgresRepo
+import no.nav.tiltakspenger.meldekort.repository.BeskjedVarselRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
@@ -91,6 +93,12 @@ open class ApplicationContext(val clock: Clock) {
     }
 
     open val varselRepo: VarselRepo by lazy { varselPostgresRepo }
+
+    open val beskjedVarselRepo: BeskjedVarselRepo by lazy {
+        BeskjedVarselPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
 
     open val meldekortRepo: MeldekortRepo by lazy {
         MeldekortPostgresRepo(
@@ -261,6 +269,8 @@ open class ApplicationContext(val clock: Clock) {
             sakVarselRepo = sakVarselRepo,
             varselMeldekortRepo = varselMeldekortRepo,
             varselRepo = varselRepo,
+            beskjedVarselRepo = beskjedVarselRepo,
+            varselClient = varselClient,
             sessionFactory = sessionFactory,
             clock = clock,
         )

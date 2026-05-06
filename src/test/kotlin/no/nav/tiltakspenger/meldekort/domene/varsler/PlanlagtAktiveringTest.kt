@@ -288,12 +288,13 @@ class PlanlagtAktiveringTest {
 
     private fun kjedeSomManglerInnsending(
         kanFyllesUtFraOgMed: LocalDateTime,
+        nyesteVersjon: Int = 1,
     ): KjedeSomManglerInnsending {
         return KjedeSomManglerInnsending(
             sakId = sakId,
             meldeperiodeId = MeldeperiodeId.random(),
             kjedeId = MeldeperiodeKjedeId("2025-01-06/2025-01-19"),
-            nyesteVersjon = 1,
+            nyesteVersjon = nyesteVersjon,
             kanFyllesUtFraOgMed = kanFyllesUtFraOgMed,
         )
     }
