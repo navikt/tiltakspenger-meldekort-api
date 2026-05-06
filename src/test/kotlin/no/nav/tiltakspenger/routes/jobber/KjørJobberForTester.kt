@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.routes.jobber
 
+import arrow.core.Either
 import no.nav.tiltakspenger.TestApplicationContext
 
 /**
@@ -27,7 +28,9 @@ object KjørJobberForTester {
      * Kjører alle varseljobbene i samme rekkefølge som i prod (VurderVarselService -> AktiverVarslerService -> InaktiverVarslerService).
      */
     fun kjørVarsler(tac: TestApplicationContext) {
-        tac.varselJobber.kjørAlle()
+        tac.vurderVarselService.vurderVarsler()
+        tac.aktiverVarslerService.aktiverVarsler()
+        tac.inaktiverVarslerService.inaktiverVarsler()
     }
 
     fun kjørVurderVarsler(tac: TestApplicationContext) {
