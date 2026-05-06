@@ -44,15 +44,12 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(nå),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(emptyList()) },
-            hentKjederSomManglerInnsending = {
-                listOf(
-                    KjedeSomManglerInnsending(
-                        sakId = sak.id,
-                        meldeperiodeId = MeldeperiodeId.random(),
-                        kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
-                        nyesteVersjon = 1,
-                        kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 7, 15, 0),
-                    ),
+            hentFørsteKjedeSomManglerInnsending = {
+                KjedeSomManglerInnsending(
+                    sakId = sak.id,
+                    meldeperiodeId = MeldeperiodeId.random(),
+                    kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
+                    kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 7, 15, 0),
                 )
             },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
@@ -84,7 +81,7 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(nå),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(listOf(eksisterendeVarsel)) },
-            hentKjederSomManglerInnsending = { emptyList() },
+            hentFørsteKjedeSomManglerInnsending = { null },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
             markerVarselVurdert = { vurdertTidspunkt, _, _ -> vurderteTidspunkt.add(vurdertTidspunkt) },
         )
@@ -121,7 +118,7 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(nå),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(listOf(eksisterendeVarsel)) },
-            hentKjederSomManglerInnsending = { emptyList() },
+            hentFørsteKjedeSomManglerInnsending = { null },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
             markerVarselVurdert = { _, _, _ -> },
         )
@@ -156,16 +153,13 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(nå),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(listOf(eksisterendeVarsel)) },
-            hentKjederSomManglerInnsending = {
+            hentFørsteKjedeSomManglerInnsending = {
                 // Kjede med et annet ønsket tidspunkt – VurderVarsel skal likevel ikke røre SkalAktiveres.
-                listOf(
-                    KjedeSomManglerInnsending(
-                        sakId = sak.id,
-                        meldeperiodeId = MeldeperiodeId.random(),
-                        kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
-                        nyesteVersjon = 1,
-                        kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 7, 15, 0),
-                    ),
+                KjedeSomManglerInnsending(
+                    sakId = sak.id,
+                    meldeperiodeId = MeldeperiodeId.random(),
+                    kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
+                    kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 7, 15, 0),
                 )
             },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
@@ -200,15 +194,12 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(dennesFredag),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(listOf(aktivtVarsel)) },
-            hentKjederSomManglerInnsending = {
-                listOf(
-                    KjedeSomManglerInnsending(
-                        sakId = sak.id,
-                        meldeperiodeId = MeldeperiodeId.random(),
-                        kjedeId = MeldeperiodeKjedeId("2025-03-10/2025-03-23"),
-                        nyesteVersjon = 1,
-                        kanFyllesUtFraOgMed = nesteFredag,
-                    ),
+            hentFørsteKjedeSomManglerInnsending = {
+                KjedeSomManglerInnsending(
+                    sakId = sak.id,
+                    meldeperiodeId = MeldeperiodeId.random(),
+                    kjedeId = MeldeperiodeKjedeId("2025-03-10/2025-03-23"),
+                    kanFyllesUtFraOgMed = nesteFredag,
                 )
             },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
@@ -242,15 +233,12 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(nå),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(listOf(aktivtVarsel)) },
-            hentKjederSomManglerInnsending = {
-                listOf(
-                    KjedeSomManglerInnsending(
-                        sakId = sak.id,
-                        meldeperiodeId = MeldeperiodeId.random(),
-                        kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
-                        nyesteVersjon = 1,
-                        kanFyllesUtFraOgMed = aktiveringsTidspunkt,
-                    ),
+            hentFørsteKjedeSomManglerInnsending = {
+                KjedeSomManglerInnsending(
+                    sakId = sak.id,
+                    meldeperiodeId = MeldeperiodeId.random(),
+                    kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
+                    kanFyllesUtFraOgMed = aktiveringsTidspunkt,
                 )
             },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
@@ -279,15 +267,12 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(nå),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(listOf(aktivtVarsel)) },
-            hentKjederSomManglerInnsending = {
-                listOf(
-                    KjedeSomManglerInnsending(
-                        sakId = sak.id,
-                        meldeperiodeId = MeldeperiodeId.random(),
-                        kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
-                        nyesteVersjon = 1,
-                        kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 10, 12, 1),
-                    ),
+            hentFørsteKjedeSomManglerInnsending = {
+                KjedeSomManglerInnsending(
+                    sakId = sak.id,
+                    meldeperiodeId = MeldeperiodeId.random(),
+                    kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
+                    kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 10, 12, 1),
                 )
             },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
@@ -335,15 +320,12 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(nå),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(listOf(pågåendeInaktivering, aktivtVarsel)) },
-            hentKjederSomManglerInnsending = {
-                listOf(
-                    KjedeSomManglerInnsending(
-                        sakId = sak.id,
-                        meldeperiodeId = MeldeperiodeId.random(),
-                        kjedeId = MeldeperiodeKjedeId("2025-03-10/2025-03-23"),
-                        nyesteVersjon = 1,
-                        kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 21, 9, 0),
-                    ),
+            hentFørsteKjedeSomManglerInnsending = {
+                KjedeSomManglerInnsending(
+                    sakId = sak.id,
+                    meldeperiodeId = MeldeperiodeId.random(),
+                    kjedeId = MeldeperiodeKjedeId("2025-03-10/2025-03-23"),
+                    kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 21, 9, 0),
                 )
             },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
@@ -388,15 +370,12 @@ class VurderVarselForSakTest {
             clock = fixedClockAt(nå),
             sessionFactory = sessionFactory(),
             hentVarsler = { Varsler(listOf(skalInaktiveresVarsel)) },
-            hentKjederSomManglerInnsending = {
-                listOf(
-                    KjedeSomManglerInnsending(
-                        sakId = sak.id,
-                        meldeperiodeId = MeldeperiodeId.random(),
-                        kjedeId = MeldeperiodeKjedeId("2025-03-10/2025-03-23"),
-                        nyesteVersjon = 1,
-                        kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 21, 9, 0),
-                    ),
+            hentFørsteKjedeSomManglerInnsending = {
+                KjedeSomManglerInnsending(
+                    sakId = sak.id,
+                    meldeperiodeId = MeldeperiodeId.random(),
+                    kjedeId = MeldeperiodeKjedeId("2025-03-10/2025-03-23"),
+                    kanFyllesUtFraOgMed = LocalDateTime.of(2025, 3, 21, 9, 0),
                 )
             },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
@@ -421,15 +400,12 @@ class VurderVarselForSakTest {
                 clock = fixedClockAt(nå),
                 sessionFactory = sessionFactoryMedPropagerendeException(),
                 hentVarsler = { Varsler(emptyList()) },
-                hentKjederSomManglerInnsending = {
-                    listOf(
-                        KjedeSomManglerInnsending(
-                            sakId = sak.id,
-                            meldeperiodeId = MeldeperiodeId.random(),
-                            kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
-                            nyesteVersjon = 1,
-                            kanFyllesUtFraOgMed = nå,
-                        ),
+                hentFørsteKjedeSomManglerInnsending = {
+                    KjedeSomManglerInnsending(
+                        sakId = sak.id,
+                        meldeperiodeId = MeldeperiodeId.random(),
+                        kjedeId = MeldeperiodeKjedeId("2025-02-24/2025-03-09"),
+                        kanFyllesUtFraOgMed = nå,
                     )
                 },
                 lagreVarsel = { _, _ -> throw IllegalStateException("simulert feil") },

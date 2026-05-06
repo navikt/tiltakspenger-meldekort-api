@@ -32,7 +32,6 @@ internal data class PlanlagtAktivering(
          */
         fun forManglendeInnsending(
             førsteKjedeSomManglerInnsending: KjedeSomManglerInnsending,
-            antallKjederSomManglerInnsending: Int,
             varsler: Varsler,
             clock: Clock,
         ): PlanlagtAktivering {
@@ -43,11 +42,11 @@ internal data class PlanlagtAktivering(
                 nå = vurderingstidspunkt,
             )
             val kjederInfo =
-                "(meldeperiodeId=${førsteKjedeSomManglerInnsending.meldeperiodeId}, kjedeId=${førsteKjedeSomManglerInnsending.kjedeId}, versjon=${førsteKjedeSomManglerInnsending.nyesteVersjon}, kanFyllesUtFraOgMed=${førsteKjedeSomManglerInnsending.kanFyllesUtFraOgMed})"
+                "(meldeperiodeId=${førsteKjedeSomManglerInnsending.meldeperiodeId}, kjedeId=${førsteKjedeSomManglerInnsending.kjedeId}, kanFyllesUtFraOgMed=${førsteKjedeSomManglerInnsending.kanFyllesUtFraOgMed})"
             return PlanlagtAktivering(
                 skalAktiveresTidspunkt = skalAktiveresTidspunkt,
                 skalAktiveresEksterntTidspunkt = skalAktiveresEksterntTidspunkt,
-                begrunnelse = "Automatisk vurdert - skalAktiveresTidspunkt=$skalAktiveresTidspunkt, skalAktiveresEksterntTidspunkt=$skalAktiveresEksterntTidspunkt, vurderingstidspunkt=$vurderingstidspunkt, valgtKjedeId=${førsteKjedeSomManglerInnsending.kjedeId}, antallKjeder=$antallKjederSomManglerInnsending, manglendeKjeder=$kjederInfo",
+                begrunnelse = "Automatisk vurdert - skalAktiveresTidspunkt=$skalAktiveresTidspunkt, skalAktiveresEksterntTidspunkt=$skalAktiveresEksterntTidspunkt, vurderingstidspunkt=$vurderingstidspunkt, valgtKjedeId=${førsteKjedeSomManglerInnsending.kjedeId}, manglendeKjede=$kjederInfo",
             )
         }
     }

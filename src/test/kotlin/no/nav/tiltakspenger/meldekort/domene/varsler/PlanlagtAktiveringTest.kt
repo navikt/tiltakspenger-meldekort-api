@@ -28,7 +28,6 @@ class PlanlagtAktiveringTest {
 
         val plan = PlanlagtAktivering.forManglendeInnsending(
             førsteKjedeSomManglerInnsending = kjede,
-            antallKjederSomManglerInnsending = 2,
             varsler = Varsler(emptyList()),
             clock = fixedClockAt(vurderingstidspunkt),
         )
@@ -38,7 +37,6 @@ class PlanlagtAktiveringTest {
         plan.begrunnelse shouldContain "skalAktiveresTidspunkt=$kanFyllesUtFraOgMed"
         plan.begrunnelse shouldContain "skalAktiveresEksterntTidspunkt=$vurderingstidspunkt"
         plan.begrunnelse shouldContain "vurderingstidspunkt=$vurderingstidspunkt"
-        plan.begrunnelse shouldContain "antallKjeder=2"
         plan.begrunnelse shouldContain "valgtKjedeId=${kjede.kjedeId}"
     }
 
@@ -61,7 +59,6 @@ class PlanlagtAktiveringTest {
 
         val plan = PlanlagtAktivering.forManglendeInnsending(
             førsteKjedeSomManglerInnsending = kjedeSomManglerInnsending(kanFyllesUtFraOgMed = vurderingstidspunkt.minusDays(1)),
-            antallKjederSomManglerInnsending = 1,
             varsler = Varsler(listOf(aktivtVarsel)),
             clock = fixedClockAt(vurderingstidspunkt),
         )
@@ -293,7 +290,6 @@ class PlanlagtAktiveringTest {
             sakId = sakId,
             meldeperiodeId = MeldeperiodeId.random(),
             kjedeId = MeldeperiodeKjedeId("2025-01-06/2025-01-19"),
-            nyesteVersjon = 1,
             kanFyllesUtFraOgMed = kanFyllesUtFraOgMed,
         )
     }

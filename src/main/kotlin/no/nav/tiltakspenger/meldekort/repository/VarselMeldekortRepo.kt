@@ -11,15 +11,15 @@ import no.nav.tiltakspenger.meldekort.domene.varsler.KjedeSomManglerInnsending
 interface VarselMeldekortRepo {
 
     /**
-     * Finner alle meldeperiodekjeder for en gitt sak hvor nyeste meldeperiode-versjon
-     * ikke har et tilhørende innsendt (mottatt), ikke-deaktivert meldekort.
+     * Finner første meldeperiodekjede for en gitt sak hvor vi aldri har mottatt et meldekort,
+     * sortert på når kjeden tidligst kan fylles ut.
      *
      * En kjede "mangler innsending" dersom:
      * 1. Den nyeste meldeperiode-versjonen i kjeden har minst én dag som gir rett
-     * 2. Det ikke finnes et meldekort knyttet til denne nyeste versjonen som er mottatt og ikke deaktivert
+     * 2. Det ikke finnes et mottatt meldekort for noen meldeperiode i kjeden
      */
-    fun hentKjederSomManglerInnsending(
+    fun hentFørsteKjedeSomManglerInnsending(
         sakId: SakId,
         sessionContext: SessionContext? = null,
-    ): List<KjedeSomManglerInnsending>
+    ): KjedeSomManglerInnsending?
 }

@@ -12,34 +12,29 @@ class VarselMeldekortRepoFake(
     private val meldeperiodeRepoFake: MeldeperiodeRepoFake,
 ) : VarselMeldekortRepo {
 
-    override fun hentKjederSomManglerInnsending(
+    override fun hentFørsteKjedeSomManglerInnsending(
         sakId: SakId,
         sessionContext: SessionContext?,
-    ): List<KjedeSomManglerInnsending> {
+    ): KjedeSomManglerInnsending? {
         val meldeperioder = meldeperiodeRepoFake.hentAllForSakId(sakId)
         val meldekort = meldekortRepoFake.hentAlleForSakId(sakId)
 
-        // Grupper meldeperioder per kjede, finn nyeste versjon
         return meldeperioder
             .groupBy { it.kjedeId }
             .mapNotNull { (kjedeId, perioder) ->
                 val nyeste = perioder.maxByOrNull { it.versjon } ?: return@mapNotNull null
-                // Sjekk om nyeste versjon har minst én dag med rett
                 val harRett = nyeste.maksAntallDagerForPeriode > 0
                 if (!harRett) return@mapNotNull null
-                // Sjekk om det finnes et innsendt, ikke-deaktivert meldekort for denne nyeste versjonen
-                val harInnsendt = meldekort.any {
-                    it.meldeperiode.id == nyeste.id && it.mottatt != null && it.deaktivert == null
+                val harMottattMeldekortIKjeden = meldekort.any {
+                    it.meldeperiode.kjedeId == kjedeId && it.mottatt != null
                 }
-                if (harInnsendt) return@mapNotNull null
+                if (harMottattMeldekortIKjeden) return@mapNotNull null
                 KjedeSomManglerInnsending(
                     sakId = sakId,
                     meldeperiodeId = nyeste.id,
                     kjedeId = kjedeId,
-                    nyesteVersjon = nyeste.versjon,
                     kanFyllesUtFraOgMed = nyeste.kanFyllesUtFraOgMed,
                 )
-            }
-            .sortedBy { it.kanFyllesUtFraOgMed }
+            }.minByOrNull { it.kanFyllesUtFraOgMed }
     }
 }

@@ -21,26 +21,24 @@ internal fun vurderVarselForSak(
     clock: Clock,
     sessionFactory: SessionFactory,
     hentVarsler: () -> Varsler,
-    hentKjederSomManglerInnsending: () -> List<KjedeSomManglerInnsending>,
+    hentFørsteKjedeSomManglerInnsending: () -> KjedeSomManglerInnsending?,
     lagreVarsel: (Varsel, SessionContext) -> Unit,
     markerVarselVurdert: (LocalDateTime, LocalDateTime?, SessionContext) -> Unit,
     logger: KLogger = KotlinLogging.logger {},
 ): Either<VurderVarselUtfall, Unit> {
     val vurderingstidspunkt = nå(clock)
     val varsler = hentVarsler()
-    val kjederSomManglerInnsending = hentKjederSomManglerInnsending()
+    val førsteKjedeSomManglerInnsending = hentFørsteKjedeSomManglerInnsending()
     var resultat: Either<VurderVarselUtfall, Unit> = Unit.right()
 
     sessionFactory.withTransactionContext { tx ->
-        resultat = if (kjederSomManglerInnsending.isNotEmpty()) {
-            val førsteKjedeSomManglerInnsending = kjederSomManglerInnsending.minBy { it.kanFyllesUtFraOgMed }
+        resultat = if (førsteKjedeSomManglerInnsending != null) {
             opprettEllerOppdaterVarselHvisNødvendig(
                 sakId = sakId,
                 saksnummer = saksnummer,
                 fnr = fnr,
                 varsler = varsler,
                 førsteKjedeSomManglerInnsending = førsteKjedeSomManglerInnsending,
-                antallKjederSomManglerInnsending = kjederSomManglerInnsending.size,
                 clock = clock,
                 sessionContext = tx,
                 lagreVarsel = lagreVarsel,
@@ -72,7 +70,6 @@ private fun opprettEllerOppdaterVarselHvisNødvendig(
     fnr: Fnr,
     varsler: Varsler,
     førsteKjedeSomManglerInnsending: KjedeSomManglerInnsending,
-    antallKjederSomManglerInnsending: Int,
     clock: Clock,
     sessionContext: SessionContext,
     lagreVarsel: (Varsel, SessionContext) -> Unit,
@@ -80,7 +77,6 @@ private fun opprettEllerOppdaterVarselHvisNødvendig(
 ): Either<VurderVarselUtfall, Unit> {
     val planlagtAktivering = PlanlagtAktivering.forManglendeInnsending(
         førsteKjedeSomManglerInnsending = førsteKjedeSomManglerInnsending,
-        antallKjederSomManglerInnsending = antallKjederSomManglerInnsending,
         varsler = varsler,
         clock = clock,
     )

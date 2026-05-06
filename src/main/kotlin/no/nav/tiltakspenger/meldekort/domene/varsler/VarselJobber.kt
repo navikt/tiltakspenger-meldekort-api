@@ -8,8 +8,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
  *
  * Rekkefølgen er viktig:
  *  1. [VurderVarselService.vurderVarsler]       – Oppretter/oppdaterer planlagte varsler basert
- *                                                  på gjeldende tilstand (kjeder som mangler
- *                                                  innsending, avbrutte meldeperioder, m.m.).
+ *                                                  på gjeldende tilstand (kjeder hvor vi aldri har
+ *                                                  mottatt meldekort, avbrutte meldeperioder, m.m.).
  *  2. [AktiverVarslerService.aktiverVarsler] – Aktiverer (sender) varsler som nå er modne
  *                                                  (SkalAktiveres → Aktiv).
  *  3. [InaktiverVarslerService.inaktiverVarsler]  – Inaktiverer varsler som er planlagt inaktivert

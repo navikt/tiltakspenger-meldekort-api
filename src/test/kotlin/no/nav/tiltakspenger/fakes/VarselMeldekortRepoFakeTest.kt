@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.fakes
 
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.fakes.repos.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldeperiodeRepoFake
@@ -10,6 +9,7 @@ import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
@@ -44,13 +44,57 @@ class VarselMeldekortRepoFakeTest {
         meldeperiodeRepoFake.lagre(meldeperiode)
         meldekortRepoFake.lagre(meldekort)
 
-        val resultat = varselMeldekortRepoFake.hentKjederSomManglerInnsending(sakId)
+        val resultat = varselMeldekortRepoFake.hentFørsteKjedeSomManglerInnsending(sakId)
 
-        resultat shouldHaveSize 1
-        resultat.single().also {
+        resultat.also {
+            requireNotNull(it)
             it.meldeperiodeId shouldBe meldeperiode.id
             it.kjedeId shouldBe meldeperiode.kjedeId
             it.kanFyllesUtFraOgMed shouldBe meldeperiode.kanFyllesUtFraOgMed
         }
+    }
+
+    @Test
+    fun `returnerer null når tidligere versjon i kjeden har mottatt meldekort`() {
+        val sakId = SakId.random()
+        val saksnummer = Math.random().toString()
+        val fnr = Fnr.fromString(ObjectMother.FAKE_FNR)
+        val meldeperiodeV1 = ObjectMother.meldeperiode(
+            sakId = sakId,
+            saksnummer = saksnummer,
+            fnr = fnr,
+            versjon = 1,
+            periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025)),
+            opprettet = nå(clock),
+        )
+        val meldeperiodeV2 = meldeperiodeV1.copy(
+            id = MeldeperiodeId.random(),
+            versjon = 2,
+            opprettet = nå(clock).plusHours(1),
+        )
+        meldeperiodeRepoFake.lagre(meldeperiodeV1)
+        meldeperiodeRepoFake.lagre(meldeperiodeV2)
+        meldekortRepoFake.lagre(
+            ObjectMother.meldekort(
+                sakId = sakId,
+                saksnummer = saksnummer,
+                fnr = fnr,
+                mottatt = nå(clock),
+                meldeperiode = meldeperiodeV1,
+            ),
+        )
+        meldekortRepoFake.lagre(
+            ObjectMother.meldekort(
+                sakId = sakId,
+                saksnummer = saksnummer,
+                fnr = fnr,
+                mottatt = null,
+                meldeperiode = meldeperiodeV2,
+            ),
+        )
+
+        val resultat = varselMeldekortRepoFake.hentFørsteKjedeSomManglerInnsending(sakId)
+
+        resultat shouldBe null
     }
 }
