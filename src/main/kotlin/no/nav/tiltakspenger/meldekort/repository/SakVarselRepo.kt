@@ -13,7 +13,7 @@ interface SakVarselRepo {
     )
 
     fun hentSakerSomSkalVurdereVarsel(
-        limit: Int = 25,
+        limit: Int = 1000,
         sessionContext: SessionContext? = null,
     ): List<SakForVarselvurdering>
 
