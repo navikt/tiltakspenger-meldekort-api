@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
 import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
 import no.nav.tiltakspenger.meldekort.Configuration
 import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
+import no.nav.tiltakspenger.meldekort.clients.varsler.VarselClient
 import no.nav.tiltakspenger.meldekort.context.ApplicationContext
 import java.time.Clock
 
@@ -14,7 +15,7 @@ class LokalApplicationContext(clock: Clock) : ApplicationContext(clock) {
     override val texasClient =
         if (Configuration.brukFakeTexasClientLokalt) TexasClientFakeLokal() else super.texasClient
 
-    override val tmsVarselClient = TmsVarselClientFake()
+    override val varselClient: VarselClient = TmsVarselClientFake()
 
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()
 

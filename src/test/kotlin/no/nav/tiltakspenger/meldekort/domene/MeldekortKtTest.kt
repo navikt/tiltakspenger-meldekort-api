@@ -72,12 +72,10 @@ class MeldekortKtTest {
     }
 
     @Test
-    fun `tilOppdatertMeldekort gjenbruker varslingstilstand og nullstiller inaktivering for aktivt meldekort`() {
+    fun `tilOppdatertMeldekort gjenbruker og nullstiller for aktivt meldekort`() {
         val periode = ObjectMother.periode(tilSisteSøndagEtter = 12.januar(2025))
         val eksisterendeMeldekort = ObjectMother.meldekort(
             mottatt = null,
-            sendtVarselTidspunkt = nå(fixedClock),
-            erVarselInaktivert = true,
             locale = "nn",
             statusMap = mapOf(
                 4.januar(2025) to MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
@@ -121,10 +119,6 @@ class MeldekortKtTest {
 
         oppdatertMeldekort.id shouldNotBe eksisterendeMeldekort.id
         oppdatertMeldekort.meldeperiode shouldBe oppdatertMeldeperiode
-        oppdatertMeldekort.varselId shouldBe eksisterendeMeldekort.varselId
-        oppdatertMeldekort.sendtVarsel shouldBe true
-        oppdatertMeldekort.sendtVarselTidspunkt shouldBe eksisterendeMeldekort.sendtVarselTidspunkt
-        oppdatertMeldekort.erVarselInaktivert shouldBe false
         oppdatertMeldekort.mottatt shouldBe null
         oppdatertMeldekort.deaktivert shouldBe null
         oppdatertMeldekort.locale shouldBe null

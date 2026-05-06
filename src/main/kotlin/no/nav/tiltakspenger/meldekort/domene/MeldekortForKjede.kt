@@ -51,20 +51,18 @@ data class MeldekortForKjede(
                 locale = command.locale,
             )
         } else {
+            val meldekortId = MeldekortId.random()
+
             Meldekort(
-                id = MeldekortId.random(),
+                id = meldekortId,
                 deaktivert = null,
                 mottatt = nå(clock),
                 meldeperiode = sisteMeldeperiode,
                 dager = command.korrigerteDager,
                 journalpostId = null,
                 journalføringstidspunkt = null,
-                varselId = VarselId.random(),
-                erVarselInaktivert = false,
                 korrigering = true,
                 locale = command.locale,
-                sendtVarselTidspunkt = null,
-                sendtVarsel = false,
             )
         }.right()
     }

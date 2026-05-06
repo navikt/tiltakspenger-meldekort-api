@@ -8,7 +8,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
-import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
@@ -79,7 +78,7 @@ class MeldekortBrukerRouteTest {
     @Test
     fun `hent ikke klart meldekort og forrige innsendte meldekort`() = runTest {
         withTestApplicationContext { tac ->
-            val førstePeriode = ObjectMother.periode(LocalDate.now().minusWeeks(2))
+            val førstePeriode = ObjectMother.periode(LocalDate.now(tac.clock).minusWeeks(2))
             val andrePeriode = førstePeriode.plus14Dager()
 
             val førsteMeldeperiode = ObjectMother.meldeperiode(periode = førstePeriode, opprettet = nå(tac.clock))
@@ -121,7 +120,7 @@ class MeldekortBrukerRouteTest {
     @Test
     fun `returner ingen meldekort klare til utfylling eller tidligere utfylt`() = runTest {
         withTestApplicationContext { tac ->
-            val periode = ObjectMother.periode(LocalDate.now())
+            val periode = ObjectMother.periode(LocalDate.now(tac.clock))
 
             val meldeperiode = ObjectMother.meldeperiode(
                 periode = periode,
@@ -176,7 +175,8 @@ class MeldekortBrukerRouteTest {
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
             val førsteDto = meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))
-            val andreDto = førsteDto.copy(id = MeldeperiodeId.random().toString(), versjon = 2, opprettet = nå(tac.clock))
+            val andreDto =
+                førsteDto.copy(id = MeldeperiodeId.random().toString(), versjon = 2, opprettet = nå(tac.clock))
 
             val sakDto = ObjectMother.sakDTO(
                 meldeperioder = listOf(førsteDto, andreDto),
@@ -282,6 +282,7 @@ class MeldekortBrukerRouteTest {
             val meldeperiodeIdForMeldekortSomSkalKorrigeres = innsendtMeldekort.meldeperiode.id.toString()
 
             val responseBody = this.korrigerMeldekortRequest(
+                tac = tac,
                 meldekortId = idForMeldekortSomSkalKorrigeres.toString(),
                 requestBody = """
                         [
@@ -444,18 +445,18 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(innsendtMeldekort)
 
-            val dagerUtenEndring = serialize(
+            val dagerUtenEndring =
                 innsendtMeldekort.dager.map {
                     MeldekortKorrigertDagDTO(
                         dato = it.dag,
                         status = it.status,
                     )
-                },
-            )
+                }
 
             this.korrigerMeldekortRequest(
+                tac = tac,
                 meldekortId = innsendtMeldekort.id.toString(),
-                requestBody = dagerUtenEndring,
+                requestDto = dagerUtenEndring,
                 locale = "nb",
                 forventetStatus = HttpStatusCode.BadRequest,
                 forventetBody = """{"melding":"Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.","kode":"kan_ikke_korrigere_uten_endring"}""",

@@ -243,10 +243,8 @@ class MottaSakerRouteTest {
                     )
 
                 førsteMeldekort.deaktivert shouldNotBe null
-                førsteMeldekort.erVarselInaktivert shouldBe true
 
                 andreMeldekort.deaktivert shouldBe null
-                andreMeldekort.erVarselInaktivert shouldBe false
             }
         }
     }

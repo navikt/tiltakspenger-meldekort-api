@@ -36,7 +36,6 @@ class LagreMeldekortRepoTest {
                 result!!.id shouldBe meldekort.id
                 result.meldeperiode.id shouldBe meldekort.meldeperiode.id
                 result.mottatt shouldBe meldekort.mottatt
-                result.varselId shouldBe meldekort.varselId
             }
         }
 
@@ -104,12 +103,34 @@ class LagreMeldekortRepoTest {
                 repo.hentForMeldekortId(meldekort.id, meldekort.fnr) shouldBe oppdatertMeldekort
             }
         }
+
+        @Test
+        fun `lagrer korrigering`() {
+            withMigratedDb { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort = ObjectMother.meldekort(mottatt = null)
+
+                lagreMeldekort(helper, meldekort)
+
+                val korrigering = meldekort.copy(
+                    mottatt = nå(fixedClock),
+                    korrigering = true,
+                )
+
+                repo.lagre(korrigering)
+
+                repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
+                    result shouldNotBe null
+                    result!!.korrigering shouldBe true
+                }
+            }
+        }
     }
 
     @Nested
     inner class Deaktiver {
         @Test
-        fun `deaktiver med deaktiverVarsel true setter deaktivert og varsel_inaktivert til false`() {
+        fun `deaktiver setter deaktivert`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
                 val meldekort = ObjectMother.meldekort(mottatt = null)
@@ -118,24 +139,18 @@ class LagreMeldekortRepoTest {
                 repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
                     result shouldNotBe null
                     result!!.deaktivert shouldBe null
-                    result.erVarselInaktivert shouldBe false
-                    result.sendtVarselTidspunkt shouldBe null
-                    result.sendtVarsel shouldBe false
                 }
-                repo.deaktiver(meldekort.id, deaktiverVarsel = true)
+                repo.deaktiver(meldekort.id)
 
                 repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
                     result shouldNotBe null
                     result!!.deaktivert shouldNotBe null
-                    result.erVarselInaktivert shouldBe false
-                    result.sendtVarselTidspunkt shouldBe null
-                    result.sendtVarsel shouldBe false
                 }
             }
         }
 
         @Test
-        fun `deaktiver med deaktiverVarsel false endrer erVarselInaktivert til true`() {
+        fun `deaktiver setter deaktivert tidspunkt`() {
             withMigratedDb { helper ->
                 val repo = helper.meldekortPostgresRepo
                 val meldekort = ObjectMother.meldekort(mottatt = null)
@@ -144,19 +159,12 @@ class LagreMeldekortRepoTest {
                 repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
                     result shouldNotBe null
                     result!!.deaktivert shouldBe null
-                    result.erVarselInaktivert shouldBe false
-                    result.sendtVarselTidspunkt shouldBe null
-                    result.sendtVarsel shouldBe false
                 }
-                repo.deaktiver(meldekort.id, deaktiverVarsel = false)
+                repo.deaktiver(meldekort.id)
 
                 repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
                     result shouldNotBe null
                     result!!.deaktivert shouldNotBe null
-                    // I praksis vil varselet aldri innaktiveres fra systemet.
-                    result.erVarselInaktivert shouldBe true
-                    result.sendtVarselTidspunkt shouldBe null
-                    result.sendtVarsel shouldBe false
                 }
             }
         }
@@ -169,7 +177,7 @@ class LagreMeldekortRepoTest {
 
                 lagreMeldekort(helper, meldekort)
 
-                repo.deaktiver(meldekort.id, deaktiverVarsel = false)
+                repo.deaktiver(meldekort.id)
 
                 val neste = repo.hentNesteMeldekortTilUtfylling(meldekort.fnr)
                 neste shouldBe null
