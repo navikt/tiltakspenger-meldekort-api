@@ -20,7 +20,7 @@ class MeldekortServiceTest {
     private val gyldigPeriode = ObjectMother.periode(LocalDate.of(2025, 1, 1))
 
     @Test
-    fun `Kan lagre gyldig meldekort fra bruker`() {
+    fun `Kan lagre gyldig meldekort fra bruker og flagger sak for varselvurdering`() {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val meldekortRepo = tac.meldekortRepo
             val meldekortService = tac.meldekortService
@@ -42,6 +42,7 @@ class MeldekortServiceTest {
                 )
 
             oppdatertMeldekort shouldBe forventetMeldekort
+            tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId } shouldBe listOf(meldekort.sakId)
         }
     }
 
