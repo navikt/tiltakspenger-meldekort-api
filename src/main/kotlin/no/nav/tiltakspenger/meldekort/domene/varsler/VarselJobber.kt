@@ -28,9 +28,10 @@ class VarselJobber(
     fun kjørAlle() {
         Either.catch { vurderVarselService.vurderVarsler() }
             .onLeft { log.error(it) { "Ukjent feil under vurderVarsler()" } }
-        Either.catch { aktiverVarslerService.aktiverVarsler() }
-            .onLeft { log.error(it) { "Ukjent feil under aktiverVarsler()" } }
-        Either.catch { inaktiverVarslerService.inaktiverVarsler() }
-            .onLeft { log.error(it) { "Ukjent feil under inaktiverVarsler()" } }
+        // Vi merger denne branchen uten å sende nye varsler. Deretter må Team Min side inaktivere alle varslene som er aktive. Når varslene som denne jobben forbereder ser bra ut, slår vi på disse.
+//        Either.catch { aktiverVarslerService.aktiverVarsler() }
+//            .onLeft { log.error(it) { "Ukjent feil under aktiverVarsler()" } }
+//        Either.catch { inaktiverVarslerService.inaktiverVarsler() }
+//            .onLeft { log.error(it) { "Ukjent feil under inaktiverVarsler()" } }
     }
 }
