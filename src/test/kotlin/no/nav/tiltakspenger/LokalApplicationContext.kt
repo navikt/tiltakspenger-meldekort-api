@@ -5,10 +5,10 @@ import no.nav.tiltakspenger.fakes.clients.SaksbehandlingClientFake
 import no.nav.tiltakspenger.fakes.clients.TexasClientFakeLokal
 import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
 import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
-import no.nav.tiltakspenger.meldekort.Configuration
-import no.nav.tiltakspenger.meldekort.clients.saksbehandling.SaksbehandlingClient
-import no.nav.tiltakspenger.meldekort.clients.varsler.VarselClient
-import no.nav.tiltakspenger.meldekort.context.ApplicationContext
+import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
+import no.nav.tiltakspenger.meldekort.infra.Configuration
+import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
+import no.nav.tiltakspenger.meldekort.varsler.VarselClient
 import java.time.Clock
 
 class LokalApplicationContext(clock: Clock) : ApplicationContext(clock) {

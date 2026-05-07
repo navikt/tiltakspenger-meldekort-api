@@ -29,8 +29,11 @@ class IdenthendelseServiceTest {
             helper.meldeperiodeRepo.lagre(meldeperiode)
 
             identhendelseService.behandleIdenthendelse(
-                id = UUID.randomUUID(),
-                identhendelseDto = IdenthendelseDto(gammeltFnr = gammeltFnr.verdi, nyttFnr = nyttFnr.verdi),
+                Identhendelse(
+                    id = UUID.randomUUID(),
+                    gammeltFnr = gammeltFnr,
+                    nyttFnr = nyttFnr,
+                ),
             )
 
             val oppdatertSak = helper.sakPostgresRepo.hent(sak.id)

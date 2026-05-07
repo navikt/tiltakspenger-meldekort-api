@@ -5,9 +5,9 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.domene.ArenaMeldekortStatus
-import no.nav.tiltakspenger.meldekort.domene.Sak
-import no.nav.tiltakspenger.meldekort.repository.SakRepo
+import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.sak.Sak
+import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import java.time.Clock
 
 class SakRepoFake(

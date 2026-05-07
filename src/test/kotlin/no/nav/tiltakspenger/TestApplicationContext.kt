@@ -7,7 +7,7 @@ import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
 import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
 import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
-import no.nav.tiltakspenger.meldekort.context.ApplicationContext
+import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
 import java.time.Clock
 
 /**

@@ -7,8 +7,8 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periode.Periode
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode.Companion.kanFyllesUtFraOgMed
+import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
+import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime

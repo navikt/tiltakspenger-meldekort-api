@@ -4,10 +4,10 @@ import arrow.atomic.Atomic
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.domene.VarselId
-import no.nav.tiltakspenger.meldekort.domene.varsler.Varsel
-import no.nav.tiltakspenger.meldekort.domene.varsler.Varsler
-import no.nav.tiltakspenger.meldekort.repository.VarselRepo
+import no.nav.tiltakspenger.meldekort.varsler.Varsel
+import no.nav.tiltakspenger.meldekort.varsler.VarselId
+import no.nav.tiltakspenger.meldekort.varsler.VarselRepo
+import no.nav.tiltakspenger.meldekort.varsler.Varsler
 import java.time.Clock
 
 class VarselRepoFake(

@@ -7,13 +7,11 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.periode.Periode
-import no.nav.tiltakspenger.meldekort.domene.LagreMeldekortFraBrukerKommando
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDag
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDagFraBrukerDTO
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatus
-import no.nav.tiltakspenger.meldekort.domene.MeldekortDagStatusDTO
-import no.nav.tiltakspenger.meldekort.domene.Meldeperiode
+import no.nav.tiltakspenger.meldekort.meldekort.LagreMeldekortFraBrukerKommando
+import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
+import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
+import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -100,10 +98,10 @@ interface MeldekortMother {
         meldeperiode: Meldeperiode,
         meldekortId: MeldekortId = MeldekortId.random(),
         mottatt: LocalDateTime = nå(fixedClock),
-        dager: List<MeldekortDagFraBrukerDTO> = meldeperiode.girRett.map { (dag, _) ->
-            MeldekortDagFraBrukerDTO(
+        dager: List<MeldekortDag> = meldeperiode.girRett.map { (dag, _) ->
+            MeldekortDag(
                 dag = dag,
-                status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
+                status = if (meldeperiode.girRett[dag] == true) MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
             )
         },
         locale: String? = null,
@@ -155,9 +153,9 @@ fun lagMeldekortFraBrukerKommando(
         id = meldekort.id,
         fnr = fnr,
         dager = meldekort.dager.map {
-            MeldekortDagFraBrukerDTO(
+            MeldekortDag(
                 dag = it.dag,
-                status = if (meldekort.meldeperiode.girRett[it.dag] == true) MeldekortDagStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER,
+                status = if (meldekort.meldeperiode.girRett[it.dag] == true) MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET else MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER,
             )
         },
         locale = meldekort.locale,

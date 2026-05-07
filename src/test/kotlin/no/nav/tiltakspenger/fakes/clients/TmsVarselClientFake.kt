@@ -2,9 +2,9 @@ package no.nav.tiltakspenger.fakes.clients
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.meldekort.clients.varsler.SendtVarselMetadata
-import no.nav.tiltakspenger.meldekort.clients.varsler.VarselClient
-import no.nav.tiltakspenger.meldekort.domene.VarselId
+import no.nav.tiltakspenger.meldekort.varsler.SendtVarselMetadata
+import no.nav.tiltakspenger.meldekort.varsler.VarselClient
+import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import java.time.LocalDateTime
 
 class TmsVarselClientFake : VarselClient {
