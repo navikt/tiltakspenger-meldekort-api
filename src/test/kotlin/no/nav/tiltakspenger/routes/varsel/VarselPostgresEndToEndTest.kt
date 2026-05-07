@@ -428,6 +428,7 @@ class VarselPostgresEndToEndTest {
             val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, runJobs = false)!!
             // Derimot ønsker vi å få en ny vurdering, for å se at vi ikke inaktiverer på nytt.
             KjørJobberForTester.kjørVurderVarsler(tac)
+            tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId }.contains(sak.id) shouldBe false
 
             val varselSomSkalInaktiveres = tac.varselRepo.hentVarslerForSakId(sak.id).single().shouldBeInstanceOf<Varsel.SkalInaktiveres>()
 
@@ -454,8 +455,10 @@ class VarselPostgresEndToEndTest {
                 locale = "nb",
                 runJobs = false,
             )
+            tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId }.contains(sak.id) shouldBe true
 
             KjørJobberForTester.kjørVurderVarsler(tac)
+            tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId }.contains(sak.id) shouldBe false
 
             val varsler = tac.varselRepo.hentVarslerForSakId(sak.id)
             varsler shouldHaveSize 1
@@ -464,6 +467,13 @@ class VarselPostgresEndToEndTest {
 
             val varslerHendelserEtterNyVurdering = tac.varselClient.snapshotVarselhendelser()
             varslerHendelserEtterNyVurdering shouldBe varslerHendelserFørNyVurdering
+
+            KjørJobberForTester.kjørInaktiverVarsler(tac)
+            tac.varselRepo.hentVarslerForSakId(sak.id).single().shouldBeInstanceOf<Varsel.Inaktivert>()
+            tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId }.contains(sak.id) shouldBe true
+
+            KjørJobberForTester.kjørVurderVarsler(tac)
+            tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId }.contains(sak.id) shouldBe false
         }
     }
 

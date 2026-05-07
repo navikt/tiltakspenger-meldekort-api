@@ -75,6 +75,11 @@ private fun opprettEllerOppdaterVarselHvisNødvendig(
     lagreVarsel: (Varsel, SessionContext) -> Unit,
     logger: KLogger,
 ): Either<VurderVarselUtfall, Unit> {
+    if (varsler.pågåendeInaktivering != null) {
+        logger.info { "Sak $sakId har allerede pågående inaktivering. Vi flagger saken som vurdert og venter på at inaktiveringsjobben inaktiverer varselet og flagger saken for ny vurdering." }
+        return VurderVarselUtfall.HarPågåendeInaktivering.left()
+    }
+
     val planlagtAktivering = PlanlagtAktivering.forManglendeInnsending(
         førsteKjedeSomManglerInnsending = førsteKjedeSomManglerInnsending,
         varsler = varsler,
@@ -165,10 +170,6 @@ private fun håndterPågåendeMedKjeder(
     planlagtAktivering.vurderPågåendeVarsel(clock, pågående).onLeft {
         logger.info { "Beholder pågående varsel ${pågående.varselId} for sak $sakId siden planlagt aktivering (${planlagtAktivering.skalAktiveresTidspunkt}) ga utfallet ${it::class.simpleName}" }
         return it.left()
-    }
-    if (varsler.pågåendeInaktivering != null) {
-        logger.info { "Sak $sakId har allerede pågående inaktivering. Vi flagger saken som vurdert og venter på at inaktiveringsjobben sender inaktivering og flagger jobben som skal vurderes igjen." }
-        return VurderVarselUtfall.HarPågåendeInaktivering.left()
     }
     val vurderingstidspunkt = nå(clock)
     val skalInaktiveresBegrunnelse = if (pågående is Varsel.Aktiv) {

@@ -384,6 +384,28 @@ class VarslerTest {
         }
 
         @Test
+        fun `reproduserer produksjonsfeil naar aktivt varsel forberedes for inaktivering mens et annet allerede skal inaktiveres`() {
+            val alleredeTilInaktivering = skalInaktiveres(opprettet = 6.januar(2025).atHour(9))
+            val aktivtVarsel = aktiv(
+                varselId = VarselId.random(),
+                skalAktiveresTidspunkt = tirsdagKl10,
+                aktiveringstidspunkt = tirsdagKl10,
+                opprettet = 6.januar(2025).atTime(9, 1),
+            )
+            val varsler = Varsler(listOf(alleredeTilInaktivering, aktivtVarsel))
+
+            val exception = assertThrows<IllegalArgumentException> {
+                varsler.forberedInaktivering(
+                    varselId = aktivtVarsel.varselId,
+                    skalInaktiveresTidspunkt = tirsdagKl10.plusHours(1),
+                    skalInaktiveresBegrunnelse = "mottatt meldekort",
+                )
+            }
+
+            exception.message shouldBe "Collection contains more than one matching element."
+        }
+
+        @Test
         fun `kan inaktivere via Varsler`() {
             val eksisterende = skalInaktiveres(opprettet = 6.januar(2025).atHour(9))
 

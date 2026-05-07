@@ -337,14 +337,11 @@ class VurderVarselForSakTest {
     }
 
     @Test
-    fun `SkalInaktiveres alene ignoreres - venter på inaktivering før nytt varsel opprettes`() {
+    fun `SkalInaktiveres alene ignoreres - markerer vurdert og venter på inaktivering før nytt varsel opprettes`() {
         // Hvis sak har SkalInaktiveres men ikke noe pågående Aktiv/SkalAktiveres,
-        // trenger vi ikke gjøre noe. Et evt. nytt varsel opprettes i neste runde
-        // (etter at InaktiverVarslerService har kjørt).
-        //
-        // Merk: Nå aksepterer Varsler-invarianten SkalInaktiveres sammen med en ny
-        // SkalAktiveres. Men VurderVarsel sin pågåendeOppretting == null her, og
-        // opprett-grenen vil opprette nytt SkalAktiveres. Vi tester derfor at dette skjer.
+        // skal vurderingsjobben ikke gjøre noe annet enn å markere saken som vurdert.
+        // Et evt. nytt varsel opprettes i neste runde, etter at InaktiverVarslerService
+        // har kjørt og flagget saken for ny vurdering.
         val nå = LocalDateTime.of(2025, 3, 14, 12, 0)
         val skalInaktiveresVarsel = Varsel.SkalInaktiveres(
             sakId = sak.id,
@@ -362,8 +359,9 @@ class VurderVarselForSakTest {
             sistEndret = nå.minusMinutes(10),
         )
         val lagredeVarsler = mutableListOf<Varsel>()
+        val vurderteTidspunkt = mutableListOf<LocalDateTime>()
 
-        vurderVarselForSak(
+        val resultat = vurderVarselForSak(
             sakId = sak.id,
             saksnummer = sak.saksnummer,
             fnr = sak.fnr,
@@ -379,12 +377,12 @@ class VurderVarselForSakTest {
                 )
             },
             lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
-            markerVarselVurdert = { _, _, _ -> },
+            markerVarselVurdert = { vurdertTidspunkt, _, _ -> vurderteTidspunkt.add(vurdertTidspunkt) },
         )
 
-        // Nytt SkalAktiveres skal opprettes nå som invarianten tillater sameksistens.
-        lagredeVarsler shouldHaveSize 1
-        lagredeVarsler.single().shouldBeInstanceOf<Varsel.SkalAktiveres>()
+        resultat shouldBe VurderVarselUtfall.HarPågåendeInaktivering.left()
+        lagredeVarsler shouldBe emptyList()
+        vurderteTidspunkt shouldBe listOf(nå)
     }
 
     @Test
