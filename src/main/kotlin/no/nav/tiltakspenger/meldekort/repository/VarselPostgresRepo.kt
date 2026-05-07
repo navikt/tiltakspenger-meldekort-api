@@ -190,7 +190,7 @@ class VarselPostgresRepo(
                 // Vi kjører denne uten order-by da denne generelt sett vil returnere 0 rader og bør tømmes raskt.
                 sqlQuery(
                     """
-                    select v.sak_id from varsel v
+                    select distinct v.sak_id from varsel v
                     where v.type = 'SkalInaktiveres'
                       and v.skal_inaktiveres_tidspunkt <= :tidsgrense
                     limit :limit

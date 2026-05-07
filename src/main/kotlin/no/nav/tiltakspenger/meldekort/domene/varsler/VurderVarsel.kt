@@ -53,7 +53,6 @@ internal fun vurderVarselForSak(
                 lagreVarsel = lagreVarsel,
                 logger = logger,
             )
-            Unit.right()
         }
         // Hvis sist_flagget_tidspunkt er endret siden vi leste saken kaster markerVarselVurdert
         // OptimistiskLåsFeil og hele transaksjonen rulles tilbake. Saken forblir flagget og
@@ -75,11 +74,6 @@ private fun opprettEllerOppdaterVarselHvisNødvendig(
     lagreVarsel: (Varsel, SessionContext) -> Unit,
     logger: KLogger,
 ): Either<VurderVarselUtfall, Unit> {
-    if (varsler.pågåendeInaktivering != null) {
-        logger.info { "Sak $sakId har allerede pågående inaktivering. Vi flagger saken som vurdert og venter på at inaktiveringsjobben inaktiverer varselet og flagger saken for ny vurdering." }
-        return VurderVarselUtfall.HarPågåendeInaktivering.left()
-    }
-
     val planlagtAktivering = PlanlagtAktivering.forManglendeInnsending(
         førsteKjedeSomManglerInnsending = førsteKjedeSomManglerInnsending,
         varsler = varsler,
@@ -211,13 +205,14 @@ private fun forberedInaktiveringHvisNødvendig(
     sessionContext: SessionContext,
     lagreVarsel: (Varsel, SessionContext) -> Unit,
     logger: KLogger,
-) {
+): Either<VurderVarselUtfall, Unit> {
     // Ingen kjeder mangler innsending lenger. Forbered inaktivering av det pågående varselet.
     //
     // Også for SkalAktiveres går vi rett til SkalInaktiveres (uten å gå via Aktiv). Vi kan ha
     // publisert aktiveringen på Kafka uten at lagringen lyktes, så for sikkerhets skyld må vi
     // alltid publisere en inaktivering mot Min side (som er idempotent og ignorerer varselId den ikke kjenner til). InaktiverVarslerService håndterer dette
     // basert på SkalInaktiveres-tilstanden.
+
     when (val pågående = varsler.pågåendeOppretting) {
         is Varsel.SkalAktiveres, is Varsel.Aktiv -> {
             val typeNavn = pågående::class.simpleName
@@ -233,4 +228,5 @@ private fun forberedInaktiveringHvisNødvendig(
 
         is Varsel.SkalInaktiveres, is Varsel.Inaktivert, null -> Unit
     }
+    return Unit.right()
 }

@@ -130,6 +130,58 @@ class VurderVarselForSakTest {
     }
 
     @Test
+    fun `SkalAktiveres og SkalInaktiveres med ingen kjeder forbereder ny inaktivering`() {
+        val nå = LocalDateTime.of(2025, 3, 10, 10, 0)
+        val pågåendeInaktivering = Varsel.SkalInaktiveres(
+            sakId = sak.id,
+            saksnummer = sak.saksnummer,
+            fnr = sak.fnr,
+            varselId = VarselId.random(),
+            skalAktiveresTidspunkt = LocalDateTime.of(2025, 3, 7, 9, 0),
+            skalAktiveresEksterntTidspunkt = LocalDateTime.of(2025, 3, 7, 9, 0),
+            skalAktiveresBegrunnelse = "test",
+            aktiveringstidspunkt = LocalDateTime.of(2025, 3, 7, 9, 1),
+            eksternAktiveringstidspunkt = LocalDateTime.of(2025, 3, 7, 9, 1),
+            skalInaktiveresTidspunkt = nå.minusMinutes(5),
+            skalInaktiveresBegrunnelse = "meldekort mottatt",
+            opprettet = LocalDateTime.of(2025, 3, 7, 9, 0),
+            sistEndret = nå.minusMinutes(5),
+        )
+        val skalAktiveres = Varsel.SkalAktiveres(
+            sakId = sak.id,
+            saksnummer = sak.saksnummer,
+            fnr = sak.fnr,
+            varselId = VarselId.random(),
+            skalAktiveresTidspunkt = LocalDateTime.of(2025, 3, 11, 9, 0),
+            skalAktiveresEksterntTidspunkt = LocalDateTime.of(2025, 3, 11, 9, 0),
+            skalAktiveresBegrunnelse = "test",
+            opprettet = LocalDateTime.of(2025, 3, 10, 9, 0),
+            sistEndret = LocalDateTime.of(2025, 3, 10, 9, 0),
+        )
+        val lagredeVarsler = mutableListOf<Varsel>()
+        val vurderteTidspunkt = mutableListOf<LocalDateTime>()
+
+        val resultat = vurderVarselForSak(
+            sakId = sak.id,
+            saksnummer = sak.saksnummer,
+            fnr = sak.fnr,
+            clock = fixedClockAt(nå),
+            sessionFactory = sessionFactory(),
+            hentVarsler = { Varsler(listOf(pågåendeInaktivering, skalAktiveres)) },
+            hentFørsteKjedeSomManglerInnsending = { null },
+            lagreVarsel = { varsel, _ -> lagredeVarsler.add(varsel) },
+            markerVarselVurdert = { vurdertTidspunkt, _, _ -> vurderteTidspunkt.add(vurdertTidspunkt) },
+        )
+
+        resultat shouldBe Unit.right()
+        lagredeVarsler shouldHaveSize 1
+        val skalInaktiveresVarsel = lagredeVarsler.single().shouldBeInstanceOf<Varsel.SkalInaktiveres>()
+        skalInaktiveresVarsel.varselId shouldBe skalAktiveres.varselId
+        skalInaktiveresVarsel.skalInaktiveresTidspunkt shouldBe nå
+        vurderteTidspunkt shouldBe listOf(nå)
+    }
+
+    @Test
     fun `SkalAktiveres med oppdatert tidspunkt for samme meldeperiode erstattes`() {
         val nå = LocalDateTime.of(2025, 3, 10, 10, 0)
         val eksisterendeTidspunkt = LocalDateTime.of(2025, 3, 10, 15, 0)
@@ -288,7 +340,7 @@ class VurderVarselForSakTest {
     }
 
     @Test
-    fun `aktivt varsel med pågående inaktivering venter med å opprette nytt varsel`() {
+    fun `aktivt varsel med pågående inaktivering forbereder inaktivering og oppretter nytt varsel`() {
         val aktiveringsTidspunkt = LocalDateTime.of(2025, 3, 10, 9, 0)
         val nå = LocalDateTime.of(2025, 3, 10, 10, 0)
         val aktivtVarsel = aktivVarsel(
@@ -332,16 +384,16 @@ class VurderVarselForSakTest {
             markerVarselVurdert = { _, _, _ -> },
         )
 
-        resultat shouldBe VurderVarselUtfall.HarPågåendeInaktivering.left()
-        lagredeVarsler shouldBe emptyList()
+        resultat shouldBe Unit.right()
+        lagredeVarsler shouldHaveSize 2
+        lagredeVarsler.filterIsInstance<Varsel.SkalInaktiveres>().single().varselId shouldBe aktivtVarsel.varselId
+        lagredeVarsler.filterIsInstance<Varsel.SkalAktiveres>().single().skalAktiveresTidspunkt shouldBe LocalDateTime.of(2025, 3, 21, 9, 0)
     }
 
     @Test
-    fun `SkalInaktiveres alene ignoreres - markerer vurdert og venter på inaktivering før nytt varsel opprettes`() {
+    fun `SkalInaktiveres alene blokkerer ikke nytt varsel`() {
         // Hvis sak har SkalInaktiveres men ikke noe pågående Aktiv/SkalAktiveres,
-        // skal vurderingsjobben ikke gjøre noe annet enn å markere saken som vurdert.
-        // Et evt. nytt varsel opprettes i neste runde, etter at InaktiverVarslerService
-        // har kjørt og flagget saken for ny vurdering.
+        // kan vurderingsjobben opprette nytt varsel med en gang.
         val nå = LocalDateTime.of(2025, 3, 14, 12, 0)
         val skalInaktiveresVarsel = Varsel.SkalInaktiveres(
             sakId = sak.id,
@@ -380,8 +432,9 @@ class VurderVarselForSakTest {
             markerVarselVurdert = { vurdertTidspunkt, _, _ -> vurderteTidspunkt.add(vurdertTidspunkt) },
         )
 
-        resultat shouldBe VurderVarselUtfall.HarPågåendeInaktivering.left()
-        lagredeVarsler shouldBe emptyList()
+        resultat shouldBe Unit.right()
+        lagredeVarsler shouldHaveSize 1
+        lagredeVarsler.single().shouldBeInstanceOf<Varsel.SkalAktiveres>().skalAktiveresTidspunkt shouldBe LocalDateTime.of(2025, 3, 21, 9, 0)
         vurderteTidspunkt shouldBe listOf(nå)
     }
 

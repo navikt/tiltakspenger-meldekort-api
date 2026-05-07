@@ -150,13 +150,19 @@ class VarselPostgresRepoTest {
     fun `hentVarslerSomSkalInaktiveres filtrerer på tidspunkt og respekterer limit`() {
         val klokke = 6.januar(2025).atHour(12)
         withMigratedDb(clock = fixedClockAt(klokke)) { helper ->
-            val forfallerTidlig = skalInaktiveres(sakId = SakId.random(), saksnummer = "sak-e", fnr = Fnr.random(), skalAktiveresTidspunkt = 6.januar(2025).atTime(9, 30))
+            val sammeSakId = SakId.random()
+            val sammeSakFnr = Fnr.random()
+            val forfallerTidlig = skalInaktiveres(sakId = sammeSakId, saksnummer = "sak-e", fnr = sammeSakFnr, skalAktiveresTidspunkt = 6.januar(2025).atTime(9, 30))
+            val forfallerSammeSak = skalInaktiveres(sakId = sammeSakId, saksnummer = "sak-e", fnr = sammeSakFnr, skalAktiveresTidspunkt = 6.januar(2025).atTime(10, 30))
             val forfallerSent = skalInaktiveres(sakId = SakId.random(), saksnummer = "sak-f", fnr = Fnr.random(), skalAktiveresTidspunkt = 6.januar(2025).atTime(10, 50))
             val fremtidig = skalInaktiveres(sakId = SakId.random(), saksnummer = "sak-g", fnr = Fnr.random(), skalAktiveresTidspunkt = 6.januar(2025).atTime(11, 30))
             val feilType = inaktivert(sakId = SakId.random(), saksnummer = "sak-h", fnr = Fnr.random(), skalAktiveresTidspunkt = 6.januar(2025).atHour(9))
 
-            listOf(forfallerTidlig, forfallerSent, fremtidig, feilType).forEach { varsel ->
+            val varsler = listOf(forfallerTidlig, forfallerSammeSak, forfallerSent, fremtidig, feilType)
+            varsler.distinctBy { it.sakId }.forEach { varsel ->
                 lagreSak(helper, sakId = varsel.sakId, saksnummer = varsel.saksnummer, fnr = varsel.fnr)
+            }
+            varsler.forEach { varsel ->
                 helper.varselPostgresRepo.lagre(varsel)
             }
 
@@ -243,7 +249,7 @@ class VarselPostgresRepoTest {
     }
 
     @Test
-    fun `lagre avviser flere SkalInaktiveres for samme sak`() {
+    fun `lagre tillater flere SkalInaktiveres for samme sak`() {
         withMigratedDb(clock = fixedClockAt(startTid)) { helper ->
             val sakId = SakId.random()
             val fnr = Fnr.random()
@@ -258,17 +264,17 @@ class VarselPostgresRepoTest {
                 ),
             )
 
-            assertThrows<Throwable> {
-                helper.varselPostgresRepo.lagre(
-                    skalInaktiveres(
-                        sakId = sakId,
-                        saksnummer = "sak-unik-inaktivering",
-                        fnr = fnr,
-                        skalAktiveresTidspunkt = startTid.plusHours(3),
-                        opprettet = startTid.plusMinutes(1),
-                    ),
-                )
-            }
+            helper.varselPostgresRepo.lagre(
+                skalInaktiveres(
+                    sakId = sakId,
+                    saksnummer = "sak-unik-inaktivering",
+                    fnr = fnr,
+                    skalAktiveresTidspunkt = startTid.plusHours(3),
+                    opprettet = startTid.plusMinutes(1),
+                ),
+            )
+
+            helper.varselPostgresRepo.hentVarslerForSakId(sakId).filterIsInstance<Varsel.SkalInaktiveres>() shouldHaveSize 2
         }
     }
 

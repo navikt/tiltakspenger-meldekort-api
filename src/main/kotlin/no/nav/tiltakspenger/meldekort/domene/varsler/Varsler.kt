@@ -17,8 +17,8 @@ import java.time.LocalDateTime
 /**
  * Alle varsler på en sak. Invariant:
  *  - Maks ett varsel i tilstand [Varsel.SkalAktiveres] eller [Varsel.Aktiv] (et "pågående" varsel).
- *  - Maks ett varsel i tilstand [Varsel.SkalInaktiveres] ("pågående inaktivering").
- *  - Et pågående varsel kan sameksistere med en pågående inaktivering (f.eks. når bruker har
+ *  - Varsler i tilstand [Varsel.SkalInaktiveres] er pågående inaktiveringer, og det kan finnes flere.
+ *  - Et pågående varsel kan sameksistere med pågående inaktiveringer (f.eks. når bruker har
  *    sendt inn meldekortet for en meldeperiode, men det er en ny meldeperiode som mangler
  *    innsending). I den samme transaksjonen forbereder vi inaktivering av det gamle og oppretter
  *    et nytt [Varsel.SkalAktiveres] for den nye meldeperioden.
@@ -32,7 +32,7 @@ data class Varsler(
     val fnr: Fnr? = value.map { it.fnr }.distinct().singleOrNullOrThrow()
 
     val pågåendeAktivering: SkalAktiveres? = value.filterIsInstance<SkalAktiveres>().singleOrNullOrThrow()
-    val pågåendeInaktivering: SkalInaktiveres? = value.filterIsInstance<SkalInaktiveres>().singleOrNullOrThrow()
+    val pågåendeInaktiveringer: List<SkalInaktiveres> = value.filterIsInstance<SkalInaktiveres>()
 
     /** Pågående varsel for ny meldeperiode – enten [Varsel.SkalAktiveres] eller [Varsel.Aktiv]. */
     val pågåendeOppretting: Varsel? = value.singleOrNullOrThrow { it is SkalAktiveres || it is Varsel.Aktiv }
@@ -44,10 +44,6 @@ data class Varsler(
         val oppretting = value.count { it is SkalAktiveres || it is Varsel.Aktiv }
         require(oppretting <= 1) {
             "Varsler: Maks ett varsel kan være i SkalAktiveres/Aktiv, men fant $oppretting"
-        }
-        val inaktivering = value.count { it is SkalInaktiveres }
-        require(inaktivering <= 1) {
-            "Varsler: Maks ett varsel kan være i SkalInaktiveres, men fant $inaktivering"
         }
         require(value.distinctBy { it.varselId }.size == value.size) {
             "Varsler: Flere varsler med samme varselId"

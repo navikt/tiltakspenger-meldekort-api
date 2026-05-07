@@ -146,13 +146,14 @@ class VarslerTest {
         @Test
         fun `Aktiv og SkalInaktiveres kan sameksistere - pågående oppretting og pågående inaktivering`() {
             val clock = nyClock()
+            val skalInaktiveres = skalInaktiveres(clock = clock)
 
             val pågående = varsler(
-                skalInaktiveres(clock = clock),
+                skalInaktiveres,
                 skalAktiveres(skalAktiveresTidspunkt = tirsdagKl10, clock = clock),
             )
 
-            pågående.pågåendeInaktivering shouldNotBeNull {}
+            pågående.pågåendeInaktiveringer shouldBe listOf(skalInaktiveres)
             pågående.pågåendeOppretting.shouldBeInstanceOf<Varsel.SkalAktiveres>()
         }
 
@@ -180,14 +181,14 @@ class VarslerTest {
         }
 
         @Test
-        fun `to SkalInaktiveres er ugyldig`() {
+        fun `to SkalInaktiveres er gyldig`() {
             val clock = nyClock()
-            assertThrows<IllegalArgumentException> {
-                varsler(
-                    skalInaktiveres(clock = clock),
-                    skalInaktiveres(clock = clock),
-                )
-            }
+            val første = skalInaktiveres(clock = clock)
+            val andre = skalInaktiveres(clock = clock)
+
+            val varsler = varsler(første, andre)
+
+            varsler.pågåendeInaktiveringer shouldBe listOf(første, andre)
         }
     }
 
@@ -384,7 +385,7 @@ class VarslerTest {
         }
 
         @Test
-        fun `reproduserer produksjonsfeil naar aktivt varsel forberedes for inaktivering mens et annet allerede skal inaktiveres`() {
+        fun `aktivt varsel kan forberedes for inaktivering mens et annet allerede skal inaktiveres`() {
             val alleredeTilInaktivering = skalInaktiveres(opprettet = 6.januar(2025).atHour(9))
             val aktivtVarsel = aktiv(
                 varselId = VarselId.random(),
@@ -394,15 +395,17 @@ class VarslerTest {
             )
             val varsler = Varsler(listOf(alleredeTilInaktivering, aktivtVarsel))
 
-            val exception = assertThrows<IllegalArgumentException> {
-                varsler.forberedInaktivering(
-                    varselId = aktivtVarsel.varselId,
-                    skalInaktiveresTidspunkt = tirsdagKl10.plusHours(1),
-                    skalInaktiveresBegrunnelse = "mottatt meldekort",
-                )
-            }
+            val (oppdaterteVarsler, nyTilInaktivering) = varsler.forberedInaktivering(
+                varselId = aktivtVarsel.varselId,
+                skalInaktiveresTidspunkt = tirsdagKl10.plusHours(1),
+                skalInaktiveresBegrunnelse = "mottatt meldekort",
+            )
 
-            exception.message shouldBe "Collection contains more than one matching element."
+            nyTilInaktivering.varselId shouldBe aktivtVarsel.varselId
+            oppdaterteVarsler.pågåendeInaktiveringer.map { it.varselId } shouldBe listOf(
+                alleredeTilInaktivering.varselId,
+                aktivtVarsel.varselId,
+            )
         }
 
         @Test
@@ -557,8 +560,3 @@ class VarslerTest {
 }
 
 private fun java.time.LocalDate.atHour(time: Int): LocalDateTime = this.atTime(time, 0)
-
-private infix fun <T> T?.shouldNotBeNull(block: (T) -> Unit) {
-    require(this != null) { "Expected non-null" }
-    block(this)
-}
