@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.sak.infra
 
 import no.nav.tiltakspenger.libs.meldekort.BrukerutfyltMeldekortDTO
 import no.nav.tiltakspenger.libs.meldekort.BrukerutfyltMeldekortDTO.Status
-import no.nav.tiltakspenger.libs.periode.toDTO
 import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
@@ -12,9 +11,8 @@ fun Meldekort.toSaksbehandlingMeldekortDTO(): BrukerutfyltMeldekortDTO {
     return BrukerutfyltMeldekortDTO(
         id = this.id.toString(),
         sakId = this.sakId.toString(),
-        periode = this.periode.toDTO(),
         meldeperiodeId = this.meldeperiode.id.toString(),
-        mottatt = this.mottatt!!, // TODO: ikke bang bang!!
+        mottatt = this.mottatt!!,
         dager = this.dager.toSaksbehandlingDTO(),
         journalpostId = this.journalpostId.toString(),
     )
