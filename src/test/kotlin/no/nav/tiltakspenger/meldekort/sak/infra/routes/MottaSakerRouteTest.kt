@@ -1,0 +1,344 @@
+package no.nav.tiltakspenger.meldekort.sak.infra.routes
+
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.withCharset
+import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.dato.november
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
+import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
+import no.nav.tiltakspenger.meldekort.sak.tilSak
+import no.nav.tiltakspenger.objectmothers.ObjectMother
+import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.time.LocalDate
+import java.time.LocalDateTime
+
+class MottaSakerRouteTest {
+
+    private val førstePeriode = Periode(
+        fraOgMed = LocalDate.of(2025, 1, 6),
+        tilOgMed = LocalDate.of(2025, 1, 19),
+    )
+
+    @Test
+    fun `Skal lagre saken og opprette meldekort`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val sakDto = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode, opprettet = nå(tac.clock)),
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager(), opprettet = nå(tac.clock)),
+                ),
+            )
+
+            val id = SakId.fromString(sakDto.sakId)
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
+                val sak = tac.sakRepo.hent(id)
+
+                sak shouldBe sakDto.tilSak()
+                sak!!.meldeperioder.size shouldBe 2
+                sak.harSoknadUnderBehandling shouldBe false
+
+                tac.meldekortRepo.hentAlleMeldekortKlarTilInnsending(sak.fnr).size shouldBe 2
+            }
+        }
+    }
+
+    @Test
+    fun `Skal oppdatere sak hvis harSoknadUnderBehandling endres`() = runTest {
+        withTestApplicationContext { tac ->
+            val lagretSak = ObjectMother.sak(harSoknadUnderBehandling = false)
+            tac.sakRepo.lagre(lagretSak)
+
+            val id = lagretSak.id
+            val sakDto = ObjectMother.sakDTO(
+                sakId = id.toString(),
+                saksnummer = lagretSak.saksnummer,
+                fnr = lagretSak.fnr.verdi,
+                meldeperioder = emptyList(),
+                harSoknadUnderBehandling = true,
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
+                val sak = tac.sakRepo.hent(id)
+
+                sak shouldBe sakDto.tilSak()
+                sak!!.meldeperioder.size shouldBe 0
+                sak.harSoknadUnderBehandling shouldBe true
+            }
+        }
+    }
+
+    @Test
+    fun `Skal håndtere duplikate requests for lagring av sak og returnere ok`() = runTest {
+        withTestApplicationContext { tac ->
+            val sakDto = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode, opprettet = nå(tac.clock)),
+                    ObjectMother.meldeperiodeDto(periode = førstePeriode.plus14Dager(), opprettet = nå(tac.clock)),
+                ),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto,
+                forventetStatus = HttpStatusCode.OK,
+                forventetBody = "Saken var allerede lagret med samme data",
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+            tac.sakRepo.hent(SakId.fromString(sakDto.sakId)) shouldBe sakDto.tilSak()
+        }
+    }
+
+    @Test
+    fun `Skal håndtere oppdatering av sak med nye meldeperioder`() = runTest {
+        withTestApplicationContext { tac ->
+            val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                opprettet = nå(tac.clock),
+            )
+
+            val andreMeldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode.plus14Dager(),
+                opprettet = nå(tac.clock),
+            )
+
+            val sakDto1 = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    førsteMeldeperiode,
+                ),
+            )
+
+            val sakDto2 = sakDto1.copy(
+                meldeperioder = listOf(
+                    førsteMeldeperiode,
+                    andreMeldeperiode,
+                ),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto1,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto2,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
+                val sak = tac.sakRepo.hent(SakId.fromString(sakDto2.sakId))!!
+
+                sak.meldeperioder.size shouldBe 2
+            }
+        }
+    }
+
+    @Test
+    fun `Skal returnere 409 ved lagring av sak med ulike meldeperioder med samme meldeperiode-id`() = runTest {
+        withTestApplicationContext { tac ->
+            val førsteMeldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                opprettet = nå(tac.clock),
+            )
+
+            val andreMeldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode.plus14Dager(),
+                opprettet = nå(tac.clock),
+            )
+
+            val sakDto1 = ObjectMother.sakDTO(
+                meldeperioder = listOf(
+                    førsteMeldeperiode,
+                    andreMeldeperiode,
+                ),
+            )
+
+            val sakDto2 = sakDto1.copy(
+                meldeperioder = listOf(
+                    førsteMeldeperiode.copy(opprettet = LocalDateTime.of(2025, 1, 5, 13, 0)),
+                    andreMeldeperiode,
+                ),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto1,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto2,
+                forventetStatus = HttpStatusCode.Conflict,
+                forventetBody = "Meldeperiode var allerede lagret med andre data",
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+
+            val meldeperiode = tac.meldeperiodeRepo.hentForId(MeldeperiodeId.fromString(førsteMeldeperiode.id))!!
+            meldeperiode.opprettet shouldBe førsteMeldeperiode.opprettet
+        }
+    }
+
+    @Test
+    fun `Skal opprette nytt meldekort og deaktivere forrige ved ny meldeperiode-versjon`() = runTest {
+        withTestApplicationContext { tac ->
+            val meldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                opprettet = nå(tac.clock),
+            )
+            val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                versjon = 2,
+                opprettet = nå(tac.clock),
+            )
+
+            val sakDto1 = ObjectMother.sakDTO(
+                meldeperioder = listOf(meldeperiode),
+            )
+            val sakDto2 = sakDto1.copy(
+                meldeperioder = listOf(nyMeldeperiodeVersjon),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto1,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto2,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
+                val (førsteMeldekort, andreMeldekort) =
+                    tac.meldekortRepo.hentMeldekortForKjedeId(
+                        MeldeperiodeKjedeId(meldeperiode.kjedeId),
+                        Fnr.fromString(sakDto1.fnr),
+                    )
+
+                førsteMeldekort.deaktivert shouldNotBe null
+
+                andreMeldekort.deaktivert shouldBe null
+            }
+        }
+    }
+
+    @Test
+    fun `Skal ikke opprette nytt meldekort for kjede der meldekort allerede er mottatt`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val meldeperiode = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                opprettet = nå(tac.clock),
+            )
+            val nyMeldeperiodeVersjon = ObjectMother.meldeperiodeDto(
+                periode = førstePeriode,
+                versjon = 2,
+                opprettet = nå(tac.clock),
+            )
+
+            val sakDto1 = ObjectMother.sakDTO(
+                meldeperioder = listOf(meldeperiode),
+            )
+            val sakDto2 = sakDto1.copy(
+                meldeperioder = listOf(nyMeldeperiodeVersjon),
+            )
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto1,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
+                val meldekort = tac.meldekortRepo.hentMeldekortForKjedeId(
+                    MeldeperiodeKjedeId(meldeperiode.kjedeId),
+                    Fnr.fromString(sakDto1.fnr),
+                ).first()
+
+                val meldeperiode = meldekort.meldeperiode
+
+                val lagreKommando = ObjectMother.lagreMeldekortFraBrukerKommando(
+                    meldeperiode = meldeperiode,
+                    meldekortId = meldekort.id,
+                )
+
+                tac.meldekortRepo.lagre(
+                    meldekort.fyllUtMeldekortFraBruker(
+                        sisteMeldeperiode = meldeperiode,
+                        clock = tac.clock,
+                        brukerutfylteDager = lagreKommando.dager,
+                        korrigering = false,
+                        locale = null,
+                    ),
+                )
+            }
+
+            mottaSakRequest(
+                tac = tac,
+                requestDto = sakDto2,
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ).apply {
+                val meldekortFraKjede = tac.meldekortRepo.hentMeldekortForKjedeId(
+                    MeldeperiodeKjedeId(meldeperiode.kjedeId),
+                    Fnr.fromString(sakDto1.fnr),
+                )
+
+                meldekortFraKjede.size shouldBe 1
+            }
+        }
+    }
+
+    @Nested
+    inner class FinnerNærmesteFredagInnenforPeriodenOgLeggerPåRiktigTidspunkt {
+        @Test
+        fun `tilOgMed = torsdag - velger fredag som er '1 uke tilbake'`() = runTest {
+            val periode = Periode(fraOgMed = 10.november(2025), tilOgMed = 20.november(2025))
+
+            val actual = periode.kanFyllesUtFraOgMed()
+
+            actual shouldBe 14.november(2025).atTime(15, 0, 0)
+        }
+
+        @Test
+        fun `tilOgMed = lørdag - velger fredagen som er før lørdagen`() = runTest {
+            val periode = Periode(fraOgMed = 15.november(2025), tilOgMed = 22.november(2025))
+
+            val actual = periode.kanFyllesUtFraOgMed()
+
+            actual shouldBe 21.november(2025).atTime(15, 0, 0)
+        }
+
+        @Test
+        fun `perioden inneholder ikke en fredag`() = runTest {
+            val periode = Periode(fraOgMed = 19.november(2025), tilOgMed = 20.november(2025))
+
+            assertThrows<IllegalArgumentException> {
+                periode.kanFyllesUtFraOgMed()
+            }
+        }
+    }
+}

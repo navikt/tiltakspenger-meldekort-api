@@ -4,9 +4,9 @@ import arrow.atomic.Atomic
 import no.nav.tiltakspenger.fakes.repos.SakRepoFake
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.domene.varsler.SakForVarselvurdering
-import no.nav.tiltakspenger.meldekort.repository.OptimistiskLåsFeil
-import no.nav.tiltakspenger.meldekort.repository.SakVarselRepo
+import no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil
+import no.nav.tiltakspenger.meldekort.varsler.SakForVarselvurdering
+import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicLong
 

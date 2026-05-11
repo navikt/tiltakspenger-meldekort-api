@@ -4,12 +4,12 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
-import no.nav.tiltakspenger.meldekort.repository.MeldekortPostgresRepo
-import no.nav.tiltakspenger.meldekort.repository.MeldeperiodePostgresRepo
-import no.nav.tiltakspenger.meldekort.repository.SakPostgresRepo
-import no.nav.tiltakspenger.meldekort.repository.SakVarselPostgresRepo
-import no.nav.tiltakspenger.meldekort.repository.VarselMeldekortPostgresRepo
-import no.nav.tiltakspenger.meldekort.repository.VarselPostgresRepo
+import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
+import no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo
+import no.nav.tiltakspenger.meldekort.varsler.infra.SakVarselPostgresRepo
+import no.nav.tiltakspenger.meldekort.varsler.infra.VarselMeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.varsler.infra.VarselPostgresRepo
 import java.time.Clock
 import javax.sql.DataSource
 

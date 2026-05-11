@@ -4,8 +4,8 @@ import no.nav.tiltakspenger.fakes.repos.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldeperiodeRepoFake
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.domene.varsler.KjedeSomManglerInnsending
-import no.nav.tiltakspenger.meldekort.repository.VarselMeldekortRepo
+import no.nav.tiltakspenger.meldekort.varsler.KjedeSomManglerInnsending
+import no.nav.tiltakspenger.meldekort.varsler.VarselMeldekortRepo
 
 class VarselMeldekortRepoFake(
     private val meldekortRepoFake: MeldekortRepoFake,

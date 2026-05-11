@@ -1,0 +1,56 @@
+package no.nav.tiltakspenger.meldekort.sak
+
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
+import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.sak.Sak
+
+interface SakRepo {
+    fun lagre(
+        sak: Sak,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun oppdater(
+        sak: Sak,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun oppdaterFnr(
+        gammeltFnr: Fnr,
+        nyttFnr: Fnr,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun oppdaterStatusForMicrofrontend(
+        sakId: SakId,
+        aktiv: Boolean,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun oppdaterArenaStatus(
+        id: SakId,
+        arenaStatus: ArenaMeldekortStatus,
+        sessionContext: SessionContext? = null,
+    )
+
+    fun hent(
+        id: SakId,
+        sessionContext: SessionContext? = null,
+    ): Sak?
+
+    fun hentForBruker(
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): Sak?
+
+    fun harSak(
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): Boolean
+
+    fun hentSakerUtenArenaStatus(sessionContext: SessionContext? = null): List<Sak>
+    fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext? = null): List<Sak>
+    fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext? = null): List<Sak>
+}

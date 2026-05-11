@@ -6,11 +6,11 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.domene.Meldekort
-import no.nav.tiltakspenger.meldekort.domene.MeldekortForKjede
-import no.nav.tiltakspenger.meldekort.domene.MeldekortMedSisteMeldeperiode
-import no.nav.tiltakspenger.meldekort.domene.journalføring.JournalpostId
-import no.nav.tiltakspenger.meldekort.repository.MeldekortRepo
+import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
+import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.MeldekortForKjede
+import no.nav.tiltakspenger.meldekort.meldekort.MeldekortMedSisteMeldeperiode
+import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import java.time.Clock
 import java.time.LocalDateTime
 
