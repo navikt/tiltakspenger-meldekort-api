@@ -446,6 +446,39 @@ class VarselPostgresRepoTest {
         }
     }
 
+    @Test
+    fun `fromRow kaster IllegalStateException for ukjent varseltype`() {
+        withMigratedDb(clock = fixedClockAt(startTid)) { helper ->
+            val sakId = SakId.random()
+            val fnr = Fnr.random()
+            lagreSak(helper, sakId = sakId, saksnummer = "sak-ukjent-type", fnr = fnr)
+            val varsel = skalAktiveres(
+                sakId = sakId,
+                saksnummer = "sak-ukjent-type",
+                fnr = fnr,
+                skalAktiveresTidspunkt = startTid.plusHours(1),
+            )
+            helper.varselPostgresRepo.lagre(varsel)
+
+            // Endrer type til en ukjent verdi direkte i databasen for å trigge else-grenen i fromRow.
+            helper.sessionFactory.withSession(null) { session ->
+                session.run(
+                    sqlQuery(
+                        "update varsel set type = :type where varsel_id = :varsel_id",
+                        "type" to "UkjentType",
+                        "varsel_id" to varsel.varselId.toString(),
+                    ).asUpdate,
+                )
+            }
+
+            val feil = shouldThrow<IllegalStateException> {
+                helper.varselPostgresRepo.hentVarslerForSakId(sakId)
+            }
+            feil.message!! shouldContain "UkjentType"
+            feil.message!! shouldContain varsel.varselId.toString()
+        }
+    }
+
     private fun hentType(helper: TestDataHelper, varselId: VarselId): String {
         return helper.sessionFactory.withSession(null) { session ->
             session.run(
