@@ -8,6 +8,7 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.MeldekortvedtakPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendStatus
 import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
@@ -137,6 +138,9 @@ class SakPostgresRepo(
         }
     }
 
+    /**
+     * Henter med meldeperioder og meldekortvedtak.
+     */
     override fun hent(
         id: SakId,
         sessionContext: SessionContext?,
@@ -146,11 +150,21 @@ class SakPostgresRepo(
                 sqlQuery(
                     "select * from sak where id = :id",
                     "id" to id.toString(),
-                ).map { row -> fromRow(row, true, session) }.asSingle,
+                ).map { row ->
+                    fromRow(
+                        row = row,
+                        medMeldeperioder = true,
+                        medMeldekortvedtak = true,
+                        session = session,
+                    )
+                }.asSingle,
             )
         }
     }
 
+    /**
+     * Henter ikke med meldeperioder og meldekortvedtak for å unngå unødvendig datalast, ettersom disse ikke trengs i de fleste tilfeller.
+     */
     override fun hentForBruker(
         fnr: Fnr,
         sessionContext: SessionContext?,
@@ -160,36 +174,43 @@ class SakPostgresRepo(
                 sqlQuery(
                     "select * from sak where fnr = :fnr",
                     "fnr" to fnr.verdi,
-                ).map { row -> fromRow(row, false, session) }.asSingle,
+                ).map { row ->
+                    fromRow(
+                        row = row,
+                        medMeldeperioder = false,
+                        medMeldekortvedtak = false,
+                        session = session,
+                    )
+                }.asSingle,
             )
         }
     }
 
-    override fun harSak(
-        fnr: Fnr,
-        sessionContext: SessionContext?,
-    ): Boolean {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    "select exists(select 1 from sak where fnr = :fnr) as exists",
-                    "fnr" to fnr.verdi,
-                ).map { row -> row.boolean("exists") }.asSingle,
-            )!!
-        }
-    }
-
+    /**
+     * Henter ikke med meldeperioder og meldekortvedtak for å unngå unødvendig datalast, ettersom disse ikke trengs i de fleste tilfeller.
+     */
     override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
                     "select * from sak where arena_meldekort_status = :ukjent_status",
                     "ukjent_status" to ArenaMeldekortStatus.UKJENT.tilDb(),
-                ).map { row -> fromRow(row, false, session) }.asList,
+                ).map { row ->
+                    fromRow(
+                        row = row,
+                        medMeldeperioder = false,
+                        medMeldekortvedtak = false,
+                        session = session,
+                    )
+                }.asList,
             )
         }
     }
 
+    /**
+     * Henter ikke med meldeperioder og meldekortvedtak for å unngå unødvendig datalast, ettersom disse ikke trengs i de fleste tilfeller.
+     * TODO jah: Skriv om til en liste med (fnr + sakId)-par
+     */
     override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
@@ -217,11 +238,22 @@ class SakPostgresRepo(
                     """.trimIndent(),
                     "offset" to nå(clock).minusMonths(1),
                     "aktivStatus" to MicrofrontendStatus.AKTIV.toString(),
-                ).map { row -> fromRow(row, false, session) }.asList,
+                ).map { row ->
+                    fromRow(
+                        row = row,
+                        medMeldeperioder = false,
+                        medMeldekortvedtak = false,
+                        session = session,
+                    )
+                }.asList,
             )
         }
     }
 
+    /**
+     * Henter ikke med meldeperioder og meldekortvedtak for å unngå unødvendig datalast, ettersom disse ikke trengs i de fleste tilfeller.
+     * TODO jah: Skriv om til en liste med (fnr + sakId)-par
+     */
     override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
@@ -249,17 +281,31 @@ class SakPostgresRepo(
                     """.trimIndent(),
                     "offset" to nå(clock).minusMonths(1),
                     "inaktivStatus" to MicrofrontendStatus.INAKTIV.toString(),
-                ).map { row -> fromRow(row, false, session) }.asList,
+                ).map { row ->
+                    fromRow(
+                        row = row,
+                        medMeldeperioder = false,
+                        medMeldekortvedtak = false,
+                        session = session,
+                    )
+                }.asList,
             )
         }
     }
 
     companion object {
-        private fun fromRow(row: Row, medMeldeperioder: Boolean, session: Session): Sak {
+        private fun fromRow(
+            row: Row,
+            medMeldeperioder: Boolean,
+            medMeldekortvedtak: Boolean,
+            session: Session,
+        ): Sak {
             val sakId = SakId.fromString(row.string("id"))
 
             val meldeperioder =
                 if (medMeldeperioder) MeldeperiodePostgresRepo.hentForSakId(sakId, session) else emptyList()
+            val meldekortvedtak =
+                if (medMeldekortvedtak) MeldekortvedtakPostgresRepo.hentForSakId(sakId, session) else emptyList()
 
             return Sak(
                 id = sakId,
@@ -269,6 +315,7 @@ class SakPostgresRepo(
                 arenaMeldekortStatus = row.string("arena_meldekort_status").tilArenaMeldekortStatus(),
                 harSoknadUnderBehandling = row.boolean("har_soknad_under_behandling"),
                 kanSendeInnHelgForMeldekort = row.boolean("kan_sende_inn_helg_for_meldekort"),
+                meldekortvedtak = meldekortvedtak,
             )
         }
     }

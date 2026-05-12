@@ -23,6 +23,7 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.korrige
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.tilMeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.sak.infra.tilSak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
@@ -181,7 +182,7 @@ class MeldekortBrukerRouteTest {
                 meldeperioder = listOf(førsteDto, andreDto),
             )
 
-            lagreFraSaksbehandlingService.lagre(sakDto)
+            lagreFraSaksbehandlingService.lagre(sakDto.tilSak())
 
             val body = hentBrukerRequest()!!
 
@@ -220,7 +221,7 @@ class MeldekortBrukerRouteTest {
                 meldeperioder = listOf(førsteDto, andreDto),
             )
 
-            lagreFraSaksbehandlingService.lagre(sakDto)
+            lagreFraSaksbehandlingService.lagre(sakDto.tilSak())
 
             val body = hentBrukerRequest()!!
 

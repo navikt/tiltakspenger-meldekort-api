@@ -131,7 +131,10 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
     if (runJobs) {
         KjørJobberForTester.kjørVarsler(tac)
     }
-    val sak = tac.sakRepo.hentForBruker(fnr, null)!!
+    val sakHeader = tac.sakRepo.hentForBruker(fnr, null)!!
+    // hentForBruker speiler Postgres og returnerer sak uten meldeperioder/meldekortvedtak.
+    // Hent på id for å få den joined varianten, som testene normalt vil ha.
+    val sak = tac.sakRepo.hent(sakHeader.id, null)!!
     val innsendtMeldekort = tac.meldekortService.hentForMeldekortId(MeldekortId.fromString(requestDto.id), fnr)!!
     return sak to innsendtMeldekort
 }

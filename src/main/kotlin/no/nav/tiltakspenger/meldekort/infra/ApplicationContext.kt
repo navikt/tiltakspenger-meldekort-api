@@ -26,6 +26,8 @@ import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.SendMeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldekortvedtakRepo
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.MeldekortvedtakPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.microfrontend.AktiverMicrofrontendJob
@@ -91,6 +93,12 @@ open class ApplicationContext(val clock: Clock) {
     }
 
     open val varselRepo: VarselRepo by lazy { varselPostgresRepo }
+
+    open val meldekortvedtakRepo: MeldekortvedtakRepo by lazy {
+        MeldekortvedtakPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
 
     open val meldekortRepo: MeldekortRepo by lazy {
         MeldekortPostgresRepo(
@@ -252,6 +260,7 @@ open class ApplicationContext(val clock: Clock) {
             sakRepo = sakRepo,
             meldeperiodeRepo = meldeperiodeRepo,
             meldekortRepo = meldekortRepo,
+            meldekortvedtakRepo = meldekortvedtakRepo,
             sakVarselRepo = sakVarselRepo,
             sessionFactory = sessionFactory,
         )

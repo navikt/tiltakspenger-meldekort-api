@@ -18,6 +18,7 @@ import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
 import no.nav.tiltakspenger.meldekort.sak.FeilVedMottakAvSak
 import no.nav.tiltakspenger.meldekort.sak.LagreFraSaksbehandlingService
+import no.nav.tiltakspenger.meldekort.sak.infra.tilSak
 
 /**
  * Endepunkter som kalles fra saksbehandling-api.
@@ -54,7 +55,23 @@ internal fun Route.sakFraSaksbehandlingRoute(
             return@post
         }
 
-        lagreFraSaksbehandlingService.lagre(sakDTO).onLeft {
+        val sak = try {
+            sakDTO.tilSak()
+        } catch (e: IllegalArgumentException) {
+            // `require(...)` i init-blokkene på Sak/Meldekortvedtak/Meldeperiode (samt
+            // *.fromString-kall) kaster IllegalArgumentException når payloaden bryter
+            // en domeneinvariant. Dette er klientfeil → 400, slik at avsender ikke
+            // retrier eller får alarmer. Andre exceptions er uventede og lar vi boble
+            // opp til ktor sin standard feilhåndtering (500).
+            with("Ugyldig sak fra saksbehandling-api (brudd på domeneinvariant). sakId: ${sakDTO.sakId}") {
+                logger.warn { "$this. Se meldekort-api sin sikkerlogg for detaljer." }
+                Sikkerlogg.warn(e) { this }
+                call.respond(message = this, status = HttpStatusCode.BadRequest)
+            }
+            return@post
+        }
+
+        lagreFraSaksbehandlingService.lagre(sak).onLeft {
             when (it) {
                 FeilVedMottakAvSak.FinnesUtenDiff -> call.respond(
                     message = "Saken var allerede lagret med samme data",
@@ -64,11 +81,6 @@ internal fun Route.sakFraSaksbehandlingRoute(
                 FeilVedMottakAvSak.MeldeperiodeFinnesMedDiff -> call.respond(
                     message = "Meldeperiode var allerede lagret med andre data",
                     status = HttpStatusCode.Conflict,
-                )
-
-                FeilVedMottakAvSak.OpprettSakFeilet -> call.respond(
-                    message = "Opprettelse av sak feilet",
-                    status = HttpStatusCode.InternalServerError,
                 )
 
                 FeilVedMottakAvSak.LagringFeilet -> call.respond(

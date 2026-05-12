@@ -16,7 +16,7 @@ class VarselMeldekortRepoFake(
         sakId: SakId,
         sessionContext: SessionContext?,
     ): KjedeSomManglerInnsending? {
-        val meldeperioder = meldeperiodeRepoFake.hentAllForSakId(sakId)
+        val meldeperioder = meldeperiodeRepoFake.hentForSakId(sakId)
         val meldekort = meldekortRepoFake.hentAlleForSakId(sakId)
 
         return meldeperioder

@@ -35,6 +35,7 @@ interface SakMother {
         saksnummer: String = Math.random().toString(),
         fnr: String = FAKE_FNR,
         meldeperioder: List<SakTilMeldekortApiDTO.MeldeperiodeDTO> = emptyList(),
+        meldekortvedtak: List<SakTilMeldekortApiDTO.MeldekortvedtakDTO> = emptyList(),
         harSoknadUnderBehandling: Boolean = false,
         kanSendeInnHelgForMeldekort: Boolean = false,
     ): SakTilMeldekortApiDTO {
@@ -45,6 +46,7 @@ interface SakMother {
             meldeperioder = meldeperioder,
             harSoknadUnderBehandling = harSoknadUnderBehandling,
             kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
+            meldekortvedtak = meldekortvedtak,
         )
     }
 }
