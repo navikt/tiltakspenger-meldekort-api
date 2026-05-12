@@ -5,9 +5,6 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortForKjede
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortMedSisteMeldeperiode
 import java.time.LocalDateTime
 
 interface MeldekortRepo {
@@ -17,7 +14,7 @@ interface MeldekortRepo {
      * Domenet har ansvaret for innholdet.
      */
     fun lagre(
-        meldekort: Meldekort,
+        meldekort: BrukersMeldekort,
         sessionContext: SessionContext? = null,
     )
 
@@ -34,7 +31,7 @@ interface MeldekortRepo {
         meldekortId: MeldekortId,
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): Meldekort?
+    ): BrukersMeldekort?
 
     fun hentMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
@@ -45,24 +42,24 @@ interface MeldekortRepo {
     fun hentSisteUtfylteMeldekort(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): Meldekort?
+    ): BrukersMeldekort?
 
     fun hentNesteMeldekortTilUtfylling(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): Meldekort?
+    ): BrukersMeldekort?
 
     fun hentAlleMeldekortKlarTilInnsending(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): List<Meldekort>
+    ): List<BrukersMeldekort>
 
     fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): List<MeldekortMedSisteMeldeperiode>
 
-    fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext? = null): List<Meldekort>
+    fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext? = null): List<BrukersMeldekort>
 
     fun markerSendtTilSaksbehandling(
         id: MeldekortId,
@@ -77,11 +74,11 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     )
 
-    fun hentDeSomSkalJournalføres(limit: Int = 10, sessionContext: SessionContext? = null): List<Meldekort>
+    fun hentDeSomSkalJournalføres(limit: Int = 10, sessionContext: SessionContext? = null): List<BrukersMeldekort>
 
     fun hentSisteMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext? = null,
-    ): Meldekort?
+    ): BrukersMeldekort?
 }

@@ -12,7 +12,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
@@ -26,7 +26,7 @@ class MeldekortPostgresRepo(
     private val clock: Clock,
 ) : MeldekortRepo {
 
-    override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
+    override fun lagre(meldekort: BrukersMeldekort, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -123,7 +123,7 @@ class MeldekortPostgresRepo(
         meldekortId: MeldekortId,
         fnr: Fnr,
         sessionContext: SessionContext?,
-    ): Meldekort? {
+    ): BrukersMeldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -146,7 +146,7 @@ class MeldekortPostgresRepo(
     }
 
     /** Henter siste meldekort er utfylt av bruker */
-    override fun hentSisteUtfylteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+    override fun hentSisteUtfylteMeldekort(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -168,7 +168,7 @@ class MeldekortPostgresRepo(
     }
 
     /** Henter neste meldekort som kan utfylles av bruker */
-    override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+    override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -191,9 +191,9 @@ class MeldekortPostgresRepo(
     }
 
     /**
-     * OBS! Denne dupliserer logikken som finnes for [Meldekort.klarTilInnsending]. Om den ene endres så burde begge endres
+     * OBS! Denne dupliserer logikken som finnes for [BrukersMeldekort.klarTilInnsending]. Om den ene endres så burde begge endres
      */
-    override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<BrukersMeldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -274,7 +274,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<BrukersMeldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -339,7 +339,7 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<Meldekort> =
+    override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<BrukersMeldekort> =
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 queryOf(
@@ -362,7 +362,7 @@ class MeldekortPostgresRepo(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext?,
-    ): Meldekort? {
+    ): BrukersMeldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
@@ -388,10 +388,10 @@ class MeldekortPostgresRepo(
         private fun meldekortFraRow(
             row: Row,
             meldeperiode: Meldeperiode,
-        ): Meldekort {
+        ): BrukersMeldekort {
             val id = MeldekortId.fromString(row.string("id"))
 
-            return Meldekort(
+            return BrukersMeldekort(
                 id = id,
                 meldeperiode = meldeperiode,
                 mottatt = row.localDateTimeOrNull("mottatt"),
@@ -408,7 +408,7 @@ class MeldekortPostgresRepo(
     private fun fromRow(
         row: Row,
         session: Session,
-    ): Meldekort {
+    ): BrukersMeldekort {
         val id = MeldekortId.fromString(row.string("id"))
         val meldeperiodeId = MeldeperiodeId.fromString(row.string("meldeperiode_id"))
 
@@ -427,7 +427,7 @@ class MeldekortPostgresRepo(
         val id = MeldekortId.fromString(row.string("id"))
 
         return MeldekortMedSisteMeldeperiode(
-            meldekort = Meldekort(
+            meldekort = BrukersMeldekort(
                 id = id,
                 meldeperiode = MeldeperiodePostgresRepo.fromRow(row, alias = "mp"),
                 mottatt = row.localDateTimeOrNull("mottatt"),

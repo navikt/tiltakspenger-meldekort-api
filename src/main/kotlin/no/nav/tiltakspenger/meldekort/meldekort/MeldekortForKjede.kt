@@ -12,8 +12,8 @@ import java.time.Clock
  * Alle meldekortene for en meldeperiodekjede.
  */
 data class MeldekortForKjede(
-    private val meldekort: List<Meldekort>,
-) : List<Meldekort> by meldekort {
+    private val meldekort: List<BrukersMeldekort>,
+) : List<BrukersMeldekort> by meldekort {
     /**
      * Null dersom listen er tom
      */
@@ -24,7 +24,7 @@ data class MeldekortForKjede(
     fun erSisteMeldekortKlarTilInnsending(clock: Clock): Boolean =
         meldekort.lastOrNull()?.klarTilInnsending(clock) == true
 
-    fun sisteInnsendteMeldekort(): Meldekort? = meldekort.lastOrNull { it.erInnsendt }
+    fun sisteInnsendteMeldekort(): BrukersMeldekort? = meldekort.lastOrNull { it.erInnsendt }
 
     fun kanMeldekortKorrigeres(meldekortId: MeldekortId): Boolean =
         harInnsendtMeldekort && sisteInnsendteMeldekort()?.id == meldekortId
@@ -33,7 +33,7 @@ data class MeldekortForKjede(
         command: KorrigerMeldekortCommand,
         sisteMeldeperiode: Meldeperiode,
         clock: Clock,
-    ): Either<FeilVedKorrigeringAvMeldekort, Meldekort> {
+    ): Either<FeilVedKorrigeringAvMeldekort, BrukersMeldekort> {
         require(this.harInnsendtMeldekort) {
             "Finner ingen innsendinger for valgt periode. Dette skulle vært en førstegangsinnsending, ikke en korrigering. MeldekortId: ${command.meldekortId}. Periode: ${sisteMeldeperiode.periode}. SakId: ${sisteMeldeperiode.sakId}. Saksnummer: ${sisteMeldeperiode.saksnummer}."
         }
@@ -53,7 +53,7 @@ data class MeldekortForKjede(
         } else {
             val meldekortId = MeldekortId.random()
 
-            Meldekort(
+            BrukersMeldekort(
                 id = meldekortId,
                 deaktivert = null,
                 mottatt = nå(clock),

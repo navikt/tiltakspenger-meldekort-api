@@ -14,7 +14,7 @@ import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerRequest
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.jobber.KjørJobberForTester
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagStatusDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortFraBrukerDTO
@@ -34,7 +34,7 @@ suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "",
     forventetContentType: ContentType? = null,
-): Pair<Sak, Meldekort>? {
+): Pair<Sak, BrukersMeldekort>? {
     val bruker = hentBrukerRequest(fnr, jwt)!!
     val nesteMeldekort = bruker.nesteMeldekort!!
 
@@ -80,7 +80,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "",
     forventetContentType: ContentType? = null,
-): Pair<Sak, Meldekort>? {
+): Pair<Sak, BrukersMeldekort>? {
     val bruker = hentBrukerRequest(fnr, jwt)!!
     val nesteMeldekort = bruker.nesteMeldekort
     nesteMeldekort shouldNotBe null
@@ -116,7 +116,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = "",
     forventetContentType: ContentType? = null,
-): Pair<Sak, Meldekort>? {
+): Pair<Sak, BrukersMeldekort>? {
     val response = defaultRequestWithAssertions(
         method = HttpMethod.Post,
         uri = "/brukerfrontend/send-inn",

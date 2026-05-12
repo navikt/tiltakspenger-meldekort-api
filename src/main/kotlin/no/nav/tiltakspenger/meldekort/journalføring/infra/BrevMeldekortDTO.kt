@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.periode.PeriodeDTO
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.utils.toEngelskDato
 import no.nav.tiltakspenger.meldekort.utils.toEngelskDatoOgTid
 import no.nav.tiltakspenger.meldekort.utils.toEngelskUkenummer
@@ -24,7 +24,7 @@ data class BrevMeldekortDTO(
     val mottatt: String?,
 )
 
-fun Meldekort.toBrevMeldekortDTO(): String {
+fun BrukersMeldekort.toBrevMeldekortDTO(): String {
     val dto = if (this.locale == "en") {
         this.toEngelskBrevMeldekortDTO()
     } else {
@@ -33,7 +33,7 @@ fun Meldekort.toBrevMeldekortDTO(): String {
     return serialize(dto)
 }
 
-fun Meldekort.toNorskBrevMeldekortDTO(): BrevMeldekortDTO {
+fun BrukersMeldekort.toNorskBrevMeldekortDTO(): BrevMeldekortDTO {
     return BrevMeldekortDTO(
         id = this.id.toString(),
         fnr = this.fnr.verdi,
@@ -46,7 +46,7 @@ fun Meldekort.toNorskBrevMeldekortDTO(): BrevMeldekortDTO {
     )
 }
 
-fun Meldekort.toEngelskBrevMeldekortDTO(): BrevMeldekortDTO {
+fun BrukersMeldekort.toEngelskBrevMeldekortDTO(): BrevMeldekortDTO {
     return BrevMeldekortDTO(
         id = this.id.toString(),
         fnr = this.fnr.verdi,

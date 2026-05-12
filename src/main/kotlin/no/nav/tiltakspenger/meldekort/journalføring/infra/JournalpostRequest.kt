@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.utils.toNorskDatoMedPunktum
 import no.nav.tiltakspenger.meldekort.utils.toNorskUkenummer
 import java.time.Clock
@@ -32,7 +32,7 @@ data class JournalpostRequest(
         !journalfoerendeEnhet.isNullOrEmpty() && !sak?.fagsakId.isNullOrEmpty()
 }
 
-fun Meldekort.toJournalpostDokument(
+fun BrukersMeldekort.toJournalpostDokument(
     journalforendeEnhet: String? = JOURNALFORENDE_ENHET_AUTOMATISK_BEHANDLING,
     pdfOgJson: PdfOgJson,
     clock: Clock,
@@ -65,7 +65,7 @@ fun Meldekort.toJournalpostDokument(
     )
 }
 
-private fun Meldekort.lagTittel(): String {
+private fun BrukersMeldekort.lagTittel(): String {
     val uke1 = this.meldeperiode.periode.fraOgMed.toNorskUkenummer()
     val uke2 = this.meldeperiode.periode.tilOgMed.toNorskUkenummer()
     val fra = this.meldeperiode.periode.fraOgMed.toNorskDatoMedPunktum()

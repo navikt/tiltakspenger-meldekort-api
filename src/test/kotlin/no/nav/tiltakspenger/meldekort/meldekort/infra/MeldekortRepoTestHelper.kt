@@ -1,10 +1,10 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra
 
 import no.nav.tiltakspenger.db.TestDataHelper
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 
-fun lagreMeldekort(helper: TestDataHelper, vararg meldekort: Meldekort) {
+fun lagreMeldekort(helper: TestDataHelper, vararg meldekort: BrukersMeldekort) {
     val meldeperiodeRepo = helper.meldeperiodeRepo
     val meldekortRepo = helper.meldekortPostgresRepo
     val sakRepo = helper.sakPostgresRepo

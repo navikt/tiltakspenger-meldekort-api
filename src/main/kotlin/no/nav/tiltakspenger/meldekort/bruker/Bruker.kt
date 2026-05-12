@@ -1,15 +1,15 @@
 package no.nav.tiltakspenger.meldekort.bruker
 
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
 
 sealed interface Bruker {
     data class MedSak(
         val sak: Sak,
-        val nesteMeldekort: Meldekort?,
-        val sisteMeldekort: Meldekort?,
+        val nesteMeldekort: BrukersMeldekort?,
+        val sisteMeldekort: BrukersMeldekort?,
         val harSoknadUnderBehandling: Boolean,
         val kanSendeInnHelgForMeldekort: Boolean,
     ) : Bruker

@@ -7,7 +7,7 @@ import kotlinx.coroutines.future.await
 import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingApiError
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
 import java.net.URI
@@ -33,7 +33,7 @@ class SaksbehandlingClientImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun sendMeldekort(meldekort: Meldekort): Either<SaksbehandlingApiError, Unit> {
+    override suspend fun sendMeldekort(meldekort: BrukersMeldekort): Either<SaksbehandlingApiError, Unit> {
         val jsonPayload = serialize(meldekort.toSaksbehandlingMeldekortDTO())
 
         return Either.catch {

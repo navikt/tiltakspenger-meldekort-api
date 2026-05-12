@@ -7,8 +7,8 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.LagreMeldekortFraBrukerKommando
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
@@ -28,7 +28,7 @@ interface MeldekortMother {
         statusMap: Map<LocalDate, MeldekortDagStatus> = emptyMap(),
         maksAntallDagerForPeriode: Int = 10,
         opprettet: LocalDateTime = nå(fixedClock),
-    ): Meldekort {
+    ): BrukersMeldekort {
         return meldekort(
             periode = periode,
             mottatt = mottatt,
@@ -67,7 +67,7 @@ interface MeldekortMother {
         ),
         korrigering: Boolean = false,
         locale: String? = null,
-    ): Meldekort {
+    ): BrukersMeldekort {
         val dager = meldeperiode.girRett.map { (dag, girRett) ->
             MeldekortDag(
                 dag = dag,
@@ -81,7 +81,7 @@ interface MeldekortMother {
 
         val meldekortId = MeldekortId.random()
 
-        return Meldekort(
+        return BrukersMeldekort(
             id = meldekortId,
             mottatt = mottatt,
             meldeperiode = meldeperiode,
@@ -119,7 +119,7 @@ fun TestApplicationContext.lagMeldekort(
     meldeperiode: Meldeperiode,
     mottatt: LocalDateTime? = null,
     locale: String? = null,
-): Meldekort {
+): BrukersMeldekort {
     val meldekort = ObjectMother.meldekort(
         meldeperiode = meldeperiode,
         mottatt = mottatt,
@@ -146,7 +146,7 @@ fun TestApplicationContext.lagMeldekort(
 }
 
 fun lagMeldekortFraBrukerKommando(
-    meldekort: Meldekort,
+    meldekort: BrukersMeldekort,
     fnr: Fnr = meldekort.fnr,
 ): LagreMeldekortFraBrukerKommando {
     return LagreMeldekortFraBrukerKommando(

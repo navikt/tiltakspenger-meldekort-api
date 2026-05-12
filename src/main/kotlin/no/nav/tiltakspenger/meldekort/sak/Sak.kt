@@ -46,10 +46,7 @@ fun SakTilMeldekortApiDTO.tilSak(): Sak {
     val fnr = Fnr.fromString(this.fnr)
 
     val meldeperioder = this.meldeperioder.map {
-        val periode = Periode(
-            it.fraOgMed,
-            it.tilOgMed,
-        )
+        val periode = it.periodeDTO.toDomain()
         Meldeperiode(
             id = MeldeperiodeId.fromString(it.id),
             kjedeId = MeldeperiodeKjedeId(it.kjedeId),

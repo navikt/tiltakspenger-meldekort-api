@@ -21,7 +21,7 @@ import no.nav.tiltakspenger.meldekort.journalføring.KunneIkkeGenererePdf
 import no.nav.tiltakspenger.meldekort.journalføring.PdfA
 import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
 import no.nav.tiltakspenger.meldekort.journalføring.PdfgenClient
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import java.util.UUID
 
 const val PDFGEN_PATH = "api/v1/genpdf/tpts"
@@ -36,7 +36,7 @@ class PdfgenClientImpl(
     private val log = KotlinLogging.logger {}
 
     override suspend fun genererMeldekortPdf(
-        meldekort: Meldekort,
+        meldekort: BrukersMeldekort,
         errorContext: String,
     ): Either<KunneIkkeGenererePdf, PdfOgJson> {
         val base = "$baseUrl/$PDFGEN_PATH/meldekort"
@@ -53,7 +53,7 @@ class PdfgenClientImpl(
     }
 
     override suspend fun genererKorrigertMeldekortPdf(
-        meldekort: Meldekort,
+        meldekort: BrukersMeldekort,
         errorContext: String,
     ): Either<KunneIkkeGenererePdf, PdfOgJson> {
         val base = "$baseUrl/$PDFGEN_PATH/meldekort-korrigert"

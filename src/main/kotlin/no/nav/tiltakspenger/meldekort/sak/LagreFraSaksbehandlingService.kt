@@ -8,13 +8,11 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.meldekort.tilOppdatertMeldekort
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.MeldeperiodeRepo
-import no.nav.tiltakspenger.meldekort.sak.SakRepo
-import no.nav.tiltakspenger.meldekort.sak.tilSak
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
 
 class LagreFraSaksbehandlingService(
@@ -114,8 +112,8 @@ class LagreFraSaksbehandlingService(
 
     private fun lagMeldekort(
         meldeperiode: Meldeperiode,
-        eksisterendeMeldekort: Meldekort?,
-    ): Meldekort? {
+        eksisterendeMeldekort: BrukersMeldekort?,
+    ): BrukersMeldekort? {
         return meldeperiode.tilOppdatertMeldekort(eksisterendeMeldekort)
     }
 }

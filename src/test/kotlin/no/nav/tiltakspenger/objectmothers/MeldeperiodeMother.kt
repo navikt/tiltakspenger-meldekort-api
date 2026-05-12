@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.libs.periode.toDTO
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
 import java.time.DayOfWeek
@@ -56,15 +57,14 @@ interface MeldeperiodeMother {
         opprettet: LocalDateTime,
         girRett: Map<LocalDate, Boolean> = periode.tilGirRett(),
         antallDagerForPeriode: Int = min(girRett.filter { it.value }.size, 10),
-    ): SakTilMeldekortApiDTO.Meldeperiode {
-        return SakTilMeldekortApiDTO.Meldeperiode(
+    ): SakTilMeldekortApiDTO.MeldeperiodeDTO {
+        return SakTilMeldekortApiDTO.MeldeperiodeDTO(
             id = id,
             kjedeId = MeldeperiodeKjedeId.fraPeriode(periode).toString(),
             versjon = versjon,
             opprettet = opprettet,
             girRett = girRett,
-            fraOgMed = periode.fraOgMed,
-            tilOgMed = periode.tilOgMed,
+            periodeDTO = periode.toDTO(),
             antallDagerForPeriode = antallDagerForPeriode,
         )
     }

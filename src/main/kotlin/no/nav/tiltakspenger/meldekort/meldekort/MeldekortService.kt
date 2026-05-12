@@ -50,15 +50,15 @@ class MeldekortService(
         }
     }
 
-    fun hentForMeldekortId(id: MeldekortId, fnr: Fnr): Meldekort? {
+    fun hentForMeldekortId(id: MeldekortId, fnr: Fnr): BrukersMeldekort? {
         return meldekortRepo.hentForMeldekortId(id, fnr)
     }
 
-    fun hentSisteUtfylteMeldekort(fnr: Fnr): Meldekort? {
+    fun hentSisteUtfylteMeldekort(fnr: Fnr): BrukersMeldekort? {
         return meldekortRepo.hentSisteUtfylteMeldekort(fnr)
     }
 
-    fun hentNesteMeldekortForUtfylling(fnr: Fnr): Meldekort? {
+    fun hentNesteMeldekortForUtfylling(fnr: Fnr): BrukersMeldekort? {
         return meldekortRepo.hentNesteMeldekortTilUtfylling(fnr)
     }
 
@@ -66,7 +66,7 @@ class MeldekortService(
         return meldekortRepo.hentInnsendteMeldekortForBruker(fnr)
     }
 
-    fun hentMeldekortSomSkalSendesTilSaksbehandling(): List<Meldekort> {
+    fun hentMeldekortSomSkalSendesTilSaksbehandling(): List<BrukersMeldekort> {
         return meldekortRepo.hentMeldekortForSendingTilSaksbehandling()
     }
 
@@ -77,7 +77,7 @@ class MeldekortService(
         meldekortRepo.markerSendtTilSaksbehandling(id, sendtTidspunkt)
     }
 
-    fun korriger(command: KorrigerMeldekortCommand): Either<FeilVedKorrigeringAvMeldekort, Meldekort> {
+    fun korriger(command: KorrigerMeldekortCommand): Either<FeilVedKorrigeringAvMeldekort, BrukersMeldekort> {
         val meldekortSomKorrigeres = meldekortRepo.hentForMeldekortId(command.meldekortId, command.fnr)!!
 
         if (!meldekortSomKorrigeres.harMinstEnEndring(command.korrigerteDager)) {
@@ -101,9 +101,9 @@ class MeldekortService(
     }
 
     /**
-     *  @return [Meldekort] for [meldekortId], siste [Meldeperiode] for meldekortets kjede, og flagg for melding i helg
+     *  @return [BrukersMeldekort] for [meldekortId], siste [Meldeperiode] for meldekortets kjede, og flagg for melding i helg
      * */
-    fun hentForKorrigering(meldekortId: MeldekortId, fnr: Fnr): Triple<Meldekort, Meldeperiode, Boolean> {
+    fun hentForKorrigering(meldekortId: MeldekortId, fnr: Fnr): Triple<BrukersMeldekort, Meldeperiode, Boolean> {
         val meldekort = meldekortRepo.hentForMeldekortId(meldekortId, fnr)
 
         requireNotNull(meldekort) {
@@ -144,7 +144,7 @@ class MeldekortService(
         return kjede.kanMeldekortKorrigeres(meldekort.id)
     }
 
-    private fun Meldekort.harMinstEnEndring(korrigerteDager: List<MeldekortDag>): Boolean {
+    private fun BrukersMeldekort.harMinstEnEndring(korrigerteDager: List<MeldekortDag>): Boolean {
         return korrigerteDager.zip(this.dager).any { (korrigerDag, eksisterendeDag) ->
             korrigerDag.status != eksisterendeDag.status
         }

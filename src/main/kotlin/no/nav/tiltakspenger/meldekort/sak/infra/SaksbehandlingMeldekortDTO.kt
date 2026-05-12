@@ -2,12 +2,12 @@ package no.nav.tiltakspenger.meldekort.sak.infra
 
 import no.nav.tiltakspenger.libs.meldekort.BrukerutfyltMeldekortDTO
 import no.nav.tiltakspenger.libs.meldekort.BrukerutfyltMeldekortDTO.Status
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
 import java.time.LocalDate
 
-fun Meldekort.toSaksbehandlingMeldekortDTO(): BrukerutfyltMeldekortDTO {
+fun BrukersMeldekort.toSaksbehandlingMeldekortDTO(): BrukerutfyltMeldekortDTO {
     return BrukerutfyltMeldekortDTO(
         id = this.id.toString(),
         sakId = this.sakId.toString(),

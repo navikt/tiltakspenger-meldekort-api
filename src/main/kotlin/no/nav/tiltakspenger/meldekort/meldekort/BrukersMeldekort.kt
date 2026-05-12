@@ -23,7 +23,7 @@ import java.time.LocalDateTime
  * @param mottatt Tidspunktet mottatt fra bruker
  * @param dager Et innslag per dag i meldeperioden. Må være sortert.
  */
-data class Meldekort(
+data class BrukersMeldekort(
     val id: MeldekortId,
     val deaktivert: LocalDateTime?,
     val mottatt: LocalDateTime?,
@@ -80,7 +80,7 @@ data class Meldekort(
         brukerutfylteDager: List<MeldekortDag>,
         korrigering: Boolean,
         locale: String?,
-    ): Meldekort {
+    ): BrukersMeldekort {
         if (erInnsendt) {
             throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
         }
@@ -100,7 +100,7 @@ data class Meldekort(
         brukerutfylteDager: List<MeldekortDag>,
         locale: String?,
         clock: Clock,
-    ): Meldekort {
+    ): BrukersMeldekort {
         if (erInnsendt) {
             throw IllegalArgumentException("Meldekort med id ${this.id} er allerede mottatt ($mottatt)")
         }
@@ -157,8 +157,8 @@ data class Meldekort(
     }
 }
 
-fun Meldeperiode.tilTomtMeldekort(): Meldekort {
-    return Meldekort(
+fun Meldeperiode.tilTomtMeldekort(): BrukersMeldekort {
+    return BrukersMeldekort(
         id = MeldekortId.random(),
         meldeperiode = this,
         mottatt = null,
@@ -178,7 +178,7 @@ fun Map<LocalDate, Boolean>.tilMeldekortDager(): List<MeldekortDag> = this.map {
     )
 }
 
-fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: Meldekort?): Meldekort? {
+fun Meldeperiode.tilOppdatertMeldekort(forrigeMeldekort: BrukersMeldekort?): BrukersMeldekort? {
     if (!this.minstEnDagGirRettIPerioden) {
         return null
     }

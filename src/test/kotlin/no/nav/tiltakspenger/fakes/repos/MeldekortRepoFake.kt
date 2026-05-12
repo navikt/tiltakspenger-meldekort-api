@@ -7,7 +7,7 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
@@ -17,12 +17,12 @@ import java.time.LocalDateTime
 class MeldekortRepoFake(
     private val clock: Clock,
 ) : MeldekortRepo {
-    private val data = Atomic(mutableMapOf<MeldekortId, Meldekort>())
+    private val data = Atomic(mutableMapOf<MeldekortId, BrukersMeldekort>())
 
     /** Sporer sendtTilSaksbehandling-tidspunkt, da dette kun er et DB-felt og ikke del av domenemodellen. */
     private val sendtTilSaksbehandling = Atomic(mutableMapOf<MeldekortId, LocalDateTime>())
 
-    override fun lagre(meldekort: Meldekort, sessionContext: SessionContext?) {
+    override fun lagre(meldekort: BrukersMeldekort, sessionContext: SessionContext?) {
         data.get()[meldekort.id] = meldekort
     }
 
@@ -40,7 +40,7 @@ class MeldekortRepoFake(
         )
     }
 
-    override fun hentForMeldekortId(meldekortId: MeldekortId, fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+    override fun hentForMeldekortId(meldekortId: MeldekortId, fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return data.get()[meldekortId]?.let { if (it.fnr == fnr) it else null }
     }
 
@@ -54,15 +54,15 @@ class MeldekortRepoFake(
             .let { MeldekortForKjede(it) }
     }
 
-    override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+    override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return data.get().values.filter {
             it.fnr == fnr && it.deaktivert == null && it.mottatt == null
         }
-            .sortedWith(compareBy<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
+            .sortedWith(compareBy<BrukersMeldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
             .firstOrNull()
     }
 
-    override fun hentSisteUtfylteMeldekort(fnr: Fnr, sessionContext: SessionContext?): Meldekort? {
+    override fun hentSisteUtfylteMeldekort(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return data.get().values
             .filter { it.fnr == fnr && it.erInnsendt }
             .sortedBy { it.mottatt }
@@ -75,7 +75,7 @@ class MeldekortRepoFake(
     ): List<MeldekortMedSisteMeldeperiode> {
         return data.get().values
             .filter { it.fnr == fnr && it.mottatt != null && it.deaktivert == null }
-            .sortedWith(compareByDescending<Meldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
+            .sortedWith(compareByDescending<BrukersMeldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
             .map { meldekort ->
                 val sisteMeldeperiode = data.get().values
                     .filter { it.sakId == meldekort.sakId && it.meldeperiode.kjedeId == meldekort.meldeperiode.kjedeId }
@@ -86,7 +86,7 @@ class MeldekortRepoFake(
             }
     }
 
-    override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<BrukersMeldekort> {
         return data.get().values
             .filter { it.mottatt != null && it.journalpostId != null && sendtTilSaksbehandling.get()[it.id] == null }
             .sortedByDescending { it.mottatt }
@@ -113,7 +113,7 @@ class MeldekortRepoFake(
         data.get()[meldekortId] = meldekort.copy(journalpostId = journalpostId, journalføringstidspunkt = tidspunkt)
     }
 
-    override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<BrukersMeldekort> {
         return data.get().values
             .filter { it.mottatt != null && it.journalpostId == null && it.saksnummer.isNotBlank() }
             .take(limit)
@@ -123,19 +123,19 @@ class MeldekortRepoFake(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
         sessionContext: SessionContext?,
-    ): Meldekort? {
+    ): BrukersMeldekort? {
         return data.get().values
             .filter { it.meldeperiode.kjedeId == kjedeId && it.fnr == fnr }
             .maxByOrNull { it.meldeperiode.versjon }
     }
 
-    override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<Meldekort> {
+    override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<BrukersMeldekort> {
         return data.get().values
             .filter { it.fnr == fnr && it.klarTilInnsending(clock) }
             .sortedBy { it.meldeperiode.periode.fraOgMed }
     }
 
-    fun hentAlleForSakId(sakId: no.nav.tiltakspenger.libs.common.SakId): List<Meldekort> {
+    fun hentAlleForSakId(sakId: no.nav.tiltakspenger.libs.common.SakId): List<BrukersMeldekort> {
         return data.get().values.filter { it.sakId == sakId }
     }
 }

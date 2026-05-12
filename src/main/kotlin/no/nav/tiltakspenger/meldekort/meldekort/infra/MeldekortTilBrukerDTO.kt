@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra
 
 import no.nav.tiltakspenger.libs.periode.Periode
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortStatusDTO.Companion.toDTO
@@ -77,7 +77,7 @@ data class MeldekortDagTilBrukerDTO(
     val status: MeldekortDagStatusDTO,
 )
 
-fun Meldekort.tilMeldekortTilBrukerDTO(clock: Clock): MeldekortTilBrukerDTO {
+fun BrukersMeldekort.tilMeldekortTilBrukerDTO(clock: Clock): MeldekortTilBrukerDTO {
     return MeldekortTilBrukerDTO(
         id = id.toString(),
         meldeperiodeId = meldeperiode.id.toString(),

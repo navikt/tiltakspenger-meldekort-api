@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering
 
 import no.nav.tiltakspenger.libs.periode.PeriodeDTO
 import no.nav.tiltakspenger.libs.periode.toDTO
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagTilBrukerDTO
@@ -31,7 +31,7 @@ data class MeldekortTilKorrigeringDTO(
 }
 
 fun Meldeperiode.tilKorrigeringDTO(
-    forrigeMeldekort: Meldekort,
+    forrigeMeldekort: BrukersMeldekort,
     kanSendeInnHelg: Boolean,
     clock: Clock,
 ): MeldekortTilKorrigeringDTO {

@@ -31,7 +31,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
     fnr: Fnr = Fnr.fromString(FAKE_FNR),
     sakId: SakId = SakId.random(),
     saksnummer: String = tac.nesteSaksnummer(),
-    meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = listOf(meldeperiodeDto(opprettet = nå(tac.clock))),
+    meldeperioder: List<SakTilMeldekortApiDTO.MeldeperiodeDTO> = listOf(meldeperiodeDto(opprettet = nå(tac.clock))),
     harSoknadUnderBehandling: Boolean = false,
     kanSendeInnHelgForMeldekort: Boolean = false,
     runJobs: Boolean = true,

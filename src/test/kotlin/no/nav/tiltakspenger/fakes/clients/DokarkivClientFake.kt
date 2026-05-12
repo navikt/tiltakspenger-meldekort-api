@@ -4,7 +4,7 @@ import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.meldekort.journalføring.DokarkivClient
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
-import no.nav.tiltakspenger.meldekort.meldekort.Meldekort
+import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import org.slf4j.LoggerFactory
 import java.time.Clock
 
@@ -12,7 +12,7 @@ class DokarkivClientFake : DokarkivClient {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override suspend fun journalførMeldekort(
-        meldekort: Meldekort,
+        meldekort: BrukersMeldekort,
         pdfOgJson: PdfOgJson,
         callId: CorrelationId,
         clock: Clock,

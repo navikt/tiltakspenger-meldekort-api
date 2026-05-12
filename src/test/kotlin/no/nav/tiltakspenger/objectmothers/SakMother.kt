@@ -34,7 +34,7 @@ interface SakMother {
         sakId: String = SakId.random().toString(),
         saksnummer: String = Math.random().toString(),
         fnr: String = FAKE_FNR,
-        meldeperioder: List<SakTilMeldekortApiDTO.Meldeperiode> = emptyList(),
+        meldeperioder: List<SakTilMeldekortApiDTO.MeldeperiodeDTO> = emptyList(),
         harSoknadUnderBehandling: Boolean = false,
         kanSendeInnHelgForMeldekort: Boolean = false,
     ): SakTilMeldekortApiDTO {
