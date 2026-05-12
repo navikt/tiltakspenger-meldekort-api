@@ -18,7 +18,13 @@
         <appender-ref ref="STDOUT" />
     </logger>
 
-    <root level="INFO">
+    <!--
+        Root på WARN for å unngå INFO-støy fra applikasjons-/ktor-tråder under Gradle-bygg.
+        Logger fra spawnede tråder (coroutines, ktor test-server) lekker ut til Gradle-konsollen
+        fordi Gradle bare fanger stdout per test-tråd.
+        TODO jah: Dersom en test feiler ønsker vi mest mulig logg, mens når den kjører OK trenger vi ikke loggene (støtter gradle/junit dette?)
+    -->
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

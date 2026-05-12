@@ -1,16 +1,15 @@
 package no.nav.tiltakspenger.meldekort.sak
 
 import arrow.core.Either
-import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.meldekort.tilOppdatertMeldekort
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldekortvedtakRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
@@ -19,20 +18,15 @@ class LagreFraSaksbehandlingService(
     private val sakRepo: SakRepo,
     private val meldeperiodeRepo: MeldeperiodeRepo,
     private val meldekortRepo: MeldekortRepo,
+    private val meldekortvedtakRepo: MeldekortvedtakRepo,
     private val sakVarselRepo: SakVarselRepo,
     private val sessionFactory: SessionFactory,
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun lagre(sakDTO: SakTilMeldekortApiDTO): Either<FeilVedMottakAvSak, Unit> {
-        logger.debug { "Mottok sak med id ${sakDTO.sakId} fra saksbehandling" }
-
-        val sak = Either.catch { sakDTO.tilSak() }.getOrElse {
-            logger.error(it) { "Kunne ikke opprette sak fra saksbehandling - $it" }
-            return FeilVedMottakAvSak.OpprettSakFeilet.left()
-        }
-
+    fun lagre(sak: Sak): Either<FeilVedMottakAvSak, Unit> {
         val sakId = sak.id
+        logger.debug { "Mottok sak med id $sakId fra saksbehandling" }
         val eksisterendeSak = sakRepo.hent(sakId)
 
         if (eksisterendeSak != null && eksisterendeSak.erLik(sak)) {
@@ -53,6 +47,9 @@ class LagreFraSaksbehandlingService(
             logger.error { "Meldeperioden $meldeperiodeId finnes allerede med andre data - Eksisterende: $eksisterendeMeldeperiode - Ny: $nyMeldeperiode" }
             return FeilVedMottakAvSak.MeldeperiodeFinnesMedDiff.left()
         }
+
+        val eksisterendeVedtakIder = eksisterendeSak?.meldekortvedtakIdListe?.toSet() ?: emptySet()
+        val nyeVedtak = sak.meldekortvedtak.filter { it.id !in eksisterendeVedtakIder }
 
         Either.catch {
             sessionFactory.withTransactionContext { tx ->
@@ -76,13 +73,21 @@ class LagreFraSaksbehandlingService(
                         throw RuntimeException("Feil under lagring av meldeperiode $meldeperiodeId", it)
                     }
                 }
+                nyeVedtak.forEach { vedtak ->
+                    Either.catch {
+                        // Logger positiv/negativ i repoet.
+                        meldekortvedtakRepo.lagre(vedtak, tx)
+                    }.onLeft {
+                        throw RuntimeException("Feil under lagring av meldekortvedtak ${vedtak.id}", it)
+                    }
+                }
             }
         }.onLeft {
             logger.error(it) { "Feil under lagring av sak eller meldeperioder for $sakId. finnesEksisterendeSak: ${eksisterendeSak != null}" }
             return FeilVedMottakAvSak.LagringFeilet.left()
         }
 
-        logger.info { "Lagret sak $sakId med ${meldeperioderForLagring.size} nye meldeperioder" }
+        logger.info { "Lagret sak $sakId med ${meldeperioderForLagring.size} nye meldeperioder og ${nyeVedtak.size} nye meldekortvedtak" }
 
         return Unit.right()
     }
@@ -122,5 +127,4 @@ enum class FeilVedMottakAvSak {
     FinnesUtenDiff,
     LagringFeilet,
     MeldeperiodeFinnesMedDiff,
-    OpprettSakFeilet,
 }

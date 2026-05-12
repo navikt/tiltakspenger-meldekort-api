@@ -18,6 +18,7 @@ import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
 import no.nav.tiltakspenger.meldekort.sak.FeilVedMottakAvSak
 import no.nav.tiltakspenger.meldekort.sak.LagreFraSaksbehandlingService
+import no.nav.tiltakspenger.meldekort.sak.infra.tilSak
 
 /**
  * Endepunkter som kalles fra saksbehandling-api.
@@ -54,7 +55,18 @@ internal fun Route.sakFraSaksbehandlingRoute(
             return@post
         }
 
-        lagreFraSaksbehandlingService.lagre(sakDTO).onLeft {
+        val sak = Either.catch {
+            sakDTO.tilSak()
+        }.getOrElse {
+            with("Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ${sakDTO.sakId}. Antall meldeperioder: ${sakDTO.meldeperioder.size}. Antall meldekortvedtak: ${sakDTO.meldekortvedtak.size}.") {
+                logger.warn { "$this. Se meldekort-api sin sikkerlogg (GCP) for detaljer." }
+                Sikkerlogg.warn(it) { this }
+                call.respond(message = this, status = HttpStatusCode.BadRequest)
+            }
+            return@post
+        }
+
+        lagreFraSaksbehandlingService.lagre(sak).onLeft {
             when (it) {
                 FeilVedMottakAvSak.FinnesUtenDiff -> call.respond(
                     message = "Saken var allerede lagret med samme data",
@@ -64,11 +76,6 @@ internal fun Route.sakFraSaksbehandlingRoute(
                 FeilVedMottakAvSak.MeldeperiodeFinnesMedDiff -> call.respond(
                     message = "Meldeperiode var allerede lagret med andre data",
                     status = HttpStatusCode.Conflict,
-                )
-
-                FeilVedMottakAvSak.OpprettSakFeilet -> call.respond(
-                    message = "Opprettelse av sak feilet",
-                    status = HttpStatusCode.InternalServerError,
                 )
 
                 FeilVedMottakAvSak.LagringFeilet -> call.respond(

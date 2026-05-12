@@ -112,18 +112,6 @@ class SakPostgresRepoTest {
                 helper.sakPostgresRepo.hentForBruker(Fnr.random()) shouldBe null
             }
         }
-
-        @Test
-        fun `harSak returnerer true bare når bruker har sak`() {
-            withMigratedDb { helper ->
-                val sak = ObjectMother.sak(fnr = Fnr.random())
-
-                helper.sakPostgresRepo.lagre(sak)
-
-                helper.sakPostgresRepo.harSak(sak.fnr) shouldBe true
-                helper.sakPostgresRepo.harSak(Fnr.random()) shouldBe false
-            }
-        }
     }
 
     @Nested

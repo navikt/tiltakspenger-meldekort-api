@@ -130,6 +130,9 @@ dependencies {
     testImplementation("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
     testImplementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
     testImplementation("com.github.navikt.tiltakspenger-libs:persistering-test-common:$felleslibVersion")
+
+    testImplementation("org.wiremock:wiremock:3.13.2")
+    testImplementation("com.marcinziolo:kotlin-wiremock:2.1.1")
 }
 
 spotless {
@@ -152,6 +155,8 @@ kover {
                 includes {
                     classes(
                         "no.nav.tiltakspenger.meldekort.**.*PostgresRepo*",
+                        "no.nav.tiltakspenger.meldekort.meldekortvedtak.**",
+                        "no.nav.tiltakspenger.meldekort.sak.**",
                     )
                 }
             }
@@ -163,7 +168,7 @@ kover {
             }
             verify {
                 onCheck = true
-                rule("postgres repos have full line coverage") {
+                rule("postgres repos, meldekortvedtak and sak packages have full line coverage") {
                     bound {
                         minValue = 100
                         coverageUnits = CoverageUnit.LINE
@@ -176,8 +181,9 @@ kover {
 }
 
 tasks.named("koverXmlReport") {
+    val xmlReport = layout.buildDirectory.file("reports/kover/report.xml")
     doLast {
-        val xml = layout.buildDirectory.file("reports/kover/report.xml").get().asFile
+        val xml = xmlReport.get().asFile
         val classCount = xml.readText().split("<class ").size - 1
         if (classCount == 0) throw GradleException("Kover report contains no classes — include filters likely stale")
     }
@@ -237,7 +243,39 @@ tasks {
     register("verifyMainClassHasMain") {
         // Sikrer at klassen vi peker mainClass på faktisk har en `fun main()`,
         // slik at deploy-feil ala "Error: Main method not found" fanges opp i build, ikke i prod.
-        doLast { verifyMainFunctionExists(mainClassFile) }
+        // NB: Hele logikken må være inline i doLast for å være kompatibel med configuration cache
+        // (kall til script-level funksjoner serialiserer en referanse til Gradle-scriptobjektet).
+        val mainClass = mainClassFile
+        val expectedPackage = mainClass.substringBeforeLast('.', missingDelimiterValue = "")
+        val expectedSimpleName = mainClass.substringAfterLast('.')
+        val packageDir = file("src/main/kotlin/${expectedPackage.replace('.', '/')}")
+        doLast {
+            if (!packageDir.isDirectory) {
+                throw GradleException("Fant ikke pakke-mappa $packageDir for mainClass $mainClass.")
+            }
+
+            val jvmNameRegex = Regex("""@file:JvmName\(\s*"([^"]+)"\s*\)""")
+            val mainFunRegex = Regex("""\bfun\s+main\s*\(""")
+
+            val matchingFile = packageDir.listFiles { f -> f.isFile && f.extension == "kt" }
+                .orEmpty()
+                .firstOrNull { kt ->
+                    val text = kt.readText()
+                    if (!mainFunRegex.containsMatchIn(text)) return@firstOrNull false
+                    val jvmName = jvmNameRegex.find(text)?.groupValues?.get(1)
+                    val facadeName = jvmName ?: "${kt.nameWithoutExtension}Kt"
+                    facadeName == expectedSimpleName
+                }
+
+            if (matchingFile == null) {
+                throw GradleException(
+                    "Fant ingen .kt-fil i $packageDir som inneholder `fun main(` og kompilerer til $mainClass. " +
+                        "Forventet enten en fil ved navn ${expectedSimpleName.removeSuffix("Kt")}.kt " +
+                        "(uten `@file:JvmName`) eller en fil med `@file:JvmName(\"$expectedSimpleName\")`. " +
+                        "Dette ville feilet ved deploy.",
+                )
+            }
+        }
     }
 
     named("classes") {
@@ -245,8 +283,8 @@ tasks {
     }
 
     register("checkFlywayMigrationNames") {
+        val migrationDir = project.file("src/main/resources/db/migration")
         doLast {
-            val migrationDir = project.file("src/main/resources/db/migration")
             val invalidFiles =
                 migrationDir
                     .walk()
@@ -268,40 +306,4 @@ tasks {
     }
 }
 
-/**
- * Sjekker at .kt-kildefilen som [mainClass] peker på finnes og har en `fun main(`,
- * og at det fullkvalifiserte klassenavnet faktisk er det Kotlin-kompilatoren genererer
- * (filnavn + "Kt" som default, eller verdien fra `@file:JvmName("...")`). Uten denne
- * sjekken vil et feil mainClass-navn først feile ved oppstart i prod.
- */
-fun verifyMainFunctionExists(mainClass: String) {
-    val expectedPackage = mainClass.substringBeforeLast('.', missingDelimiterValue = "")
-    val expectedSimpleName = mainClass.substringAfterLast('.')
-    val packageDir = file("src/main/kotlin/${expectedPackage.replace('.', '/')}")
-    if (!packageDir.isDirectory) {
-        throw GradleException("Fant ikke pakke-mappa $packageDir for mainClass $mainClass.")
-    }
-
-    val jvmNameRegex = Regex("""@file:JvmName\(\s*"([^"]+)"\s*\)""")
-    val mainFunRegex = Regex("""\bfun\s+main\s*\(""")
-
-    val matchingFile = packageDir.listFiles { f -> f.isFile && f.extension == "kt" }
-        .orEmpty()
-        .firstOrNull { kt ->
-            val text = kt.readText()
-            if (!mainFunRegex.containsMatchIn(text)) return@firstOrNull false
-            val jvmName = jvmNameRegex.find(text)?.groupValues?.get(1)
-            val facadeName = jvmName ?: "${kt.nameWithoutExtension}Kt"
-            facadeName == expectedSimpleName
-        }
-
-    if (matchingFile == null) {
-        throw GradleException(
-            "Fant ingen .kt-fil i $packageDir som inneholder `fun main(` og kompilerer til $mainClass. " +
-                "Forventet enten en fil ved navn ${expectedSimpleName.removeSuffix("Kt")}.kt " +
-                "(uten `@file:JvmName`) eller en fil med `@file:JvmName(\"$expectedSimpleName\")`. " +
-                "Dette ville feilet ved deploy.",
-        )
-    }
-}
 

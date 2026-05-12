@@ -7,7 +7,6 @@ import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
-import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
 
@@ -178,7 +177,7 @@ class MeldeperiodePostgresRepoTest {
             helper.meldeperiodeRepo.lagre(meldeperiode2)
 
             val meldeperioder = helper.sessionFactory.withSession { session ->
-                MeldeperiodePostgresRepo.hentForSakId(meldeperiode1Versjon1.sakId, session)
+                MeldeperiodePostgresRepo.hentSisteMeldeperioderForSakId(meldeperiode1Versjon1.sakId, session)
             }
 
             meldeperioder shouldBe listOf(meldeperiode1Versjon2, meldeperiode2)

@@ -2,20 +2,28 @@ package no.nav.tiltakspenger.meldekort.sak.infra.routes
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLProtocol
+import io.ktor.http.path
 import io.ktor.http.withCharset
+import io.ktor.server.util.url
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.november
+import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
+import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
-import no.nav.tiltakspenger.meldekort.sak.tilSak
+import no.nav.tiltakspenger.meldekort.sak.infra.tilSak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
 import org.junit.jupiter.api.Nested
@@ -309,6 +317,35 @@ class MottaSakerRouteTest {
 
                 meldekortFraKjede.size shouldBe 1
             }
+        }
+    }
+
+    @Test
+    fun `Skal returnere 400 ved payload som bryter domeneinvariant`() = runTest {
+        withTestApplicationContext { tac ->
+            // To meldeperioder med samme periode og samme versjon bryter Sak.init sin
+            // require(a.periode.tilOgMed < b.periode.fraOgMed || (a.periode == b.periode && a.versjon < b.versjon)).
+            // Skal gi 400 (klientfeil), ikke 500 (som ville trigget retries og alarmer hos avsender).
+            val periode = ObjectMother.meldeperiodeDto(periode = førstePeriode, opprettet = nå(tac.clock))
+            val ugyldigSakDto = ObjectMother.sakDTO(
+                meldeperioder = listOf(periode, periode.copy(id = MeldeperiodeId.random().toString())),
+            )
+
+            defaultRequestWithAssertions(
+                method = HttpMethod.Post,
+                uri = url {
+                    protocol = URLProtocol.HTTPS
+                    path("/saksbehandling/sak")
+                },
+                jwt = JwtGenerator().createJwtForSystembruker(),
+                forventetStatus = HttpStatusCode.BadRequest,
+                forventetBody = "Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ${ugyldigSakDto.sakId}. Antall meldeperioder: 2. Antall meldekortvedtak: 0.",
+                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+            ) {
+                setBody(serialize(ugyldigSakDto))
+            }
+
+            tac.sakRepo.hent(SakId.fromString(ugyldigSakDto.sakId)) shouldBe null
         }
     }
 

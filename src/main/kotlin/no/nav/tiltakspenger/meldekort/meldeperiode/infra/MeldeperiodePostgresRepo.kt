@@ -149,7 +149,10 @@ class MeldeperiodePostgresRepo(
             )
         }
 
-        fun hentForSakId(
+        /**
+         * Henter siste versjon av hver meldeperiodekjede for en sak, sortert på perioden.
+         */
+        fun hentSisteMeldeperioderForSakId(
             sakId: SakId,
             session: Session,
         ): List<Meldeperiode> {
