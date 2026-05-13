@@ -63,9 +63,9 @@ interface MeldeperiodeMother {
             kjedeId = MeldeperiodeKjedeId.fraPeriode(periode).toString(),
             versjon = versjon,
             opprettet = opprettet,
-            girRett = girRett,
             periodeDTO = periode.toDTO(),
             antallDagerForPeriode = antallDagerForPeriode,
+            girRett = girRett,
         )
     }
 

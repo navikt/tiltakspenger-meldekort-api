@@ -47,7 +47,7 @@ class InaktiverVarslerServiceTest {
         varselRepo.lagre(andre)
         val service = InaktiverVarslerService(
             varselRepo = varselRepo,
-            sakVarselRepo = SakVarselRepoFake(SakRepoFake(clock)),
+            sakVarselRepo = SakVarselRepoFake(SakRepoFake()),
             varselClient = varselClient,
             sessionFactory = sessionFactory(),
             clock = clock,

@@ -12,6 +12,7 @@ class BrukerService(
     private val arenaMeldekortStatusService: ArenaMeldekortStatusService,
 ) {
     suspend fun hentBruker(fnr: Fnr): Bruker {
+        // sak uten meldeperioder og meldekortvedtak.
         val sak = sakRepo.hentForBruker(fnr)
 
         return if (sak != null) {

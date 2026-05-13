@@ -10,6 +10,7 @@ import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
+import no.nav.tiltakspenger.meldekort.sak.infra.tilSak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
 import no.nav.tiltakspenger.objectmothers.lagMeldekortFraBrukerKommando
@@ -28,7 +29,7 @@ class LagreFraSaksbehandlingServiceTest {
                 ),
             )
 
-            tac.lagreFraSaksbehandlingService.lagre(sakDto).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDto.tilSak()).getOrFail()
 
             val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
 
@@ -49,7 +50,7 @@ class LagreFraSaksbehandlingServiceTest {
                 ),
             )
 
-            tac.lagreFraSaksbehandlingService.lagre(sakDto).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDto.tilSak()).getOrFail()
 
             val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
 
@@ -70,7 +71,7 @@ class LagreFraSaksbehandlingServiceTest {
                 ),
             )
 
-            tac.lagreFraSaksbehandlingService.lagre(sakDtoOppdater).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDtoOppdater.tilSak()).getOrFail()
 
             tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr).shouldBeNull()
         }
@@ -82,7 +83,7 @@ class LagreFraSaksbehandlingServiceTest {
             val meldeperiodeDto = ObjectMother.meldeperiodeDto(opprettet = nå(tac.clock))
             val sakDto = ObjectMother.sakDTO(meldeperioder = listOf(meldeperiodeDto))
 
-            tac.lagreFraSaksbehandlingService.lagre(sakDto).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDto.tilSak()).getOrFail()
 
             val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
             val opprinneligMeldekort = tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!
@@ -96,7 +97,7 @@ class LagreFraSaksbehandlingServiceTest {
                 ),
             )
 
-            tac.lagreFraSaksbehandlingService.lagre(sakDtoOppdater).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDtoOppdater.tilSak()).getOrFail()
 
             val meldekortForKjede = tac.meldekortRepo.hentMeldekortForKjedeId(opprinneligMeldekort.meldeperiode.kjedeId, sak.fnr)
             meldekortForKjede.size shouldBe 2
@@ -123,7 +124,7 @@ class LagreFraSaksbehandlingServiceTest {
             )
             val sakDto = ObjectMother.sakDTO(meldeperioder = listOf(meldeperiodeDto))
 
-            tac.lagreFraSaksbehandlingService.lagre(sakDto).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDto.tilSak()).getOrFail()
 
             val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
             val opprinneligMeldekort = tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!
@@ -139,7 +140,7 @@ class LagreFraSaksbehandlingServiceTest {
                 ),
             )
 
-            tac.lagreFraSaksbehandlingService.lagre(sakDtoOppdater).getOrFail()
+            tac.lagreFraSaksbehandlingService.lagre(sakDtoOppdater.tilSak()).getOrFail()
 
             tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr).shouldBeNull()
 

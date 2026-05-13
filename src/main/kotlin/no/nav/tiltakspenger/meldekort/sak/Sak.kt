@@ -2,13 +2,15 @@ package no.nav.tiltakspenger.meldekort.sak
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
-import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
-import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
-import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
-import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.libs.common.VedtakId
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
-import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
 
+/**
+ * Merk at denne brukes av [no.nav.tiltakspenger.meldekort.bruker.BrukerService].
+ * Jo mer som legges til her, jo tregere vil bruker-aggregatet være.
+ * TODO jah: Splitt ut til custom spørring og domenemodell for bruker.
+ */
 data class Sak(
     val id: SakId,
     val saksnummer: String,
@@ -17,7 +19,10 @@ data class Sak(
     val arenaMeldekortStatus: ArenaMeldekortStatus,
     val harSoknadUnderBehandling: Boolean,
     val kanSendeInnHelgForMeldekort: Boolean,
+    val meldekortvedtak: List<Meldekortvedtak> = emptyList(),
 ) {
+
+    val meldekortvedtakIdListe: List<VedtakId> = meldekortvedtak.map { it.id }
 
     fun erLik(otherSak: Sak): Boolean {
         // Enkelte felter er ikke relevante for å avgjøre om to saker er like, dermed kopierer vi disse feltene før sammenligningen
@@ -39,36 +44,4 @@ enum class ArenaMeldekortStatus {
     UKJENT,
     HAR_MELDEKORT,
     HAR_IKKE_MELDEKORT,
-}
-
-fun SakTilMeldekortApiDTO.tilSak(): Sak {
-    val sakId = SakId.fromString(this.sakId)
-    val fnr = Fnr.fromString(this.fnr)
-
-    val meldeperioder = this.meldeperioder.map {
-        val periode = it.periodeDTO.toDomain()
-        Meldeperiode(
-            id = MeldeperiodeId.fromString(it.id),
-            kjedeId = MeldeperiodeKjedeId(it.kjedeId),
-            versjon = it.versjon,
-            sakId = sakId,
-            saksnummer = this.saksnummer,
-            fnr = fnr,
-            periode = periode,
-            opprettet = it.opprettet,
-            maksAntallDagerForPeriode = it.antallDagerForPeriode,
-            girRett = it.girRett,
-            kanFyllesUtFraOgMed = periode.kanFyllesUtFraOgMed(),
-        )
-    }.sortedBy { it.periode.fraOgMed }
-
-    return Sak(
-        id = sakId,
-        fnr = fnr,
-        saksnummer = this.saksnummer,
-        meldeperioder = meldeperioder,
-        arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
-        harSoknadUnderBehandling = harSoknadUnderBehandling,
-        kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
-    )
 }

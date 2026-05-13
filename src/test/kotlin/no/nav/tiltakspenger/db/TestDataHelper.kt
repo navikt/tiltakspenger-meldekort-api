@@ -5,6 +5,7 @@ import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.MeldekortvedtakPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo
 import no.nav.tiltakspenger.meldekort.varsler.infra.SakVarselPostgresRepo
@@ -21,6 +22,7 @@ class TestDataHelper(
     private val sessionCounter = SessionCounter(log)
     val sessionFactory = PostgresSessionFactory(dataSource, sessionCounter)
     val meldeperiodeRepo = MeldeperiodePostgresRepo(sessionFactory)
+    val meldekortvedtakPostgresRepo = MeldekortvedtakPostgresRepo(sessionFactory)
     val varselPostgresRepo = VarselPostgresRepo(sessionFactory, clock)
     val meldekortPostgresRepo = MeldekortPostgresRepo(sessionFactory, clock)
     val sakPostgresRepo = SakPostgresRepo(sessionFactory, clock)

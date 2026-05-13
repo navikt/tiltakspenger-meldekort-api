@@ -39,6 +39,7 @@ class ArenaMeldekortStatusService(
 
     suspend fun oppdaterArenaMeldekortStatusForSaker() {
         Either.catch {
+            // Saker uten meldeperioder og meldekortvedtak.
             val saker = sakRepo.hentSakerUtenArenaStatus()
 
             logger.debug { "Fant ${saker.size} saker med ukjent arena status" }

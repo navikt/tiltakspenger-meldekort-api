@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.fakes.repos
 
 import arrow.atomic.Atomic
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.Periode
@@ -44,7 +45,17 @@ class MeldeperiodeRepoFake : MeldeperiodeRepo {
         return data.get().filter { it.value.periode == periode }.values.lastOrNull()
     }
 
-    fun hentAllForSakId(sakId: no.nav.tiltakspenger.libs.common.SakId): List<Meldeperiode> {
-        return data.get().values.filter { it.sakId == sakId }
+    /**
+     * Henter siste versjon av hver meldeperiodekjede for en sak, sortert på perioden.
+     * Speiler [no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo.hentSisteMeldeperioderForSakId]:
+     * `select distinct on (fra_og_med) ... order by fra_og_med, versjon desc`
+     * dvs. siste versjon per fraOgMed, sortert stigende på fraOgMed.
+     */
+    fun hentForSakId(sakId: SakId): List<Meldeperiode> {
+        return data.get().values
+            .filter { it.sakId == sakId }
+            .groupBy { it.periode.fraOgMed }
+            .map { (_, meldeperioder) -> meldeperioder.maxBy { it.versjon } }
+            .sortedBy { it.periode.fraOgMed }
     }
 }
