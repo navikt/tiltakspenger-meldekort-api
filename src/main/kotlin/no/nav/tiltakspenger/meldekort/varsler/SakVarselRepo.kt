@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.varsler
 
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.varsler.SakForVarselvurdering
 import java.time.LocalDateTime
 
 interface SakVarselRepo {
@@ -23,7 +22,7 @@ interface SakVarselRepo {
      *
      * Oppdateringen gjøres kun dersom [sistFlaggetTidspunktVedLesing] matcher verdien i
      * databasen akkurat nå. Hvis en konkurrerende transaksjon har kalt
-     * [flaggForVarselvurdering] etter at jobben leste saken, kaster vi [OptimistiskLåsFeil]
+     * [flaggForVarselvurdering] etter at jobben leste saken, kaster vi [no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil]
      * slik at varseljobbens transaksjon ruller tilbake. Saken forblir da flagget og plukkes
      * opp i neste kjøring med oppdatert datagrunnlag.
      */

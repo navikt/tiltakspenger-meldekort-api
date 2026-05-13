@@ -50,9 +50,16 @@ class VarselMeldekortPostgresRepo(
                             AND mp2.kjede_id = mp.kjede_id
                             AND mk.mottatt IS NOT NULL
                       )
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM meldekortvedtak mv
+                          CROSS JOIN LATERAL jsonb_array_elements(mv.meldeperiodebehandlinger) AS mb
+                          WHERE mv.sak_id = :sak_id
+                            AND mb->>'meldeperiodeKjedeId' = mp.kjede_id
+                      )
                     ORDER BY mp.kan_fylles_ut_fra_og_med
                     LIMIT 1
-                    """,
+            """,
                     "sak_id" to sakId.toString(),
                 ).map { row ->
                     KjedeSomManglerInnsending(

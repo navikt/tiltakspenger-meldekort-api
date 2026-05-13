@@ -8,11 +8,14 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
+import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.april
 import no.nav.tiltakspenger.libs.dato.februar
 import no.nav.tiltakspenger.libs.dato.mars
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil
@@ -22,6 +25,10 @@ import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.MeldekortKorrigertDagDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.korrigerMeldekortRequest
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.sendInnNesteMeldekort
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldeperiodebehandling
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldeperiodebehandlingDag
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.Reduksjon
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
 import no.nav.tiltakspenger.meldekort.sak.infra.routes.mottaSakRequest
 import no.nav.tiltakspenger.meldekort.varsler.AktiverVarslerService
@@ -156,6 +163,91 @@ class VarselPostgresEndToEndTest {
             val varslerHendelser = tac.varselClient.snapshotVarselhendelser()
             varslerHendelser.sendteVarsler shouldHaveSize 0
             varslerHendelser.inaktiverteVarsler shouldHaveSize 0
+        }
+    }
+
+    @Test
+    fun `vurder varsel oppretter ikke varsel når meldekortvedtak finnes selv om bruker aldri sendte inn og meldeperioden får ny versjon`() {
+        // Scenario:
+        //   1. Saksbehandling-api sender sak med meldeperiode v1 (rammevedtak). Bruker sender ikke inn.
+        //   2. Det opprettes et meldekortvedtak for kjeden (f.eks. papirmeldekort). Varseljobben kjøres ikke ennå.
+        //   3. Saksbehandling-api sender et nytt rammevedtak som gir meldeperiode v2 for
+        //      samme kjede.
+        //   4. Varseljobben kjøres. Siden kjeden allerede har et meldekortvedtak skal det
+        //      ikke opprettes noe varsel (eksklusjon basert på meldekortvedtak).
+        val periode = 24.februar(2025) til 9.mars(2025)
+        val opprettet = 1.mars(2025).atHour(10)
+        // 10. mars - kanFyllesUtFraOgMed (7. mars 15:00) har passert, så uten vedtak-eksklusjonen
+        // ville varselet blitt opprettet umiddelbart.
+        val klokke = TikkendeKlokke(fixedClockAt(10.mars(2025).atHour(10)))
+
+        withTestApplicationContextAndPostgres(clock = klokke, runIsolated = true) { tac ->
+            // 1. Sak + meldeperiode v1. runJobs = false slik at vi ikke oppretter varsel enda.
+            val meldeperiodeV1 = meldeperiodeDto(periode = periode, opprettet = opprettet)
+            val sak = mottaSakRequest(
+                tac = tac,
+                meldeperioder = listOf(meldeperiodeV1),
+                runJobs = false,
+            )
+            tac.varselRepo.hentVarslerForSakId(sak.id) shouldHaveSize 0
+
+            // 2. Meldekortvedtak for kjeden – bruker har aldri sendt inn meldekort selv,
+            //    så brukersMeldekortId = null (f.eks. automatisk behandlet vedtak).
+            val kjedeId = MeldeperiodeKjedeId.fraPeriode(periode)
+            tac.meldekortvedtakRepo.lagre(
+                Meldekortvedtak(
+                    id = VedtakId.random(),
+                    sakId = sak.id,
+                    opprettet = nå(klokke),
+                    erKorrigering = false,
+                    erAutomatiskBehandlet = true,
+                    meldeperiodebehandlinger = listOf(
+                        Meldeperiodebehandling(
+                            meldeperiodeId = MeldeperiodeId.fromString(meldeperiodeV1.id),
+                            meldeperiodeKjedeId = kjedeId,
+                            brukersMeldekortId = null,
+                            periode = periode,
+                            dager = periode.tilDager().map { dato ->
+                                MeldeperiodebehandlingDag(
+                                    dato = dato,
+                                    status = MeldekortDagStatus.IKKE_BESVART,
+                                    reduksjon = Reduksjon.YTELSEN_FALLER_BORT,
+                                    beløp = 0,
+                                    beløpBarnetillegg = 0,
+                                )
+                            },
+                        ),
+                    ),
+                ),
+                sessionContext = null,
+            )
+
+            // 3. Andre rammevedtak: meldeperiode v2 for samme kjede (uendret rett).
+            //    runJobs = false: vi kjører jobben eksplisitt etterpå for å assertere utfallet.
+            mottaSakRequest(
+                tac = tac,
+                fnr = sak.fnr,
+                sakId = sak.id,
+                saksnummer = sak.saksnummer,
+                meldeperioder = listOf(
+                    meldeperiodeDto(
+                        periode = periode,
+                        versjon = 2,
+                        opprettet = opprettet.plusDays(1),
+                    ),
+                ),
+                runJobs = false,
+            )
+
+            // 4. Kjør varseljobben.
+            KjørJobberForTester.kjørVarsler(tac)
+
+            // Det skal ikke være opprettet noe varsel – meldekortvedtaket ekskluderer
+            // kjeden fra varselvurderingen.
+            tac.varselRepo.hentVarslerForSakId(sak.id) shouldHaveSize 0
+            val hendelser = tac.varselClient.snapshotVarselhendelser()
+            hendelser.sendteVarsler shouldHaveSize 0
+            hendelser.inaktiverteVarsler shouldHaveSize 0
         }
     }
 

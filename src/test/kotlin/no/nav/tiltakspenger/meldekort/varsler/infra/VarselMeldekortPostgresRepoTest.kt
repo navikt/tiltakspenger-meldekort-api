@@ -5,14 +5,21 @@ import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
+import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.meldekort.infra.lagreMeldekort
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldeperiodebehandling
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldeperiodebehandlingDag
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.Reduksjon
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
@@ -352,6 +359,123 @@ class VarselMeldekortPostgresRepoTest {
         }
 
         @Test
+        fun `returnerer null når kjede har et meldekortvedtak men ingen mottatt meldekort`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val meldeperiode = ObjectMother.meldeperiode(
+                    sakId = sakId,
+                    saksnummer = saksnummer,
+                    fnr = fnr,
+                    versjon = 1,
+                    periode = førstePeriode,
+                    opprettet = nå(fixedClock),
+                )
+                lagreSak(helper, meldeperiode)
+                helper.meldeperiodeRepo.lagre(meldeperiode)
+
+                helper.meldekortvedtakPostgresRepo.lagre(
+                    lagVedtak(sakId, meldeperiode.id, meldeperiode.kjedeId, førstePeriode),
+                    null,
+                )
+
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
+
+                resultat shouldBe null
+            }
+        }
+
+        @Test
+        fun `returnerer null når kjede har et meldekortvedtak selv om meldekort ikke er mottatt`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val meldekort = ObjectMother.meldekort(
+                    sakId = sakId,
+                    saksnummer = saksnummer,
+                    fnr = fnr,
+                    mottatt = null,
+                    periode = førstePeriode,
+                )
+                lagreMeldekort(helper, meldekort)
+
+                helper.meldekortvedtakPostgresRepo.lagre(
+                    lagVedtak(sakId, meldekort.meldeperiode.id, meldekort.meldeperiode.kjedeId, førstePeriode),
+                    null,
+                )
+
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
+
+                resultat shouldBe null
+            }
+        }
+
+        @Test
+        fun `returnerer kjede når vedtak finnes for annen kjede`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val andrePeriode = førstePeriode.plus14Dager()
+
+                val innsendtMeldekort = ObjectMother.meldekort(
+                    sakId = sakId,
+                    saksnummer = saksnummer,
+                    fnr = fnr,
+                    mottatt = nå(fixedClock),
+                    periode = førstePeriode,
+                )
+                val uinnsendtMeldekort = ObjectMother.meldekort(
+                    sakId = sakId,
+                    saksnummer = saksnummer,
+                    fnr = fnr,
+                    mottatt = null,
+                    periode = andrePeriode,
+                )
+                lagreMeldekort(helper, innsendtMeldekort, uinnsendtMeldekort)
+
+                // Vedtak kun for første kjede - andre kjede skal fortsatt varsles
+                helper.meldekortvedtakPostgresRepo.lagre(
+                    lagVedtak(
+                        sakId,
+                        innsendtMeldekort.meldeperiode.id,
+                        innsendtMeldekort.meldeperiode.kjedeId,
+                        førstePeriode,
+                    ),
+                    null,
+                )
+
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
+
+                requireNotNull(resultat).kjedeId shouldBe uinnsendtMeldekort.meldeperiode.kjedeId
+            }
+        }
+
+        @Test
+        fun `ignorerer vedtak fra annen sak`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val meldekort = ObjectMother.meldekort(
+                    sakId = sakId,
+                    saksnummer = saksnummer,
+                    fnr = fnr,
+                    mottatt = null,
+                    periode = førstePeriode,
+                )
+                lagreMeldekort(helper, meldekort)
+
+                // Vedtak på en annen sak som refererer samme kjedeId skal ikke påvirke
+                val annenSak = ObjectMother.sak(fnr = Fnr.fromString("12345678910"), saksnummer = "annen-sak")
+                helper.sakPostgresRepo.lagre(annenSak)
+                helper.meldekortvedtakPostgresRepo.lagre(
+                    lagVedtak(
+                        annenSak.id,
+                        meldekort.meldeperiode.id,
+                        meldekort.meldeperiode.kjedeId,
+                        førstePeriode,
+                    ),
+                    null,
+                )
+
+                val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
+
+                requireNotNull(resultat).kjedeId shouldBe meldekort.meldeperiode.kjedeId
+            }
+        }
+
+        @Test
         fun `returnerer null for ukjent sakId`() {
             withMigratedDb { helper ->
                 val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(SakId.random())
@@ -391,6 +515,36 @@ class VarselMeldekortPostgresRepoTest {
 }
 
 private fun LocalDate.atHour(time: Int) = this.atTime(time, 0)
+
+private fun lagVedtak(
+    sakId: SakId,
+    meldeperiodeId: MeldeperiodeId,
+    kjedeId: MeldeperiodeKjedeId,
+    periode: Periode,
+): Meldekortvedtak = Meldekortvedtak(
+    id = VedtakId.random(),
+    sakId = sakId,
+    opprettet = nå(fixedClock),
+    erKorrigering = false,
+    erAutomatiskBehandlet = false,
+    meldeperiodebehandlinger = listOf(
+        Meldeperiodebehandling(
+            meldeperiodeId = meldeperiodeId,
+            meldeperiodeKjedeId = kjedeId,
+            brukersMeldekortId = null,
+            periode = periode,
+            dager = listOf(
+                MeldeperiodebehandlingDag(
+                    dato = periode.fraOgMed,
+                    status = MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET,
+                    reduksjon = Reduksjon.INGEN_REDUKSJON,
+                    beløp = 500,
+                    beløpBarnetillegg = 0,
+                ),
+            ),
+        ),
+    ),
+)
 
 private fun lagreSak(helper: TestDataHelper, vararg meldeperioder: Meldeperiode) {
     val meldeperiode = requireNotNull(meldeperioder.firstOrNull()) { "Må ha minst én meldeperiode" }
