@@ -40,11 +40,6 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     ): Sak?
 
-    fun hentForBruker(
-        fnr: Fnr,
-        sessionContext: SessionContext? = null,
-    ): Sak?
-
     fun hentSakerUtenArenaStatus(sessionContext: SessionContext? = null): List<Sak>
     fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext? = null): List<Sak>
     fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext? = null): List<Sak>

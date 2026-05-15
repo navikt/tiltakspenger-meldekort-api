@@ -5,20 +5,20 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekort
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortClient
+import no.nav.tiltakspenger.meldekort.bruker.BrukerSakRepo
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
-import no.nav.tiltakspenger.meldekort.sak.SakRepo
 
 class FellesLandingssideService(
     private val meldekortRepo: MeldekortRepo,
-    private val sakRepo: SakRepo,
+    private val brukerSakRepo: BrukerSakRepo,
     private val arenaMeldekortClient: ArenaMeldekortClient,
     private val redirectUrl: String,
 ) {
     private val logger = KotlinLogging.logger {}
 
     suspend fun hentLandingssideStatus(fnr: Fnr): LandingssideStatus? {
-        val sak = sakRepo.hentForBruker(fnr)
+        val sak = brukerSakRepo.hentForBruker(fnr)
 
         // Vi trenger ikke spørre arena på nytt dersom saken allerede har sjekket at brukeren ikke har meldekort der
         val statusFraArena = if (sak?.arenaMeldekortStatus == ArenaMeldekortStatus.HAR_IKKE_MELDEKORT) {

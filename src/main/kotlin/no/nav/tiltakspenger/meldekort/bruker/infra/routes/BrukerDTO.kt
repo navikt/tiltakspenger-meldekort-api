@@ -1,18 +1,14 @@
 package no.nav.tiltakspenger.meldekort.bruker.infra.routes
 
-import com.fasterxml.jackson.annotation.JsonSubTypes
-import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.tiltakspenger.meldekort.bruker.Bruker
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import java.time.Clock
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes(
-    JsonSubTypes.Type(value = BrukerDTO.MedSak::class, name = "MedSak"),
-    JsonSubTypes.Type(value = BrukerDTO.UtenSak::class, name = "UtenSak"),
-)
+/**
+ * I prod kun serialisert ut til frontend. Frontend bruker [harSak] for å diskriminere mellom de to variantene
+ */
 sealed interface BrukerDTO {
     val harSak: Boolean
 

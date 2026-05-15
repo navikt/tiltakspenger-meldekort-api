@@ -271,11 +271,13 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(innsendtMeldekort)
 
-            val alleMeldekort = this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!
-            alleMeldekort.meldekortMedSisteMeldeperiode shouldBe listOf(
-                MeldekortMedSisteMeldeperiodeDTO(
-                    meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
-                    sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+            this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!.shouldBeAlleMeldekortJson(
+                forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                meldekortMedSisteMeldeperiode = listOf(
+                    MeldekortMedSisteMeldeperiodeDTO(
+                        meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                        sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+                    ),
                 ),
             )
             val idForMeldekortSomSkalKorrigeres = innsendtMeldekort.id
@@ -349,18 +351,19 @@ class MeldekortBrukerRouteTest {
 
             val korrigertMeldekort = responseBody!!
 
-            val alleMeldekortEtterKorrigering = this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!
-            alleMeldekortEtterKorrigering.meldekortMedSisteMeldeperiode shouldBe listOf(
-                MeldekortMedSisteMeldeperiodeDTO(
-                    meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
-                    sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
-                ),
-                MeldekortMedSisteMeldeperiodeDTO(
-                    meldekort = korrigertMeldekort,
-                    sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+            this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!.shouldBeAlleMeldekortJson(
+                forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                meldekortMedSisteMeldeperiode = listOf(
+                    MeldekortMedSisteMeldeperiodeDTO(
+                        meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                        sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+                    ),
+                    MeldekortMedSisteMeldeperiodeDTO(
+                        meldekort = korrigertMeldekort,
+                        sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+                    ),
                 ),
             )
-
             tac.meldekortRepo.hentForMeldekortId(idForMeldekortSomSkalKorrigeres, Fnr.fromString(FAKE_FNR))?.status(
                 tac.clock,
             ) shouldBe MeldekortStatus.INNSENDT
@@ -462,11 +465,13 @@ class MeldekortBrukerRouteTest {
                 forventetBody = """{"melding":"Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.","kode":"kan_ikke_korrigere_uten_endring"}""",
             )
 
-            val alleMeldekortEtterKorrigering = this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!
-            alleMeldekortEtterKorrigering.meldekortMedSisteMeldeperiode shouldBe listOf(
-                MeldekortMedSisteMeldeperiodeDTO(
-                    meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
-                    sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+            this.hentAlleInnsendteMeldekortRequest(forventetBody = null)!!.shouldBeAlleMeldekortJson(
+                forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                meldekortMedSisteMeldeperiode = listOf(
+                    MeldekortMedSisteMeldeperiodeDTO(
+                        meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
+                        sisteMeldeperiode = innsendtMeldekort.meldeperiode.tilMeldeperiodeDTO(),
+                    ),
                 ),
             )
         }

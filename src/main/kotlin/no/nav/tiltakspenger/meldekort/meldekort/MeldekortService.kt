@@ -6,9 +6,9 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
+import no.nav.tiltakspenger.meldekort.bruker.BrukerSakRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.MeldeperiodeRepo
-import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
 import java.time.Clock
 import java.time.LocalDateTime
@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 class MeldekortService(
     val meldekortRepo: MeldekortRepo,
     val meldeperiodeRepo: MeldeperiodeRepo,
-    val sakRepo: SakRepo,
+    val brukerSakRepo: BrukerSakRepo,
     val sakVarselRepo: SakVarselRepo,
     val sessionFactory: SessionFactory,
     val clock: Clock,
@@ -117,7 +117,7 @@ class MeldekortService(
         val sisteMeldeperiode =
             meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(meldekort.meldeperiode.kjedeId, fnr)!!
 
-        val sak = sakRepo.hentForBruker(sisteMeldeperiode.fnr)!!
+        val sak = brukerSakRepo.hentForBruker(sisteMeldeperiode.fnr)!!
 
         return Triple(meldekort, sisteMeldeperiode, sak.kanSendeInnHelgForMeldekort)
     }

@@ -5,15 +5,19 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
-import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.meldekort.infra.AlleMeldekortDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
+typealias JsonResponse = String
+
 /**
  * Route: [no.nav.tiltakspenger.meldekort.meldekort.infra.routes.hentInnsendteMeldekortRoute]
  * Response DTO: [AlleMeldekortDTO]
+ *
+ * Returnerer rå JSON. Tester som trenger domeneverdier bør hente dem via repo/service i testen,
+ * mens wire-formatet kan sjekkes med [shouldBeAlleMeldekortJson].
  */
 suspend fun ApplicationTestBuilder.hentAlleInnsendteMeldekortRequest(
     fnr: String = FAKE_FNR,
@@ -21,7 +25,7 @@ suspend fun ApplicationTestBuilder.hentAlleInnsendteMeldekortRequest(
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
     forventetContentType: ContentType? = ContentType.Application.Json,
-): AlleMeldekortDTO? {
+): JsonResponse? {
     val response = defaultRequestWithAssertions(
         method = HttpMethod.Get,
         uri = "/brukerfrontend/meldekort/innsendte",
@@ -30,9 +34,5 @@ suspend fun ApplicationTestBuilder.hentAlleInnsendteMeldekortRequest(
         forventetBody = forventetBody,
         forventetContentType = forventetContentType,
     )
-    return if (response.status == HttpStatusCode.OK) {
-        deserialize<AlleMeldekortDTO>(response.bodyAsText())
-    } else {
-        null
-    }
+    return if (response.status == forventetStatus) response.bodyAsText() else null
 }

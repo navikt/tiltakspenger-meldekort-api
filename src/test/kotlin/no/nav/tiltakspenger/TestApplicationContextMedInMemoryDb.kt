@@ -4,6 +4,7 @@ import no.nav.tiltakspenger.fakes.SakVarselRepoFake
 import no.nav.tiltakspenger.fakes.VarselMeldekortRepoFake
 import no.nav.tiltakspenger.fakes.VarselRepoFake
 import no.nav.tiltakspenger.fakes.clients.TexasClientFakeTest
+import no.nav.tiltakspenger.fakes.repos.BrukerSakRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldekortvedtakRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldeperiodeRepoFake
@@ -27,6 +28,7 @@ open class TestApplicationContextMedInMemoryDb(
     override val meldeperiodeRepo = MeldeperiodeRepoFake()
     override val meldekortvedtakRepo = MeldekortvedtakRepoFake()
     override val sakRepo = SakRepoFake(meldeperiodeRepo, meldekortvedtakRepo)
+    override val brukerSakRepo = BrukerSakRepoFake(sakRepo)
     override val sakVarselRepo = SakVarselRepoFake(sakRepo)
     override val varselMeldekortRepo = VarselMeldekortRepoFake(meldekortRepoFake, meldeperiodeRepo)
 }

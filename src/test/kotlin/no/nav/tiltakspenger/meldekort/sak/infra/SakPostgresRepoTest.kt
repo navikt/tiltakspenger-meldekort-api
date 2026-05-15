@@ -88,30 +88,6 @@ class SakPostgresRepoTest {
                 helper.sakPostgresRepo.hent(SakId.random()) shouldBe null
             }
         }
-
-        @Test
-        fun `hentForBruker returnerer sak uten meldeperioder`() {
-            withMigratedDb { helper ->
-                val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(fixedClock))
-                val sak = ObjectMother.sak(
-                    id = meldeperiode.sakId,
-                    fnr = meldeperiode.fnr,
-                    saksnummer = meldeperiode.saksnummer,
-                    meldeperioder = listOf(meldeperiode),
-                )
-
-                lagreSak(helper, sak)
-
-                helper.sakPostgresRepo.hentForBruker(sak.fnr) shouldBe sak.copy(meldeperioder = emptyList())
-            }
-        }
-
-        @Test
-        fun `hentForBruker returnerer null for ukjent fnr`() {
-            withMigratedDb { helper ->
-                helper.sakPostgresRepo.hentForBruker(Fnr.random()) shouldBe null
-            }
-        }
     }
 
     @Nested
@@ -153,8 +129,6 @@ class SakPostgresRepoTest {
                 helper.sakPostgresRepo.oppdaterFnr(gammeltFnr, nyttFnr)
 
                 helper.sakPostgresRepo.hent(sak.id) shouldBe sak.copy(fnr = nyttFnr)
-                helper.sakPostgresRepo.hentForBruker(gammeltFnr) shouldBe null
-                helper.sakPostgresRepo.hentForBruker(nyttFnr) shouldBe sak.copy(fnr = nyttFnr)
             }
         }
 

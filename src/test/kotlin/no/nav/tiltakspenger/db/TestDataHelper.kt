@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
+import no.nav.tiltakspenger.meldekort.bruker.infra.repo.BrukerSakPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.MeldekortvedtakPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
@@ -26,6 +27,7 @@ class TestDataHelper(
     val varselPostgresRepo = VarselPostgresRepo(sessionFactory, clock)
     val meldekortPostgresRepo = MeldekortPostgresRepo(sessionFactory, clock)
     val sakPostgresRepo = SakPostgresRepo(sessionFactory, clock)
+    val brukerSakPostgresRepo = BrukerSakPostgresRepo(sessionFactory)
     val sakVarselPostgresRepo = SakVarselPostgresRepo(sessionFactory)
     val varselMeldekortPostgresRepo = VarselMeldekortPostgresRepo(sessionFactory)
 }

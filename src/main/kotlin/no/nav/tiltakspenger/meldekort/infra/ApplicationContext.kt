@@ -12,7 +12,9 @@ import no.nav.tiltakspenger.libs.texas.client.TexasHttpClient
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatusService
 import no.nav.tiltakspenger.meldekort.arena.infra.ArenaMeldekortHttpClient
+import no.nav.tiltakspenger.meldekort.bruker.BrukerSakRepo
 import no.nav.tiltakspenger.meldekort.bruker.BrukerService
+import no.nav.tiltakspenger.meldekort.bruker.infra.repo.BrukerSakPostgresRepo
 import no.nav.tiltakspenger.meldekort.identhendelse.IdenthendelseService
 import no.nav.tiltakspenger.meldekort.identhendelse.infra.IdenthendelseConsumer
 import no.nav.tiltakspenger.meldekort.infra.db.DataSourceSetup
@@ -118,6 +120,12 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
+    open val brukerSakRepo: BrukerSakRepo by lazy {
+        BrukerSakPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
+
     open val sakVarselRepo: SakVarselRepo by lazy {
         SakVarselPostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
@@ -134,7 +142,7 @@ open class ApplicationContext(val clock: Clock) {
         MeldekortService(
             meldekortRepo = meldekortRepo,
             meldeperiodeRepo = meldeperiodeRepo,
-            sakRepo = sakRepo,
+            brukerSakRepo = brukerSakRepo,
             sakVarselRepo = sakVarselRepo,
             sessionFactory = sessionFactory,
             clock = clock,
@@ -144,7 +152,7 @@ open class ApplicationContext(val clock: Clock) {
     open val fellesLandingssideService: FellesLandingssideService by lazy {
         FellesLandingssideService(
             meldekortRepo = meldekortRepo,
-            sakRepo = sakRepo,
+            brukerSakRepo = brukerSakRepo,
             arenaMeldekortClient = arenaMeldekortClient,
             redirectUrl = Configuration.meldekortFrontendUrl,
         )
@@ -250,7 +258,7 @@ open class ApplicationContext(val clock: Clock) {
     open val brukerService by lazy {
         BrukerService(
             meldekortService = meldekortService,
-            sakRepo = sakRepo,
+            brukerSakRepo = brukerSakRepo,
             arenaMeldekortStatusService = arenaMeldekortStatusService,
         )
     }

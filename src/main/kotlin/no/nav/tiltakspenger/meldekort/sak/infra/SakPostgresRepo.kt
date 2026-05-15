@@ -165,30 +165,6 @@ class SakPostgresRepo(
     /**
      * Henter ikke med meldeperioder og meldekortvedtak for å unngå unødvendig datalast, ettersom disse ikke trengs i de fleste tilfeller.
      */
-    override fun hentForBruker(
-        fnr: Fnr,
-        sessionContext: SessionContext?,
-    ): Sak? {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    "select * from sak where fnr = :fnr",
-                    "fnr" to fnr.verdi,
-                ).map { row ->
-                    fromRow(
-                        row = row,
-                        medMeldeperioder = false,
-                        medMeldekortvedtak = false,
-                        session = session,
-                    )
-                }.asSingle,
-            )
-        }
-    }
-
-    /**
-     * Henter ikke med meldeperioder og meldekortvedtak for å unngå unødvendig datalast, ettersom disse ikke trengs i de fleste tilfeller.
-     */
     override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(

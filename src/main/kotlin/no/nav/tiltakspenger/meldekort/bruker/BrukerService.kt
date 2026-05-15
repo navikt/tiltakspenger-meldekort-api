@@ -3,17 +3,14 @@ package no.nav.tiltakspenger.meldekort.bruker
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatusService
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
-import no.nav.tiltakspenger.meldekort.sak.Sak
-import no.nav.tiltakspenger.meldekort.sak.SakRepo
 
 class BrukerService(
     private val meldekortService: MeldekortService,
-    private val sakRepo: SakRepo,
+    private val brukerSakRepo: BrukerSakRepo,
     private val arenaMeldekortStatusService: ArenaMeldekortStatusService,
 ) {
     suspend fun hentBruker(fnr: Fnr): Bruker {
-        // sak uten meldeperioder og meldekortvedtak.
-        val sak = sakRepo.hentForBruker(fnr)
+        val sak = brukerSakRepo.hentForBruker(fnr)
 
         return if (sak != null) {
             hentBrukerMedSak(sak)
@@ -22,7 +19,7 @@ class BrukerService(
         }
     }
 
-    private fun hentBrukerMedSak(sak: Sak): Bruker.MedSak {
+    private fun hentBrukerMedSak(sak: SakForBruker): Bruker.MedSak {
         val nesteMeldekort = meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)
         val sisteMeldekort = meldekortService.hentSisteUtfylteMeldekort(sak.fnr)
 

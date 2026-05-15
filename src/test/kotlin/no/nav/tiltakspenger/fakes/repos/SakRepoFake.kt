@@ -29,6 +29,9 @@ class SakRepoFake(
     private val data = Atomic(mutableMapOf<SakId, Sak>())
     private val microfrontendStatus = Atomic(mutableMapOf<SakId, MicrofrontendStatus>())
 
+    /** Eksponert for [BrukerSakRepoFake] slik at fakes deler underliggende state. */
+    internal fun alleSaker(): Collection<Sak> = data.get().values
+
     override fun lagre(
         sak: Sak,
         sessionContext: SessionContext?,
@@ -80,14 +83,6 @@ class SakRepoFake(
             meldeperioder = meldeperiodeRepo.hentForSakId(id),
             meldekortvedtak = meldekortvedtakRepo.hentForSakId(id),
         )
-    }
-
-    /** Speiler [no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo.hentForBruker]: returnerer sak UTEN meldeperioder/meldekortvedtak. */
-    override fun hentForBruker(
-        fnr: Fnr,
-        sessionContext: SessionContext?,
-    ): Sak? {
-        return data.get().values.find { it.fnr == fnr }
     }
 
     /** Speiler [no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo.hentSakerUtenArenaStatus]: uten meldeperioder/meldekortvedtak. */
