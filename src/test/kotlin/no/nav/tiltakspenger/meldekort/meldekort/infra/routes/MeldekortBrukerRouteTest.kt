@@ -11,7 +11,7 @@ import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.ArenaMeldekortStatusDTO
-import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerRequest
+import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerMedSakRequest
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortStatus
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagStatusDTO
@@ -66,7 +66,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(andreMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(andreMeldekort)
 
-            val body = hentBrukerRequest()!!
+            val body = hentBrukerMedSakRequest()!!
 
             body.nesteMeldekort shouldBe førsteMeldekort.tilMeldekortTilBrukerDTO(clock = tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.KAN_UTFYLLES
@@ -105,7 +105,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
-            val body = hentBrukerRequest()!!
+            val body = hentBrukerMedSakRequest()!!
 
             body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
@@ -139,7 +139,7 @@ class MeldekortBrukerRouteTest {
             tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
-            val body = hentBrukerRequest()!!
+            val body = hentBrukerMedSakRequest()!!
 
             body.nesteMeldekort shouldBe ikkeKlartMeldekort.tilMeldekortTilBrukerDTO(tac.clock)
             body.nesteMeldekort!!.status shouldBe MeldekortStatusDTO.IKKE_KLAR
@@ -158,7 +158,7 @@ class MeldekortBrukerRouteTest {
 
             tac.sakRepo.lagre(sak)
 
-            val body = hentBrukerRequest()!!
+            val body = hentBrukerMedSakRequest()!!
 
             body.nesteMeldekort shouldBe null
             body.forrigeMeldekort shouldBe null
@@ -184,7 +184,7 @@ class MeldekortBrukerRouteTest {
 
             lagreFraSaksbehandlingService.lagre(sakDto.tilSak())
 
-            val body = hentBrukerRequest()!!
+            val body = hentBrukerMedSakRequest()!!
 
             body.nesteMeldekort!!.meldeperiodeId shouldBe andreDto.id
             body.nesteMeldekort.versjon shouldBe 2
@@ -223,7 +223,7 @@ class MeldekortBrukerRouteTest {
 
             lagreFraSaksbehandlingService.lagre(sakDto.tilSak())
 
-            val body = hentBrukerRequest()!!
+            val body = hentBrukerMedSakRequest()!!
 
             body.nesteMeldekort shouldBe null
             body.forrigeMeldekort shouldBe null
@@ -240,7 +240,7 @@ class MeldekortBrukerRouteTest {
 
             tac.sakRepo.lagre(sak)
 
-            hentBrukerRequest(
+            hentBrukerMedSakRequest(
                 jwt = null,
                 forventetStatus = HttpStatusCode.Unauthorized,
                 forventetBody = "",

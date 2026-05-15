@@ -10,7 +10,7 @@ import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.serialize
-import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerRequest
+import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerMedSakRequest
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.jobber.KjørJobberForTester
@@ -22,7 +22,7 @@ import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 /**
- * Henter brukerens neste meldekort via [hentBrukerRequest], bygger request-body, sender inn via [sendInnMeldekortRequest],
+ * Henter brukerens neste meldekort via [hentBrukerMedSakRequest], bygger request-body, sender inn via [sendInnMeldekortRequest],
  * og returnerer nyttig info for videre kjeding.
  */
 suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
@@ -35,7 +35,7 @@ suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
     forventetBody: String? = "",
     forventetContentType: ContentType? = null,
 ): Pair<Sak, BrukersMeldekort>? {
-    val bruker = hentBrukerRequest(fnr, jwt)!!
+    val bruker = hentBrukerMedSakRequest(fnr, jwt)!!
     val nesteMeldekort = bruker.nesteMeldekort!!
 
     val requestBody = MeldekortFraBrukerDTO(
@@ -65,7 +65,7 @@ suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
 }
 
 /**
- * Henter brukerens neste meldekort via [hentBrukerRequest], bygger request-body, sender inn via [sendInnMeldekortRequest],
+ * Henter brukerens neste meldekort via [hentBrukerMedSakRequest], bygger request-body, sender inn via [sendInnMeldekortRequest],
  * og returnerer nyttig info for videre kjeding.
  */
 @Suppress("unused")
@@ -81,7 +81,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(
     forventetBody: String? = "",
     forventetContentType: ContentType? = null,
 ): Pair<Sak, BrukersMeldekort>? {
-    val bruker = hentBrukerRequest(fnr, jwt)!!
+    val bruker = hentBrukerMedSakRequest(fnr, jwt)!!
     val nesteMeldekort = bruker.nesteMeldekort
     nesteMeldekort shouldNotBe null
 

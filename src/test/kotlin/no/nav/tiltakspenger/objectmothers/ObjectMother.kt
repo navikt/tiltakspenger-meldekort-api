@@ -11,6 +11,7 @@ import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 
 object ObjectMother :
+    ArenaMother,
     MeldekortMother,
     MeldeperiodeMother,
     SakMother {

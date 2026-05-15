@@ -4,7 +4,7 @@ import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.til
-import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerRequest
+import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerMedSakRequest
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortMedSisteMeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
@@ -30,7 +30,7 @@ class HentInnsendteMeldekortRouteTest {
             val alleMeldekort = hentAlleInnsendteMeldekortRequest()!!
 
             alleMeldekort.shouldBe(
-                bruker = hentBrukerRequest()!!,
+                bruker = hentBrukerMedSakRequest()!!,
                 meldekortMedSisteMeldeperiode = listOf(
                     MeldekortMedSisteMeldeperiodeDTO(
                         meldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),

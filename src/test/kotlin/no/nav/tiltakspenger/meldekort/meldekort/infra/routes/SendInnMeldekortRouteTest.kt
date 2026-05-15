@@ -4,7 +4,7 @@ import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.til
-import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerRequest
+import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerMedSakRequest
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.shouldBe
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
@@ -28,7 +28,7 @@ class SendInnMeldekortRouteTest {
             val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
 
             // Verifiser at meldekortet nå er innsendt via hentBruker
-            hentBrukerRequest()!!.shouldBe(
+            hentBrukerMedSakRequest()!!.shouldBe(
                 forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
             )
         }

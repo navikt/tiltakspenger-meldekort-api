@@ -8,8 +8,6 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.desember
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.Periode
-import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekort
-import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortOversikt
 import no.nav.tiltakspenger.meldekort.infra.Configuration
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.landingsside.infra.routes.LandingssideStatusDTO.LandingssideMeldekortDTO
@@ -17,11 +15,11 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.sendInnNesteMeldeko
 import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.infra.routes.mottaSakRequest
 import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
+import no.nav.tiltakspenger.objectmothers.ObjectMother.arenaMeldekort
+import no.nav.tiltakspenger.objectmothers.ObjectMother.arenaMeldekortOversikt
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import kotlin.random.Random
 
 class LandingssideStatusRouteTest {
 
@@ -222,7 +220,7 @@ class LandingssideStatusRouteTest {
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
             tac.arenaMeldekortClient.leggTilMeldekort(
                 fnr,
-                arenaMeldekortResponse(listOf(arenaMeldekort(periode = periode))),
+                arenaMeldekortOversikt(meldekortListe = listOf(arenaMeldekort(periode = periode))),
             )
 
             val body = landingssideStatusRequest()!!
@@ -241,7 +239,8 @@ class LandingssideStatusRouteTest {
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
             tac.arenaMeldekortClient.leggTilMeldekort(
                 fnr,
-                arenaMeldekortResponse(
+                arenaMeldekortOversikt(
+                    meldekortListe =
                     listOf(arenaMeldekort(periode = periode, mottattDato = periode.tilOgMed)),
                 ),
             )
@@ -264,7 +263,7 @@ class LandingssideStatusRouteTest {
 
             tac.arenaMeldekortClient.leggTilMeldekort(
                 fnr,
-                arenaMeldekortResponse(listOf(arenaMeldekort(periode = arenaPeriode))),
+                arenaMeldekortOversikt(meldekortListe = listOf(arenaMeldekort(periode = arenaPeriode))),
             )
 
             mottaSakRequest(
@@ -296,7 +295,7 @@ class LandingssideStatusRouteTest {
             // Fake-en returnerer meldekort, men service skal ikke kalle arena siden saken markerer HAR_IKKE_MELDEKORT
             tac.arenaMeldekortClient.leggTilMeldekort(
                 fnr,
-                arenaMeldekortResponse(listOf(arenaMeldekort(periode = arenaPeriode))),
+                arenaMeldekortOversikt(meldekortListe = listOf(arenaMeldekort(periode = arenaPeriode))),
             )
 
             val sak = mottaSakRequest(
@@ -325,7 +324,8 @@ class LandingssideStatusRouteTest {
 
             tac.arenaMeldekortClient.leggTilMeldekort(
                 fnr,
-                arenaMeldekortResponse(
+                arenaMeldekortOversikt(
+                    meldekortListe =
                     listOf(arenaMeldekort(periode = arenaPeriode, erTiltakspengerMeldekort = false)),
                 ),
             )
@@ -355,11 +355,12 @@ class LandingssideStatusRouteTest {
 
             tac.arenaMeldekortClient.leggTilMeldekort(
                 fnr,
-                arenaMeldekortResponse(listOf(arenaMeldekort(periode = aktivPeriode))),
+                arenaMeldekortOversikt(meldekortListe = listOf(arenaMeldekort(periode = aktivPeriode))),
             )
             tac.arenaMeldekortClient.leggTilHistoriskMeldekort(
                 fnr,
-                arenaMeldekortResponse(
+                arenaMeldekortOversikt(
+                    meldekortListe =
                     listOf(arenaMeldekort(periode = historiskPeriode, mottattDato = historiskPeriode.tilOgMed)),
                 ),
             )
@@ -382,11 +383,12 @@ class LandingssideStatusRouteTest {
 
             tac.arenaMeldekortClient.leggTilMeldekort(
                 fnr,
-                arenaMeldekortResponse(listOf(arenaMeldekort(periode = aktivPeriode))),
+                arenaMeldekortOversikt(meldekortListe = listOf(arenaMeldekort(periode = aktivPeriode))),
             )
             tac.arenaMeldekortClient.leggTilHistoriskMeldekort(
                 fnr,
-                arenaMeldekortResponse(
+                arenaMeldekortOversikt(
+                    meldekortListe =
                     listOf(
                         arenaMeldekort(
                             periode = historiskPeriode,
@@ -414,7 +416,8 @@ class LandingssideStatusRouteTest {
 
             tac.arenaMeldekortClient.leggTilMeldekort(
                 fnr,
-                arenaMeldekortResponse(
+                arenaMeldekortOversikt(
+                    meldekortListe =
                     listOf(arenaMeldekort(periode = periode, erTiltakspengerMeldekort = false)),
                 ),
             )
@@ -426,30 +429,4 @@ class LandingssideStatusRouteTest {
             )
         }
     }
-
-    private fun arenaMeldekort(
-        periode: Periode,
-        mottattDato: LocalDate? = null,
-        erTiltakspengerMeldekort: Boolean = true,
-    ): ArenaMeldekort = ArenaMeldekort(
-        meldekortId = Random.nextLong(),
-        kortType = "",
-        meldeperiode = "${periode.fraOgMed}-${periode.tilOgMed}",
-        fraDato = periode.fraOgMed,
-        tilDato = periode.tilOgMed,
-        hoyesteMeldegruppe = if (erTiltakspengerMeldekort) "INDIV" else "ARBS",
-        beregningstatus = "",
-        forskudd = false,
-        mottattDato = mottattDato,
-    )
-
-    private fun arenaMeldekortResponse(meldekort: List<ArenaMeldekort>): ArenaMeldekortOversikt =
-        ArenaMeldekortOversikt(
-            personId = 1L,
-            etternavn = "Testesen",
-            fornavn = "Test",
-            maalformkode = "",
-            meldeform = "",
-            meldekortListe = meldekort,
-        )
 }
