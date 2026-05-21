@@ -6,7 +6,7 @@ import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 val jvmVersion = JvmTarget.JVM_21
 val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
-val ktorVersion = "3.4.3"
+val ktorVersion = "3.5.0"
 val mockkVersion = "1.14.9"
 val felleslibVersion = "0.0.792"
 val kotestVersion = "6.1.11"
