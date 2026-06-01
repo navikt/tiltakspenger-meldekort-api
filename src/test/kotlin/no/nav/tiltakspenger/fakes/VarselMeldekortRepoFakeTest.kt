@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
@@ -24,7 +25,7 @@ class VarselMeldekortRepoFakeTest {
     fun `returnerer kjede når kanFyllesUtFraOgMed er frem i tid`() {
         val sakId = SakId.random()
         val saksnummer = Math.random().toString()
-        val fnr = Fnr.fromString(ObjectMother.FAKE_FNR)
+        val fnr = Fnr.random()
         val meldeperiode = ObjectMother.meldeperiode(
             sakId = sakId,
             saksnummer = saksnummer,
@@ -58,7 +59,7 @@ class VarselMeldekortRepoFakeTest {
     fun `returnerer null når tidligere versjon i kjeden har mottatt meldekort`() {
         val sakId = SakId.random()
         val saksnummer = Math.random().toString()
-        val fnr = Fnr.fromString(ObjectMother.FAKE_FNR)
+        val fnr = Fnr.random()
         val meldeperiodeV1 = ObjectMother.meldeperiode(
             sakId = sakId,
             saksnummer = saksnummer,

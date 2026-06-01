@@ -2,11 +2,11 @@ package no.nav.tiltakspenger.objectmothers
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 interface SakMother {
 
@@ -14,7 +14,7 @@ interface SakMother {
         id: SakId = SakId.random(),
         meldeperioder: List<Meldeperiode> = emptyList(),
         saksnummer: String = Math.random().toString(),
-        fnr: Fnr = Fnr.fromString(FAKE_FNR),
+        fnr: Fnr = Fnr.random(),
         arenaMeldekortStatus: ArenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
         harSoknadUnderBehandling: Boolean = false,
         kanSendeInnHelgForMeldekort: Boolean = false,
@@ -33,7 +33,7 @@ interface SakMother {
     fun sakDTO(
         sakId: String = SakId.random().toString(),
         saksnummer: String = Math.random().toString(),
-        fnr: String = FAKE_FNR,
+        fnr: String = Fnr.random().verdi,
         meldeperioder: List<SakTilMeldekortApiDTO.MeldeperiodeDTO> = emptyList(),
         meldekortvedtak: List<SakTilMeldekortApiDTO.MeldekortvedtakDTO> = emptyList(),
         harSoknadUnderBehandling: Boolean = false,

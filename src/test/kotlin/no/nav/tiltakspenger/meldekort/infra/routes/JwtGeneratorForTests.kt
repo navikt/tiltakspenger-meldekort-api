@@ -3,9 +3,10 @@ package no.nav.tiltakspenger.meldekort.infra.routes
 import com.auth0.jwk.Jwk
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.Saksbehandler
+import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.json.objectMapper
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
@@ -48,7 +49,7 @@ data class JwtGenerator(
         preferredUsername: String? = "Sak.Behandler@nav.no",
         azpName: String? = "dev-fss:tpts:tiltakspenger-saksbehandling-api",
         azp: String? = "744e4092-4215-4e02-87df-a61aaf1b95b5",
-        fnr: String? = FAKE_FNR,
+        fnr: String? = Fnr.random().verdi,
         name: String = "Sak Behandler",
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
         groups: List<String>? = listOf("ROLE_SAKSBEHANDLER"),
@@ -115,7 +116,7 @@ data class JwtGenerator(
         subject: String = "test-subject",
         azpName: String? = "dev-gcp:tpts:tiltakspenger-meldekort",
         azp: String? = "744e4092-4215-4e02-87df-a61aaf1b95b5",
-        fnr: String = FAKE_FNR,
+        fnr: String = Fnr.random().verdi,
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
         expiresAt: Instant = Instant.now().plusSeconds(1800),
         issuedAt: Instant = Instant.now().minusSeconds(5),

@@ -19,17 +19,17 @@ class HentMeldekortForKjedeRouteTest {
     @Test
     fun `hentMeldekortForKjedeId - returnerer meldekort for kjede`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
-            mottaSakRequest(
+            val sak = mottaSakRequest(
                 tac = tac,
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
-            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
+            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)!!
 
             // kjedeId inneholder "/" som må erstattes med "_" i URL
             val kjedeId = innsendtMeldekort.meldeperiode.kjedeId.toString()
             val urlSafeKjedeId = kjedeId.replace("/", "_")
 
-            val kjedeDto = hentMeldekortForKjedeIdRequest(kjedeId = urlSafeKjedeId)!!
+            val kjedeDto = hentMeldekortForKjedeIdRequest(fnr = sak.fnr.verdi, kjedeId = urlSafeKjedeId)!!
 
             kjedeDto.shouldBe(
                 kjedeId = kjedeId,

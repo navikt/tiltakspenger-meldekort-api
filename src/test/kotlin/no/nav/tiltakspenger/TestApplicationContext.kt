@@ -28,6 +28,7 @@ sealed class TestApplicationContext(
 ) : ApplicationContext(clock) {
     /** Fungerer bare for tester som bruker [TikkendeKlokke] som clock */
     val tikkendeKlokke: TikkendeKlokke by lazy { clock as TikkendeKlokke }
+
     override val varselClient = TmsVarselClientFake()
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()
     override val dokarkivClient = DokarkivClientFake(journalpostIdGenerator)

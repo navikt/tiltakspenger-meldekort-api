@@ -20,13 +20,13 @@ class HentInnsendteMeldekortRouteTest {
     @Test
     fun `hentAlleInnsendteMeldekort - returnerer innsendt meldekort`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
-            mottaSakRequest(
+            val sak = mottaSakRequest(
                 tac = tac,
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
-            val (sak, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
+            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)!!
 
-            val json = hentAlleInnsendteMeldekortRequest()!!
+            val json = hentAlleInnsendteMeldekortRequest(fnr = sak.fnr.verdi)!!
 
             json.shouldBeAlleMeldekortJson(
                 forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),

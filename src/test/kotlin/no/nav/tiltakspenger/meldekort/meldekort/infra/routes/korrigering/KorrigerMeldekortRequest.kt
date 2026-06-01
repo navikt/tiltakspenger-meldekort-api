@@ -13,7 +13,6 @@ import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.jobber.KjørJobberForTester
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortTilBrukerDTO
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.korrigerMeldekortRoute]
@@ -25,7 +24,7 @@ suspend fun ApplicationTestBuilder.korrigerMeldekortRequest(
     meldekortId: String,
     requestDto: List<MeldekortKorrigertDagDTO>,
     locale: String?,
-    fnr: String = FAKE_FNR,
+    fnr: String,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
@@ -56,7 +55,7 @@ suspend fun ApplicationTestBuilder.korrigerMeldekortRequest(
     meldekortId: String,
     requestBody: String,
     locale: String?,
-    fnr: String = FAKE_FNR,
+    fnr: String,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,

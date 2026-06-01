@@ -1,11 +1,11 @@
 package no.nav.tiltakspenger
 
+import no.nav.tiltakspenger.fakes.clients.TexasClientFakeTest
 import no.nav.tiltakspenger.generators.FnrGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGeneratorSerial
 import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
-import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import java.time.Clock
 
 /**
@@ -18,9 +18,10 @@ import java.time.Clock
  */
 class TestApplicationContextMedPostgres(
     clock: Clock,
-    override val texasClient: TexasClient,
     override val sessionFactory: PostgresSessionFactory,
     saksnummergenerator: SaksnummerGeneratorForTest = SaksnummerGeneratorForTest(),
     fnrGenerator: FnrGenerator = FnrGenerator(),
     journalpostIdGenerator: JournalpostIdGenerator = JournalpostIdGeneratorSerial(),
-) : TestApplicationContext(clock, saksnummergenerator, fnrGenerator, journalpostIdGenerator)
+) : TestApplicationContext(clock, saksnummergenerator, fnrGenerator, journalpostIdGenerator) {
+    override val texasClient = TexasClientFakeTest()
+}

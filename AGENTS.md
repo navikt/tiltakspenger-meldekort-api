@@ -11,6 +11,7 @@ Se de generelle DB-/ende-til-ende-konvensjonene i [`../AGENTS-backend.md`](../AG
 - **Delte generatorer:** `IdGenerators` (saksnummer, fnr, journalpostId) holdes av `TestDatabaseManager` og injiseres inn i test-konteksten. I tester:
   - route-/kontekst-tester: `tac.nesteFnr()` og `tac.nesteSaksnummer()`
   - repo-tester (`withMigratedDb { helper -> … }`): `helper.nesteFnr()` / `helper.nesteSaksnummer()`
-  - **ikke** bruk `Fnr.random()` eller statiske verdier som `FAKE_FNR` i nye, ikke-isolerte tester — gi hver sak/person en unik, deterministisk id.
+  - **ikke** bruk statiske, delte fnr-verdier i nye, ikke-isolerte tester — gi hver sak/person en unik, deterministisk id.
+- **Innlogget bruker i route-tester:** `TexasClientFakeTest` dekoder selve bearer-token-et (JWT-en fra `JwtGenerator`) og autentiserer kallet som `pid`-claimet — akkurat som ekte Texas. Konteksten er derfor *ikke* låst til én person. Bruker-hjelperne (`landingssideStatusRequest(fnr = …)`, `hentBrukerMedSakRequest(fnr = …)`, `sendInnNesteMeldekort(fnr = …)` osv.) tar `fnr` **eksplisitt** når de skal autentisere som en konkret bruker. Bruk `val fnr = tac.nesteFnr()` i testen og send samme fnr både når du oppretter sak/meldekort og når du kaller bruker-routene. `mottaSakRequest(...)` kan lage et nytt deterministisk fnr selv for helt frittstående saker, men send eksplisitt `fnr` hvis saken senere skal leses/endres som bruker.
 - `DokarkivClientFake` bruker en injisert `JournalpostIdGenerator` (sekvensiell i test, tilfeldig lokalt) i stedet for en konstant journalpostId.
 

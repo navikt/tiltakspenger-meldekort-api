@@ -24,11 +24,11 @@ class KorrigerMeldekortRouteTest {
     @Test
     fun `korrigerMeldekort - korrigerer innsendt meldekort`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
-            mottaSakRequest(
+            val sak = mottaSakRequest(
                 tac = tac,
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
-            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
+            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)!!
 
             val korrigerteDager = periode.tilDager().map { dag ->
                 MeldekortKorrigertDagDTO(
@@ -46,6 +46,7 @@ class KorrigerMeldekortRouteTest {
                 meldekortId = innsendtMeldekort.id.toString(),
                 requestDto = korrigerteDager,
                 locale = "nb",
+                fnr = sak.fnr.verdi,
             )!!
 
             korrigertMeldekort.erInnsendt()

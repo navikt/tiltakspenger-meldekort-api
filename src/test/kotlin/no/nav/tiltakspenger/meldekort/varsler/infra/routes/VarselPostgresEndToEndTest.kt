@@ -444,7 +444,7 @@ class VarselPostgresEndToEndTest {
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = 1.mars(2025).atHour(10))),
             )
 
-            sendInnNesteMeldekort(tac = tac)
+            sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)
 
             val varsler = tac.varselRepo.hentVarslerForSakId(sak.id)
             varsler shouldHaveSize 1
@@ -470,7 +470,7 @@ class VarselPostgresEndToEndTest {
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = 1.mars(2025).atHour(10))),
             )
 
-            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, runJobs = false)!!
+            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi, runJobs = false)!!
 
             tac.varselRepo.hentVarslerForSakId(sak.id).single().shouldBeInstanceOf<Varsel.Aktiv>()
 
@@ -490,6 +490,7 @@ class VarselPostgresEndToEndTest {
                 meldekortId = innsendtMeldekort.id.toString(),
                 requestDto = korrigerteDager,
                 locale = "nb",
+                fnr = sak.fnr.verdi,
             )
 
             val varsler = tac.varselRepo.hentVarslerForSakId(sak.id)
@@ -517,7 +518,7 @@ class VarselPostgresEndToEndTest {
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = 1.mars(2025).atHour(10))),
             )
             // Vi ønsker å emulere at inaktiver-jobben har en delay.
-            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, runJobs = false)!!
+            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi, runJobs = false)!!
             // Derimot ønsker vi å få en ny vurdering, for å se at vi ikke inaktiverer på nytt.
             KjørJobberForTester.kjørVurderVarsler(tac)
             tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId }.contains(sak.id) shouldBe false
@@ -545,6 +546,7 @@ class VarselPostgresEndToEndTest {
                 meldekortId = innsendtMeldekort.id.toString(),
                 requestDto = korrigerteDager,
                 locale = "nb",
+                fnr = sak.fnr.verdi,
                 runJobs = false,
             )
             tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId }.contains(sak.id) shouldBe true
@@ -601,7 +603,7 @@ class VarselPostgresEndToEndTest {
             //     (andre meldeperiode mangler fortsatt innsending).
             //   - AktiverVarsler: nytt SkalAktiveres -> Aktiv (produserer Kafka med utsettSendingTil).
             //   - InaktiverVarsler: SkalInaktiveres -> Inaktivert, re-flagger saken.
-            sendInnNesteMeldekort(tac = tac)
+            sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)
 
             // Etter innsending: første varsel inaktivert, nytt varsel for andre meldeperiode.
             // Andre meldeperiode har kanFyllesUtFraOgMed = 21. mars 15:00 (i fremtiden), så det

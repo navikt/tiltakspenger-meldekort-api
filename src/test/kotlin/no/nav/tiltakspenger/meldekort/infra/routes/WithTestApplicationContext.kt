@@ -6,14 +6,12 @@ import io.ktor.server.testing.testApplication
 import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
 import no.nav.tiltakspenger.TestApplicationContextMedPostgres
 import no.nav.tiltakspenger.db.TestDatabaseManager
-import no.nav.tiltakspenger.fakes.clients.TexasClientFakeTest
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.dato.mai
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.test.common.TestSessionFactory
-import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
 import java.time.Clock
 
@@ -23,7 +21,6 @@ private val dbManager = TestDatabaseManager()
 fun withTestApplicationContextAndPostgres(
     additionalConfig: Application.() -> Unit = {},
     clock: TikkendeKlokke = TikkendeKlokke(fixedClockAt(1.mai(2025))),
-    texasClient: TexasClient = TexasClientFakeTest(),
     runIsolated: Boolean = false,
     testBlock: suspend ApplicationTestBuilder.(TestApplicationContextMedPostgres) -> Unit,
 ) {
@@ -34,7 +31,6 @@ fun withTestApplicationContextAndPostgres(
     ) { sessionFactory: SessionFactory, idGenerators, _: Clock ->
         val context = TestApplicationContextMedPostgres(
             clock = clock,
-            texasClient = texasClient,
             sessionFactory = sessionFactory as PostgresSessionFactory,
             // Delte generatorer slik at saker fra ulike tester i samme test-db får unike id-er.
             saksnummergenerator = idGenerators.saksnummerGenerator,
@@ -51,14 +47,12 @@ fun withTestApplicationContextAndPostgres(
 fun withTestApplicationContext(
     additionalConfig: Application.() -> Unit = {},
     clock: TikkendeKlokke = TikkendeKlokke(),
-    texasClient: TexasClientFakeTest = TexasClientFakeTest(),
     sessionFactory: TestSessionFactory = TestSessionFactory(),
     testBlock: suspend ApplicationTestBuilder.(TestApplicationContextMedInMemoryDb) -> Unit,
 ) {
     val callSite = captureCallSite()
     val context = TestApplicationContextMedInMemoryDb(
         clock = clock,
-        texasClient = texasClient,
         sessionFactory = sessionFactory,
     )
     runTestApplication(context, additionalConfig, callSite, testBlock)

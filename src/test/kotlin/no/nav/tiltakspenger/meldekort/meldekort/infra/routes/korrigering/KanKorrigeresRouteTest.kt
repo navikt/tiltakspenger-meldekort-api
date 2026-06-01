@@ -18,13 +18,13 @@ class KanKorrigeresRouteTest {
     @Test
     fun `kanMeldekortKorrigeres - returnerer true for innsendt meldekort`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
-            mottaSakRequest(
+            val sak = mottaSakRequest(
                 tac = tac,
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
-            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
+            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)!!
 
-            kanMeldekortKorrigeresRequest(meldekortId = innsendtMeldekort.id.toString())!!.shouldBe(
+            kanMeldekortKorrigeresRequest(fnr = sak.fnr.verdi, meldekortId = innsendtMeldekort.id.toString())!!.shouldBe(
                 kanKorrigeres = true,
             )
         }

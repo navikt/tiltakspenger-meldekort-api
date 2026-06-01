@@ -22,14 +22,14 @@ class HentKorrigeringRouteTest {
     fun `hentKorrigeringForId - returnerer korrigeringsdata for innsendt meldekort`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val (sak, innsendtMeldekort) = run {
-                mottaSakRequest(
+                val sak = mottaSakRequest(
                     tac = tac,
                     meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
                 )
-                sendInnNesteMeldekort(tac = tac)!!
+                sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)!!
             }
 
-            val korrigering = hentKorrigeringForIdRequest(meldekortId = innsendtMeldekort.id.toString())!!
+            val korrigering = hentKorrigeringForIdRequest(fnr = sak.fnr.verdi, meldekortId = innsendtMeldekort.id.toString())!!
 
             korrigering.shouldBe(
                 forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),

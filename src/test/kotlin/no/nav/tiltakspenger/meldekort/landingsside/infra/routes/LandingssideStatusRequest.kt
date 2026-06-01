@@ -11,14 +11,13 @@ import io.ktor.server.util.url
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.landingsside.infra.routes.fellesLandingssideRoutes]
  * Response DTO: [LandingssideStatusDTO]
  */
 suspend fun ApplicationTestBuilder.landingssideStatusRequest(
-    fnr: String = FAKE_FNR,
+    fnr: String,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,

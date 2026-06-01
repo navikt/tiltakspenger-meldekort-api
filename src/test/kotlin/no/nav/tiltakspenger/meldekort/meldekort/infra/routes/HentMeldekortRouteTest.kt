@@ -21,12 +21,12 @@ class HentMeldekortRouteTest {
     @Test
     fun `hentMeldekortForId - returnerer spesifikt meldekort`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
-            mottaSakRequest(
+            val sak = mottaSakRequest(
                 tac = tac,
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
-            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
-            val actualMeldekort = hentMeldekortForIdRequest(meldekortId = innsendtMeldekort.id)!!
+            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)!!
+            val actualMeldekort = hentMeldekortForIdRequest(fnr = sak.fnr.verdi, meldekortId = innsendtMeldekort.id)!!
 
             actualMeldekort
                 .erInnsendt()

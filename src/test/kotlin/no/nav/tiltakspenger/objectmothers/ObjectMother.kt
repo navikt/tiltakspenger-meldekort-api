@@ -34,7 +34,5 @@ object ObjectMother :
         }
     }
 
-    const val FAKE_FNR = "12345678911"
-
     fun tikkendeKlokke1mars2025() = TikkendeKlokke(fixedClockAt(1.mars(2025)))
 }

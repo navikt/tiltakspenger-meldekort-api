@@ -19,7 +19,6 @@ import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.jobber.KjørJobberForTester
 import no.nav.tiltakspenger.meldekort.sak.Sak
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 
 /**
@@ -28,7 +27,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
  */
 suspend fun ApplicationTestBuilder.mottaSakRequest(
     tac: TestApplicationContext,
-    fnr: Fnr = Fnr.fromString(FAKE_FNR),
+    fnr: Fnr = tac.nesteFnr(),
     sakId: SakId = SakId.random(),
     saksnummer: String = tac.nesteSaksnummer(),
     meldeperioder: List<SakTilMeldekortApiDTO.MeldeperiodeDTO> = listOf(meldeperiodeDto(opprettet = nå(tac.clock))),

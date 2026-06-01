@@ -9,7 +9,6 @@ import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.MeldekortTilKorrigeringDTO
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.hentKorrigeringRoute]
@@ -17,7 +16,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
  */
 suspend fun ApplicationTestBuilder.hentKorrigeringForIdRequest(
     meldekortId: String,
-    fnr: String = FAKE_FNR,
+    fnr: String,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,

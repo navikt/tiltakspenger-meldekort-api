@@ -19,7 +19,6 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagStatusDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.sak.Sak
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 /**
  * Henter brukerens neste meldekort via [hentBrukerMedSakRequest], bygger request-body, sender inn via [sendInnMeldekortRequest],
@@ -27,7 +26,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
  */
 suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
     tac: TestApplicationContext,
-    fnr: String = FAKE_FNR,
+    fnr: String,
     locale: String? = null,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
@@ -74,7 +73,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(
     meldekortId: MeldekortId,
     dager: List<MeldekortDagFraBrukerDTO>,
     locale: String? = null,
-    fnr: String = FAKE_FNR,
+    fnr: String,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
@@ -110,7 +109,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(
 suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
     tac: TestApplicationContext,
     requestDto: MeldekortFraBrukerDTO,
-    fnr: Fnr = Fnr.fromString(FAKE_FNR),
+    fnr: Fnr,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr.toString()),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,

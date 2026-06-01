@@ -20,15 +20,15 @@ class SendInnMeldekortRouteTest {
     @Test
     fun `sendInnMeldekort - sender inn meldekort og returnerer OK`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
-            mottaSakRequest(
+            val sak = mottaSakRequest(
                 tac = tac,
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
 
-            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac)!!
+            val (_, innsendtMeldekort) = sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)!!
 
             // Verifiser at meldekortet nå er innsendt via hentBruker
-            hentBrukerMedSakRequest()!!.shouldBe(
+            hentBrukerMedSakRequest(fnr = sak.fnr.verdi)!!.shouldBe(
                 forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
             )
         }

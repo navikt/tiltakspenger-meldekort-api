@@ -11,16 +11,15 @@ import io.ktor.server.util.url
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerRoute]
  * Response DTO: [BrukerDTO.MedSak] eller null
- * @param fnr brukes kun for default verdi av [jwt]
+ * @param fnr identiteten kallet autentiseres som (legges i `pid`-claimet på [jwt]).
  * @return null dersom kallet feilet (ikke status 200 OK)
  */
 suspend fun ApplicationTestBuilder.hentBrukerMedSakRequest(
-    fnr: String = FAKE_FNR,
+    fnr: String,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
@@ -36,11 +35,11 @@ suspend fun ApplicationTestBuilder.hentBrukerMedSakRequest(
 /**
  * Route: [no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerRoute]
  * Response DTO: [BrukerDTO.UtenSak] eller null
- * @param fnr brukes kun for default verdi av [jwt]
+ * @param fnr identiteten kallet autentiseres som (legges i `pid`-claimet på [jwt]).
  * @return null dersom kallet feilet (ikke status 200 OK)
  */
 suspend fun ApplicationTestBuilder.hentBrukerUtenSakRequest(
-    fnr: String = FAKE_FNR,
+    fnr: String,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
@@ -59,7 +58,7 @@ suspend fun ApplicationTestBuilder.hentBrukerUtenSakRequest(
  */
 private suspend inline fun <reified T : BrukerDTO> ApplicationTestBuilder.hentBrukerResponseAs(
     fnr: String,
-    jwt: String?,
+    jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode,
     forventetBody: String?,
     forventetContentType: ContentType?,

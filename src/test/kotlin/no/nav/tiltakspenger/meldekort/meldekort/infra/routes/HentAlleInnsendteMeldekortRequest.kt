@@ -8,7 +8,6 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.meldekort.infra.AlleMeldekortDTO
-import no.nav.tiltakspenger.objectmothers.ObjectMother.FAKE_FNR
 
 typealias JsonResponse = String
 
@@ -20,7 +19,7 @@ typealias JsonResponse = String
  * mens wire-formatet kan sjekkes med [shouldBeAlleMeldekortJson].
  */
 suspend fun ApplicationTestBuilder.hentAlleInnsendteMeldekortRequest(
-    fnr: String = FAKE_FNR,
+    fnr: String,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,

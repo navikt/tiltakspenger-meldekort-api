@@ -18,12 +18,12 @@ class MicrofrontendRouteTest {
     @Test
     fun `microfrontendKortInfo - returnerer info om meldekort klare til innsending`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
-            mottaSakRequest(
+            val sak = mottaSakRequest(
                 tac = tac,
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = nå(tac.clock))),
             )
 
-            microfrontendKortInfoRequest()!!.shouldBe(
+            microfrontendKortInfoRequest(fnr = sak.fnr.verdi)!!.shouldBe(
                 antallMeldekortKlarTilInnsending = 1,
                 nesteMuligeInnsendingstidspunkt = periode.kanFyllesUtFraOgMed(),
             )

@@ -19,9 +19,9 @@ import java.time.Clock
  */
 open class TestApplicationContextMedInMemoryDb(
     clock: Clock = TikkendeKlokke(),
-    override val texasClient: TexasClientFakeTest = TexasClientFakeTest(),
     override val sessionFactory: TestSessionFactory = TestSessionFactory(),
 ) : TestApplicationContext(clock) {
+    override val texasClient: TexasClientFakeTest = TexasClientFakeTest()
     private val meldekortvedtakRepoFake = MeldekortvedtakRepoFake()
     override val meldekortvedtakRepo = meldekortvedtakRepoFake
     private val meldekortRepoFake = MeldekortRepoFake(clock, meldekortvedtakRepoFake)
