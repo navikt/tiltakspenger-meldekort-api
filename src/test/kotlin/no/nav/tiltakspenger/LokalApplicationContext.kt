@@ -5,6 +5,7 @@ import no.nav.tiltakspenger.fakes.clients.SaksbehandlingClientFake
 import no.nav.tiltakspenger.fakes.clients.TexasClientFakeLokal
 import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
 import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
+import no.nav.tiltakspenger.generators.JournalpostIdGeneratorRandom
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
 import no.nav.tiltakspenger.meldekort.infra.Configuration
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
@@ -19,7 +20,7 @@ class LokalApplicationContext(clock: Clock) : ApplicationContext(clock) {
 
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()
 
-    override val dokarkivClient = DokarkivClientFake()
+    override val dokarkivClient = DokarkivClientFake(JournalpostIdGeneratorRandom())
 
     override val saksbehandlingClient: SaksbehandlingClient =
         if (Configuration.brukFakeSaksbehandlingClient) SaksbehandlingClientFake() else super.saksbehandlingClient

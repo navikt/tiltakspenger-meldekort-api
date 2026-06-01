@@ -18,6 +18,7 @@ import javax.sql.DataSource
 class TestDataHelper(
     dataSource: DataSource,
     clock: Clock,
+    private val idGenerators: IdGenerators = IdGenerators(),
 ) {
     private val log = KotlinLogging.logger {}
     private val sessionCounter = SessionCounter(log)
@@ -30,6 +31,12 @@ class TestDataHelper(
     val brukerSakPostgresRepo = BrukerSakPostgresRepo(sessionFactory)
     val sakVarselPostgresRepo = SakVarselPostgresRepo(sessionFactory)
     val varselMeldekortPostgresRepo = VarselMeldekortPostgresRepo(sessionFactory)
+
+    /** Deterministisk, unikt saksnummer (delt på tvers av tester i samme test-db). */
+    fun nesteSaksnummer(): String = idGenerators.saksnummerGenerator.generer()
+
+    /** Deterministisk, unikt fnr. Foretrekkes fremfor `Fnr.random()` for å unngå flaky kollisjoner. */
+    fun nesteFnr() = idGenerators.fnrGenerator.generer()
 }
 
 private val testDatabaseManager = TestDatabaseManager()

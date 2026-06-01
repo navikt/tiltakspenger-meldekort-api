@@ -31,11 +31,15 @@ fun withTestApplicationContextAndPostgres(
     dbManager.withMigratedDb(
         runIsolated = runIsolated,
         clock = clock,
-    ) { sessionFactory: SessionFactory, _: Clock ->
+    ) { sessionFactory: SessionFactory, idGenerators, _: Clock ->
         val context = TestApplicationContextMedPostgres(
             clock = clock,
             texasClient = texasClient,
             sessionFactory = sessionFactory as PostgresSessionFactory,
+            // Delte generatorer slik at saker fra ulike tester i samme test-db får unike id-er.
+            saksnummergenerator = idGenerators.saksnummerGenerator,
+            fnrGenerator = idGenerators.fnrGenerator,
+            journalpostIdGenerator = idGenerators.journalpostIdGenerator,
         )
         runTestApplication(context, additionalConfig, callSite, testBlock)
     }

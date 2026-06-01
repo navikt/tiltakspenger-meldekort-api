@@ -39,12 +39,14 @@ class NesteMeldekortNårKjedenErHåndtertTest {
         runTest {
             withTestApplicationContextAndPostgres(
                 clock = TikkendeKlokke(fixedClockAt(1.mars(2025).atTime(10, 0))),
-                runIsolated = true,
             ) { tac ->
+                // Egen person/sak slik at testen kan kjøre side-om-side med andre saker i delt test-db.
+                val fnr = tac.nesteFnr()
                 // 1. Første søknadsbehandling: senere periode -> det opprettes et tomt meldekort for kjeden.
                 val senereMeldeperiode = ObjectMother.meldeperiodeDto(periode = senerePeriode, opprettet = nå(tac.clock))
                 val sak = mottaSakRequest(
                     tac = tac,
+                    fnr = fnr,
                     meldeperioder = listOf(senereMeldeperiode),
                     runJobs = false,
                 )
@@ -86,12 +88,14 @@ class NesteMeldekortNårKjedenErHåndtertTest {
         runTest {
             withTestApplicationContextAndPostgres(
                 clock = TikkendeKlokke(fixedClockAt(1.mars(2025).atTime(10, 0))),
-                runIsolated = true,
             ) { tac ->
+                // Egen person/sak slik at testen kan kjøre side-om-side med andre saker i delt test-db.
+                val fnr = tac.nesteFnr()
                 // 1. Første søknadsbehandling: senere periode -> tomt meldekort for kjeden.
                 val senereMeldeperiode = ObjectMother.meldeperiodeDto(periode = senerePeriode, opprettet = nå(tac.clock))
                 val sak = mottaSakRequest(
                     tac = tac,
+                    fnr = fnr,
                     meldeperioder = listOf(senereMeldeperiode),
                     runJobs = false,
                 )

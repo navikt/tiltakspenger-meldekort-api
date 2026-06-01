@@ -20,10 +20,10 @@ class MeldekortvedtakPostgresRepoTest {
 
     @Test
     fun `lagrer og henter meldekortvedtak`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val periode1 = ObjectMother.periode()
             val periode2 = periode1.plus14Dager()
-            val sak = ObjectMother.sak()
+            val sak = ObjectMother.sak(fnr = helper.nesteFnr())
             helper.sakPostgresRepo.lagre(sak)
 
             val vedtak = Meldekortvedtak(
@@ -78,8 +78,8 @@ class MeldekortvedtakPostgresRepoTest {
 
     @Test
     fun `hentForSakId returnerer tom liste for sak uten vedtak`() {
-        withMigratedDb { helper ->
-            val sak = ObjectMother.sak()
+        withMigratedDb(runIsolated = false) { helper ->
+            val sak = ObjectMother.sak(fnr = helper.nesteFnr())
             helper.sakPostgresRepo.lagre(sak)
 
             val hentet = helper.sessionFactory.withSession { session ->
@@ -92,9 +92,9 @@ class MeldekortvedtakPostgresRepoTest {
 
     @Test
     fun `to vedtak for samme sak sorteres etter opprettet`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val periode = ObjectMother.periode()
-            val sak = ObjectMother.sak()
+            val sak = ObjectMother.sak(fnr = helper.nesteFnr())
             helper.sakPostgresRepo.lagre(sak)
 
             val tidligereVedtak = Meldekortvedtak(
@@ -160,9 +160,9 @@ class MeldekortvedtakPostgresRepoTest {
 
     @Test
     fun `lagring av samme vedtak to ganger er idempotent`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val periode = ObjectMother.periode()
-            val sak = ObjectMother.sak()
+            val sak = ObjectMother.sak(fnr = helper.nesteFnr())
             helper.sakPostgresRepo.lagre(sak)
 
             val vedtak = Meldekortvedtak(

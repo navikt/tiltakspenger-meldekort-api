@@ -12,7 +12,7 @@ internal class TestDatabaseManager(
 ) {
     private val delegate = LibsTestDatabaseManager(
         config = config,
-        idGeneratorsFactory = { },
+        idGeneratorsFactory = { IdGenerators() },
     )
 
     val sessionFactory: SessionFactory get() = delegate.sessionFactory
@@ -25,18 +25,18 @@ internal class TestDatabaseManager(
         clock: Clock = TikkendeKlokke(),
         test: (TestDataHelper) -> Unit,
     ) {
-        delegate.withMigratedDb(runIsolated = runIsolated, clock = clock) { _, _, _ ->
-            test(TestDataHelper(delegate.dataSource(runIsolated), clock))
+        delegate.withMigratedDb(runIsolated = runIsolated, clock = clock) { _, idGenerators, _ ->
+            test(TestDataHelper(delegate.dataSource(runIsolated), clock, idGenerators))
         }
     }
 
     fun withMigratedDb(
         runIsolated: Boolean = false,
         clock: Clock = TikkendeKlokke(),
-        test: (SessionFactory, Clock) -> Unit,
+        test: (SessionFactory, IdGenerators, Clock) -> Unit,
     ) {
-        delegate.withMigratedDb(runIsolated = runIsolated, clock = clock) { sessionFactory, _, clk ->
-            test(sessionFactory, clk)
+        delegate.withMigratedDb(runIsolated = runIsolated, clock = clock) { sessionFactory, idGenerators, clk ->
+            test(sessionFactory, idGenerators, clk)
         }
     }
 
