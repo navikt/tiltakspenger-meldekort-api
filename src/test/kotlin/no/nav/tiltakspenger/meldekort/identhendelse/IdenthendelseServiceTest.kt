@@ -3,10 +3,8 @@ package no.nav.tiltakspenger.meldekort.identhendelse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltakspenger.db.withMigratedDb
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
-import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -14,11 +12,12 @@ import java.util.UUID
 class IdenthendelseServiceTest {
     @Test
     fun `behandleIdenthendelse - finnes sak for gammelt fnr - oppdaterer sak`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val identhendelseService = IdenthendelseService(helper.sakPostgresRepo)
-            val gammeltFnr = Fnr.random()
-            val nyttFnr = Fnr.random()
+            val gammeltFnr = helper.nesteFnr()
+            val nyttFnr = helper.nesteFnr()
             val meldeperiode = ObjectMother.meldeperiode(fnr = gammeltFnr, opprettet = nå(fixedClock))
+
             val sak = ObjectMother.sak(
                 id = meldeperiode.sakId,
                 fnr = gammeltFnr,

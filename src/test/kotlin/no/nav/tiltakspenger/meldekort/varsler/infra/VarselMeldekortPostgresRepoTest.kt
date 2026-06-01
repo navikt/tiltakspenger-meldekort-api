@@ -3,7 +3,6 @@ package no.nav.tiltakspenger.meldekort.varsler.infra
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -28,9 +27,6 @@ import java.time.LocalDate
 
 class VarselMeldekortPostgresRepoTest {
 
-    private val sakId = SakId.random()
-    private val saksnummer = Math.random().toString()
-    private val fnr = Fnr.fromString(ObjectMother.FAKE_FNR)
     private val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
     @Nested
@@ -38,7 +34,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer kjede der nyeste meldeperiode ikke har innsendt meldekort`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldekort = ObjectMother.meldekort(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -60,7 +59,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null når meldekort er innsendt for nyeste versjon`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldekort = ObjectMother.meldekort(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -78,7 +80,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null når revurdering (versjon 2) mangler innsending men versjon 1 var innsendt`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 // Versjon 1 med innsendt meldekort
                 val meldeperiodeV1 = ObjectMother.meldeperiode(
                     sakId = sakId,
@@ -123,7 +128,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null når revurdering (versjon 2) har innsendt meldekort`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldeperiodeV1 = ObjectMother.meldeperiode(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -168,7 +176,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null når nyeste meldeperiode har maks_antall_dager_for_periode lik 0`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 // Meldeperiode uten rett - det opprettes aldri et meldekort for denne
                 val meldeperiode = ObjectMother.meldeperiode(
                     sakId = sakId,
@@ -191,7 +202,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer kjede når nyeste meldeperiode mangler meldekort helt`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldeperiode = ObjectMother.meldeperiode(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -214,7 +228,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer kjede når kanFyllesUtFraOgMed er frem i tid`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldeperiode = ObjectMother.meldeperiode(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -247,7 +264,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null når meldekort er deaktivert og nyeste meldeperiode har maks 0`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 // Versjon 1 med rett (meldekort deaktivert pga revurdering)
                 val meldeperiodeV1 = ObjectMother.meldeperiode(
                     sakId = sakId,
@@ -287,7 +307,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null når mottatt meldekort på nyeste versjon er deaktivert`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldekort = ObjectMother.meldekort(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -306,7 +329,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer første kjede som mangler innsending sortert på kanFyllesUtFraOgMed`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val andrePeriode = førstePeriode.plus14Dager()
 
                 val førsteMeldekort = ObjectMother.meldekort(
@@ -333,7 +359,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer første kjede som mangler innsending - ignorerer innsendt kjede`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val andrePeriode = førstePeriode.plus14Dager()
 
                 val innsendtMeldekort = ObjectMother.meldekort(
@@ -360,7 +389,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null når kjede har et meldekortvedtak men ingen mottatt meldekort`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldeperiode = ObjectMother.meldeperiode(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -385,7 +417,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null når kjede har et meldekortvedtak selv om meldekort ikke er mottatt`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldekort = ObjectMother.meldekort(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -408,7 +443,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer kjede når vedtak finnes for annen kjede`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val andrePeriode = førstePeriode.plus14Dager()
 
                 val innsendtMeldekort = ObjectMother.meldekort(
@@ -446,7 +484,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `ignorerer vedtak fra annen sak`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val meldekort = ObjectMother.meldekort(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -457,7 +498,7 @@ class VarselMeldekortPostgresRepoTest {
                 lagreMeldekort(helper, meldekort)
 
                 // Vedtak på en annen sak som refererer samme kjedeId skal ikke påvirke
-                val annenSak = ObjectMother.sak(fnr = Fnr.fromString("12345678910"), saksnummer = "annen-sak")
+                val annenSak = ObjectMother.sak(fnr = helper.nesteFnr(), saksnummer = helper.nesteSaksnummer())
                 helper.sakPostgresRepo.lagre(annenSak)
                 helper.meldekortvedtakPostgresRepo.lagre(
                     lagVedtak(
@@ -477,7 +518,7 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer null for ukjent sakId`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(SakId.random())
 
                 resultat shouldBe null
@@ -486,7 +527,10 @@ class VarselMeldekortPostgresRepoTest {
 
         @Test
         fun `returnerer første kjede for angitt sak`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
+                val sakId = SakId.random()
+                val saksnummer = helper.nesteSaksnummer()
+                val fnr = helper.nesteFnr()
                 val annetSakId = SakId.random()
                 lagreMeldekort(
                     helper,
@@ -499,8 +543,8 @@ class VarselMeldekortPostgresRepoTest {
                     ),
                     ObjectMother.meldekort(
                         sakId = annetSakId,
-                        saksnummer = "annen-sak",
-                        fnr = Fnr.fromString("12345678910"),
+                        saksnummer = helper.nesteSaksnummer(),
+                        fnr = helper.nesteFnr(),
                         mottatt = null,
                         periode = førstePeriode.plus14Dager(),
                     ),

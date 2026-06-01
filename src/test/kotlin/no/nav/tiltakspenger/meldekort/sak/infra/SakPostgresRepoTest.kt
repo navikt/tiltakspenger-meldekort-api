@@ -153,8 +153,8 @@ class SakPostgresRepoTest {
 
         @Test
         fun `oppdaterStatusForMicrofrontend setter aktiv og inaktiv status`() {
-            withMigratedDb { helper ->
-                val sak = ObjectMother.sak(fnr = Fnr.random())
+            withMigratedDb(runIsolated = false) { helper ->
+                val sak = ObjectMother.sak(fnr = helper.nesteFnr())
                 helper.sakPostgresRepo.lagre(sak)
 
                 helper.sakPostgresRepo.oppdaterStatusForMicrofrontend(sak.id, aktiv = true)

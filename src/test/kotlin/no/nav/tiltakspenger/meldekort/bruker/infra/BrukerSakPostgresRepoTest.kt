@@ -2,8 +2,6 @@ package no.nav.tiltakspenger.meldekort.bruker.infra
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
-import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.meldekort.bruker.SakForBruker
 import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -13,9 +11,9 @@ class BrukerSakPostgresRepoTest {
 
     @Test
     fun `hentForBruker returnerer SakForBruker med bruker-relevante felter`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val sak = ObjectMother.sak(
-                fnr = Fnr.random(),
+                fnr = helper.nesteFnr(),
                 arenaMeldekortStatus = ArenaMeldekortStatus.HAR_MELDEKORT,
                 harSoknadUnderBehandling = true,
                 kanSendeInnHelgForMeldekort = true,
@@ -33,9 +31,9 @@ class BrukerSakPostgresRepoTest {
 
     @Test
     fun `hentForBruker reflekterer endringer fra oppdaterArenaStatus`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val sak = ObjectMother.sak(
-                fnr = Fnr.random(),
+                fnr = helper.nesteFnr(),
                 arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
             )
             helper.sakPostgresRepo.lagre(sak)
@@ -48,16 +46,16 @@ class BrukerSakPostgresRepoTest {
 
     @Test
     fun `hentForBruker returnerer null for ukjent fnr`() {
-        withMigratedDb { helper ->
-            helper.brukerSakPostgresRepo.hentForBruker(Fnr.random()) shouldBe null
+        withMigratedDb(runIsolated = false) { helper ->
+            helper.brukerSakPostgresRepo.hentForBruker(helper.nesteFnr()) shouldBe null
         }
     }
 
     @Test
     fun `hentForBruker følger fnr etter oppdaterFnr`() {
-        withMigratedDb { helper ->
-            val gammeltFnr = Fnr.random()
-            val nyttFnr = Fnr.random()
+        withMigratedDb(runIsolated = false) { helper ->
+            val gammeltFnr = helper.nesteFnr()
+            val nyttFnr = helper.nesteFnr()
             val sak = ObjectMother.sak(fnr = gammeltFnr)
             helper.sakPostgresRepo.lagre(sak)
 

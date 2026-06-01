@@ -3,12 +3,10 @@ package no.nav.tiltakspenger.meldekort.meldekort.infra
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltakspenger.db.withMigratedDb
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
-import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
@@ -24,9 +22,9 @@ class LagreMeldekortRepoTest {
     inner class Lagre {
         @Test
         fun `lagres og kan hentes ut`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort(mottatt = nå(fixedClock))
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = nå(fixedClock))
 
                 lagreMeldekort(helper, meldekort)
 
@@ -41,9 +39,9 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `returnerer null for ukjent meldekortId`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val fnr = Fnr.random()
+                val fnr = helper.nesteFnr()
 
                 val result = repo.hentForMeldekortId(
                     no.nav.tiltakspenger.libs.common.MeldekortId.random(),
@@ -56,13 +54,13 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `returnerer null for feil fnr`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort(mottatt = nå(fixedClock))
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = nå(fixedClock))
 
                 lagreMeldekort(helper, meldekort)
 
-                val result = repo.hentForMeldekortId(meldekort.id, Fnr.random())
+                val result = repo.hentForMeldekortId(meldekort.id, helper.nesteFnr())
 
                 result shouldBe null
             }
@@ -70,9 +68,9 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `lagrer og henter meldekort med journalpostId`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val journalførtMeldekort = ObjectMother.meldekort(mottatt = nå(fixedClock)).copy(
+                val journalførtMeldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = nå(fixedClock)).copy(
                     journalpostId = JournalpostId("jp-123"),
                     journalføringstidspunkt = nå(fixedClock),
                 )
@@ -87,9 +85,9 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `lagre oppdaterer eksisterende meldekort med samme id`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort(mottatt = null, locale = null)
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = null, locale = null)
                 lagreMeldekort(helper, meldekort)
 
                 val oppdatertMeldekort = meldekort.copy(
@@ -106,9 +104,9 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `lagrer korrigering`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort(mottatt = null)
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = null)
 
                 lagreMeldekort(helper, meldekort)
 
@@ -131,9 +129,9 @@ class LagreMeldekortRepoTest {
     inner class Deaktiver {
         @Test
         fun `deaktiver setter deaktivert`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort(mottatt = null)
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = null)
 
                 lagreMeldekort(helper, meldekort)
                 repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
@@ -151,9 +149,9 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `deaktiver setter deaktivert tidspunkt`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort(mottatt = null)
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = null)
 
                 lagreMeldekort(helper, meldekort)
                 repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
@@ -171,9 +169,9 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `deaktivert meldekort vises ikke i hentNesteMeldekortTilUtfylling`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort(mottatt = null)
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = null)
 
                 lagreMeldekort(helper, meldekort)
 
@@ -189,11 +187,11 @@ class LagreMeldekortRepoTest {
     inner class HentMeldekortForKjedeId {
         @Test
         fun `returnerer alle meldekort i riktig rekkefølge etter versjon`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val fnr = Fnr.random()
+                val fnr = helper.nesteFnr()
                 val sakId = SakId.random()
-                val saksnummer = "SAK-123"
+                val saksnummer = helper.nesteSaksnummer()
                 val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
                 val kjedeId = MeldeperiodeKjedeId.fraPeriode(periode)
 
@@ -247,9 +245,9 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `returnerer tom kjede for ukjent kjedeId`() {
-            withMigratedDb { helper ->
+            withMigratedDb(runIsolated = false) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val meldekort = ObjectMother.meldekort()
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr())
 
                 lagreMeldekort(helper, meldekort)
 
@@ -264,10 +262,10 @@ class LagreMeldekortRepoTest {
 
         @Test
         fun `filtrerer på fnr`() {
-            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+            withMigratedDb(runIsolated = false, clock = fixedClockAt(1.mars(2025))) { helper ->
                 val repo = helper.meldekortPostgresRepo
-                val fnr1 = Fnr.random()
-                val fnr2 = Fnr.random()
+                val fnr1 = helper.nesteFnr()
+                val fnr2 = helper.nesteFnr()
                 val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
                 val meldekort1 = ObjectMother.meldekort(

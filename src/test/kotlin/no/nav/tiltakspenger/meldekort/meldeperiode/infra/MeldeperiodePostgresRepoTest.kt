@@ -2,10 +2,8 @@ package no.nav.tiltakspenger.meldekort.meldeperiode.infra
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
-import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
@@ -14,7 +12,7 @@ class MeldeperiodePostgresRepoTest {
 
     @Test
     fun `lagrer og henter meldeperiode for id`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(fixedClock))
             helper.sakPostgresRepo.lagre(
                 ObjectMother.sak(
@@ -32,14 +30,14 @@ class MeldeperiodePostgresRepoTest {
 
     @Test
     fun `hentForId returnerer null for ukjent id`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             helper.meldeperiodeRepo.hentForId(MeldeperiodeId.random()) shouldBe null
         }
     }
 
     @Test
     fun `henter siste meldeperiode for en kjede`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val meldeperiode1 = ObjectMother.meldeperiode(opprettet = nå(fixedClock))
             helper.sakPostgresRepo.lagre(
                 ObjectMother.sak(
@@ -66,7 +64,7 @@ class MeldeperiodePostgresRepoTest {
 
     @Test
     fun `henter ikke siste meldeperiode for en kjede med feil fnr`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(fixedClock))
             helper.sakPostgresRepo.lagre(
                 ObjectMother.sak(
@@ -77,15 +75,15 @@ class MeldeperiodePostgresRepoTest {
             )
             helper.meldeperiodeRepo.lagre(meldeperiode)
 
-            helper.meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(meldeperiode.kjedeId, Fnr.random()) shouldBe null
+            helper.meldeperiodeRepo.hentSisteMeldeperiodeForMeldeperiodeKjedeId(meldeperiode.kjedeId, helper.nesteFnr()) shouldBe null
         }
     }
 
     @Test
     fun `henter meldeperiode for en gitt periode`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val periode = ObjectMother.periode()
-            val fnr = Fnr.random()
+            val fnr = helper.nesteFnr()
             val meldeperiode = ObjectMother.meldeperiode(periode = periode, fnr = fnr, opprettet = nå(fixedClock))
             helper.sakPostgresRepo.lagre(
                 ObjectMother.sak(
@@ -102,7 +100,7 @@ class MeldeperiodePostgresRepoTest {
 
     @Test
     fun `henter nyeste versjon for en gitt periode`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val periode = ObjectMother.periode()
             val meldeperiode1 = ObjectMother.meldeperiode(periode = periode, opprettet = nå(fixedClock), versjon = 1)
             val meldeperiode2 = ObjectMother.meldeperiode(
@@ -129,7 +127,7 @@ class MeldeperiodePostgresRepoTest {
 
     @Test
     fun `henter ikke meldeperiode for periode med feil fnr`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val periode = ObjectMother.periode()
             val meldeperiode = ObjectMother.meldeperiode(periode = periode, opprettet = nå(fixedClock))
             helper.sakPostgresRepo.lagre(
@@ -141,13 +139,13 @@ class MeldeperiodePostgresRepoTest {
             )
             helper.meldeperiodeRepo.lagre(meldeperiode)
 
-            helper.meldeperiodeRepo.hentMeldeperiodeForPeriode(periode, Fnr.random()) shouldBe null
+            helper.meldeperiodeRepo.hentMeldeperiodeForPeriode(periode, helper.nesteFnr()) shouldBe null
         }
     }
 
     @Test
     fun `hentForSakId returnerer nyeste versjon per periode sortert på fra-og-med`() {
-        withMigratedDb { helper ->
+        withMigratedDb(runIsolated = false) { helper ->
             val førstePeriode = ObjectMother.periode()
             val meldeperiode1Versjon1 = ObjectMother.meldeperiode(periode = førstePeriode, opprettet = nå(fixedClock), versjon = 1)
             val meldeperiode1Versjon2 = ObjectMother.meldeperiode(
