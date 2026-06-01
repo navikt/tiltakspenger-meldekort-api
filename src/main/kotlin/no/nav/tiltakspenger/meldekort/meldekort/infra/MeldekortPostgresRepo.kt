@@ -167,7 +167,12 @@ class MeldekortPostgresRepo(
         }
     }
 
-    /** Henter neste meldekort som kan utfylles av bruker */
+    /**
+     * Henter neste meldekort som kan utfylles av bruker.
+     *
+     * Et meldekort regnes ikke som manglende innsending dersom det finnes et meldekortvedtak for kjeden
+     * (f.eks. papirmeldekort behandlet i saksbehandling-api). Da skal ikke bruker måtte fylle det ut på nytt.
+     */
     override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
@@ -181,7 +186,14 @@ class MeldekortPostgresRepo(
                         where s.fnr = :fnr
                             and mk.mottatt is null
                             and mk.deaktivert is null
-                        order by fra_og_med, versjon desc
+                            and not exists (
+                                select 1
+                                from meldekortvedtak mv
+                                cross join lateral jsonb_array_elements(mv.meldeperiodebehandlinger) as mb
+                                where mv.sak_id = mp.sak_id
+                                  and mb->>'meldeperiodeKjedeId' = mp.kjede_id
+                            )
+                        order by mp.fra_og_med, mp.versjon desc
                         limit 1
                     """,
                     "fnr" to fnr.verdi,
@@ -191,7 +203,11 @@ class MeldekortPostgresRepo(
     }
 
     /**
-     * OBS! Denne dupliserer logikken som finnes for [BrukersMeldekort.klarTilInnsending]. Om den ene endres så burde begge endres
+     * OBS! Denne dupliserer logikken som finnes for [BrukersMeldekort.klarTilInnsending].
+     * Om den ene endres så burde begge endres.
+     *
+     * Et meldekort regnes ikke som klart til innsending dersom det finnes et meldekortvedtak for kjeden
+     * (f.eks. papirmeldekort behandlet i saksbehandling-api). Da skal ikke bruker måtte fylle det ut på nytt.
      */
     override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<BrukersMeldekort> {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -206,6 +222,13 @@ class MeldekortPostgresRepo(
                           AND mb.mottatt IS NULL
                           AND mb.deaktivert IS NULL
                           AND mp.kan_fylles_ut_fra_og_med <= :tidsgrense
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM meldekortvedtak mv
+                              CROSS JOIN LATERAL jsonb_array_elements(mv.meldeperiodebehandlinger) AS mb_vedtak
+                              WHERE mv.sak_id = mp.sak_id
+                                AND mb_vedtak->>'meldeperiodeKjedeId' = mp.kjede_id
+                          )
                         ORDER BY mp.fra_og_med;
                     """,
                     "fnr" to fnr.verdi,

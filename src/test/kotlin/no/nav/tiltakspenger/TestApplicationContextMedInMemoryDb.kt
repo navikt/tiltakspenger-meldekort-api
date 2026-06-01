@@ -22,12 +22,13 @@ open class TestApplicationContextMedInMemoryDb(
     override val texasClient: TexasClientFakeTest = TexasClientFakeTest(),
     override val sessionFactory: TestSessionFactory = TestSessionFactory(),
 ) : TestApplicationContext(clock) {
-    private val meldekortRepoFake = MeldekortRepoFake(clock)
+    private val meldekortvedtakRepoFake = MeldekortvedtakRepoFake()
+    override val meldekortvedtakRepo = meldekortvedtakRepoFake
+    private val meldekortRepoFake = MeldekortRepoFake(clock, meldekortvedtakRepoFake)
     override val meldekortRepo = meldekortRepoFake
     override val varselRepo = VarselRepoFake(clock)
     override val meldeperiodeRepo = MeldeperiodeRepoFake()
-    override val meldekortvedtakRepo = MeldekortvedtakRepoFake()
-    override val sakRepo = SakRepoFake(meldeperiodeRepo, meldekortvedtakRepo)
+    override val sakRepo = SakRepoFake(meldeperiodeRepo, meldekortvedtakRepoFake)
     override val brukerSakRepo = BrukerSakRepoFake(sakRepo)
     override val sakVarselRepo = SakVarselRepoFake(sakRepo)
     override val varselMeldekortRepo = VarselMeldekortRepoFake(meldekortRepoFake, meldeperiodeRepo)

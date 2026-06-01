@@ -16,6 +16,7 @@ import java.time.LocalDateTime
 
 class MeldekortRepoFake(
     private val clock: Clock,
+    private val meldekortvedtakRepoFake: MeldekortvedtakRepoFake = MeldekortvedtakRepoFake(),
 ) : MeldekortRepo {
     private val data = Atomic(mutableMapOf<MeldekortId, BrukersMeldekort>())
 
@@ -56,7 +57,7 @@ class MeldekortRepoFake(
 
     override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return data.get().values.filter {
-            it.fnr == fnr && it.deaktivert == null && it.mottatt == null
+            it.fnr == fnr && it.deaktivert == null && it.mottatt == null && !harMeldekortvedtakForKjede(it)
         }
             .sortedWith(compareBy<BrukersMeldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
             .firstOrNull()
@@ -131,11 +132,21 @@ class MeldekortRepoFake(
 
     override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<BrukersMeldekort> {
         return data.get().values
-            .filter { it.fnr == fnr && it.klarTilInnsending(clock) }
+            .filter { it.fnr == fnr && it.klarTilInnsending(clock) && !harMeldekortvedtakForKjede(it) }
             .sortedBy { it.meldeperiode.periode.fraOgMed }
     }
 
     fun hentAlleForSakId(sakId: no.nav.tiltakspenger.libs.common.SakId): List<BrukersMeldekort> {
         return data.get().values.filter { it.sakId == sakId }
+    }
+
+    /**
+     * Speiler ekskluderingen i [no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo]:
+     * En kjede mangler ikke innsending dersom det finnes et meldekortvedtak (f.eks. papirmeldekort) for kjeden.
+     */
+    private fun harMeldekortvedtakForKjede(meldekort: BrukersMeldekort): Boolean {
+        return meldekortvedtakRepoFake.hentForSakId(meldekort.sakId).any { vedtak ->
+            vedtak.meldeperiodebehandlinger.any { it.meldeperiodeKjedeId == meldekort.meldeperiode.kjedeId }
+        }
     }
 }

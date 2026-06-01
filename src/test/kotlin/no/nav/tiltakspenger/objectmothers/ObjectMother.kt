@@ -13,6 +13,7 @@ import java.time.temporal.TemporalAdjusters
 object ObjectMother :
     ArenaMother,
     MeldekortMother,
+    MeldekortvedtakMother,
     MeldeperiodeMother,
     SakMother {
     /**

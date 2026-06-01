@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.lagreMeldekortvedtak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -319,6 +320,45 @@ class HentMeldekortRepoTest {
                 repo.hentNesteMeldekortTilUtfylling(fnr) shouldBe brukersMeldekort
             }
         }
+
+        @Test
+        fun `returnerer ikke meldekort når kjeden har et meldekortvedtak (papirmeldekort)`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+                val meldekort = ObjectMother.meldekort(mottatt = null, periode = periode)
+
+                lagreMeldekort(helper, meldekort)
+                lagreMeldekortvedtak(helper, ObjectMother.meldekortvedtak(meldekort = meldekort))
+
+                repo.hentNesteMeldekortTilUtfylling(meldekort.fnr) shouldBe null
+            }
+        }
+
+        @Test
+        fun `hopper over kjede med meldekortvedtak og returnerer neste kjede uten vedtak`() {
+            withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val fnr = Fnr.random()
+                val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+
+                val førsteMeldekort = ObjectMother.meldekort(fnr = fnr, mottatt = null, periode = førstePeriode)
+                val andreMeldekort = ObjectMother.meldekort(
+                    fnr = fnr,
+                    sakId = førsteMeldekort.sakId,
+                    saksnummer = førsteMeldekort.saksnummer,
+                    mottatt = null,
+                    periode = førstePeriode.plus14Dager(),
+                )
+
+                lagreMeldekort(helper, førsteMeldekort, andreMeldekort)
+
+                // Bruker har "papirmeldekort" (meldekortvedtak) for første kjede
+                lagreMeldekortvedtak(helper, ObjectMother.meldekortvedtak(meldekort = førsteMeldekort))
+
+                repo.hentNesteMeldekortTilUtfylling(fnr) shouldBe andreMeldekort
+            }
+        }
     }
 
     @Nested
@@ -548,6 +588,26 @@ class HentMeldekortRepoTest {
                 repo.deaktiver(meldekort.id)
 
                 repo.hentAlleMeldekortKlarTilInnsending(fnr) shouldBe emptyList()
+            }
+        }
+
+        @Test
+        fun `returnerer ikke meldekort for kjede som har et meldekortvedtak (papirmeldekort)`() {
+            val clock = fixedClockAt(1.mars(2025))
+            withMigratedDb(clock = clock) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val fnr = Fnr.random()
+                val nærmesteSøndag = LocalDate.now(clock).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+
+                val medVedtak = lagMeldekort(fnr, nærmesteSøndag.minusWeeks(2))
+                val utenVedtak = lagMeldekort(fnr, nærmesteSøndag)
+
+                lagreMeldekort(helper, medVedtak, utenVedtak)
+                lagreMeldekortvedtak(helper, ObjectMother.meldekortvedtak(meldekort = medVedtak))
+
+                val resultat = repo.hentAlleMeldekortKlarTilInnsending(fnr)
+
+                resultat.map { it.id } shouldBe listOf(utenVedtak.id)
             }
         }
 
