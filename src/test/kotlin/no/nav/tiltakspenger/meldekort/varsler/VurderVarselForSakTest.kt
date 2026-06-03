@@ -14,7 +14,7 @@ import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import org.junit.jupiter.api.Test

@@ -4,8 +4,8 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
 
 interface SakMother {

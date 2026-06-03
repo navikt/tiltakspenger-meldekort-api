@@ -11,6 +11,9 @@ import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
 import no.nav.tiltakspenger.meldekort.landingsside.FellesLandingssideService
+import no.nav.tiltakspenger.meldekort.landingsside.LandingssideMeldekort
+import no.nav.tiltakspenger.meldekort.landingsside.LandingssideStatus
+import java.time.LocalDateTime
 
 /**
  * Endepunkter som kalles fra felles landingsside for meldekortytelsene.
@@ -26,9 +29,6 @@ fun Routing.landingssideModule(applicationContext: ApplicationContext) {
     }
 }
 
-/**
- * Response DTO: [LandingssideStatusDTO]
- */
 internal fun Route.fellesLandingssideRoutes(
     fellesLandingssideService: FellesLandingssideService,
 ) {
@@ -43,5 +43,42 @@ internal fun Route.fellesLandingssideRoutes(
         }
 
         call.respond(HttpStatusCode.OK, landingssideStatus.tilLandingssideStatusDTO())
+    }
+}
+
+private fun LandingssideStatus.tilLandingssideStatusDTO(): LandingssideStatusDTO {
+    return LandingssideStatusDTO(
+        harInnsendteMeldekort = harInnsendteMeldekort,
+        meldekortTilUtfylling = meldekortTilUtfylling.map { it.tilLandingssideMeldekortDTO() },
+        redirectUrl = redirectUrl,
+    )
+}
+
+private fun LandingssideMeldekort.tilLandingssideMeldekortDTO(): LandingssideStatusDTO.LandingssideMeldekortDTO {
+    return LandingssideStatusDTO.LandingssideMeldekortDTO(
+        kanSendesFra = kanSendesFra,
+    )
+}
+
+/**
+ *  [harInnsendteMeldekort] true dersom brukeren har sendt inn meldekort tidligere
+ *  [meldekortTilUtfylling] Liste over meldekort som er klare til utfylling
+ *  [redirectUrl] URL som lenkes til fra felles landingsside
+ */
+private data class LandingssideStatusDTO(
+    val harInnsendteMeldekort: Boolean,
+    val meldekortTilUtfylling: List<LandingssideMeldekortDTO>,
+    val redirectUrl: String,
+) {
+    /**
+     *  [kanSendesFra] Tidspunkt der meldekortet blir tilgjengelig for innsending
+     *  [kanFyllesUtFra] Vi tillater utfylling og innsending fra samme tidspunkt
+     *  [fristForInnsending] Vi har ingen frist for innsending nå, men dette kommer antagelig på plass når samtlige brukere er ute av Arena
+     */
+    data class LandingssideMeldekortDTO(
+        val kanSendesFra: LocalDateTime,
+    ) {
+        val kanFyllesUtFra: LocalDateTime = kanSendesFra
+        val fristForInnsending: LocalDateTime? = null
     }
 }

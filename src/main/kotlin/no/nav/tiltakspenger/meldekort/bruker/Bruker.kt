@@ -1,8 +1,8 @@
 package no.nav.tiltakspenger.meldekort.bruker
 
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 
 sealed interface Bruker {
     data class MedSak(

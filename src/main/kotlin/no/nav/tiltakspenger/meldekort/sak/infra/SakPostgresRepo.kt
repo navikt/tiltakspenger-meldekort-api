@@ -8,10 +8,12 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.arena.infra.tilArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.arena.infra.tilDb
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.MeldekortvedtakPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendStatus
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import java.time.Clock

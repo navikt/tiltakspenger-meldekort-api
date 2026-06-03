@@ -24,6 +24,8 @@ import no.nav.tiltakspenger.meldekort.journalføring.PdfgenClient
 import no.nav.tiltakspenger.meldekort.journalføring.infra.DokarkivClientImpl
 import no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenClientImpl
 import no.nav.tiltakspenger.meldekort.landingsside.FellesLandingssideService
+import no.nav.tiltakspenger.meldekort.landingsside.LandingssideRepo
+import no.nav.tiltakspenger.meldekort.landingsside.infra.repo.LandingssidePostgresRepo
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.SendMeldekortService
@@ -126,6 +128,13 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
+    open val landingssideRepo: LandingssideRepo by lazy {
+        LandingssidePostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+            clock = clock,
+        )
+    }
+
     open val sakVarselRepo: SakVarselRepo by lazy {
         SakVarselPostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
@@ -151,8 +160,7 @@ open class ApplicationContext(val clock: Clock) {
 
     open val fellesLandingssideService: FellesLandingssideService by lazy {
         FellesLandingssideService(
-            meldekortRepo = meldekortRepo,
-            brukerSakRepo = brukerSakRepo,
+            landingssideRepo = landingssideRepo,
             arenaMeldekortClient = arenaMeldekortClient,
             redirectUrl = Configuration.meldekortFrontendUrl,
         )

@@ -155,7 +155,9 @@ kover {
                 includes {
                     classes(
                         "no.nav.tiltakspenger.meldekort.**.*PostgresRepo*",
+                        "no.nav.tiltakspenger.meldekort.arena.**",
                         "no.nav.tiltakspenger.meldekort.bruker.**",
+                        "no.nav.tiltakspenger.meldekort.landingsside.**",
                         "no.nav.tiltakspenger.meldekort.meldekortvedtak.**",
                         "no.nav.tiltakspenger.meldekort.sak.**",
                     )
@@ -169,7 +171,7 @@ kover {
             }
             verify {
                 onCheck = true
-                rule("postgres repos, bruker, meldekortvedtak and sak packages have full line coverage") {
+                rule("postgres repos, arena, bruker, landingsside, meldekortvedtak and sak packages have full line coverage") {
                     bound {
                         minValue = 100
                         coverageUnits = CoverageUnit.LINE

@@ -20,6 +20,10 @@ data class ArenaMeldekortOversikt(
         return meldekortListe?.any { it.erTiltakspengerMeldekort() } ?: false
     }
 
+    fun harInnsendteTiltakspengerMeldekort(): Boolean {
+        return meldekortListe?.any { it.erTiltakspengerMeldekort() && it.mottattDato != null } ?: false
+    }
+
     fun hentTiltakspengerMeldekort(): NonEmptyList<ArenaMeldekort>? {
         return meldekortListe
             ?.filter { it.erTiltakspengerMeldekort() }

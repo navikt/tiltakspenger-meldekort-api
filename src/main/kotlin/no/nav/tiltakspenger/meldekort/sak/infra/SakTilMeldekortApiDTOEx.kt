@@ -7,7 +7,7 @@ import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
-import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldeperiodebehandling
@@ -15,9 +15,7 @@ import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldeperiodebehandlingDag
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Reduksjon
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
-import java.time.LocalDate
 
 /**
  * Mapping fra DTO mottatt fra saksbehandling-api til domeneobjekt.

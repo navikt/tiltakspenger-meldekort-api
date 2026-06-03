@@ -1,6 +1,6 @@
-package no.nav.tiltakspenger.meldekort.sak.infra
+package no.nav.tiltakspenger.meldekort.arena.infra
 
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 
 private enum class ArenaMeldekortStatusDb {
     UKJENT,

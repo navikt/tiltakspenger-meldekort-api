@@ -1,13 +1,13 @@
 package no.nav.tiltakspenger.meldekort.landingsside
 
-import java.time.LocalDateTime
-
 data class LandingssideStatus(
     val harInnsendteMeldekort: Boolean,
     val meldekortTilUtfylling: List<LandingssideMeldekort>,
     val redirectUrl: String,
-)
-
-data class LandingssideMeldekort(
-    val kanSendesFra: LocalDateTime,
-)
+) {
+    init {
+        require(meldekortTilUtfylling == meldekortTilUtfylling.sortert()) {
+            "Meldekort til utfylling må være sortert på kanSendesFra"
+        }
+    }
+}

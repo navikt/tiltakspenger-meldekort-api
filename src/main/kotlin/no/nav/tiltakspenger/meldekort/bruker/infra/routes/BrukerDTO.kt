@@ -1,9 +1,9 @@
 package no.nav.tiltakspenger.meldekort.bruker.infra.routes
 
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.bruker.Bruker
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import java.time.Clock
 
 /**

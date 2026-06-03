@@ -2,22 +2,25 @@ package no.nav.tiltakspenger.meldekort.landingsside.infra.routes
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.meldekort.infra.Configuration
-import no.nav.tiltakspenger.meldekort.landingsside.infra.routes.LandingssideStatusDTO.LandingssideMeldekortDTO
+import no.nav.tiltakspenger.meldekort.landingsside.infra.routes.LandingssideStatusResponsDTO.LandingssideMeldekortDTO
 import java.time.LocalDateTime
 
-fun LandingssideStatusDTO.shouldBe(
+internal fun LandingssideStatusResponsDTO.shouldBe(
     harInnsendteMeldekort: Boolean = false,
     meldekortTilUtfylling: List<LocalDateTime> = emptyList(),
     redirectUrl: String = Configuration.meldekortFrontendUrl,
 ) {
     this.shouldBe(
-        LandingssideStatusDTO(
+        LandingssideStatusResponsDTO(
             harInnsendteMeldekort = harInnsendteMeldekort,
             meldekortTilUtfylling = meldekortTilUtfylling.map {
-                LandingssideMeldekortDTO(it)
+                LandingssideMeldekortDTO(
+                    kanSendesFra = it,
+                    kanFyllesUtFra = it,
+                    fristForInnsending = null,
+                )
             },
-            redirectUrl = "http://localhost:2223/tiltakspenger/meldekort",
+            redirectUrl = redirectUrl,
         ),
     )
-    this.redirectUrl shouldBe redirectUrl
 }

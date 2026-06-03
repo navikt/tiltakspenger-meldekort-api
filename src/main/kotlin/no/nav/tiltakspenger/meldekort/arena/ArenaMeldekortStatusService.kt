@@ -4,7 +4,6 @@ import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
 
 class ArenaMeldekortStatusService(
