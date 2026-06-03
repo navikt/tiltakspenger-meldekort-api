@@ -3,7 +3,7 @@ package no.nav.tiltakspenger.meldekort.sak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
 
 interface SakRepo {

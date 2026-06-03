@@ -4,9 +4,9 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.meldekort.arena.infra.tilArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.bruker.BrukerSakRepo
 import no.nav.tiltakspenger.meldekort.bruker.SakForBruker
-import no.nav.tiltakspenger.meldekort.sak.infra.tilArenaMeldekortStatus
 
 class BrukerSakPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,

@@ -13,6 +13,7 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortMedSisteMeldep
 import java.time.Clock
 
 /**
+ * Henter tp-sak eller arena-sak. Frontend skiller på disse 2 for å vise forskjellige tekster/lenker.
  * Response DTO: [AlleMeldekortDTO]
  */
 fun Route.hentInnsendteMeldekortRoute(

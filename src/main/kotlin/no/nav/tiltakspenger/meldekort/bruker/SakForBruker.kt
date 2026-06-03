@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.bruker
 
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 
 /**
  * Read-modell for sak-data som bruker-pakka trenger.

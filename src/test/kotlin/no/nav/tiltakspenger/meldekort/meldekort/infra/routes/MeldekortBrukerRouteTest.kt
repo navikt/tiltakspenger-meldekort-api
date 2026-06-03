@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.ArenaMeldekortStatusDTO
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerMedSakRequest
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
@@ -21,7 +22,6 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.Meldeko
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.korrigerMeldekortRequest
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.tilMeldeperiodeDTO
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.infra.tilSak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto

@@ -68,7 +68,7 @@ class TmsVarselClientImplTest {
     }
 
     @Test
-    fun `byggVarsel publiserer ikke noe paa Kafka`() {
+    fun `byggVarsel publiserer ikke noe på Kafka`() {
         val payloads = mutableListOf<String>()
         val client = nyClient(payloads)
 

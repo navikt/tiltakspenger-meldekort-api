@@ -7,11 +7,10 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.desember
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.Periode
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.infra.Configuration
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
-import no.nav.tiltakspenger.meldekort.landingsside.infra.routes.LandingssideStatusDTO.LandingssideMeldekortDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.sendInnNesteMeldekort
-import no.nav.tiltakspenger.meldekort.sak.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.infra.routes.mottaSakRequest
 import no.nav.tiltakspenger.objectmothers.ObjectMother.arenaMeldekort
 import no.nav.tiltakspenger.objectmothers.ObjectMother.arenaMeldekortOversikt
@@ -185,9 +184,9 @@ class LandingssideStatusRouteTest {
             val body = landingssideStatusRequest(fnr = fnr.verdi)!!
             val dto = body.meldekortTilUtfylling.single()
 
-            val forventet = LandingssideMeldekortDTO(kanSendesFra = meldekort.meldeperiode.kanFyllesUtFraOgMed)
-            dto.kanSendesFra shouldBe forventet.kanSendesFra
-            dto.kanFyllesUtFra shouldBe forventet.kanSendesFra
+            val forventetKanSendesFra = meldekort.meldeperiode.kanFyllesUtFraOgMed
+            dto.kanSendesFra shouldBe forventetKanSendesFra
+            dto.kanFyllesUtFra shouldBe forventetKanSendesFra
             dto.fristForInnsending shouldBe null
         }
     }
@@ -264,6 +263,42 @@ class LandingssideStatusRouteTest {
             body.shouldBe(
                 harInnsendteMeldekort = true,
                 meldekortTilUtfylling = emptyList(),
+                redirectUrl = Configuration.meldekortFrontendUrl,
+            )
+        }
+    }
+
+    @Test
+    fun `feil ved henting av aktive arena-meldekort gir 404 når bruker ikke har sak`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val fnr = tac.nesteFnr()
+            tac.arenaMeldekortClient.leggTilMeldekortFeil(fnr)
+
+            landingssideStatusRequest(
+                fnr = fnr.verdi,
+                forventetStatus = HttpStatusCode.NotFound,
+                forventetBody = "",
+                forventetContentType = null,
+            )
+        }
+    }
+
+    @Test
+    fun `feil ved henting av historiske arena-meldekort ignoreres`() = runTest {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val fnr = tac.nesteFnr()
+            val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
+            tac.arenaMeldekortClient.leggTilMeldekort(
+                fnr,
+                arenaMeldekortOversikt(meldekortListe = listOf(arenaMeldekort(periode = periode))),
+            )
+            tac.arenaMeldekortClient.leggTilHistoriskMeldekortFeil(fnr)
+
+            val body = landingssideStatusRequest(fnr = fnr.verdi)!!
+
+            body.shouldBe(
+                harInnsendteMeldekort = false,
+                meldekortTilUtfylling = listOf(periode.tilOgMed.minusDays(1).atStartOfDay()),
                 redirectUrl = Configuration.meldekortFrontendUrl,
             )
         }

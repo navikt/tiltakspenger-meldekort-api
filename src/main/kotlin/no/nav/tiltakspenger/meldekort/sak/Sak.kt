@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.sak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.VedtakId
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 
@@ -38,10 +39,4 @@ data class Sak(
             }
         }
     }
-}
-
-enum class ArenaMeldekortStatus {
-    UKJENT,
-    HAR_MELDEKORT,
-    HAR_IKKE_MELDEKORT,
 }
