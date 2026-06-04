@@ -18,7 +18,7 @@ import kotlin.collections.set
 class MeldeperiodeRepoFake : MeldeperiodeRepo {
     private val data = Atomic(mutableMapOf<MeldeperiodeId, Meldeperiode>())
 
-    override fun lagre(meldeperiode: Meldeperiode, sessionContext: SessionContext?) {
+    fun lagre(meldeperiode: Meldeperiode) {
         data.get()[meldeperiode.id] = meldeperiode
     }
 

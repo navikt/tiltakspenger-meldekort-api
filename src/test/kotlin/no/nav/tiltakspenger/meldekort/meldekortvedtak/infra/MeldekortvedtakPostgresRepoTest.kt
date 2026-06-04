@@ -2,6 +2,8 @@ package no.nav.tiltakspenger.meldekort.meldekortvedtak.infra
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreMeldekortvedtak
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -24,7 +26,7 @@ class MeldekortvedtakPostgresRepoTest {
             val periode1 = ObjectMother.periode()
             val periode2 = periode1.plus14Dager()
             val sak = ObjectMother.sak(fnr = helper.nesteFnr())
-            helper.sakPostgresRepo.lagre(sak)
+            helper.lagreSak(sak)
 
             val vedtak = Meldekortvedtak(
                 id = VedtakId.random(),
@@ -66,7 +68,7 @@ class MeldekortvedtakPostgresRepoTest {
                 ),
             )
 
-            helper.meldekortvedtakPostgresRepo.lagre(vedtak, null)
+            helper.lagreMeldekortvedtak(vedtak, null)
 
             val hentet = helper.sessionFactory.withSession { session ->
                 MeldekortvedtakPostgresRepo.hentForSakId(sak.id, session)
@@ -80,7 +82,7 @@ class MeldekortvedtakPostgresRepoTest {
     fun `hentForSakId returnerer tom liste for sak uten vedtak`() {
         withMigratedDb(runIsolated = false) { helper ->
             val sak = ObjectMother.sak(fnr = helper.nesteFnr())
-            helper.sakPostgresRepo.lagre(sak)
+            helper.lagreSak(sak)
 
             val hentet = helper.sessionFactory.withSession { session ->
                 MeldekortvedtakPostgresRepo.hentForSakId(sak.id, session)
@@ -95,7 +97,7 @@ class MeldekortvedtakPostgresRepoTest {
         withMigratedDb(runIsolated = false) { helper ->
             val periode = ObjectMother.periode()
             val sak = ObjectMother.sak(fnr = helper.nesteFnr())
-            helper.sakPostgresRepo.lagre(sak)
+            helper.lagreSak(sak)
 
             val tidligereVedtak = Meldekortvedtak(
                 id = VedtakId.random(),
@@ -147,8 +149,8 @@ class MeldekortvedtakPostgresRepoTest {
                 ),
             )
 
-            helper.meldekortvedtakPostgresRepo.lagre(tidligereVedtak, null)
-            helper.meldekortvedtakPostgresRepo.lagre(seinereVedtak, null)
+            helper.lagreMeldekortvedtak(tidligereVedtak, null)
+            helper.lagreMeldekortvedtak(seinereVedtak, null)
 
             val hentet = helper.sessionFactory.withSession { session ->
                 MeldekortvedtakPostgresRepo.hentForSakId(sak.id, session)
@@ -163,7 +165,7 @@ class MeldekortvedtakPostgresRepoTest {
         withMigratedDb(runIsolated = false) { helper ->
             val periode = ObjectMother.periode()
             val sak = ObjectMother.sak(fnr = helper.nesteFnr())
-            helper.sakPostgresRepo.lagre(sak)
+            helper.lagreSak(sak)
 
             val vedtak = Meldekortvedtak(
                 id = VedtakId.random(),
@@ -190,8 +192,8 @@ class MeldekortvedtakPostgresRepoTest {
                 ),
             )
 
-            helper.meldekortvedtakPostgresRepo.lagre(vedtak, null)
-            helper.meldekortvedtakPostgresRepo.lagre(vedtak, null)
+            helper.lagreMeldekortvedtak(vedtak, null)
+            helper.lagreMeldekortvedtak(vedtak, null)
 
             val hentet = helper.sessionFactory.withSession { session ->
                 MeldekortvedtakPostgresRepo.hentForSakId(sak.id, session)

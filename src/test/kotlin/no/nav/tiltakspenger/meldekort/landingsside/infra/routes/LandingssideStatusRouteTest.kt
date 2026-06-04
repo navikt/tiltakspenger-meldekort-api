@@ -11,7 +11,7 @@ import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.infra.Configuration
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.sendInnNesteMeldekort
-import no.nav.tiltakspenger.meldekort.sak.infra.routes.mottaSakRequest
+import no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottaSakRequest
 import no.nav.tiltakspenger.objectmothers.ObjectMother.arenaMeldekort
 import no.nav.tiltakspenger.objectmothers.ObjectMother.arenaMeldekortOversikt
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto

@@ -2,6 +2,8 @@ package no.nav.tiltakspenger.meldekort.landingsside.infra.repo
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreMeldeperiode
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.desember
@@ -30,7 +32,7 @@ class LandingssidePostgresRepoTest {
     fun `hentSak returnerer sak uten meldekort`() {
         withMigratedDb(runIsolated = false) { helper ->
             val fnr = helper.nesteFnr()
-            helper.sakPostgresRepo.lagre(
+            helper.lagreSak(
                 ObjectMother.sak(
                     fnr = fnr,
                     saksnummer = helper.nesteSaksnummer(),
@@ -51,7 +53,7 @@ class LandingssidePostgresRepoTest {
     fun `hentSak mapper HAR_MELDEKORT fra db`() {
         withMigratedDb(runIsolated = false) { helper ->
             val fnr = helper.nesteFnr()
-            helper.sakPostgresRepo.lagre(
+            helper.lagreSak(
                 ObjectMother.sak(
                     fnr = fnr,
                     saksnummer = helper.nesteSaksnummer(),
@@ -192,10 +194,10 @@ class LandingssidePostgresRepoTest {
             )
             // Papirmeldekort behandles i saksbehandling-api og kommer hit kun som meldekortvedtak.
             // Det finnes altså en sak og en meldeperiode, men ingen meldekort_bruker-rad.
-            helper.sakPostgresRepo.lagre(
+            helper.lagreSak(
                 ObjectMother.sak(id = sakId, fnr = fnr, saksnummer = saksnummer),
             )
-            helper.meldeperiodeRepo.lagre(papirmeldekort.meldeperiode)
+            helper.lagreMeldeperiode(papirmeldekort.meldeperiode)
             lagreMeldekortvedtak(helper, ObjectMother.meldekortvedtak(papirmeldekort))
 
             helper.landingssidePostgresRepo.hentSak(fnr) shouldBe LandingssideSak(

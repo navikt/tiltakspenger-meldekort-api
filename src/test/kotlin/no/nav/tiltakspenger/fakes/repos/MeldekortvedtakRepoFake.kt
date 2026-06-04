@@ -5,12 +5,11 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
-import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldekortvedtakRepo
 
-class MeldekortvedtakRepoFake : MeldekortvedtakRepo {
+class MeldekortvedtakRepoFake {
     private val data = Atomic(mutableMapOf<VedtakId, Meldekortvedtak>())
 
-    override fun lagre(meldekortvedtak: Meldekortvedtak, sessionContext: SessionContext?) {
+    fun lagre(meldekortvedtak: Meldekortvedtak, sessionContext: SessionContext? = null) {
         data.get()[meldekortvedtak.id] = meldekortvedtak
     }
 

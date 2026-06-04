@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.meldekort.infra.routes
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.lagreMeldekortvedtak
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
@@ -11,7 +12,7 @@ import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContextAndPostgres
-import no.nav.tiltakspenger.meldekort.sak.infra.routes.mottaSakRequest
+import no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottaSakRequest
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
 
@@ -55,9 +56,8 @@ class NesteMeldekortNårKjedenErHåndtertTest {
                 val senereMeldekort = tac.meldekortRepo
                     .hentMeldekortForKjedeId(MeldeperiodeKjedeId.fraPeriode(senerePeriode), sak.fnr)
                     .first()
-                tac.meldekortvedtakRepo.lagre(
+                tac.lagreMeldekortvedtak(
                     ObjectMother.meldekortvedtak(meldekort = senereMeldekort, opprettet = nå(tac.clock)),
-                    sessionContext = null,
                 )
 
                 // 2. Andre søknadsbehandling, som dekker en tidligere periode (uten vedtak).

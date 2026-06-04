@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.sak
+package no.nav.tiltakspenger.meldekort.mottak
 
 import arrow.core.Either
 import arrow.core.left
@@ -9,32 +9,32 @@ import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.meldekort.tilOppdatertMeldekort
-import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldekortvedtakRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.MeldeperiodeRepo
+import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
 
-class LagreFraSaksbehandlingService(
+class MottakFraSaksbehandlingService(
     private val sakRepo: SakRepo,
     private val meldeperiodeRepo: MeldeperiodeRepo,
     private val meldekortRepo: MeldekortRepo,
-    private val meldekortvedtakRepo: MeldekortvedtakRepo,
     private val sakVarselRepo: SakVarselRepo,
+    private val mottakRepo: MottakRepo,
     private val sessionFactory: SessionFactory,
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun lagre(sak: Sak): Either<FeilVedMottakAvSak, Unit> {
-        val sakId = sak.id
+    fun lagre(mottattSak: MottattSak): Either<FeilVedMottakAvSak, Unit> {
+        val sakId = mottattSak.id
         logger.debug { "Mottok sak med id $sakId fra saksbehandling" }
         val eksisterendeSak = sakRepo.hent(sakId)
 
-        if (eksisterendeSak != null && eksisterendeSak.erLik(sak)) {
+        if (eksisterendeSak != null && mottattSak.erLik(eksisterendeSak)) {
             logger.info { "Sak $sakId finnes allerede med samme data" }
             return FeilVedMottakAvSak.FinnesUtenDiff.left()
         }
 
-        val meldeperioderForLagring = sak.meldeperioder.filter { nyMeldeperiode ->
+        val meldeperioderForLagring = mottattSak.meldeperioder.filter { nyMeldeperiode ->
             val meldeperiodeId = nyMeldeperiode.id
 
             val eksisterendeMeldeperiode = meldeperiodeRepo.hentForId(meldeperiodeId) ?: return@filter true
@@ -49,17 +49,17 @@ class LagreFraSaksbehandlingService(
         }
 
         val eksisterendeVedtakIder = eksisterendeSak?.meldekortvedtakIdListe?.toSet() ?: emptySet()
-        val nyeVedtak = sak.meldekortvedtak.filter { it.id !in eksisterendeVedtakIder }
+        val nyeVedtak = mottattSak.meldekortvedtak.filter { it.id !in eksisterendeVedtakIder }
 
         Either.catch {
             sessionFactory.withTransactionContext { tx ->
                 Either.catch {
                     if (eksisterendeSak == null) {
                         logger.info { "Lagrer ny sak med id $sakId" }
-                        sakRepo.lagre(sak, tx)
+                        mottakRepo.lagreSak(mottattSak, tx)
                     } else {
                         logger.info { "Oppdaterer sak med id $sakId" }
-                        sakRepo.oppdater(sak, tx)
+                        mottakRepo.oppdaterSak(mottattSak, tx)
                     }
                 }.onLeft {
                     throw RuntimeException("Feil under lagring eller oppdatering av sak.", it)
@@ -76,7 +76,7 @@ class LagreFraSaksbehandlingService(
                 nyeVedtak.forEach { vedtak ->
                     Either.catch {
                         // Logger positiv/negativ i repoet.
-                        meldekortvedtakRepo.lagre(vedtak, tx)
+                        mottakRepo.lagreMeldekortvedtak(vedtak, tx)
                     }.onLeft {
                         throw RuntimeException("Feil under lagring av meldekortvedtak ${vedtak.id}", it)
                     }
@@ -98,9 +98,8 @@ class LagreFraSaksbehandlingService(
 
         val nyttMeldekort = lagMeldekort(meldeperiode, eksisterendeMeldekort.lastOrNull())
 
-        meldeperiodeRepo.lagre(meldeperiode, tx)
+        mottakRepo.lagreMeldeperiode(meldeperiode, tx)
         logger.info { "Lagret meldeperiode ${meldeperiode.id}" }
-
         aktiveMeldekort.forEach {
             meldekortRepo.deaktiver(it.id, tx)
             logger.info { "Deaktiverte meldekortet ${it.id}" }

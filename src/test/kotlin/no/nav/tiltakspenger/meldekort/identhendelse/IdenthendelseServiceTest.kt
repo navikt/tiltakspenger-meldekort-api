@@ -3,6 +3,8 @@ package no.nav.tiltakspenger.meldekort.identhendelse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreMeldeperiode
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -24,8 +26,8 @@ class IdenthendelseServiceTest {
                 saksnummer = meldeperiode.saksnummer,
                 meldeperioder = listOf(meldeperiode),
             )
-            helper.sakPostgresRepo.lagre(sak)
-            helper.meldeperiodeRepo.lagre(meldeperiode)
+            helper.lagreSak(sak)
+            helper.lagreMeldeperiode(meldeperiode)
 
             identhendelseService.behandleIdenthendelse(
                 Identhendelse(

@@ -30,15 +30,15 @@ import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.SendMeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo
-import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldekortvedtakRepo
-import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.MeldekortvedtakPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.microfrontend.AktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.microfrontend.InaktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.microfrontend.TmsMikrofrontendClient
 import no.nav.tiltakspenger.meldekort.microfrontend.infra.TmsMikrofrontendClientImpl
-import no.nav.tiltakspenger.meldekort.sak.LagreFraSaksbehandlingService
+import no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService
+import no.nav.tiltakspenger.meldekort.mottak.MottakRepo
+import no.nav.tiltakspenger.meldekort.mottak.infra.MottakPostgresRepo
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
 import no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo
@@ -98,12 +98,6 @@ open class ApplicationContext(val clock: Clock) {
 
     open val varselRepo: VarselRepo by lazy { varselPostgresRepo }
 
-    open val meldekortvedtakRepo: MeldekortvedtakRepo by lazy {
-        MeldekortvedtakPostgresRepo(
-            sessionFactory = sessionFactory as PostgresSessionFactory,
-        )
-    }
-
     open val meldekortRepo: MeldekortRepo by lazy {
         MeldekortPostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
@@ -137,6 +131,12 @@ open class ApplicationContext(val clock: Clock) {
 
     open val sakVarselRepo: SakVarselRepo by lazy {
         SakVarselPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
+
+    open val mottakRepo: MottakRepo by lazy {
+        MottakPostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
         )
     }
@@ -271,13 +271,13 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    open val lagreFraSaksbehandlingService by lazy {
-        LagreFraSaksbehandlingService(
+    open val mottakFraSaksbehandlingService by lazy {
+        MottakFraSaksbehandlingService(
             sakRepo = sakRepo,
             meldeperiodeRepo = meldeperiodeRepo,
             meldekortRepo = meldekortRepo,
-            meldekortvedtakRepo = meldekortvedtakRepo,
             sakVarselRepo = sakVarselRepo,
+            mottakRepo = mottakRepo,
             sessionFactory = sessionFactory,
         )
     }

@@ -20,52 +20,6 @@ import java.time.LocalDate
 class MeldeperiodePostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
 ) : MeldeperiodeRepo {
-    override fun lagre(
-        meldeperiode: Meldeperiode,
-        sessionContext: SessionContext?,
-    ) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                    insert into meldeperiode (
-                        id,
-                        kjede_id,
-                        versjon,
-                        sak_id,
-                        opprettet,
-                        fra_og_med,
-                        til_og_med,
-                        maks_antall_dager_for_periode,
-                        gir_rett,
-                        kan_fylles_ut_fra_og_med
-                    ) values (
-                        :id,
-                        :kjede_id,
-                        :versjon,
-                        :sak_id,
-                        :opprettet,
-                        :fra_og_med,
-                        :til_og_med,
-                        :maks_antall_dager_for_periode,
-                        to_jsonb(:gir_rett::jsonb),
-                        :kan_fylles_ut_fra_og_med
-                    )
-                    """,
-                    "id" to meldeperiode.id.toString(),
-                    "kjede_id" to meldeperiode.kjedeId.toString(),
-                    "versjon" to meldeperiode.versjon,
-                    "sak_id" to meldeperiode.sakId.toString(),
-                    "opprettet" to meldeperiode.opprettet,
-                    "fra_og_med" to meldeperiode.periode.fraOgMed,
-                    "til_og_med" to meldeperiode.periode.tilOgMed,
-                    "maks_antall_dager_for_periode" to meldeperiode.maksAntallDagerForPeriode,
-                    "gir_rett" to meldeperiode.girRett.toDbJson(),
-                    "kan_fylles_ut_fra_og_med" to meldeperiode.kanFyllesUtFraOgMed,
-                ).asUpdate,
-            )
-        }
-    }
 
     override fun hentForId(id: MeldeperiodeId, sessionContext: SessionContext?): Meldeperiode? {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -118,16 +72,6 @@ class MeldeperiodePostgresRepo(
                     "fnr" to fnr.verdi,
                 ).map { fromRow(it) }.asSingle,
             )
-        }
-    }
-
-    private fun Map<LocalDate, Boolean>.toDbJson(): String {
-        return entries.joinToString(
-            prefix = "{",
-            postfix = "}",
-            separator = ",",
-        ) { (date, value) ->
-            "\"${date}\": $value"
         }
     }
 

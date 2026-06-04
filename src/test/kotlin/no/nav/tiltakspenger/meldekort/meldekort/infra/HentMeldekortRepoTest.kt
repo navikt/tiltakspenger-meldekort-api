@@ -2,6 +2,8 @@ package no.nav.tiltakspenger.meldekort.meldekort.infra
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreMeldekortvedtak
+import no.nav.tiltakspenger.lagreMeldeperiode
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
@@ -396,7 +398,7 @@ class HentMeldekortRepoTest {
                     versjon = 2,
                     opprettet = nå(fixedClock).plusHours(1),
                 )
-                helper.meldeperiodeRepo.lagre(oppdatertMeldeperiode)
+                helper.lagreMeldeperiode(oppdatertMeldeperiode)
 
                 val repo = helper.meldekortPostgresRepo
                 val fnr = meldekort.fnr

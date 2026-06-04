@@ -1,44 +1,29 @@
-package no.nav.tiltakspenger.meldekort.sak.infra.routes
+package no.nav.tiltakspenger.meldekort.mottak.infra.routes
 
 import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
-import io.ktor.server.routing.Routing
 import io.ktor.server.routing.post
-import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
-import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
-import no.nav.tiltakspenger.meldekort.sak.FeilVedMottakAvSak
-import no.nav.tiltakspenger.meldekort.sak.LagreFraSaksbehandlingService
-import no.nav.tiltakspenger.meldekort.sak.infra.tilSak
+import no.nav.tiltakspenger.meldekort.mottak.FeilVedMottakAvSak
+import no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService
+import no.nav.tiltakspenger.meldekort.mottak.infra.tilMottattSak
 
 /**
  * Endepunkter som kalles fra saksbehandling-api.
  * Eier auth-provider [IdentityProvider.AZUREAD] og path-prefiks `/saksbehandling`.
- */
-fun Routing.saksbehandlingModule(applicationContext: ApplicationContext) {
-    authenticate(IdentityProvider.AZUREAD.value) {
-        route("/saksbehandling") {
-            sakFraSaksbehandlingRoute(
-                lagreFraSaksbehandlingService = applicationContext.lagreFraSaksbehandlingService,
-            )
-        }
-    }
-}
-
-/**
+ *
  * Request DTO: [SakTilMeldekortApiDTO]
  */
-internal fun Route.sakFraSaksbehandlingRoute(
-    lagreFraSaksbehandlingService: LagreFraSaksbehandlingService,
+internal fun Route.mottakFraSaksbehandlingRoute(
+    mottakFraSaksbehandlingService: MottakFraSaksbehandlingService,
 ) {
     val logger = KotlinLogging.logger {}
 
@@ -55,8 +40,8 @@ internal fun Route.sakFraSaksbehandlingRoute(
             return@post
         }
 
-        val sak = Either.catch {
-            sakDTO.tilSak()
+        val mottattSak = Either.catch {
+            sakDTO.tilMottattSak()
         }.getOrElse {
             with("Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ${sakDTO.sakId}. Antall meldeperioder: ${sakDTO.meldeperioder.size}. Antall meldekortvedtak: ${sakDTO.meldekortvedtak.size}.") {
                 logger.warn { "$this. Se meldekort-api sin sikkerlogg (GCP) for detaljer." }
@@ -66,7 +51,7 @@ internal fun Route.sakFraSaksbehandlingRoute(
             return@post
         }
 
-        lagreFraSaksbehandlingService.lagre(sak).onLeft {
+        mottakFraSaksbehandlingService.lagre(mottattSak).onLeft {
             when (it) {
                 FeilVedMottakAvSak.FinnesUtenDiff -> call.respond(
                     message = "Saken var allerede lagret med samme data",

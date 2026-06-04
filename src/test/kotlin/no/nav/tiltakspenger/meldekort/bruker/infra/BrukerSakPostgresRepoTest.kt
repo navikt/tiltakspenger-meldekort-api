@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.bruker.infra
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.bruker.SakForBruker
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -18,7 +19,7 @@ class BrukerSakPostgresRepoTest {
                 harSoknadUnderBehandling = true,
                 kanSendeInnHelgForMeldekort = true,
             )
-            helper.sakPostgresRepo.lagre(sak)
+            helper.lagreSak(sak)
 
             helper.brukerSakPostgresRepo.hentForBruker(sak.fnr) shouldBe SakForBruker(
                 fnr = sak.fnr,
@@ -36,7 +37,7 @@ class BrukerSakPostgresRepoTest {
                 fnr = helper.nesteFnr(),
                 arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
             )
-            helper.sakPostgresRepo.lagre(sak)
+            helper.lagreSak(sak)
             helper.sakPostgresRepo.oppdaterArenaStatus(sak.id, ArenaMeldekortStatus.HAR_IKKE_MELDEKORT)
 
             helper.brukerSakPostgresRepo.hentForBruker(sak.fnr)?.arenaMeldekortStatus shouldBe
@@ -57,7 +58,7 @@ class BrukerSakPostgresRepoTest {
             val gammeltFnr = helper.nesteFnr()
             val nyttFnr = helper.nesteFnr()
             val sak = ObjectMother.sak(fnr = gammeltFnr)
-            helper.sakPostgresRepo.lagre(sak)
+            helper.lagreSak(sak)
 
             helper.sakPostgresRepo.oppdaterFnr(gammeltFnr, nyttFnr)
 

@@ -5,6 +5,8 @@ import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreMeldeperiode
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -15,6 +17,7 @@ import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
+import no.nav.tiltakspenger.oppdaterSak
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -26,8 +29,8 @@ class SakPostgresRepoTest {
     private val utenforOffset = offset.minusMonths(1)
     private fun lagreSak(helper: TestDataHelper, vararg saker: Sak) {
         saker.forEach {
-            helper.sakPostgresRepo.lagre(it)
-            it.meldeperioder.forEach { mp -> helper.meldeperiodeRepo.lagre(mp) }
+            helper.lagreSak(it)
+            it.meldeperioder.forEach { mp -> helper.lagreMeldeperiode(mp) }
         }
     }
 
@@ -102,7 +105,7 @@ class SakPostgresRepoTest {
                     harSoknadUnderBehandling = false,
                     kanSendeInnHelgForMeldekort = false,
                 )
-                helper.sakPostgresRepo.lagre(opprinneligSak)
+                helper.lagreSak(opprinneligSak)
 
                 val oppdatertSak = opprinneligSak.copy(
                     fnr = Fnr.random(),
@@ -110,7 +113,7 @@ class SakPostgresRepoTest {
                     harSoknadUnderBehandling = true,
                     kanSendeInnHelgForMeldekort = true,
                 )
-                helper.sakPostgresRepo.oppdater(oppdatertSak)
+                helper.oppdaterSak(oppdatertSak)
 
                 helper.sakPostgresRepo.hent(opprinneligSak.id) shouldBe oppdatertSak.copy(
                     arenaMeldekortStatus = opprinneligSak.arenaMeldekortStatus,
@@ -124,7 +127,7 @@ class SakPostgresRepoTest {
                 val gammeltFnr = Fnr.random()
                 val nyttFnr = Fnr.random()
                 val sak = ObjectMother.sak(fnr = gammeltFnr)
-                helper.sakPostgresRepo.lagre(sak)
+                helper.lagreSak(sak)
 
                 helper.sakPostgresRepo.oppdaterFnr(gammeltFnr, nyttFnr)
 
@@ -141,7 +144,7 @@ class SakPostgresRepoTest {
                     harSoknadUnderBehandling = true,
                     kanSendeInnHelgForMeldekort = true,
                 )
-                helper.sakPostgresRepo.lagre(sak)
+                helper.lagreSak(sak)
 
                 helper.sakPostgresRepo.oppdaterArenaStatus(sak.id, ArenaMeldekortStatus.HAR_IKKE_MELDEKORT)
 
@@ -155,7 +158,7 @@ class SakPostgresRepoTest {
         fun `oppdaterStatusForMicrofrontend setter aktiv og inaktiv status`() {
             withMigratedDb(runIsolated = false) { helper ->
                 val sak = ObjectMother.sak(fnr = helper.nesteFnr())
-                helper.sakPostgresRepo.lagre(sak)
+                helper.lagreSak(sak)
 
                 helper.sakPostgresRepo.oppdaterStatusForMicrofrontend(sak.id, aktiv = true)
                 hentMicrofrontendStatus(helper, sak.id) shouldBe MicrofrontendStatus.AKTIV

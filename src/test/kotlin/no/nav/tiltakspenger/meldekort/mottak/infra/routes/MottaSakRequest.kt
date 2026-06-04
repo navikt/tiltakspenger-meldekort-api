@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.sak.infra.routes
+package no.nav.tiltakspenger.meldekort.mottak.infra.routes
 
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -22,7 +22,7 @@ import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 
 /**
- * Route: [no.nav.tiltakspenger.meldekort.sak.infra.routes.sakFraSaksbehandlingRoute]
+ * Route: [no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottakFraSaksbehandlingRoute]
  * Request DTO: [no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO]
  */
 suspend fun ApplicationTestBuilder.mottaSakRequest(
@@ -58,7 +58,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
 }
 
 /**
- * Route: [no.nav.tiltakspenger.meldekort.sak.infra.routes.sakFraSaksbehandlingRoute]
+ * Route: [no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottakFraSaksbehandlingRoute]
  * Request DTO: [no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO]
  */
 suspend fun ApplicationTestBuilder.mottaSakRequest(

@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.meldekortvedtak.infra
 
 import no.nav.tiltakspenger.db.TestDataHelper
+import no.nav.tiltakspenger.lagreMeldekortvedtak
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
 
 /**
@@ -11,6 +12,6 @@ import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
  */
 fun lagreMeldekortvedtak(helper: TestDataHelper, vararg meldekortvedtak: Meldekortvedtak) {
     meldekortvedtak.forEach {
-        helper.meldekortvedtakPostgresRepo.lagre(it, null)
+        helper.lagreMeldekortvedtak(it, null)
     }
 }

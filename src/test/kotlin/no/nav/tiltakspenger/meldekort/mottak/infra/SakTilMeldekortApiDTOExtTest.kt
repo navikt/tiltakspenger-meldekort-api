@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.sak.infra
+package no.nav.tiltakspenger.meldekort.mottak.infra
 
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -51,7 +51,7 @@ class SakTilMeldekortApiDTOExtTest {
 
         val sakDto = ObjectMother.sakDTO(meldekortvedtak = listOf(meldekortvedtakDTO))
 
-        val sak = sakDto.tilSak()
+        val sak = sakDto.tilMottattSak()
 
         sak.meldekortvedtak shouldHaveSize 1
         val vedtak = sak.meldekortvedtak.single()
@@ -94,7 +94,7 @@ class SakTilMeldekortApiDTOExtTest {
             ),
         )
 
-        val sak = ObjectMother.sakDTO(meldekortvedtak = listOf(meldekortvedtakDTO)).tilSak()
+        val sak = ObjectMother.sakDTO(meldekortvedtak = listOf(meldekortvedtakDTO)).tilMottattSak()
 
         sak.meldekortvedtak.single().meldeperiodebehandlinger.single().brukersMeldekortId shouldBe null
     }

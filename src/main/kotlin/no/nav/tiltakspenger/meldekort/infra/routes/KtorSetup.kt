@@ -20,8 +20,9 @@ import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.brukerModule
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
 import no.nav.tiltakspenger.meldekort.landingsside.infra.routes.landingssideModule
+import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.meldekortModule
 import no.nav.tiltakspenger.meldekort.microfrontend.infra.routes.microfrontendModule
-import no.nav.tiltakspenger.meldekort.sak.infra.routes.saksbehandlingModule
+import no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottakModule
 import org.slf4j.event.Level
 
 const val CALL_ID_MDC_KEY = "call-id"
@@ -56,7 +57,8 @@ fun Application.ktorSetup(
     routing {
         healthRoutes()
 
-        saksbehandlingModule(applicationContext)
+        mottakModule(applicationContext)
+        meldekortModule(applicationContext)
         brukerModule(applicationContext)
         microfrontendModule(applicationContext)
         landingssideModule(applicationContext)
