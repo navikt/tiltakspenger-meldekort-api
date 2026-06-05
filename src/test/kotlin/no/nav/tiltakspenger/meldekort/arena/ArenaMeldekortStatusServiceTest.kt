@@ -86,8 +86,8 @@ class ArenaMeldekortStatusServiceTest {
     @Test
     fun `oppdaterArenaMeldekortStatusForSaker oppdaterer kun saker med kjent status`() = runTest {
         val sakRepo = SakRepoFake()
-        val sakMedMeldekort = ObjectMother.sak()
-        val sakUtenAvklaring = ObjectMother.sak()
+        val sakMedMeldekort = ObjectMother.mottattSak()
+        val sakUtenAvklaring = ObjectMother.mottattSak()
         sakRepo.lagre(sakMedMeldekort)
         sakRepo.lagre(sakUtenAvklaring)
 
@@ -105,7 +105,7 @@ class ArenaMeldekortStatusServiceTest {
     @Test
     fun `feil under oppdatering av en sak svelges og stopper ikke jobben`() = runTest {
         val sakRepo = SakRepoFake()
-        val sak = ObjectMother.sak()
+        val sak = ObjectMother.mottattSak()
         sakRepo.lagre(sak)
         val kastendeRepo = object : SakRepo by sakRepo {
             override fun oppdaterArenaStatus(id: SakId, arenaStatus: ArenaMeldekortStatus, sessionContext: SessionContext?): Unit =

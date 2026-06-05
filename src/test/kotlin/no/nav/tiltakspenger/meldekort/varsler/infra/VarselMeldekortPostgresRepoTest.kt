@@ -3,6 +3,9 @@ package no.nav.tiltakspenger.meldekort.varsler.infra
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreMeldekortvedtak
+import no.nav.tiltakspenger.lagreMeldeperiode
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -101,7 +104,7 @@ class VarselMeldekortPostgresRepoTest {
                     meldeperiode = meldeperiodeV1,
                 )
                 lagreSak(helper, meldeperiodeV1)
-                helper.meldeperiodeRepo.lagre(meldeperiodeV1)
+                helper.lagreMeldeperiode(meldeperiodeV1)
                 helper.meldekortPostgresRepo.lagre(meldekortV1)
 
                 // Versjon 2 (revurdering) uten innsendt meldekort
@@ -117,7 +120,7 @@ class VarselMeldekortPostgresRepoTest {
                     mottatt = null,
                     meldeperiode = meldeperiodeV2,
                 )
-                helper.meldeperiodeRepo.lagre(meldeperiodeV2)
+                helper.lagreMeldeperiode(meldeperiodeV2)
                 helper.meldekortPostgresRepo.lagre(meldekortV2)
 
                 val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
@@ -141,7 +144,7 @@ class VarselMeldekortPostgresRepoTest {
                     opprettet = nå(fixedClock),
                 )
                 lagreSak(helper, meldeperiodeV1)
-                helper.meldeperiodeRepo.lagre(meldeperiodeV1)
+                helper.lagreMeldeperiode(meldeperiodeV1)
                 helper.meldekortPostgresRepo.lagre(
                     ObjectMother.meldekort(
                         sakId = sakId,
@@ -157,7 +160,7 @@ class VarselMeldekortPostgresRepoTest {
                     versjon = 2,
                     opprettet = nå(fixedClock).plusHours(1),
                 )
-                helper.meldeperiodeRepo.lagre(meldeperiodeV2)
+                helper.lagreMeldeperiode(meldeperiodeV2)
                 helper.meldekortPostgresRepo.lagre(
                     ObjectMother.meldekort(
                         sakId = sakId,
@@ -192,7 +195,7 @@ class VarselMeldekortPostgresRepoTest {
                     antallDagerForPeriode = 0,
                 )
                 lagreSak(helper, meldeperiode)
-                helper.meldeperiodeRepo.lagre(meldeperiode)
+                helper.lagreMeldeperiode(meldeperiode)
 
                 val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
@@ -215,7 +218,7 @@ class VarselMeldekortPostgresRepoTest {
                     opprettet = nå(fixedClock),
                 )
                 lagreSak(helper, meldeperiode)
-                helper.meldeperiodeRepo.lagre(meldeperiode)
+                helper.lagreMeldeperiode(meldeperiode)
 
                 val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
@@ -249,7 +252,7 @@ class VarselMeldekortPostgresRepoTest {
                     meldeperiode = meldeperiode,
                 )
                 lagreSak(helper, meldeperiode)
-                helper.meldeperiodeRepo.lagre(meldeperiode)
+                helper.lagreMeldeperiode(meldeperiode)
                 helper.meldekortPostgresRepo.lagre(meldekort)
 
                 val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
@@ -278,7 +281,7 @@ class VarselMeldekortPostgresRepoTest {
                     opprettet = nå(fixedClock),
                 )
                 lagreSak(helper, meldeperiodeV1)
-                helper.meldeperiodeRepo.lagre(meldeperiodeV1)
+                helper.lagreMeldeperiode(meldeperiodeV1)
                 val meldekortV1 = ObjectMother.meldekort(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -297,7 +300,7 @@ class VarselMeldekortPostgresRepoTest {
                     girRett = førstePeriode.tilDager().associateWith { false },
                     maksAntallDagerForPeriode = 0,
                 )
-                helper.meldeperiodeRepo.lagre(meldeperiodeV2)
+                helper.lagreMeldeperiode(meldeperiodeV2)
 
                 val resultat = helper.varselMeldekortPostgresRepo.hentFørsteKjedeSomManglerInnsending(sakId)
 
@@ -402,9 +405,9 @@ class VarselMeldekortPostgresRepoTest {
                     opprettet = nå(fixedClock),
                 )
                 lagreSak(helper, meldeperiode)
-                helper.meldeperiodeRepo.lagre(meldeperiode)
+                helper.lagreMeldeperiode(meldeperiode)
 
-                helper.meldekortvedtakPostgresRepo.lagre(
+                helper.lagreMeldekortvedtak(
                     lagVedtak(sakId, meldeperiode.id, meldeperiode.kjedeId, førstePeriode),
                     null,
                 )
@@ -430,7 +433,7 @@ class VarselMeldekortPostgresRepoTest {
                 )
                 lagreMeldekort(helper, meldekort)
 
-                helper.meldekortvedtakPostgresRepo.lagre(
+                helper.lagreMeldekortvedtak(
                     lagVedtak(sakId, meldekort.meldeperiode.id, meldekort.meldeperiode.kjedeId, førstePeriode),
                     null,
                 )
@@ -466,7 +469,7 @@ class VarselMeldekortPostgresRepoTest {
                 lagreMeldekort(helper, innsendtMeldekort, uinnsendtMeldekort)
 
                 // Vedtak kun for første kjede - andre kjede skal fortsatt varsles
-                helper.meldekortvedtakPostgresRepo.lagre(
+                helper.lagreMeldekortvedtak(
                     lagVedtak(
                         sakId,
                         innsendtMeldekort.meldeperiode.id,
@@ -499,8 +502,8 @@ class VarselMeldekortPostgresRepoTest {
 
                 // Vedtak på en annen sak som refererer samme kjedeId skal ikke påvirke
                 val annenSak = ObjectMother.sak(fnr = helper.nesteFnr(), saksnummer = helper.nesteSaksnummer())
-                helper.sakPostgresRepo.lagre(annenSak)
-                helper.meldekortvedtakPostgresRepo.lagre(
+                helper.lagreSak(annenSak)
+                helper.lagreMeldekortvedtak(
                     lagVedtak(
                         annenSak.id,
                         meldekort.meldeperiode.id,
@@ -593,7 +596,7 @@ private fun lagVedtak(
 private fun lagreSak(helper: TestDataHelper, vararg meldeperioder: Meldeperiode) {
     val meldeperiode = requireNotNull(meldeperioder.firstOrNull()) { "Må ha minst én meldeperiode" }
     if (helper.sakPostgresRepo.hent(meldeperiode.sakId) == null) {
-        helper.sakPostgresRepo.lagre(
+        helper.lagreSak(
             ObjectMother.sak(
                 id = meldeperiode.sakId,
                 saksnummer = meldeperiode.saksnummer,

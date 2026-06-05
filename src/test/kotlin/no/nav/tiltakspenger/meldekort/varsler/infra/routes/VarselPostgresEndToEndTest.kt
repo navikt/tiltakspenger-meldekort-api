@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import no.nav.tiltakspenger.lagreMeldekortvedtak
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.VedtakId
@@ -30,7 +31,7 @@ import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldeperiodebehandling
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldeperiodebehandlingDag
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Reduksjon
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
-import no.nav.tiltakspenger.meldekort.sak.infra.routes.mottaSakRequest
+import no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottaSakRequest
 import no.nav.tiltakspenger.meldekort.varsler.AktiverVarslerService
 import no.nav.tiltakspenger.meldekort.varsler.Varsel
 import no.nav.tiltakspenger.meldekort.varsler.VarselRepo
@@ -194,7 +195,7 @@ class VarselPostgresEndToEndTest {
             // 2. Meldekortvedtak for kjeden – bruker har aldri sendt inn meldekort selv,
             //    så brukersMeldekortId = null (f.eks. automatisk behandlet vedtak).
             val kjedeId = MeldeperiodeKjedeId.fraPeriode(periode)
-            tac.meldekortvedtakRepo.lagre(
+            tac.lagreMeldekortvedtak(
                 Meldekortvedtak(
                     id = VedtakId.random(),
                     sakId = sak.id,
@@ -219,7 +220,6 @@ class VarselPostgresEndToEndTest {
                         ),
                     ),
                 ),
-                sessionContext = null,
             )
 
             // 3. Andre rammevedtak: meldeperiode v2 for samme kjede (uendret rett).

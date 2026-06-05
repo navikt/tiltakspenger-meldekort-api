@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.sak.infra
+package no.nav.tiltakspenger.meldekort.mottak.infra
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
@@ -7,7 +7,6 @@ import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
-import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldeperiodebehandling
@@ -15,14 +14,14 @@ import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldeperiodebehandlingDag
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Reduksjon
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyllesUtFraOgMed
-import no.nav.tiltakspenger.meldekort.sak.Sak
+import no.nav.tiltakspenger.meldekort.mottak.MottattSak
 
 /**
- * Mapping fra DTO mottatt fra saksbehandling-api til domeneobjekt.
+ * Mapping fra DTO mottatt fra saksbehandling-api til skrivemodellen [MottattSak].
  *
  * Bor i infra-laget for å unngå at domenet kjenner til ekstern DTO/transportstruktur.
  */
-fun SakTilMeldekortApiDTO.tilSak(): Sak {
+fun SakTilMeldekortApiDTO.tilMottattSak(): MottattSak {
     val sakId = SakId.fromString(this.sakId)
     val fnr = Fnr.fromString(this.fnr)
 
@@ -70,12 +69,11 @@ fun SakTilMeldekortApiDTO.tilSak(): Sak {
         )
     }
 
-    return Sak(
+    return MottattSak(
         id = sakId,
         fnr = fnr,
         saksnummer = this.saksnummer,
         meldeperioder = meldeperioder,
-        arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
         harSoknadUnderBehandling = harSoknadUnderBehandling,
         kanSendeInnHelgForMeldekort = kanSendeInnHelgForMeldekort,
         meldekortvedtak = meldekortvedtak,

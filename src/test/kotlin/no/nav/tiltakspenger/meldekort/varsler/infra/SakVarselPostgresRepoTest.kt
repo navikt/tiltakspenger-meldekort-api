@@ -5,6 +5,8 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreMeldeperiode
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -155,8 +157,8 @@ class SakVarselPostgresRepoTest {
 
     private fun lagreSak(helper: TestDataHelper, vararg saker: Sak) {
         saker.forEach { sak ->
-            helper.sakPostgresRepo.lagre(sak)
-            sak.meldeperioder.forEach { meldeperiode -> helper.meldeperiodeRepo.lagre(meldeperiode) }
+            helper.lagreSak(sak)
+            sak.meldeperioder.forEach { meldeperiode -> helper.lagreMeldeperiode(meldeperiode) }
         }
     }
 

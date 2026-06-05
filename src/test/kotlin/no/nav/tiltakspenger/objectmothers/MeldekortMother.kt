@@ -1,6 +1,8 @@
 package no.nav.tiltakspenger.objectmothers
 
 import no.nav.tiltakspenger.TestApplicationContext
+import no.nav.tiltakspenger.lagreMeldeperiode
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
@@ -131,7 +133,7 @@ fun TestApplicationContext.lagMeldekort(
     )
 
     if (sakRepo.hent(meldekort.sakId) == null) {
-        sakRepo.lagre(
+        lagreSak(
             ObjectMother.sak(
                 id = meldekort.sakId,
                 saksnummer = meldekort.saksnummer,
@@ -139,7 +141,7 @@ fun TestApplicationContext.lagMeldekort(
             ),
         )
     }
-    meldeperiodeRepo.lagre(meldekort.meldeperiode)
+    lagreMeldeperiode(meldekort.meldeperiode)
     meldekortRepo.lagre(meldekort)
 
     return meldekort

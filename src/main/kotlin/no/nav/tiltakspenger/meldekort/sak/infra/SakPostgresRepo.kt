@@ -23,65 +23,6 @@ class SakPostgresRepo(
     private val clock: Clock,
 ) : SakRepo {
 
-    override fun lagre(
-        sak: Sak,
-        sessionContext: SessionContext?,
-    ) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                    insert into sak (
-                        id,
-                        saksnummer,
-                        fnr,
-                        arena_meldekort_status,
-                        har_soknad_under_behandling,
-                        kan_sende_inn_helg_for_meldekort
-                    ) values (
-                        :id,
-                        :saksnummer,
-                        :fnr,
-                        :arena_meldekort_status,
-                        :har_soknad_under_behandling,
-                        :kan_sende_inn_helg_for_meldekort
-                    )
-                    """,
-                    "id" to sak.id.toString(),
-                    "saksnummer" to sak.saksnummer,
-                    "fnr" to sak.fnr.verdi,
-                    "arena_meldekort_status" to sak.arenaMeldekortStatus.tilDb(),
-                    "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
-                    "kan_sende_inn_helg_for_meldekort" to sak.kanSendeInnHelgForMeldekort,
-                ).asUpdate,
-            )
-        }
-    }
-
-    /** Oppdaterer fnr, søknadsbehandlingstatus, og kanSendeInnHelgForMeldekort på en sak */
-    override fun oppdater(
-        sak: Sak,
-        sessionContext: SessionContext?,
-    ) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                    update sak set 
-                        fnr = :fnr,
-                        har_soknad_under_behandling = :har_soknad_under_behandling,
-                        kan_sende_inn_helg_for_meldekort = :kan_sende_inn_helg_for_meldekort
-                    where id = :id
-                    """,
-                    "id" to sak.id.toString(),
-                    "fnr" to sak.fnr.verdi,
-                    "har_soknad_under_behandling" to sak.harSoknadUnderBehandling,
-                    "kan_sende_inn_helg_for_meldekort" to sak.kanSendeInnHelgForMeldekort,
-                ).asUpdate,
-            )
-        }
-    }
-
     override fun oppdaterFnr(
         gammeltFnr: Fnr,
         nyttFnr: Fnr,

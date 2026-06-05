@@ -9,6 +9,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
@@ -496,7 +497,7 @@ class VarselPostgresRepoTest {
         saksnummer: String,
         fnr: Fnr,
     ) {
-        helper.sakPostgresRepo.lagre(
+        helper.lagreSak(
             ObjectMother.sak(
                 id = sakId,
                 saksnummer = saksnummer,

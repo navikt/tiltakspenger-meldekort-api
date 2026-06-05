@@ -9,9 +9,11 @@ import no.nav.tiltakspenger.fakes.repos.LandingssideRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldekortvedtakRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldeperiodeRepoFake
+import no.nav.tiltakspenger.fakes.repos.MottakRepoFake
 import no.nav.tiltakspenger.fakes.repos.SakRepoFake
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.persistering.test.common.TestSessionFactory
+import no.nav.tiltakspenger.meldekort.mottak.MottakRepo
 import java.time.Clock
 
 /**
@@ -24,14 +26,16 @@ open class TestApplicationContextMedInMemoryDb(
 ) : TestApplicationContext(clock) {
     override val texasClient: TexasClientFakeTest = TexasClientFakeTest()
     private val meldekortvedtakRepoFake = MeldekortvedtakRepoFake()
-    override val meldekortvedtakRepo = meldekortvedtakRepoFake
     private val meldekortRepoFake = MeldekortRepoFake(clock, meldekortvedtakRepoFake)
     override val meldekortRepo = meldekortRepoFake
     override val varselRepo = VarselRepoFake(clock)
-    override val meldeperiodeRepo = MeldeperiodeRepoFake()
-    override val sakRepo = SakRepoFake(meldeperiodeRepo, meldekortvedtakRepoFake)
+    private val meldeperiodeRepoFake = MeldeperiodeRepoFake()
+    override val meldeperiodeRepo = meldeperiodeRepoFake
+    private val sakRepoFake = SakRepoFake(meldeperiodeRepoFake, meldekortvedtakRepoFake)
+    override val sakRepo = sakRepoFake
+    override val mottakRepo: MottakRepo = MottakRepoFake(sakRepoFake, meldeperiodeRepoFake, meldekortvedtakRepoFake)
     override val brukerSakRepo = BrukerSakRepoFake(sakRepo)
     override val landingssideRepo = LandingssideRepoFake(sakRepo, meldekortRepoFake, meldekortvedtakRepoFake)
     override val sakVarselRepo = SakVarselRepoFake(sakRepo)
-    override val varselMeldekortRepo = VarselMeldekortRepoFake(meldekortRepoFake, meldeperiodeRepo)
+    override val varselMeldekortRepo = VarselMeldekortRepoFake(meldekortRepoFake, meldeperiodeRepoFake)
 }

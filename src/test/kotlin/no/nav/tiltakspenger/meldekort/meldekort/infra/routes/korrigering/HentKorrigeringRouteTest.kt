@@ -9,7 +9,7 @@ import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.sendInnNesteMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.toDto
-import no.nav.tiltakspenger.meldekort.sak.infra.routes.mottaSakRequest
+import no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottaSakRequest
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
 import org.junit.jupiter.api.Test

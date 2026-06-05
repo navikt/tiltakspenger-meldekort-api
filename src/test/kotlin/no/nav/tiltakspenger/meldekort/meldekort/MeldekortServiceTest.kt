@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.meldekort
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
@@ -110,7 +111,7 @@ class MeldekortServiceTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val meldekortService = tac.meldekortService
             val meldeperiode = ObjectMother.meldeperiode(periode = gyldigPeriode, opprettet = nå(tac.clock))
-            tac.sakRepo.lagre(
+            tac.lagreSak(
                 ObjectMother.sak(
                     id = meldeperiode.sakId,
                     saksnummer = meldeperiode.saksnummer,

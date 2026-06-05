@@ -59,6 +59,19 @@ data class Meldeperiode(
     companion object {
         private val TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR = LocalTime.of(15, 0)
 
+        /**
+         * Validerer at meldeperiodene er sortert etter periode og versjon.
+         * Brukes som invariant av både lesemodellen [no.nav.tiltakspenger.meldekort.sak.Sak] og
+         * skrivemodellen [no.nav.tiltakspenger.meldekort.mottak.MottattSak].
+         */
+        fun List<Meldeperiode>.krevSortertEtterPeriodeOgVersjon() {
+            zipWithNext().forEach { (a, b) ->
+                require(a.periode.tilOgMed < b.periode.fraOgMed || (a.periode == b.periode && a.versjon < b.versjon)) {
+                    "Meldeperioder må være sortert etter periode og versjon. Fikk $a før $b"
+                }
+            }
+        }
+
         fun Periode.kanFyllesUtFraOgMed(): LocalDateTime {
             return this.tilOgMed.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY))
                 .atTime(TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR).also {

@@ -4,6 +4,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.lagreMeldeperiode
+import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
@@ -22,7 +24,7 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.Meldeko
 import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.korrigerMeldekortRequest
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.tilMeldeperiodeDTO
-import no.nav.tiltakspenger.meldekort.sak.infra.tilSak
+import no.nav.tiltakspenger.meldekort.mottak.infra.tilMottattSak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import no.nav.tiltakspenger.objectmothers.ObjectMother.tikkendeKlokke1mars2025
@@ -60,12 +62,12 @@ class MeldekortBrukerRouteTest {
                 sakId = sak.id,
             )
 
-            tac.sakRepo.lagre(sak)
+            tac.lagreSak(sak)
 
-            tac.meldeperiodeRepo.lagre(førsteMeldekort.meldeperiode)
+            tac.lagreMeldeperiode(førsteMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(førsteMeldekort)
 
-            tac.meldeperiodeRepo.lagre(andreMeldekort.meldeperiode)
+            tac.lagreMeldeperiode(andreMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(andreMeldekort)
 
             val body = hentBrukerMedSakRequest(fnr = fnr.verdi)!!
@@ -103,12 +105,12 @@ class MeldekortBrukerRouteTest {
                 mottatt = null,
                 periode = andrePeriode,
             )
-            tac.sakRepo.lagre(sak)
+            tac.lagreSak(sak)
 
-            tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
+            tac.lagreMeldeperiode(innsendtMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(innsendtMeldekort)
 
-            tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
+            tac.lagreMeldeperiode(ikkeKlartMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
             val body = hentBrukerMedSakRequest(fnr = fnr.verdi)!!
@@ -142,9 +144,9 @@ class MeldekortBrukerRouteTest {
                 periode = periode,
             )
 
-            tac.sakRepo.lagre(sak)
+            tac.lagreSak(sak)
 
-            tac.meldeperiodeRepo.lagre(ikkeKlartMeldekort.meldeperiode)
+            tac.lagreMeldeperiode(ikkeKlartMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(ikkeKlartMeldekort)
 
             val body = hentBrukerMedSakRequest(fnr = fnr.verdi)!!
@@ -166,7 +168,7 @@ class MeldekortBrukerRouteTest {
                 arenaMeldekortStatus = ArenaMeldekortStatus.HAR_IKKE_MELDEKORT,
             )
 
-            tac.sakRepo.lagre(sak)
+            tac.lagreSak(sak)
 
             val body = hentBrukerMedSakRequest(fnr = fnr.verdi)!!
 
@@ -181,7 +183,7 @@ class MeldekortBrukerRouteTest {
     fun `skal hente siste versjon av meldekort for en periode med flere versjoner`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val fnr = tac.nesteFnr()
-            val lagreFraSaksbehandlingService = tac.lagreFraSaksbehandlingService
+            val mottakFraSaksbehandlingService = tac.mottakFraSaksbehandlingService
 
             val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
@@ -194,7 +196,7 @@ class MeldekortBrukerRouteTest {
                 meldeperioder = listOf(førsteDto, andreDto),
             )
 
-            lagreFraSaksbehandlingService.lagre(sakDto.tilSak())
+            mottakFraSaksbehandlingService.lagre(sakDto.tilMottattSak())
 
             val body = hentBrukerMedSakRequest(fnr = fnr.verdi)!!
 
@@ -210,7 +212,7 @@ class MeldekortBrukerRouteTest {
     fun `skal ikke hente deaktivert meldekort`() = runTest {
         withTestApplicationContext { tac ->
             val fnr = tac.nesteFnr()
-            val lagreFraSaksbehandlingService = tac.lagreFraSaksbehandlingService
+            val mottakFraSaksbehandlingService = tac.mottakFraSaksbehandlingService
 
             val periode = Periode(
                 fraOgMed = LocalDate.of(2025, 1, 6),
@@ -235,7 +237,7 @@ class MeldekortBrukerRouteTest {
                 meldeperioder = listOf(førsteDto, andreDto),
             )
 
-            lagreFraSaksbehandlingService.lagre(sakDto.tilSak())
+            mottakFraSaksbehandlingService.lagre(sakDto.tilMottattSak())
 
             val body = hentBrukerMedSakRequest(fnr = fnr.verdi)!!
 
@@ -254,7 +256,7 @@ class MeldekortBrukerRouteTest {
                 arenaMeldekortStatus = ArenaMeldekortStatus.HAR_IKKE_MELDEKORT,
             )
 
-            tac.sakRepo.lagre(sak)
+            tac.lagreSak(sak)
 
             hentBrukerMedSakRequest(
                 fnr = fnr.verdi,
@@ -285,9 +287,9 @@ class MeldekortBrukerRouteTest {
                 periode = førsteMeldeperiode.periode,
             )
 
-            tac.sakRepo.lagre(sak)
+            tac.lagreSak(sak)
 
-            tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
+            tac.lagreMeldeperiode(innsendtMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(innsendtMeldekort)
 
             this.hentAlleInnsendteMeldekortRequest(fnr = fnr.verdi, forventetBody = null)!!.shouldBeAlleMeldekortJson(
@@ -465,9 +467,9 @@ class MeldekortBrukerRouteTest {
                 periode = førsteMeldeperiode.periode,
             )
 
-            tac.sakRepo.lagre(sak)
+            tac.lagreSak(sak)
 
-            tac.meldeperiodeRepo.lagre(innsendtMeldekort.meldeperiode)
+            tac.lagreMeldeperiode(innsendtMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(innsendtMeldekort)
 
             val dagerUtenEndring =
