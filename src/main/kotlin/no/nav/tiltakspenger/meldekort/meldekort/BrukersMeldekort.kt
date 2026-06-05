@@ -24,11 +24,11 @@ import java.time.LocalDateTime
  * @param dager Et innslag per dag i meldeperioden. Må være sortert.
  */
 data class BrukersMeldekort(
-    val id: MeldekortId,
+    override val id: MeldekortId,
     val deaktivert: LocalDateTime?,
     val mottatt: LocalDateTime?,
-    val meldeperiode: Meldeperiode,
-    val dager: List<MeldekortDag>,
+    override val meldeperiode: Meldeperiode,
+    override val dager: List<MeldekortDag>,
     val journalpostId: JournalpostId?,
     val journalføringstidspunkt: LocalDateTime?,
     /**
@@ -37,7 +37,7 @@ data class BrukersMeldekort(
      */
     val korrigering: Boolean,
     val locale: String?,
-) {
+) : RegistrertMeldekort {
     val sakId = meldeperiode.sakId
     val periode: Periode = meldeperiode.periode
     val fnr: Fnr = meldeperiode.fnr

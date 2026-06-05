@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra
 
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortMedSisteMeldeperiode
+import no.nav.tiltakspenger.meldekort.meldekort.RegistrertMeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodeDTO
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.tilMeldeperiodeDTO
 import java.time.Clock
@@ -13,6 +14,13 @@ data class MeldekortMedSisteMeldeperiodeDTO(
 fun MeldekortMedSisteMeldeperiode.tilMeldekortMedSisteMeldeperiodeDTO(clock: Clock): MeldekortMedSisteMeldeperiodeDTO {
     return MeldekortMedSisteMeldeperiodeDTO(
         meldekort = meldekort.tilMeldekortTilBrukerDTO(clock),
+        sisteMeldeperiode = sisteMeldeperiode.tilMeldeperiodeDTO(),
+    )
+}
+
+fun RegistrertMeldekortMedSisteMeldeperiode.tilMeldekortMedSisteMeldeperiodeDTO(): MeldekortMedSisteMeldeperiodeDTO {
+    return MeldekortMedSisteMeldeperiodeDTO(
+        meldekort = registrertMeldekort.tilMeldekortTilBrukerDTO(),
         sisteMeldeperiode = sisteMeldeperiode.tilMeldeperiodeDTO(),
     )
 }

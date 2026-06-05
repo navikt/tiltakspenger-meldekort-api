@@ -35,7 +35,7 @@ fun Route.hentInnsendteMeldekortRoute(
         call.respond(
             AlleMeldekortDTO(
                 bruker = bruker.tilBrukerDTO(clock),
-                meldekortMedSisteMeldeperiode = alleMeldekort.map { it.tilMeldekortMedSisteMeldeperiodeDTO(clock) },
+                meldekortMedSisteMeldeperiode = alleMeldekort.map { it.tilMeldekortMedSisteMeldeperiodeDTO() },
             ),
         )
     }

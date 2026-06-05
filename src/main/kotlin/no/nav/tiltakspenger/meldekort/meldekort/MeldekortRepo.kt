@@ -59,6 +59,16 @@ interface MeldekortRepo {
         sessionContext: SessionContext? = null,
     ): List<MeldekortMedSisteMeldeperiode>
 
+    /**
+     * Som [hentInnsendteMeldekortForBruker], men inkluderer også åpne (uinnsendte) meldekort.
+     * Brukes for å finne kjeder som er håndtert via meldekortvedtak (papirmeldekort) men som mangler
+     * en digital innsending. Deaktiverte meldekort utelates.
+     */
+    fun hentAlleMeldekortMedSisteMeldeperiodeForBruker(
+        fnr: Fnr,
+        sessionContext: SessionContext? = null,
+    ): List<MeldekortMedSisteMeldeperiode>
+
     fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext? = null): List<BrukersMeldekort>
 
     fun markerSendtTilSaksbehandling(

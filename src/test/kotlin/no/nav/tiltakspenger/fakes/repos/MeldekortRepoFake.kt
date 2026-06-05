@@ -73,9 +73,19 @@ class MeldekortRepoFake(
     override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         sessionContext: SessionContext?,
+    ): List<MeldekortMedSisteMeldeperiode> = hentMedSisteMeldeperiode(fnr) { it.mottatt != null && it.deaktivert == null }
+
+    override fun hentAlleMeldekortMedSisteMeldeperiodeForBruker(
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): List<MeldekortMedSisteMeldeperiode> = hentMedSisteMeldeperiode(fnr) { it.deaktivert == null }
+
+    private fun hentMedSisteMeldeperiode(
+        fnr: Fnr,
+        filter: (BrukersMeldekort) -> Boolean,
     ): List<MeldekortMedSisteMeldeperiode> {
         return data.get().values
-            .filter { it.fnr == fnr && it.mottatt != null && it.deaktivert == null }
+            .filter { it.fnr == fnr && filter(it) }
             .sortedWith(compareByDescending<BrukersMeldekort> { it.periode.fraOgMed }.thenByDescending { it.meldeperiode.versjon })
             .map { meldekort ->
                 val sisteMeldeperiode = data.get().values

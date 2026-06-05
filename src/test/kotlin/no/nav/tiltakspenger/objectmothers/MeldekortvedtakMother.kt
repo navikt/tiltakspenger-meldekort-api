@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.objectmothers
 
+import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -30,6 +31,7 @@ interface MeldekortvedtakMother {
         opprettet: LocalDateTime = nå(fixedClock),
         erKorrigering: Boolean = false,
         erAutomatiskBehandlet: Boolean = false,
+        brukersMeldekortId: MeldekortId? = null,
     ): Meldekortvedtak = meldekortvedtak(
         sakId = meldekort.sakId,
         meldeperiodeId = meldekort.meldeperiode.id,
@@ -39,6 +41,7 @@ interface MeldekortvedtakMother {
         opprettet = opprettet,
         erKorrigering = erKorrigering,
         erAutomatiskBehandlet = erAutomatiskBehandlet,
+        brukersMeldekortId = brukersMeldekortId,
     )
 
     fun meldekortvedtak(
@@ -50,6 +53,7 @@ interface MeldekortvedtakMother {
         opprettet: LocalDateTime = nå(fixedClock),
         erKorrigering: Boolean = false,
         erAutomatiskBehandlet: Boolean = false,
+        brukersMeldekortId: MeldekortId? = null,
         dager: List<MeldeperiodebehandlingDag> = periode.tilDager().map { dato ->
             MeldeperiodebehandlingDag(
                 dato = dato,
@@ -69,7 +73,7 @@ interface MeldekortvedtakMother {
             Meldeperiodebehandling(
                 meldeperiodeId = meldeperiodeId,
                 meldeperiodeKjedeId = meldeperiodeKjedeId,
-                brukersMeldekortId = null,
+                brukersMeldekortId = brukersMeldekortId,
                 periode = periode,
                 dager = dager,
             ),

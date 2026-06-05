@@ -26,6 +26,7 @@ open class TestApplicationContextMedInMemoryDb(
 ) : TestApplicationContext(clock) {
     override val texasClient: TexasClientFakeTest = TexasClientFakeTest()
     private val meldekortvedtakRepoFake = MeldekortvedtakRepoFake()
+    override val meldekortvedtakRepo = meldekortvedtakRepoFake
     private val meldekortRepoFake = MeldekortRepoFake(clock, meldekortvedtakRepoFake)
     override val meldekortRepo = meldekortRepoFake
     override val varselRepo = VarselRepoFake(clock)

@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.meldekort
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
+import no.nav.tiltakspenger.lagreMeldekortvedtak
 import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
@@ -103,6 +104,32 @@ class MeldekortServiceTest {
             shouldThrowWithMessage<IllegalArgumentException>("Meldekort med id ${meldekort.id} er allerede mottatt ($mottatt)") {
                 meldekortService.lagreMeldekortFraBruker(lagreKommando)
             }
+        }
+    }
+
+    @Test
+    fun `Kan ikke lagre meldekort fra bruker når kjeden allerede er håndtert av et meldekortvedtak`() {
+        withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
+            val meldekortService = tac.meldekortService
+
+            val meldeperiode = ObjectMother.meldeperiode(periode = gyldigPeriode, opprettet = nå(tac.clock))
+            val meldekort = tac.lagMeldekort(meldeperiode)
+
+            // Det finnes et meldekortvedtak (papirmeldekort) med en behandling for kjeden.
+            tac.lagreMeldekortvedtak(
+                ObjectMother.meldekortvedtak(meldekort = meldekort, opprettet = nå(tac.clock)),
+            )
+
+            val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
+
+            shouldThrowWithMessage<IllegalArgumentException>(
+                "Meldekort med id ${meldekort.id} kan ikke sendes inn fordi kjeden ${meldekort.meldeperiode.kjedeId} allerede er håndtert av et meldekortvedtak. En eventuell endring må gjøres som korrigering.",
+            ) {
+                meldekortService.lagreMeldekortFraBruker(lagreKommando)
+            }
+
+            // Meldekortet er fortsatt uinnsendt (ingenting ble persistert).
+            tac.meldekortRepo.hentForMeldekortId(meldekort.id, meldekort.fnr)!!.mottatt shouldBe null
         }
     }
 

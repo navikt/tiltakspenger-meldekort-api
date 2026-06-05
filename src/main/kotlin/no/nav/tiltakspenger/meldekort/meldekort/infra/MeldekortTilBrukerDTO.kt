@@ -4,7 +4,9 @@ import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortStatus
+import no.nav.tiltakspenger.meldekort.meldekort.RegistrertMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortStatusDTO.Companion.toDTO
+import no.nav.tiltakspenger.meldekort.meldekort.registrertTidspunkt
 import no.nav.tiltakspenger.meldekort.utils.toNorskUkenummer
 import java.time.Clock
 import java.time.LocalDate
@@ -102,4 +104,28 @@ fun List<MeldekortDag>.toDto(): List<MeldekortDagTilBrukerDTO> {
             status = dag.status.tilDTO(),
         )
     }
+}
+
+/**
+ * Bygger DTO for en [RegistrertMeldekort] — kjedens registrerte («utfylte») tilstand,
+ * uavhengig av om den kommer fra en digital innsending ([BrukersMeldekort]) eller et meldekortvedtak
+ * ([VedtattMeldekort]). En registrert tilstand er per definisjon innsendt, så status er
+ * [MeldekortStatusDTO.INNSENDT].
+ */
+fun RegistrertMeldekort.tilMeldekortTilBrukerDTO(): MeldekortTilBrukerDTO {
+    return MeldekortTilBrukerDTO(
+        id = id.toString(),
+        meldeperiodeId = meldeperiode.id.toString(),
+        kjedeId = meldeperiode.kjedeId.toString(),
+        versjon = meldeperiode.versjon,
+        fraOgMed = meldeperiode.periode.fraOgMed,
+        tilOgMed = meldeperiode.periode.tilOgMed,
+        uke1 = meldeperiode.periode.fraOgMed.toNorskUkenummer(),
+        uke2 = meldeperiode.periode.tilOgMed.toNorskUkenummer(),
+        status = MeldekortStatusDTO.INNSENDT,
+        maksAntallDager = meldeperiode.maksAntallDagerForPeriode,
+        innsendt = registrertTidspunkt(),
+        dager = dager.toDto(),
+        kanSendes = null,
+    )
 }

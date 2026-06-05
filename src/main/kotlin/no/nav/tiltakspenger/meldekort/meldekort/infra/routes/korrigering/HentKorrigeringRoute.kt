@@ -13,7 +13,6 @@ import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
  */
 fun Route.hentKorrigeringRoute(
     meldekortService: MeldekortService,
-    clock: java.time.Clock,
 ) {
     get("/korrigering/{meldekortId}") {
         val meldekortId = call.parameters["meldekortId"]?.let { MeldekortId.fromString(it) }
@@ -23,8 +22,8 @@ fun Route.hentKorrigeringRoute(
         }
 
         meldekortService.hentForKorrigering(meldekortId, call.fnr())
-            .let { (meldekort, meldeperiode, kanSendeInnHelg) ->
-                call.respond(meldeperiode.tilKorrigeringDTO(meldekort, kanSendeInnHelg, clock))
+            .let { (registrert, meldeperiode, kanSendeInnHelg) ->
+                call.respond(meldeperiode.tilKorrigeringDTO(registrert, kanSendeInnHelg))
             }
     }
 }

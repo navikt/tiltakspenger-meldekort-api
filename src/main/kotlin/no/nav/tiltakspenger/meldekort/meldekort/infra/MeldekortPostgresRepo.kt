@@ -243,6 +243,17 @@ class MeldekortPostgresRepo(
     override fun hentInnsendteMeldekortForBruker(
         fnr: Fnr,
         sessionContext: SessionContext?,
+    ): List<MeldekortMedSisteMeldeperiode> = hentMeldekortMedSisteMeldeperiode(fnr, kunInnsendte = true, sessionContext)
+
+    override fun hentAlleMeldekortMedSisteMeldeperiodeForBruker(
+        fnr: Fnr,
+        sessionContext: SessionContext?,
+    ): List<MeldekortMedSisteMeldeperiode> = hentMeldekortMedSisteMeldeperiode(fnr, kunInnsendte = false, sessionContext)
+
+    private fun hentMeldekortMedSisteMeldeperiode(
+        fnr: Fnr,
+        kunInnsendte: Boolean,
+        sessionContext: SessionContext?,
     ): List<MeldekortMedSisteMeldeperiode> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
@@ -287,11 +298,12 @@ class MeldekortPostgresRepo(
                             ) siste_mp on true
                                   left join sak siste_s on siste_s.id = siste_mp.sak_id
                         where mk.deaktivert is null
-                          and mk.mottatt is not null
+                          and (:kun_innsendte = false or mk.mottatt is not null)
                           and s.fnr = :fnr
                         order by mp.fra_og_med desc, mp.versjon desc
                     """,
                     "fnr" to fnr.verdi,
+                    "kun_innsendte" to kunInnsendte,
                 ).map { row -> meldekortMedSisteMeldeperiodeFromRow(row) }.asList,
             )
         }

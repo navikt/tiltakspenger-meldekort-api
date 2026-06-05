@@ -10,6 +10,7 @@ import java.time.Clock
 
 /**
  * Alle meldekortene for en meldeperiodekjede.
+ * Sortert først på versjon og deretter innsendingstidspunkt.
  */
 data class MeldekortForKjede(
     private val meldekort: List<BrukersMeldekort>,
@@ -42,6 +43,22 @@ data class MeldekortForKjede(
             return FeilVedKorrigeringAvMeldekort.IkkeSisteMeldekortIKjeden.left()
         }
 
+        return byggKorrigertMeldekort(command, sisteMeldeperiode, clock).right()
+    }
+
+    /**
+     * Bygger det korrigerte meldekortet uten å validere hvilken tilstand kjeden er i.
+     * Gjenbrukes av [korriger] og av korrigering som tar høyde for meldekortvedtak
+     * ([no.nav.tiltakspenger.meldekort.meldekort.RegistrertMeldekortForKjede]).
+     *
+     * Dersom siste meldekort i kjeden er klart til innsending (typisk et åpent/uinnsendt meldekort),
+     * fylles dette ut. Ellers opprettes et nytt meldekort for [sisteMeldeperiode].
+     */
+    fun byggKorrigertMeldekort(
+        command: KorrigerMeldekortCommand,
+        sisteMeldeperiode: Meldeperiode,
+        clock: Clock,
+    ): BrukersMeldekort {
         return if (erSisteMeldekortKlarTilInnsending(clock)) {
             meldekort.last().fyllUtMeldekortFraBruker(
                 sisteMeldeperiode = sisteMeldeperiode,
@@ -51,20 +68,33 @@ data class MeldekortForKjede(
                 locale = command.locale,
             )
         } else {
-            val meldekortId = MeldekortId.random()
+            byggNyttKorrigertMeldekort(command, sisteMeldeperiode, clock)
+        }
+    }
 
-            BrukersMeldekort(
-                id = meldekortId,
-                deaktivert = null,
-                mottatt = nå(clock),
-                meldeperiode = sisteMeldeperiode,
-                dager = command.korrigerteDager,
-                journalpostId = null,
-                journalføringstidspunkt = null,
-                korrigering = true,
-                locale = command.locale,
-            )
-        }.right()
+    /**
+     * Bygger alltid et nytt (mottatt) korrigert [BrukersMeldekort] for [sisteMeldeperiode],
+     * uavhengig av tilstanden til kjedens åpne meldekort.
+     *
+     * Brukes for korrigering av papir-only kjeder (meldekortvedtak uten digital innsending), der
+     * kjedens åpne placeholder-meldekort aldri skal fylles ut in-place, men i stedet deaktiveres.
+     */
+    fun byggNyttKorrigertMeldekort(
+        command: KorrigerMeldekortCommand,
+        sisteMeldeperiode: Meldeperiode,
+        clock: Clock,
+    ): BrukersMeldekort {
+        return BrukersMeldekort(
+            id = MeldekortId.random(),
+            deaktivert = null,
+            mottatt = nå(clock),
+            meldeperiode = sisteMeldeperiode,
+            dager = command.korrigerteDager,
+            journalpostId = null,
+            journalføringstidspunkt = null,
+            korrigering = true,
+            locale = command.locale,
+        )
     }
 
     init {

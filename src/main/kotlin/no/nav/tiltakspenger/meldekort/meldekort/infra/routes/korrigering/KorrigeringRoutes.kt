@@ -8,7 +8,7 @@ fun Route.korrigeringRoutes(
     meldekortService: MeldekortService,
     clock: Clock,
 ) {
-    hentKorrigeringRoute(meldekortService, clock)
+    hentKorrigeringRoute(meldekortService)
     kanKorrigeresRoute(meldekortService)
     korrigerMeldekortRoute(meldekortService, clock)
 }
