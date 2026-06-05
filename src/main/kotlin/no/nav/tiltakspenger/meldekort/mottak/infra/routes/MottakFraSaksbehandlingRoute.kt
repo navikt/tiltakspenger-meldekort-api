@@ -11,14 +11,13 @@ import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
-import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.meldekort.mottak.FeilVedMottakAvSak
 import no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService
 import no.nav.tiltakspenger.meldekort.mottak.infra.tilMottattSak
 
 /**
  * Endepunkter som kalles fra saksbehandling-api.
- * Eier auth-provider [IdentityProvider.AZUREAD] og path-prefiks `/saksbehandling`.
+ * Eier auth-provider [no.nav.tiltakspenger.libs.texas.IdentityProvider.AZUREAD] og path-prefiks `/saksbehandling`.
  *
  * Request DTO: [SakTilMeldekortApiDTO]
  */
