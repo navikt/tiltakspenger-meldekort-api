@@ -130,7 +130,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
     if (runJobs) {
         KjørJobberForTester.kjørVarsler(tac)
     }
-    val innsendtMeldekort = tac.meldekortService.hentForMeldekortId(MeldekortId.fromString(requestDto.id), fnr)!!
+    val innsendtMeldekort = tac.hentMeldekortService.hentForMeldekortId(MeldekortId.fromString(requestDto.id), fnr)!!
     // Hent den fulle saken via meldekortets sakId — gir den joined varianten, som testene normalt vil ha.
     val sak = tac.sakRepo.hent(innsendtMeldekort.sakId, null)!!
     return sak to innsendtMeldekort

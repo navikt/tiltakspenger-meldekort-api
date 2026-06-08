@@ -28,6 +28,8 @@ open class TestApplicationContextMedInMemoryDb(
     private val meldekortvedtakRepoFake = MeldekortvedtakRepoFake()
     private val meldekortRepoFake = MeldekortRepoFake(clock, meldekortvedtakRepoFake)
     override val meldekortRepo = meldekortRepoFake
+    override val sendMeldekortRepo = meldekortRepoFake
+    override val journalføringRepo = meldekortRepoFake
     override val varselRepo = VarselRepoFake(clock)
     private val meldeperiodeRepoFake = MeldeperiodeRepoFake()
     override val meldeperiodeRepo = meldeperiodeRepoFake

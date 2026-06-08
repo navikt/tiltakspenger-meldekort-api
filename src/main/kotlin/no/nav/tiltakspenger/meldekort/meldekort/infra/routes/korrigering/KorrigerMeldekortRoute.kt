@@ -12,9 +12,9 @@ import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.meldekort.FeilVedKorrigeringAvMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.KorrigerMeldekortCommand
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortTilBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
+import no.nav.tiltakspenger.meldekort.meldekort.korrigering.KorrigerMeldekortService
 import java.time.Clock
 
 /**
@@ -22,7 +22,7 @@ import java.time.Clock
  * Response DTO: [MeldekortTilBrukerDTO]
  */
 fun Route.korrigerMeldekortRoute(
-    meldekortService: MeldekortService,
+    meldekortService: KorrigerMeldekortService,
     clock: Clock,
 ) {
     patch("/{meldekortId}/korriger") {

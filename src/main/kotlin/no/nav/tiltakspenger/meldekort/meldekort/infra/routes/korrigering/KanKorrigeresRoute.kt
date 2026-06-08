@@ -7,13 +7,13 @@ import io.ktor.server.routing.get
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.texas.fnr
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
+import no.nav.tiltakspenger.meldekort.meldekort.korrigering.KorrigerMeldekortService
 
 /**
  * Response DTO: [KanKorrigereMeldekortDto]
  */
 fun Route.kanKorrigeresRoute(
-    meldekortService: MeldekortService,
+    meldekortService: KorrigerMeldekortService,
 ) {
     get("/{meldekortId}/kan-korrigeres") {
         val meldekortId = call.parameters["meldekortId"]?.let { MeldekortId.fromString(it) }

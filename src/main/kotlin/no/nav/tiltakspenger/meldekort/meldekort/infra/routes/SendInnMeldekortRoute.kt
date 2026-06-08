@@ -11,7 +11,7 @@ import io.ktor.server.routing.post
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.libs.texas.fnr
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
+import no.nav.tiltakspenger.meldekort.meldekort.LagreMeldekortFraBrukerService
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortFraBrukerDTO
 
 private val logger = KotlinLogging.logger {}
@@ -20,7 +20,7 @@ private val logger = KotlinLogging.logger {}
  * Request DTO: [MeldekortFraBrukerDTO]
  */
 fun Route.sendInnMeldekortRoute(
-    meldekortService: MeldekortService,
+    meldekortService: LagreMeldekortFraBrukerService,
 ) {
     post("send-inn") {
         val lagreFraBrukerKommando = Either.catch {

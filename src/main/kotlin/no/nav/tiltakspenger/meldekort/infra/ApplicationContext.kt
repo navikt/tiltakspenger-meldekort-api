@@ -20,19 +20,23 @@ import no.nav.tiltakspenger.meldekort.identhendelse.infra.IdenthendelseConsumer
 import no.nav.tiltakspenger.meldekort.infra.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.journalføring.DokarkivClient
 import no.nav.tiltakspenger.meldekort.journalføring.JournalførMeldekortService
+import no.nav.tiltakspenger.meldekort.journalføring.JournalføringRepo
 import no.nav.tiltakspenger.meldekort.journalføring.PdfgenClient
 import no.nav.tiltakspenger.meldekort.journalføring.infra.DokarkivClientImpl
+import no.nav.tiltakspenger.meldekort.journalføring.infra.JournalføringPostgresRepo
 import no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenClientImpl
 import no.nav.tiltakspenger.meldekort.landingsside.FellesLandingssideService
 import no.nav.tiltakspenger.meldekort.landingsside.LandingssideRepo
 import no.nav.tiltakspenger.meldekort.landingsside.infra.repo.LandingssidePostgresRepo
+import no.nav.tiltakspenger.meldekort.meldekort.HentMeldekortService
+import no.nav.tiltakspenger.meldekort.meldekort.LagreMeldekortFraBrukerService
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
-import no.nav.tiltakspenger.meldekort.meldekort.SendMeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo
+import no.nav.tiltakspenger.meldekort.meldekort.korrigering.KorrigerMeldekortService
 import no.nav.tiltakspenger.meldekort.meldeperiode.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
 import no.nav.tiltakspenger.meldekort.microfrontend.AktiverMicrofrontendJob
+import no.nav.tiltakspenger.meldekort.microfrontend.HentMeldekortInfoForMicrofrontendService
 import no.nav.tiltakspenger.meldekort.microfrontend.InaktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.microfrontend.TmsMikrofrontendClient
 import no.nav.tiltakspenger.meldekort.microfrontend.infra.TmsMikrofrontendClientImpl
@@ -43,6 +47,9 @@ import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
 import no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo
 import no.nav.tiltakspenger.meldekort.sak.infra.SaksbehandlingClientImpl
+import no.nav.tiltakspenger.meldekort.sending.SendMeldekortRepo
+import no.nav.tiltakspenger.meldekort.sending.SendMeldekortService
+import no.nav.tiltakspenger.meldekort.sending.infra.SendMeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.varsler.AktiverVarslerService
 import no.nav.tiltakspenger.meldekort.varsler.InaktiverVarslerService
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
@@ -104,6 +111,18 @@ open class ApplicationContext(val clock: Clock) {
             clock = clock,
         )
     }
+
+    open val sendMeldekortRepo: SendMeldekortRepo by lazy {
+        SendMeldekortPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
+
+    open val journalføringRepo: JournalføringRepo by lazy {
+        JournalføringPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
     open val meldeperiodeRepo: MeldeperiodeRepo by lazy {
         MeldeperiodePostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
@@ -147,13 +166,36 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    open val meldekortService: MeldekortService by lazy {
-        MeldekortService(
+    open val hentMeldekortService: HentMeldekortService by lazy {
+        HentMeldekortService(
+            meldekortRepo = meldekortRepo,
+        )
+    }
+
+    open val lagreMeldekortFraBrukerService: LagreMeldekortFraBrukerService by lazy {
+        LagreMeldekortFraBrukerService(
+            meldekortRepo = meldekortRepo,
+            meldeperiodeRepo = meldeperiodeRepo,
+            sakVarselRepo = sakVarselRepo,
+            sessionFactory = sessionFactory,
+            clock = clock,
+        )
+    }
+
+    open val korrigerMeldekortService: KorrigerMeldekortService by lazy {
+        KorrigerMeldekortService(
             meldekortRepo = meldekortRepo,
             meldeperiodeRepo = meldeperiodeRepo,
             brukerSakRepo = brukerSakRepo,
             sakVarselRepo = sakVarselRepo,
             sessionFactory = sessionFactory,
+            clock = clock,
+        )
+    }
+
+    open val hentMeldekortInfoForMicrofrontendService: HentMeldekortInfoForMicrofrontendService by lazy {
+        HentMeldekortInfoForMicrofrontendService(
+            hentMeldekortService = hentMeldekortService,
             clock = clock,
         )
     }
@@ -180,7 +222,7 @@ open class ApplicationContext(val clock: Clock) {
 
     val sendMeldekortService: SendMeldekortService by lazy {
         SendMeldekortService(
-            meldekortService = meldekortService,
+            sendMeldekortRepo = sendMeldekortRepo,
             saksbehandlingClient = saksbehandlingClient,
             clock = clock,
         )
@@ -188,7 +230,7 @@ open class ApplicationContext(val clock: Clock) {
 
     open val journalførMeldekortService: JournalførMeldekortService by lazy {
         JournalførMeldekortService(
-            meldekortRepo = meldekortRepo,
+            journalføringRepo = journalføringRepo,
             pdfgenClient = pdfgenClient,
             dokarkivClient = dokarkivClient,
             clock = clock,
@@ -265,7 +307,7 @@ open class ApplicationContext(val clock: Clock) {
 
     open val brukerService by lazy {
         BrukerService(
-            meldekortService = meldekortService,
+            hentMeldekortService = hentMeldekortService,
             brukerSakRepo = brukerSakRepo,
             arenaMeldekortStatusService = arenaMeldekortStatusService,
         )

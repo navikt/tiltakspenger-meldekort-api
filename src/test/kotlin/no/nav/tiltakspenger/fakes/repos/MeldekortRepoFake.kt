@@ -6,18 +6,27 @@ import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
+import no.nav.tiltakspenger.meldekort.journalføring.JournalføringRepo
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
+import no.nav.tiltakspenger.meldekort.sending.SendMeldekortRepo
 import java.time.Clock
 import java.time.LocalDateTime
 
+/**
+ * In-memory fake som modellerer `meldekort_bruker`-tabellen. Den implementerer flere repo-porter
+ * ([MeldekortRepo], [SendMeldekortRepo], [JournalføringRepo]) over samme backing-store, slik at
+ * tester ser konsistente data uavhengig av hvilket domene-repo de går via – akkurat som mot én DB.
+ */
 class MeldekortRepoFake(
     private val clock: Clock,
     private val meldekortvedtakRepoFake: MeldekortvedtakRepoFake = MeldekortvedtakRepoFake(),
-) : MeldekortRepo {
+) : MeldekortRepo,
+    SendMeldekortRepo,
+    JournalføringRepo {
     private val data = Atomic(mutableMapOf<MeldekortId, BrukersMeldekort>())
 
     /** Sporer sendtTilSaksbehandling-tidspunkt, da dette kun er et DB-felt og ikke del av domenemodellen. */

@@ -371,7 +371,7 @@ class MottakFraSaksbehandlingEndToEndTest {
                 requestDto = sakDto,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             )
-            val opprinneligMeldekort = tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!
+            val opprinneligMeldekort = tac.hentMeldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!
 
             val sakDtoOppdater = sakDto.copy(
                 meldeperioder = listOf(
@@ -389,7 +389,7 @@ class MottakFraSaksbehandlingEndToEndTest {
                 requestDto = sakDtoOppdater,
                 forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
             ).apply {
-                tac.meldekortService.hentNesteMeldekortForUtfylling(sak.fnr).shouldBeNull()
+                tac.hentMeldekortService.hentNesteMeldekortForUtfylling(sak.fnr).shouldBeNull()
 
                 val meldekortForKjede = tac.meldekortRepo.hentMeldekortForKjedeId(opprinneligMeldekort.meldeperiode.kjedeId, sak.fnr)
                 meldekortForKjede.size shouldBe 1

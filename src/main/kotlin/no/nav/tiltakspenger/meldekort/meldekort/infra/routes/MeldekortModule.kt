@@ -16,17 +16,19 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.korrige
  *  ett sted (f.eks. en delt `brukerfrontendModule { ... }` eller en konstant for path-en) i neste iterasjon.
  */
 fun Routing.meldekortModule(applicationContext: ApplicationContext) {
-    val meldekortService = applicationContext.meldekortService
+    val hentMeldekortService = applicationContext.hentMeldekortService
+    val lagreMeldekortFraBrukerService = applicationContext.lagreMeldekortFraBrukerService
+    val korrigerMeldekortService = applicationContext.korrigerMeldekortService
     val brukerService = applicationContext.brukerService
     val clock = applicationContext.clock
 
     authenticate(IdentityProvider.TOKENX.value) {
         route("/brukerfrontend") {
-            hentInnsendteMeldekortRoute(meldekortService, brukerService, clock)
-            hentMeldekortForKjedeRoute(meldekortService, clock)
-            hentMeldekortRoute(meldekortService, clock)
-            sendInnMeldekortRoute(meldekortService)
-            korrigeringRoutes(meldekortService, clock)
+            hentInnsendteMeldekortRoute(hentMeldekortService, brukerService, clock)
+            hentMeldekortForKjedeRoute(hentMeldekortService, clock)
+            hentMeldekortRoute(hentMeldekortService, clock)
+            sendInnMeldekortRoute(lagreMeldekortFraBrukerService)
+            korrigeringRoutes(korrigerMeldekortService, clock)
         }
     }
 }

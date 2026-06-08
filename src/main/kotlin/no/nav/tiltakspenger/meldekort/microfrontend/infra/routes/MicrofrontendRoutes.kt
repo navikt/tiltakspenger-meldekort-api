@@ -10,8 +10,7 @@ import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
-import java.time.Clock
+import no.nav.tiltakspenger.meldekort.microfrontend.HentMeldekortInfoForMicrofrontendService
 
 /**
  * Endepunkter som kalles fra brukers meldekort-microfrontend.
@@ -21,8 +20,7 @@ fun Routing.microfrontendModule(applicationContext: ApplicationContext) {
     authenticate(IdentityProvider.TOKENX.value) {
         route("/din-side/microfrontend") {
             microfrontendRoutes(
-                meldekortService = applicationContext.meldekortService,
-                clock = applicationContext.clock,
+                hentMeldekortInfoForMicrofrontendService = applicationContext.hentMeldekortInfoForMicrofrontendService,
             )
         }
     }
@@ -32,11 +30,10 @@ fun Routing.microfrontendModule(applicationContext: ApplicationContext) {
  * Response DTO: [MicrofrontendKortDTO]
  */
 internal fun Route.microfrontendRoutes(
-    meldekortService: MeldekortService,
-    clock: Clock,
+    hentMeldekortInfoForMicrofrontendService: HentMeldekortInfoForMicrofrontendService,
 ) {
     get("/meldekort-kort-info") {
-        meldekortService.hentInformasjonOmMeldekortForMicrofrontend(call.fnr(), clock).let {
+        hentMeldekortInfoForMicrofrontendService.hentInformasjonOmMeldekortForMicrofrontend(call.fnr()).let {
             val (antallMeldekortKlarTilInnsending, nesteMuligeInnsending) = it
 
             call.respond(

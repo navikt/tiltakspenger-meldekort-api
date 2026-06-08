@@ -2,10 +2,10 @@ package no.nav.tiltakspenger.meldekort.bruker
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatusService
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
+import no.nav.tiltakspenger.meldekort.meldekort.HentMeldekortService
 
 class BrukerService(
-    private val meldekortService: MeldekortService,
+    private val hentMeldekortService: HentMeldekortService,
     private val brukerSakRepo: BrukerSakRepo,
     private val arenaMeldekortStatusService: ArenaMeldekortStatusService,
 ) {
@@ -20,8 +20,8 @@ class BrukerService(
     }
 
     private fun hentBrukerMedSak(sak: SakForBruker): Bruker.MedSak {
-        val nesteMeldekort = meldekortService.hentNesteMeldekortForUtfylling(sak.fnr)
-        val sisteMeldekort = meldekortService.hentSisteUtfylteMeldekort(sak.fnr)
+        val nesteMeldekort = hentMeldekortService.hentNesteMeldekortForUtfylling(sak.fnr)
+        val sisteMeldekort = hentMeldekortService.hentSisteUtfylteMeldekort(sak.fnr)
 
         return Bruker.MedSak(
             sak = sak,

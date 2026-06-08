@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.meldekort
+package no.nav.tiltakspenger.meldekort.sending
 
 import arrow.core.Either
 import arrow.core.getOrElse
@@ -9,7 +9,7 @@ import java.time.Clock
 import java.time.temporal.ChronoUnit
 
 class SendMeldekortService(
-    private val meldekortService: MeldekortService,
+    private val sendMeldekortRepo: SendMeldekortRepo,
     private val saksbehandlingClient: SaksbehandlingClient,
     private val clock: Clock,
 ) {
@@ -18,7 +18,7 @@ class SendMeldekortService(
     /** Ment å kalles fra en jobb - sender alle usendte meldekort til saksbehandling. */
     suspend fun sendMeldekort() {
         Either.catch {
-            meldekortService.hentMeldekortSomSkalSendesTilSaksbehandling().forEach { meldekort ->
+            sendMeldekortRepo.hentMeldekortForSendingTilSaksbehandling().forEach { meldekort ->
                 logger.info { "Sender meldekort med id ${meldekort.id}" }
 
                 Either.catch {
@@ -27,7 +27,7 @@ class SendMeldekortService(
                         return@forEach
                     }
                     logger.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }
-                    meldekortService.markerSendtTilSaksbehandling(
+                    sendMeldekortRepo.markerSendtTilSaksbehandling(
                         id = meldekort.id,
                         sendtTidspunkt = nå(clock).truncatedTo(ChronoUnit.MICROS),
                     )

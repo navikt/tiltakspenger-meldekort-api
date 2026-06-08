@@ -5,11 +5,10 @@ import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.common.nå
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
 import java.time.Clock
 
 class JournalførMeldekortService(
-    private val meldekortRepo: MeldekortRepo,
+    private val journalføringRepo: JournalføringRepo,
     private val pdfgenClient: PdfgenClient,
     private val dokarkivClient: DokarkivClient,
     private val clock: Clock,
@@ -18,7 +17,7 @@ class JournalførMeldekortService(
 
     suspend fun journalførNyeMeldekort() {
         Either.catch {
-            meldekortRepo.hentDeSomSkalJournalføres().forEach { meldekort ->
+            journalføringRepo.hentDeSomSkalJournalføres().forEach { meldekort ->
                 val saksnummer = meldekort.meldeperiode.saksnummer
 
                 log.info { "Journalfører meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
@@ -38,7 +37,7 @@ class JournalførMeldekortService(
                         clock = clock,
                     )
                     log.info { "Meldekort journalført. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}. JournalpostId: $journalpostId" }
-                    meldekortRepo.markerJournalført(meldekort.id, journalpostId, nå(clock))
+                    journalføringRepo.markerJournalført(meldekort.id, journalpostId, nå(clock))
                     log.info { "Meldekort markert som journalført. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}. JournalpostId: $journalpostId" }
                 }.onLeft {
                     log.error(it) { "Ukjent feil skjedde under generering av brev og journalføring av meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }

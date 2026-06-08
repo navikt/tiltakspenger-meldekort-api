@@ -4,8 +4,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
-import java.time.LocalDateTime
 
 interface MeldekortRepo {
 
@@ -58,23 +56,6 @@ interface MeldekortRepo {
         fnr: Fnr,
         sessionContext: SessionContext? = null,
     ): List<MeldekortMedSisteMeldeperiode>
-
-    fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext? = null): List<BrukersMeldekort>
-
-    fun markerSendtTilSaksbehandling(
-        id: MeldekortId,
-        sendtTidspunkt: LocalDateTime,
-        sessionContext: SessionContext? = null,
-    )
-
-    fun markerJournalført(
-        meldekortId: MeldekortId,
-        journalpostId: JournalpostId,
-        tidspunkt: LocalDateTime,
-        sessionContext: SessionContext? = null,
-    )
-
-    fun hentDeSomSkalJournalføres(limit: Int = 10, sessionContext: SessionContext? = null): List<BrukersMeldekort>
 
     fun hentSisteMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,

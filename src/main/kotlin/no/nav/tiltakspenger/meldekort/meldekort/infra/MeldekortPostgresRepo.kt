@@ -2,11 +2,9 @@ package no.nav.tiltakspenger.meldekort.meldekort.infra
 
 import kotliquery.Row
 import kotliquery.Session
-import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
-import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
@@ -16,10 +14,8 @@ import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortForKjede
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortMedSisteMeldeperiode
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortRepo
-import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
 import java.time.Clock
-import java.time.LocalDateTime
 
 class MeldekortPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
@@ -297,90 +293,6 @@ class MeldekortPostgresRepo(
         }
     }
 
-    override fun hentMeldekortForSendingTilSaksbehandling(sessionContext: SessionContext?): List<BrukersMeldekort> {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """ 
-                        select
-                            *
-                        from meldekort_bruker
-                        where sendt_til_saksbehandling is null
-                            and journalpost_id is not null
-                            and mottatt is not null
-                            order by mottatt desc
-                    """,
-                )
-                    .map { row -> fromRow(row, session) }.asList,
-            )
-        }
-    }
-
-    override fun markerSendtTilSaksbehandling(
-        id: MeldekortId,
-        sendtTidspunkt: LocalDateTime,
-        sessionContext: SessionContext?,
-    ) {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """ 
-                        update meldekort_bruker set
-                            sendt_til_saksbehandling = :sendtTidspunkt
-                        where id = :id
-                    """,
-                    "id" to id.toString(),
-                    "sendtTidspunkt" to sendtTidspunkt,
-                ).asUpdate,
-            )
-        }
-    }
-
-    override fun markerJournalført(
-        meldekortId: MeldekortId,
-        journalpostId: JournalpostId,
-        tidspunkt: LocalDateTime,
-        sessionContext: SessionContext?,
-    ) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                queryOf(
-                    //language=sql
-                    """
-                      update meldekort_bruker
-                      set journalpost_id = :journalpost_id,
-                          journalføringstidspunkt = :tidspunkt
-                      where id = :id
-                    """.trimIndent(),
-                    mapOf(
-                        "id" to meldekortId.toString(),
-                        "journalpost_id" to journalpostId.toString(),
-                        "tidspunkt" to tidspunkt,
-                    ),
-                ).asUpdate,
-            )
-        }
-    }
-
-    override fun hentDeSomSkalJournalføres(limit: Int, sessionContext: SessionContext?): List<BrukersMeldekort> =
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                queryOf(
-                    //language=sql
-                    """
-                    select mk.*
-                    from meldekort_bruker mk
-                    where mk.journalpost_id is null
-                      and mk.mottatt is not null
-                    limit :limit
-                    """.trimIndent(),
-                    mapOf("limit" to limit),
-                ).map { row ->
-                    fromRow(row, session)
-                }.asList,
-            )
-        }
-
     override fun hentSisteMeldekortForKjedeId(
         kjedeId: MeldeperiodeKjedeId,
         fnr: Fnr,
@@ -407,42 +319,10 @@ class MeldekortPostgresRepo(
         }
     }
 
-    companion object {
-        private fun meldekortFraRow(
-            row: Row,
-            meldeperiode: Meldeperiode,
-        ): BrukersMeldekort {
-            val id = MeldekortId.fromString(row.string("id"))
-
-            return BrukersMeldekort(
-                id = id,
-                meldeperiode = meldeperiode,
-                mottatt = row.localDateTimeOrNull("mottatt"),
-                deaktivert = row.localDateTimeOrNull("deaktivert"),
-                dager = row.string("dager").toMeldekortDager(),
-                journalpostId = row.stringOrNull("journalpost_id")?.let { JournalpostId(it) },
-                journalføringstidspunkt = row.localDateTimeOrNull("journalføringstidspunkt"),
-                korrigering = row.boolean("korrigering"),
-                locale = row.stringOrNull("locale"),
-            )
-        }
-    }
-
     private fun fromRow(
         row: Row,
         session: Session,
-    ): BrukersMeldekort {
-        val id = MeldekortId.fromString(row.string("id"))
-        val meldeperiodeId = MeldeperiodeId.fromString(row.string("meldeperiode_id"))
-
-        val meldeperiode = MeldeperiodePostgresRepo.hentForId(meldeperiodeId, session)
-        requireNotNull(meldeperiode) { "Fant ingen meldeperiode for $id" }
-
-        return meldekortFraRow(
-            row = row,
-            meldeperiode = meldeperiode,
-        )
-    }
+    ): BrukersMeldekort = brukersMeldekortFromRow(row, session)
 
     private fun meldekortMedSisteMeldeperiodeFromRow(
         row: Row,

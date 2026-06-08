@@ -6,13 +6,13 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.texas.fnr
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
+import no.nav.tiltakspenger.meldekort.meldekort.korrigering.KorrigerMeldekortService
 
 /**
  * Response DTO: [MeldekortTilKorrigeringDTO]
  */
 fun Route.hentKorrigeringRoute(
-    meldekortService: MeldekortService,
+    meldekortService: KorrigerMeldekortService,
     clock: java.time.Clock,
 ) {
     get("/korrigering/{meldekortId}") {

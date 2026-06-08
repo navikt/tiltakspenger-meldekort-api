@@ -7,7 +7,7 @@ import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.bruker.Bruker
 import no.nav.tiltakspenger.meldekort.bruker.BrukerService
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.tilBrukerDTO
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
+import no.nav.tiltakspenger.meldekort.meldekort.HentMeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.infra.AlleMeldekortDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortMedSisteMeldeperiodeDTO
 import java.time.Clock
@@ -17,7 +17,7 @@ import java.time.Clock
  * Response DTO: [AlleMeldekortDTO]
  */
 fun Route.hentInnsendteMeldekortRoute(
-    meldekortService: MeldekortService,
+    meldekortService: HentMeldekortService,
     brukerService: BrukerService,
     clock: Clock,
 ) {

@@ -92,7 +92,7 @@ Dette gjelder for eksempel app-start, Ktor-oppsett, konfigurasjon, dependency wi
 Domenepakken til en feature skal inneholde kode som uttrykker forretningsbegreper og regler:
 
 - Domenemodeller og verdityper, for eksempel `Meldekort`, `MeldekortDag`, `Meldeperiode`, `Sak`, `Varsel`.
-- Domeneoperasjoner og tjenester, for eksempel `MeldekortService`, `SendMeldekortService`, `LagreFraSaksbehandlingService`, `VurderVarselService`.
+- Domeneoperasjoner og tjenester, for eksempel `HentMeldekortService`, `LagreMeldekortFraBrukerService`, `KorrigerMeldekortService`, `SendMeldekortService`, `LagreFraSaksbehandlingService`, `VurderVarselService`.
 - Porter/interfaces som domenet trenger for å snakke med omverdenen, for eksempel `MeldekortRepo`, `SakRepo`, `VarselRepo`, `VarselClient`, `PdfgenClient`.
 - Kommandoer og domeneutfall, for eksempel `KorrigerMeldekortCommand` og `VurderVarselUtfall`.
 

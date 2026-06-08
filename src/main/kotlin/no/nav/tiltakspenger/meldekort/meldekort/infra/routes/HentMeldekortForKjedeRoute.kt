@@ -7,7 +7,7 @@ import io.ktor.server.routing.get
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.toDTO
 import no.nav.tiltakspenger.libs.texas.fnr
-import no.nav.tiltakspenger.meldekort.meldekort.MeldekortService
+import no.nav.tiltakspenger.meldekort.meldekort.HentMeldekortService
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
 import java.time.Clock
 
@@ -15,7 +15,7 @@ import java.time.Clock
  * Response DTO: [MeldekortForKjedeDTO]
  */
 fun Route.hentMeldekortForKjedeRoute(
-    meldekortService: MeldekortService,
+    meldekortService: HentMeldekortService,
     clock: Clock,
 ) {
     get("kjede/{kjedeId}") {

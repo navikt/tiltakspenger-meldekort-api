@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.meldekort.infra
+package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -12,10 +12,10 @@ import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
+import no.nav.tiltakspenger.meldekort.meldekort.infra.lagreMeldekort
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 class JournalføringMeldekortRepoTest {
@@ -25,7 +25,8 @@ class JournalføringMeldekortRepoTest {
         @Test
         fun `setter journalpostId og tidspunkt`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
-                val repo = helper.meldekortPostgresRepo
+                val journalføringRepo = helper.journalføringPostgresRepo
+                val meldekortRepo = helper.meldekortPostgresRepo
                 val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
                 val meldekort = ObjectMother.meldekort(
                     mottatt = nå(fixedClockAt(1.mars(2025))),
@@ -37,9 +38,9 @@ class JournalføringMeldekortRepoTest {
                 val journalpostId = JournalpostId("jp-123")
                 val tidspunkt = nå(fixedClock).truncatedTo(ChronoUnit.MICROS)
 
-                repo.markerJournalført(meldekort.id, journalpostId, tidspunkt)
+                journalføringRepo.markerJournalført(meldekort.id, journalpostId, tidspunkt)
 
-                val result = repo.hentForMeldekortId(meldekort.id, meldekort.fnr)
+                val result = meldekortRepo.hentForMeldekortId(meldekort.id, meldekort.fnr)
 
                 result shouldNotBe null
                 result!!.journalpostId shouldBe journalpostId
@@ -53,7 +54,7 @@ class JournalføringMeldekortRepoTest {
         @Test
         fun `returnerer mottatte meldekort uten journalpostId`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
-                val repo = helper.meldekortPostgresRepo
+                val journalføringRepo = helper.journalføringPostgresRepo
                 val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
                 val mottattMeldekort = ObjectMother.meldekort(
                     mottatt = nå(fixedClockAt(1.mars(2025))),
@@ -62,7 +63,7 @@ class JournalføringMeldekortRepoTest {
 
                 lagreMeldekort(helper, mottattMeldekort)
 
-                val result = repo.hentDeSomSkalJournalføres()
+                val result = journalføringRepo.hentDeSomSkalJournalføres()
 
                 result.size shouldBe 1
                 result[0].id shouldBe mottattMeldekort.id
@@ -73,7 +74,7 @@ class JournalføringMeldekortRepoTest {
         @Test
         fun `ekskluderer ikke-mottatte meldekort`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
-                val repo = helper.meldekortPostgresRepo
+                val journalføringRepo = helper.journalføringPostgresRepo
                 val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
                 val ikkeMottattMeldekort = ObjectMother.meldekort(
                     mottatt = null,
@@ -82,7 +83,7 @@ class JournalføringMeldekortRepoTest {
 
                 lagreMeldekort(helper, ikkeMottattMeldekort)
 
-                val result = repo.hentDeSomSkalJournalføres()
+                val result = journalføringRepo.hentDeSomSkalJournalføres()
                 result shouldBe emptyList()
             }
         }
@@ -90,7 +91,7 @@ class JournalføringMeldekortRepoTest {
         @Test
         fun `ekskluderer allerede journalførte meldekort`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
-                val repo = helper.meldekortPostgresRepo
+                val journalføringRepo = helper.journalføringPostgresRepo
                 val periode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
                 val meldekort = ObjectMother.meldekort(
                     mottatt = nå(fixedClockAt(1.mars(2025))),
@@ -99,9 +100,9 @@ class JournalføringMeldekortRepoTest {
 
                 lagreMeldekort(helper, meldekort)
 
-                repo.markerJournalført(meldekort.id, JournalpostId("jp-456"), nå(fixedClock).truncatedTo(ChronoUnit.MICROS))
+                journalføringRepo.markerJournalført(meldekort.id, JournalpostId("jp-456"), nå(fixedClock).truncatedTo(ChronoUnit.MICROS))
 
-                val result = repo.hentDeSomSkalJournalføres()
+                val result = journalføringRepo.hentDeSomSkalJournalføres()
                 result shouldBe emptyList()
             }
         }
@@ -109,7 +110,7 @@ class JournalføringMeldekortRepoTest {
         @Test
         fun `respekterer limit`() {
             withMigratedDb(clock = fixedClockAt(1.mars(2025))) { helper ->
-                val repo = helper.meldekortPostgresRepo
+                val journalføringRepo = helper.journalføringPostgresRepo
                 val førstePeriode = Periode(fraOgMed = 6.januar(2025), tilOgMed = 19.januar(2025))
 
                 val meldekort1 = ObjectMother.meldekort(
@@ -136,7 +137,7 @@ class JournalføringMeldekortRepoTest {
 
                 lagreMeldekort(helper, meldekort1, meldekort2, meldekort3)
 
-                val result = repo.hentDeSomSkalJournalføres(limit = 2)
+                val result = journalføringRepo.hentDeSomSkalJournalføres(limit = 2)
                 result.size shouldBe 2
             }
         }

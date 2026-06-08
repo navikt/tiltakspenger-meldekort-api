@@ -438,7 +438,7 @@ class HentMeldekortRepoTest {
                 val journalføringstidspunkt = nå(fixedClock)
 
                 lagreMeldekort(helper, meldekort)
-                repo.markerJournalført(meldekort.id, journalpostId, journalføringstidspunkt)
+                helper.journalføringPostgresRepo.markerJournalført(meldekort.id, journalpostId, journalføringstidspunkt)
 
                 val result = repo.hentInnsendteMeldekortForBruker(meldekort.fnr)
 
