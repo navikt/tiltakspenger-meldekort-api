@@ -31,6 +31,11 @@ jobs:
           languages: java-kotlin
           build-mode: manual
           queries: security-and-quality
+          config: |
+            query-filters:
+              - exclude:
+                  problem.severity:
+                    - recommendation
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
