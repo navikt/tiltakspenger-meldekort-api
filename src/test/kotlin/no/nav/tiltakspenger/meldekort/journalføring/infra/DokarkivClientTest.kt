@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.journalfring.infra
+package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import io.kotest.matchers.shouldBe
 import io.ktor.client.engine.mock.MockEngine
@@ -14,8 +14,6 @@ import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.meldekort.infra.httpClientGeneric
 import no.nav.tiltakspenger.meldekort.journalføring.PdfA
 import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
-import no.nav.tiltakspenger.meldekort.journalføring.infra.DokarkivClientImpl
-import no.nav.tiltakspenger.meldekort.journalføring.infra.toBrevMeldekortDTO
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -68,7 +66,7 @@ class DokarkivClientTest {
 
             val resp = dokarkivClient.journalførMeldekort(
                 meldekort = meldekort,
-                pdfOgJson = PdfOgJson(PdfA("pdf".toByteArray()), meldekort.toBrevMeldekortDTO()),
+                pdfOgJson = PdfOgJson(PdfA("pdf".toByteArray()), meldekort.toDTO()),
                 callId = CorrelationId.generate(),
                 clock = fixedClock,
             )
@@ -85,7 +83,7 @@ class DokarkivClientTest {
                 meldekort = meldekort,
                 pdfOgJson = PdfOgJson(
                     PdfA("pdf".toByteArray()),
-                    meldekort.toBrevMeldekortDTO(),
+                    meldekort.toDTO(),
                 ),
                 callId = CorrelationId.generate(),
                 clock = fixedClock,

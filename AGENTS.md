@@ -2,6 +2,10 @@
 
 Dette repoet følger monorepo-konvensjonene i [`../AGENTS.md`](../AGENTS.md) og Kotlin/JVM-backendkonvensjonene i [`../AGENTS-backend.md`](../AGENTS-backend.md). Les disse først.
 
+## Kodekonvensjoner
+
+- **Ikke bruk `internal`.** Dette er en enmodul-app (deployes som én artifact, ikke som bibliotek). Kotlin har ingen package-private, og `internal` betyr «synlig i hele modulen» — altså hele appen. I praksis gir det derfor ingen ekstra innkapsling utover `public` ved pakkegrenser, og en blanding av `internal` noen få steder skaper bare inkonsistens og falsk trygghet. Bruk `public` (standard) og `private`. Innkapsling mellom domeneområder håndheves gjennom pakkestruktur, porter/interfaces og disiplin — ikke gjennom `internal`.
+
 ## Testing
 
 Se de generelle DB-/ende-til-ende-konvensjonene i [`../AGENTS-backend.md`](../AGENTS-backend.md#ende-til-ende-og-databasetester). Konkrete håndtak i dette repoet:

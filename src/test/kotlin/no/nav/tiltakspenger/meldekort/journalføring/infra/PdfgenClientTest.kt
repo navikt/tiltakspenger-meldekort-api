@@ -1,4 +1,4 @@
-package no.nav.tiltakspenger.meldekort.journalfring.infra
+package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import arrow.core.left
 import io.kotest.matchers.shouldBe

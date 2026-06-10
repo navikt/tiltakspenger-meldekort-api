@@ -47,7 +47,7 @@ class PdfgenClientImpl(
         }
         return pdfgenRequest(
             uri = uri,
-            jsonPayload = { meldekort.toBrevMeldekortDTO() },
+            jsonPayload = { meldekort.toDTO() },
             errorContext = errorContext,
         )
     }
@@ -64,7 +64,7 @@ class PdfgenClientImpl(
         }
         return pdfgenRequest(
             uri = uri,
-            jsonPayload = { meldekort.toBrevMeldekortDTO() },
+            jsonPayload = { meldekort.toDTO() },
             errorContext = errorContext,
         )
     }

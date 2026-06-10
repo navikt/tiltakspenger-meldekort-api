@@ -3,17 +3,29 @@ package no.nav.tiltakspenger.meldekort.journalføring.infra
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.periode.PeriodeDTO
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
+import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
+import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
 import no.nav.tiltakspenger.meldekort.utils.toEngelskDato
 import no.nav.tiltakspenger.meldekort.utils.toEngelskDatoOgTid
+import no.nav.tiltakspenger.meldekort.utils.toEngelskUkedagOgDatoUtenÅr
 import no.nav.tiltakspenger.meldekort.utils.toEngelskUkenummer
 import no.nav.tiltakspenger.meldekort.utils.toNorskDato
 import no.nav.tiltakspenger.meldekort.utils.toNorskDatoOgTid
+import no.nav.tiltakspenger.meldekort.utils.toNorskUkedagOgDatoUtenÅr
 import no.nav.tiltakspenger.meldekort.utils.toNorskUkenummer
 
 /**
- * DTO for å serialisere meldekort til brev (PDF). Datoer formateres her fordi vi ikke bruker tid på å opprette hjelpemetoder i pdfgen-core per nå
+ * Serialiserer et [BrukersMeldekort] til JSON-en som sendes til tiltakspenger-pdfgen for å generere brevet (PDF).
+ *
+ * Dette er den eneste offentlige inngangen til brev-DTO-ene. Selve DTO-ene er private slik at de ikke lekker
+ * ut av denne fila, og slik at koblingen mot domenet (`BrukersMeldekort`/`MeldekortDag`/`MeldekortDagStatus`)
+ * holdes innenfor mappingen her.
+ *
+ * Datoer formateres her fordi vi ikke bruker tid på å opprette hjelpemetoder i pdfgen-core per nå.
  */
-data class BrevMeldekortDTO(
+fun BrukersMeldekort.toDTO(): String = serialize(this.toBrevMeldekortDTO())
+
+private data class BrevMeldekortDTO(
     val id: String,
     val fnr: String,
     val periode: PeriodeDTO,
@@ -24,37 +36,58 @@ data class BrevMeldekortDTO(
     val mottatt: String?,
 )
 
-fun BrukersMeldekort.toBrevMeldekortDTO(): String {
-    val dto = if (this.locale == "en") {
-        this.toEngelskBrevMeldekortDTO()
-    } else {
-        this.toNorskBrevMeldekortDTO()
-    }
-    return serialize(dto)
+private data class BrevMeldekortDagDTO(
+    val dag: String,
+    val status: BrevMeldekortStatusDTO,
+)
+
+private enum class BrevMeldekortStatusDTO {
+    DELTATT_UTEN_LØNN_I_TILTAKET,
+    DELTATT_MED_LØNN_I_TILTAKET,
+    FRAVÆR_SYK,
+    FRAVÆR_SYKT_BARN,
+    FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU,
+    FRAVÆR_GODKJENT_AV_NAV,
+    FRAVÆR_ANNET,
+    IKKE_BESVART,
+    IKKE_TILTAKSDAG,
+    IKKE_RETT_TIL_TILTAKSPENGER,
 }
 
-fun BrukersMeldekort.toNorskBrevMeldekortDTO(): BrevMeldekortDTO {
+private fun BrukersMeldekort.toBrevMeldekortDTO(): BrevMeldekortDTO {
+    val engelsk = this.locale == "en"
     return BrevMeldekortDTO(
         id = this.id.toString(),
         fnr = this.fnr.verdi,
-        periode = PeriodeDTO(this.periode.fraOgMed.toNorskDato(), this.periode.tilOgMed.toNorskDato()),
-        uke1 = this.periode.fraOgMed.toNorskUkenummer(),
-        uke2 = this.periode.tilOgMed.toNorskUkenummer(),
-        dager = this.dager.tilBrevMeldekortDagDTO(null),
+        periode = if (engelsk) {
+            PeriodeDTO(this.periode.fraOgMed.toEngelskDato(), this.periode.tilOgMed.toEngelskDato())
+        } else {
+            PeriodeDTO(this.periode.fraOgMed.toNorskDato(), this.periode.tilOgMed.toNorskDato())
+        },
+        uke1 = if (engelsk) this.periode.fraOgMed.toEngelskUkenummer() else this.periode.fraOgMed.toNorskUkenummer(),
+        uke2 = if (engelsk) this.periode.tilOgMed.toEngelskUkenummer() else this.periode.tilOgMed.toNorskUkenummer(),
+        dager = this.dager.tilBrevMeldekortDagDTO(engelsk),
         saksnummer = this.meldeperiode.saksnummer,
-        mottatt = this.mottatt?.toNorskDatoOgTid(),
+        mottatt = if (engelsk) this.mottatt?.toEngelskDatoOgTid() else this.mottatt?.toNorskDatoOgTid(),
     )
 }
 
-fun BrukersMeldekort.toEngelskBrevMeldekortDTO(): BrevMeldekortDTO {
-    return BrevMeldekortDTO(
-        id = this.id.toString(),
-        fnr = this.fnr.verdi,
-        periode = PeriodeDTO(this.periode.fraOgMed.toEngelskDato(), this.periode.tilOgMed.toEngelskDato()),
-        uke1 = this.periode.fraOgMed.toEngelskUkenummer(),
-        uke2 = this.periode.tilOgMed.toEngelskUkenummer(),
-        dager = this.dager.tilBrevMeldekortDagDTO("en"),
-        saksnummer = this.meldeperiode.saksnummer,
-        mottatt = this.mottatt?.toEngelskDatoOgTid(),
+private fun List<MeldekortDag>.tilBrevMeldekortDagDTO(engelsk: Boolean): List<BrevMeldekortDagDTO> = this.map {
+    BrevMeldekortDagDTO(
+        dag = if (engelsk) it.dag.toEngelskUkedagOgDatoUtenÅr() else it.dag.toNorskUkedagOgDatoUtenÅr(),
+        status = it.status.tilBrevMeldekortStatusDTO(),
     )
+}
+
+private fun MeldekortDagStatus.tilBrevMeldekortStatusDTO(): BrevMeldekortStatusDTO = when (this) {
+    MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET -> BrevMeldekortStatusDTO.DELTATT_UTEN_LØNN_I_TILTAKET
+    MeldekortDagStatus.DELTATT_MED_LØNN_I_TILTAKET -> BrevMeldekortStatusDTO.DELTATT_MED_LØNN_I_TILTAKET
+    MeldekortDagStatus.FRAVÆR_SYK -> BrevMeldekortStatusDTO.FRAVÆR_SYK
+    MeldekortDagStatus.FRAVÆR_SYKT_BARN -> BrevMeldekortStatusDTO.FRAVÆR_SYKT_BARN
+    MeldekortDagStatus.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU -> BrevMeldekortStatusDTO.FRAVÆR_STERKE_VELFERDSGRUNNER_ELLER_JOBBINTERVJU
+    MeldekortDagStatus.FRAVÆR_GODKJENT_AV_NAV -> BrevMeldekortStatusDTO.FRAVÆR_GODKJENT_AV_NAV
+    MeldekortDagStatus.FRAVÆR_ANNET -> BrevMeldekortStatusDTO.FRAVÆR_ANNET
+    MeldekortDagStatus.IKKE_BESVART -> BrevMeldekortStatusDTO.IKKE_BESVART
+    MeldekortDagStatus.IKKE_TILTAKSDAG -> BrevMeldekortStatusDTO.IKKE_TILTAKSDAG
+    MeldekortDagStatus.IKKE_RETT_TIL_TILTAKSPENGER -> BrevMeldekortStatusDTO.IKKE_RETT_TIL_TILTAKSPENGER
 }

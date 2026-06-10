@@ -2,6 +2,9 @@ package no.nav.tiltakspenger.meldekort.journalføring
 
 import java.util.Base64
 
+/**
+ * TODO jah: Flytt til libs.
+ */
 class PdfA(private val content: ByteArray) {
 
     override fun equals(other: Any?): Boolean {

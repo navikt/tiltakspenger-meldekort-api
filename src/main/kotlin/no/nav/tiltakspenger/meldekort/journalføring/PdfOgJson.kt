@@ -2,6 +2,9 @@ package no.nav.tiltakspenger.meldekort.journalføring
 
 import java.util.Base64
 
+/**
+ * TODO jah: Flytt til libs.
+ */
 data class PdfOgJson(
     val pdf: PdfA,
     val json: String,
