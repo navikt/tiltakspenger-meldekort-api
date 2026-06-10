@@ -5,7 +5,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
-import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendStatus
 import no.nav.tiltakspenger.meldekort.mottak.MottattSak
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
@@ -24,7 +23,6 @@ class SakRepoFake(
     private val meldekortvedtakRepo: MeldekortvedtakRepoFake = MeldekortvedtakRepoFake(),
 ) : SakRepo {
     private val data = Atomic(mutableMapOf<SakId, Sak>())
-    private val microfrontendStatus = Atomic(mutableMapOf<SakId, MicrofrontendStatus>())
 
     /** Eksponert for [BrukerSakRepoFake] slik at fakes deler underliggende state. */
     internal fun alleSaker(): Collection<Sak> = data.get().values
@@ -46,7 +44,6 @@ class SakRepoFake(
             kanSendeInnHelgForMeldekort = sak.kanSendeInnHelgForMeldekort,
             meldekortvedtak = emptyList(),
         )
-        microfrontendStatus.get()[sak.id] = MicrofrontendStatus.UBEHANDLET
     }
 
     /** Speiler [no.nav.tiltakspenger.meldekort.mottak.infra.MottakPostgresRepo.oppdaterSak]: oppdaterer kun fnr, harSoknadUnderBehandling og kanSendeInnHelgForMeldekort. */
@@ -64,10 +61,6 @@ class SakRepoFake(
             .forEach { (sakId, sak) ->
                 data.get()[sakId] = sak.copy(fnr = nyttFnr)
             }
-    }
-
-    override fun oppdaterStatusForMicrofrontend(sakId: SakId, aktiv: Boolean, sessionContext: SessionContext?) {
-        microfrontendStatus.get()[sakId] = if (aktiv) MicrofrontendStatus.AKTIV else MicrofrontendStatus.INAKTIV
     }
 
     override fun oppdaterArenaStatus(
@@ -92,15 +85,5 @@ class SakRepoFake(
     /** Speiler [no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo.hentSakerUtenArenaStatus]: uten meldeperioder/meldekortvedtak. */
     override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> {
         return data.get().values.filter { it.arenaMeldekortStatus == ArenaMeldekortStatus.UKJENT }
-    }
-
-    /** Speiler [no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo.hentSakerHvorMicrofrontendSkalAktiveres]. */
-    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?): List<Sak> {
-        throw NotImplementedError("Postgresversjonen er feil. Anbefaler og fikse den først")
-    }
-
-    /** Speiler [no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo.hentSakerHvorMicrofrontendSkalInaktiveres]. */
-    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?): List<Sak> {
-        throw NotImplementedError("Postgresversjonen er feil. Anbefaler og fikse den først")
     }
 }

@@ -159,6 +159,7 @@ kover {
                         "no.nav.tiltakspenger.meldekort.bruker.**",
                         "no.nav.tiltakspenger.meldekort.landingsside.**",
                         "no.nav.tiltakspenger.meldekort.meldekortvedtak.**",
+                        "no.nav.tiltakspenger.meldekort.microfrontend.**",
                         "no.nav.tiltakspenger.meldekort.mottak.**",
                         "no.nav.tiltakspenger.meldekort.sak.**",
                     )
@@ -172,7 +173,7 @@ kover {
             }
             verify {
                 onCheck = true
-                rule("postgres repos, arena, bruker, landingsside, meldekortvedtak, mottak and sak packages have full line coverage") {
+                rule("postgres repos, arena, bruker, landingsside, meldekortvedtak, microfrontend, mottak and sak packages have full line coverage") {
                     bound {
                         minValue = 100
                         coverageUnits = CoverageUnit.LINE

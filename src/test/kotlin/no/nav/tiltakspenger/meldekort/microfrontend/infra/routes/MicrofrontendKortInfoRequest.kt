@@ -8,10 +8,10 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
+import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendMeldekortInfo
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.microfrontend.infra.routes.microfrontendRoutes]
- * Response DTO: [no.nav.tiltakspenger.meldekort.microfrontend.infra.routes.MicrofrontendKortDTO]
  */
 suspend fun ApplicationTestBuilder.microfrontendKortInfoRequest(
     fnr: String,
@@ -19,7 +19,7 @@ suspend fun ApplicationTestBuilder.microfrontendKortInfoRequest(
     forventetStatus: HttpStatusCode = HttpStatusCode.OK,
     forventetBody: String? = null,
     forventetContentType: ContentType? = ContentType.Application.Json,
-): MicrofrontendKortDTO? {
+): MicrofrontendMeldekortInfo? {
     val response = defaultRequestWithAssertions(
         method = HttpMethod.Get,
         uri = "/din-side/microfrontend/meldekort-kort-info",
@@ -29,7 +29,7 @@ suspend fun ApplicationTestBuilder.microfrontendKortInfoRequest(
         forventetContentType = forventetContentType,
     )
     return if (response.status == HttpStatusCode.OK) {
-        deserialize<MicrofrontendKortDTO>(response.bodyAsText())
+        deserialize<MicrofrontendMeldekortInfo>(response.bodyAsText())
     } else {
         null
     }

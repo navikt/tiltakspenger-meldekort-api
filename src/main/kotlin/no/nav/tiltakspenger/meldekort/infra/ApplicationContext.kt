@@ -38,8 +38,10 @@ import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRep
 import no.nav.tiltakspenger.meldekort.microfrontend.AktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.microfrontend.HentMeldekortInfoForMicrofrontendService
 import no.nav.tiltakspenger.meldekort.microfrontend.InaktiverMicrofrontendJob
+import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendRepo
 import no.nav.tiltakspenger.meldekort.microfrontend.TmsMikrofrontendClient
-import no.nav.tiltakspenger.meldekort.microfrontend.infra.TmsMikrofrontendClientImpl
+import no.nav.tiltakspenger.meldekort.microfrontend.infra.kafka.TmsMikrofrontendKafkaProducer
+import no.nav.tiltakspenger.meldekort.microfrontend.infra.repo.MicrofrontendPostgresRepo
 import no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService
 import no.nav.tiltakspenger.meldekort.mottak.MottakRepo
 import no.nav.tiltakspenger.meldekort.mottak.infra.MottakPostgresRepo
@@ -90,9 +92,9 @@ open class ApplicationContext(val clock: Clock) {
     }
 
     open val tmsMikrofrontendClient: TmsMikrofrontendClient by lazy {
-        TmsMikrofrontendClientImpl(
-            kafkaProducer = Producer(KafkaConfigImpl()),
+        TmsMikrofrontendKafkaProducer(
             topicName = Configuration.microfrontendTopic,
+            produserMelding = Producer<String, String>(KafkaConfigImpl())::produce,
         )
     }
 
@@ -130,6 +132,12 @@ open class ApplicationContext(val clock: Clock) {
     }
     open val sakRepo: SakRepo by lazy {
         SakPostgresRepo(
+            sessionFactory = sessionFactory as PostgresSessionFactory,
+        )
+    }
+
+    open val microfrontendRepo: MicrofrontendRepo by lazy {
+        MicrofrontendPostgresRepo(
             sessionFactory = sessionFactory as PostgresSessionFactory,
             clock = clock,
         )
@@ -195,8 +203,7 @@ open class ApplicationContext(val clock: Clock) {
 
     open val hentMeldekortInfoForMicrofrontendService: HentMeldekortInfoForMicrofrontendService by lazy {
         HentMeldekortInfoForMicrofrontendService(
-            hentMeldekortService = hentMeldekortService,
-            clock = clock,
+            microfrontendRepo = microfrontendRepo,
         )
     }
 
@@ -344,14 +351,14 @@ open class ApplicationContext(val clock: Clock) {
 
     open val aktiverMicrofrontendJob: AktiverMicrofrontendJob by lazy {
         AktiverMicrofrontendJob(
-            sakRepo = sakRepo,
+            microfrontendRepo = microfrontendRepo,
             tmsMikrofrontendClient = tmsMikrofrontendClient,
         )
     }
 
     open val inaktiverMicrofrontendJob: InaktiverMicrofrontendJob by lazy {
         InaktiverMicrofrontendJob(
-            sakRepo = sakRepo,
+            microfrontendRepo = microfrontendRepo,
             tmsMikrofrontendClient = tmsMikrofrontendClient,
         )
     }

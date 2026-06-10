@@ -1,31 +1,47 @@
 package no.nav.tiltakspenger.meldekort.microfrontend
 
 import arrow.core.Either
+import arrow.core.flatMap
+import arrow.core.separateEither
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.meldekort.sak.SakRepo
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.SakId
 
 class AktiverMicrofrontendJob(
-    private val sakRepo: SakRepo,
+    private val microfrontendRepo: MicrofrontendRepo,
     private val tmsMikrofrontendClient: TmsMikrofrontendClient,
 ) {
     private val log = KotlinLogging.logger { }
 
-    fun aktiverMicrofrontendForBrukere() {
-        Either.catch {
-            val saker = sakRepo.hentSakerHvorMicrofrontendSkalAktiveres()
-            log.debug { "Fant ${saker.size} saker hvor microfrontend kan aktiveres" }
+    fun aktiverMicrofrontendForBrukere(): MicrofrontendJobbResultat {
+        return microfrontendRepo.hentSakerHvorMicrofrontendSkalAktiveres().fold(
+            ifLeft = { feil ->
+                log.error(feil.throwable) { "Kunne ikke hente saker for aktivering av microfrontend. Prøver igjen ved neste jobbkjøring." }
+                MicrofrontendJobbResultat.tom
+            },
+            ifRight = { saker -> aktiver(saker) },
+        )
+    }
 
-            saker.forEach { sak ->
-                Either.catch {
-                    tmsMikrofrontendClient.aktiverMicrofrontendForBruker(sak.fnr, sak.id)
-                    sakRepo.oppdaterStatusForMicrofrontend(sakId = sak.id, aktiv = true)
-                    log.info { "Microfrontend aktivert for bruker med sak sakId=${sak.id}" }
-                }.onLeft {
-                    log.error(it) { "Kunne ikke aktivere microfrontend for bruker med sakId=${sak.id}, prøver igjen neste jobbkjøring" }
-                }
+    fun aktiverMicrofrontendForBruker(fnr: Fnr, sakId: SakId): Either<MicrofrontendFeil, Unit> =
+        tmsMikrofrontendClient.aktiverMicrofrontendForBruker(fnr, sakId)
+            .flatMap { microfrontendRepo.oppdaterStatusForMicrofrontend(sakId = sakId, aktiv = true) }
+
+    private fun aktiver(saker: List<MicrofrontendSak>): MicrofrontendJobbResultat {
+        val (feilede, vellykkede) = saker
+            .map { sak -> aktiverMicrofrontendForBruker(sak.fnr, sak.sakId).map { sak.sakId }.mapLeft { sak.sakId to it } }
+            .separateEither()
+
+        feilede.firstOrNull()?.let { (_, førsteFeil) ->
+            log.error(førsteFeil.throwable) {
+                "Kunne ikke aktivere microfrontend for ${feilede.size} av ${saker.size} sak(er): " +
+                    "${feilede.map { it.first }}. Prøver igjen ved neste jobbkjøring."
             }
-        }.onLeft {
-            log.error(it) { "Ukjent feil skjedde under aktivering av microfrontends" }
         }
+        if (feilede.isEmpty() && vellykkede.isNotEmpty()) {
+            log.info { "Aktiverte microfrontend for ${vellykkede.size} sak(er)" }
+        }
+
+        return MicrofrontendJobbResultat(vellykkede = vellykkede, feilede = feilede.map { it.first })
     }
 }
