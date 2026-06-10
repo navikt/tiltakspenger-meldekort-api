@@ -60,7 +60,7 @@ fun Application.ktorSetup(
         mottakModule(applicationContext)
         meldekortModule(applicationContext)
         brukerModule(applicationContext)
-        microfrontendModule(applicationContext)
+        microfrontendModule(applicationContext.hentMeldekortInfoForMicrofrontendService)
         landingssideModule(applicationContext)
     }
 }

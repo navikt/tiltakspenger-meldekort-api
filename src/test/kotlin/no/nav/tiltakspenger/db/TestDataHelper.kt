@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.meldekort.journalføring.infra.JournalføringPostgre
 import no.nav.tiltakspenger.meldekort.landingsside.infra.repo.LandingssidePostgresRepo
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
+import no.nav.tiltakspenger.meldekort.microfrontend.infra.repo.MicrofrontendPostgresRepo
 import no.nav.tiltakspenger.meldekort.mottak.infra.MottakPostgresRepo
 import no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo
 import no.nav.tiltakspenger.meldekort.sending.infra.SendMeldekortPostgresRepo
@@ -31,7 +32,8 @@ class TestDataHelper(
     val meldekortPostgresRepo = MeldekortPostgresRepo(sessionFactory, clock)
     val sendMeldekortPostgresRepo = SendMeldekortPostgresRepo(sessionFactory)
     val journalføringPostgresRepo = JournalføringPostgresRepo(sessionFactory)
-    val sakPostgresRepo = SakPostgresRepo(sessionFactory, clock)
+    val sakPostgresRepo = SakPostgresRepo(sessionFactory)
+    val microfrontendPostgresRepo = MicrofrontendPostgresRepo(sessionFactory, clock)
     val mottakPostgresRepo = MottakPostgresRepo(sessionFactory)
     val brukerSakPostgresRepo = BrukerSakPostgresRepo(sessionFactory)
     val landingssidePostgresRepo = LandingssidePostgresRepo(sessionFactory, clock)

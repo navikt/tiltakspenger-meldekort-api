@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.fakes.repos.LandingssideRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldekortRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldekortvedtakRepoFake
 import no.nav.tiltakspenger.fakes.repos.MeldeperiodeRepoFake
+import no.nav.tiltakspenger.fakes.repos.MicrofrontendRepoFake
 import no.nav.tiltakspenger.fakes.repos.MottakRepoFake
 import no.nav.tiltakspenger.fakes.repos.SakRepoFake
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
@@ -35,6 +36,7 @@ open class TestApplicationContextMedInMemoryDb(
     override val meldeperiodeRepo = meldeperiodeRepoFake
     private val sakRepoFake = SakRepoFake(meldeperiodeRepoFake, meldekortvedtakRepoFake)
     override val sakRepo = sakRepoFake
+    override val microfrontendRepo = MicrofrontendRepoFake()
     override val mottakRepo: MottakRepo = MottakRepoFake(sakRepoFake, meldeperiodeRepoFake, meldekortvedtakRepoFake)
     override val brukerSakRepo = BrukerSakRepoFake(sakRepo)
     override val landingssideRepo = LandingssideRepoFake(sakRepo, meldekortRepoFake, meldekortvedtakRepoFake)

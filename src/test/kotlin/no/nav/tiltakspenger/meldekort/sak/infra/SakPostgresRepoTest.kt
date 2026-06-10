@@ -1,8 +1,6 @@
 package no.nav.tiltakspenger.meldekort.sak.infra
 
-import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
-import kotliquery.queryOf
 import no.nav.tiltakspenger.db.TestDataHelper
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.lagreMeldeperiode
@@ -12,47 +10,19 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.random
-import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
-import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.oppdaterSak
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 
 class SakPostgresRepoTest {
-    private val offsetMonths = 1L
-    private val offset = nå(fixedClock).toLocalDate().minusMonths(offsetMonths)
-    private val innenforOffset = offset.plusMonths(offsetMonths)
-    private val utenforOffset = offset.minusMonths(1)
     private fun lagreSak(helper: TestDataHelper, vararg saker: Sak) {
         saker.forEach {
             helper.lagreSak(it)
             it.meldeperioder.forEach { mp -> helper.lagreMeldeperiode(mp) }
         }
-    }
-
-    /**
-     * Genererer en sak med en meldeperiode hvor vi setter tilOgMed
-     */
-    private fun lagSakMedMeldeperiode(
-        fraSisteMandagFør: LocalDate? = null,
-        tilSisteSøndagEtter: LocalDate? = null,
-        opprettet: LocalDate,
-    ): Sak {
-        var periode: Periode? = null
-        fraSisteMandagFør?.let { periode = ObjectMother.periode(fraSisteMandagFør = fraSisteMandagFør) }
-        tilSisteSøndagEtter?.let { periode = ObjectMother.periode(tilSisteSøndagEtter = tilSisteSøndagEtter) }
-
-        val meldeperiode = ObjectMother.meldeperiode(opprettet = opprettet.atStartOfDay(), periode = periode!!)
-        return ObjectMother.sak(
-            id = meldeperiode.sakId,
-            fnr = meldeperiode.fnr,
-            saksnummer = meldeperiode.saksnummer,
-            meldeperioder = listOf(meldeperiode),
-        )
     }
 
     @Nested
@@ -153,20 +123,6 @@ class SakPostgresRepoTest {
                 )
             }
         }
-
-        @Test
-        fun `oppdaterStatusForMicrofrontend setter aktiv og inaktiv status`() {
-            withMigratedDb(runIsolated = false) { helper ->
-                val sak = ObjectMother.sak(fnr = helper.nesteFnr())
-                helper.lagreSak(sak)
-
-                helper.sakPostgresRepo.oppdaterStatusForMicrofrontend(sak.id, aktiv = true)
-                hentMicrofrontendStatus(helper, sak.id) shouldBe MicrofrontendStatus.AKTIV
-
-                helper.sakPostgresRepo.oppdaterStatusForMicrofrontend(sak.id, aktiv = false)
-                hentMicrofrontendStatus(helper, sak.id) shouldBe MicrofrontendStatus.INAKTIV
-            }
-        }
     }
 
     @Nested
@@ -182,150 +138,6 @@ class SakPostgresRepoTest {
 
                 helper.sakPostgresRepo.hentSakerUtenArenaStatus() shouldBe listOf(sakMedUkjentStatus.copy(meldeperioder = emptyList()))
             }
-        }
-    }
-
-    @Nested
-    inner class HentSakerHvorMicrofrontendSkalAktiveres {
-
-        @Test
-        fun `returneres - meldeperiode innenfor offset`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = utenforOffset)
-                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
-                lagreSak(helper, sak1, sak2)
-
-                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres()
-
-                withClue("Antall saker") { saker.size shouldBe 1 }
-                withClue("Sak") { saker.single().id shouldBe sak1.id }
-            }
-        }
-
-        @Test
-        fun `returneres - opprettet innenfor offset`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = innenforOffset)
-                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
-                lagreSak(helper, sak1, sak2)
-
-                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres()
-
-                withClue("Antall saker") { saker.size shouldBe 1 }
-                withClue("Sak") { saker.single().id shouldBe sak1.id }
-            }
-        }
-
-        @Test
-        fun `returneres - meldeperiode og opprettet innenfor offset`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = innenforOffset)
-                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
-                lagreSak(helper, sak1, sak2)
-
-                val saker = repo.hentSakerHvorMicrofrontendSkalAktiveres()
-
-                withClue("Antall saker") { saker.size shouldBe 1 }
-                withClue("Sak") { saker.single().id shouldBe sak1.id }
-            }
-        }
-
-        @Test
-        fun `returnerer ikke saker som allerede er aktivert eller mangler dager som gir rett`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-                val aktivSak = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = innenforOffset)
-                val meldeperiodeUtenRett = ObjectMother.meldeperiode(
-                    periode = ObjectMother.periode(tilSisteSøndagEtter = innenforOffset),
-                    opprettet = innenforOffset.atStartOfDay(),
-                    girRett = ObjectMother.periode(tilSisteSøndagEtter = innenforOffset).tilDager().associateWith { false },
-                )
-                val sakUtenRett = ObjectMother.sak(
-                    id = meldeperiodeUtenRett.sakId,
-                    fnr = meldeperiodeUtenRett.fnr,
-                    saksnummer = meldeperiodeUtenRett.saksnummer,
-                    meldeperioder = listOf(meldeperiodeUtenRett),
-                )
-                lagreSak(helper, aktivSak, sakUtenRett)
-                repo.oppdaterStatusForMicrofrontend(aktivSak.id, aktiv = true)
-
-                repo.hentSakerHvorMicrofrontendSkalAktiveres() shouldBe emptyList()
-            }
-        }
-    }
-
-    @Nested
-    inner class HentSakerHvorMicrofrontendSkalInaktiveres {
-
-        @Test
-        fun `returneres ikke - opprettet innenfor offset`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
-                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = innenforOffset)
-                lagreSak(helper, sak1, sak2)
-
-                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres()
-
-                withClue("Antall saker") { saker.size shouldBe 1 }
-                withClue("Forventer at sak med opprettet utenfor offset returneres") { saker.single().id shouldBe sak1.id }
-            }
-        }
-
-        @Test
-        fun `returneres ikke - meldeperiode innenfor offset`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
-                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = utenforOffset)
-                lagreSak(helper, sak1, sak2)
-
-                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres()
-
-                withClue("Antall saker") { saker.size shouldBe 1 }
-                withClue("Forventer at sak med meldeperiode utenfor offset returneres") { saker.single().id shouldBe sak1.id }
-            }
-        }
-
-        @Test
-        fun `returneres - meldeperiode og opprettet utenfor offset`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-                val sak1 = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
-                val sak2 = lagSakMedMeldeperiode(tilSisteSøndagEtter = innenforOffset, opprettet = innenforOffset)
-                lagreSak(helper, sak1, sak2)
-
-                val saker = repo.hentSakerHvorMicrofrontendSkalInaktiveres()
-
-                withClue("Antall saker") { saker.size shouldBe 1 }
-                withClue("Forventer at sak med begge felter utenfor offset returneres") { saker.single().id shouldBe sak1.id }
-            }
-        }
-
-        @Test
-        fun `returnerer ikke saker som allerede er inaktivert`() {
-            withMigratedDb { helper ->
-                val repo = helper.sakPostgresRepo
-                val sak = lagSakMedMeldeperiode(tilSisteSøndagEtter = utenforOffset, opprettet = utenforOffset)
-                lagreSak(helper, sak)
-                repo.oppdaterStatusForMicrofrontend(sak.id, aktiv = false)
-
-                repo.hentSakerHvorMicrofrontendSkalInaktiveres() shouldBe emptyList()
-            }
-        }
-    }
-
-    private fun hentMicrofrontendStatus(helper: TestDataHelper, sakId: SakId): MicrofrontendStatus {
-        return helper.sessionFactory.withSession { session ->
-            session.run(
-                queryOf(
-                    "select microfrontend_status from sak where id = :id",
-                    mapOf("id" to sakId.toString()),
-                ).map { row -> MicrofrontendStatus.valueOf(row.string("microfrontend_status")) }.asSingle,
-            )!!
         }
     }
 }

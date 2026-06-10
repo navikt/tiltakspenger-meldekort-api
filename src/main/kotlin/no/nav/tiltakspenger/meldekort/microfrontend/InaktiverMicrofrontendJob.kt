@@ -1,31 +1,47 @@
 package no.nav.tiltakspenger.meldekort.microfrontend
 
 import arrow.core.Either
+import arrow.core.flatMap
+import arrow.core.separateEither
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.meldekort.sak.SakRepo
+import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.SakId
 
 class InaktiverMicrofrontendJob(
-    private val sakRepo: SakRepo,
+    private val microfrontendRepo: MicrofrontendRepo,
     private val tmsMikrofrontendClient: TmsMikrofrontendClient,
 ) {
     private val log = KotlinLogging.logger { }
 
-    fun inaktiverMicrofrontendForBrukere() {
-        Either.catch {
-            val saker = sakRepo.hentSakerHvorMicrofrontendSkalInaktiveres()
-            log.debug { "Fant ${saker.size} saker hvor microfrontend kan inaktiveres" }
+    fun inaktiverMicrofrontendForBrukere(): MicrofrontendJobbResultat {
+        return microfrontendRepo.hentSakerHvorMicrofrontendSkalInaktiveres().fold(
+            ifLeft = { feil ->
+                log.error(feil.throwable) { "Kunne ikke hente saker for inaktivering av microfrontend. Prøver igjen ved neste jobbkjøring." }
+                MicrofrontendJobbResultat.tom
+            },
+            ifRight = { saker -> inaktiver(saker) },
+        )
+    }
 
-            saker.forEach { sak ->
-                Either.catch {
-                    tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(sak.fnr, sak.id)
-                    sakRepo.oppdaterStatusForMicrofrontend(sakId = sak.id, aktiv = false)
-                    log.info { "Microfrontend inaktivert for bruker med sak sakId=${sak.id}" }
-                }.onLeft {
-                    log.error(it) { "Kunne ikke inaktivere microfrontend for bruker med sakId=${sak.id}, prøver igjen neste jobbkjøring" }
-                }
+    fun inaktiverMicrofrontendForBruker(fnr: Fnr, sakId: SakId): Either<MicrofrontendFeil, Unit> =
+        tmsMikrofrontendClient.inaktiverMicrofrontendForBruker(fnr, sakId)
+            .flatMap { microfrontendRepo.oppdaterStatusForMicrofrontend(sakId = sakId, aktiv = false) }
+
+    private fun inaktiver(saker: List<MicrofrontendSak>): MicrofrontendJobbResultat {
+        val (feilede, vellykkede) = saker
+            .map { sak -> inaktiverMicrofrontendForBruker(sak.fnr, sak.sakId).map { sak.sakId }.mapLeft { sak.sakId to it } }
+            .separateEither()
+
+        feilede.firstOrNull()?.let { (_, førsteFeil) ->
+            log.error(førsteFeil.throwable) {
+                "Kunne ikke inaktivere microfrontend for ${feilede.size} av ${saker.size} sak(er): " +
+                    "${feilede.map { it.first }}. Prøver igjen ved neste jobbkjøring."
             }
-        }.onLeft {
-            log.error(it) { "Ukjent feil skjedde under inaktivering av microfrontends" }
         }
+        if (feilede.isEmpty() && vellykkede.isNotEmpty()) {
+            log.info { "Inaktiverte microfrontend for ${vellykkede.size} sak(er)" }
+        }
+
+        return MicrofrontendJobbResultat(vellykkede = vellykkede, feilede = feilede.map { it.first })
     }
 }

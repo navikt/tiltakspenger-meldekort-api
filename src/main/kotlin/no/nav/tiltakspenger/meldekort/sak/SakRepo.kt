@@ -13,12 +13,6 @@ interface SakRepo {
         sessionContext: SessionContext? = null,
     )
 
-    fun oppdaterStatusForMicrofrontend(
-        sakId: SakId,
-        aktiv: Boolean,
-        sessionContext: SessionContext? = null,
-    )
-
     fun oppdaterArenaStatus(
         id: SakId,
         arenaStatus: ArenaMeldekortStatus,
@@ -31,6 +25,4 @@ interface SakRepo {
     ): Sak?
 
     fun hentSakerUtenArenaStatus(sessionContext: SessionContext? = null): List<Sak>
-    fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext? = null): List<Sak>
-    fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext? = null): List<Sak>
 }

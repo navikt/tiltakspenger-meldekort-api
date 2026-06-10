@@ -4,7 +4,6 @@ import kotliquery.Row
 import kotliquery.Session
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
-import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
@@ -13,14 +12,11 @@ import no.nav.tiltakspenger.meldekort.arena.infra.tilArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.arena.infra.tilDb
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.MeldekortvedtakPostgresRepo
 import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo
-import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
-import java.time.Clock
 
 class SakPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
-    private val clock: Clock,
 ) : SakRepo {
 
     override fun oppdaterFnr(
@@ -38,26 +34,6 @@ class SakPostgresRepo(
                     """,
                     "nytt_fnr" to nyttFnr.verdi,
                     "gammelt_fnr" to gammeltFnr.verdi,
-                ).asUpdate,
-            )
-        }
-    }
-
-    override fun oppdaterStatusForMicrofrontend(
-        sakId: SakId,
-        aktiv: Boolean,
-        sessionContext: SessionContext?,
-    ) {
-        sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                    update sak set 
-                        microfrontend_status = :microfrontend_status
-                    where id = :id
-                    """,
-                    "id" to sakId.toString(),
-                    "microfrontend_status" to if (aktiv) MicrofrontendStatus.AKTIV.toString() else MicrofrontendStatus.INAKTIV.toString(),
                 ).asUpdate,
             )
         }
@@ -114,93 +90,6 @@ class SakPostgresRepo(
                 sqlQuery(
                     "select * from sak where arena_meldekort_status = :ukjent_status",
                     "ukjent_status" to ArenaMeldekortStatus.UKJENT.tilDb(),
-                ).map { row ->
-                    fromRow(
-                        row = row,
-                        medMeldeperioder = false,
-                        medMeldekortvedtak = false,
-                        session = session,
-                    )
-                }.asList,
-            )
-        }
-    }
-
-    /**
-     * Henter ikke med meldeperioder og meldekortvedtak for å unngå unødvendig datalast, ettersom disse ikke trengs i de fleste tilfeller.
-     * TODO jah: Rett opp i egen PR med tester+fakers. 1) offset er en duration og ikke et tidspunkt 2) aktivStatus trenger ikke være parameterisert 3) bruk antall_dager > 0 4) tar ikke høyde for stans/opphør 5) bruker ikke siste versjon av meldeperioden 6) bruker Skriv om til en liste med (fnr + sakId)-par. 7) Finn ut hvordan dette skal fungere, sett deg ned med fag.
-     *
-     */
-    override fun hentSakerHvorMicrofrontendSkalAktiveres(sessionContext: SessionContext?): List<Sak> {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                        SELECT s.*
-                        FROM sak s
-                        WHERE s.microfrontend_status <> :aktivStatus
-                          AND EXISTS (
-                              SELECT 1
-                              FROM meldeperiode m
-                              WHERE m.sak_id = s.id
-                                AND (
-                                    EXISTS (
-                                        SELECT 1
-                                        FROM jsonb_each_text(m.gir_rett) kv(key, value)
-                                        WHERE value::boolean
-                                    )
-                                    AND (
-                                        m.opprettet > :offset
-                                        OR m.til_og_med > :offset
-                                    )
-                                )
-                          );
-                    """.trimIndent(),
-                    "offset" to nå(clock).minusMonths(1),
-                    "aktivStatus" to MicrofrontendStatus.AKTIV.toString(),
-                ).map { row ->
-                    fromRow(
-                        row = row,
-                        medMeldeperioder = false,
-                        medMeldekortvedtak = false,
-                        session = session,
-                    )
-                }.asList,
-            )
-        }
-    }
-
-    /**
-     * Henter ikke med meldeperioder og meldekortvedtak for å unngå unødvendig datalast, ettersom disse ikke trengs i de fleste tilfeller.
-     * TODO jah: Rett opp i egen PR med tester+fakers. 1) offset er en duration og ikke et tidspunkt 2) aktivStatus trenger ikke være parameterisert 3) bruk antall_dager > 0 4) tar ikke høyde for stans/opphør 5) bruker ikke siste versjon av meldeperioden 6) bruker Skriv om til en liste med (fnr + sakId)-par. 7) Finn ut hvordan dette skal fungere, sett deg ned med fag.
-     */
-    override fun hentSakerHvorMicrofrontendSkalInaktiveres(sessionContext: SessionContext?): List<Sak> {
-        return sessionFactory.withSession(sessionContext) { session ->
-            session.run(
-                sqlQuery(
-                    """
-                        SELECT s.*
-                        FROM sak s
-                        WHERE s.microfrontend_status <> :inaktivStatus
-                          AND NOT EXISTS (
-                            SELECT 1
-                            FROM meldeperiode m
-                            WHERE m.sak_id = s.id
-                              AND (
-                                EXISTS (
-                                    SELECT 1
-                                    FROM jsonb_each_text(m.gir_rett) kv(key, value)
-                                    WHERE value::boolean
-                                )
-                                AND (
-                                    m.opprettet > :offset
-                                    OR m.til_og_med > :offset
-                                )
-                              )
-                          );
-                    """.trimIndent(),
-                    "offset" to nå(clock).minusMonths(1),
-                    "inaktivStatus" to MicrofrontendStatus.INAKTIV.toString(),
                 ).map { row ->
                     fromRow(
                         row = row,
