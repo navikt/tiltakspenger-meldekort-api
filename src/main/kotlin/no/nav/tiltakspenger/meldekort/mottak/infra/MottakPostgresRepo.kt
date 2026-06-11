@@ -1,12 +1,15 @@
 package no.nav.tiltakspenger.meldekort.mottak.infra
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotliquery.TransactionalSession
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.arena.infra.tilDb
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldeperiodebehandling
+import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.tilDagerDbJson
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.tilMeldeperiodebehandlingerDbJson
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.mottak.MottakRepo
@@ -17,7 +20,7 @@ import java.time.LocalDate
  * Skrivesiden for mottak fra saksbehandling-api (CQRS): INSERT/UPDATE av sak, meldeperiode og meldekortvedtak.
  *
  * Lesesiden for meldekortvedtak (SELECT) bor i [no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.MeldekortvedtakPostgresRepo].
- * Endres skjemaet for `meldekortvedtak`-tabellen må begge stedene oppdateres.
+ * Endres skjemaet for `meldekortvedtak`- eller `meldeperiodebehandling`-tabellen må begge stedene oppdateres.
  */
 class MottakPostgresRepo(
     private val sessionFactory: PostgresSessionFactory,
@@ -92,6 +95,11 @@ class MottakPostgresRepo(
         sessionFactory.withTransaction(transactionContext) { tx ->
             // Meldekortvedtak er immutable etter iverksettelse og dedupliseres på id, jf. V37__meldekortvedtak.sql.
             // ON CONFLICT DO NOTHING gjør lagring idempotent og trygt ved samtidighet mellom PODs / retries fra innsender.
+            //
+            // Expand-fase (expand/contract for rullende deploy): vi dual-skriver behandlingene både til den
+            // gamle JSONB-kolonnen `meldeperiodebehandlinger` (som gamle podder fortsatt leser) og til den nye
+            // `meldeperiodebehandling`-tabellen. Når lesing er flyttet og gamle podder er ute, fjernes JSONB-skrivingen
+            // og deretter selve kolonnen (egen migrering).
             val antallRader = tx.run(
                 sqlQuery(
                     """
@@ -123,9 +131,53 @@ class MottakPostgresRepo(
             if (antallRader == 0) {
                 logger.info { "Hoppet over lagring av meldekortvedtak ${meldekortvedtak.id} - finnes allerede (sak ${meldekortvedtak.sakId})" }
             } else {
+                // Behandlingene lagres kun når selve vedtaket faktisk ble satt inn, slik at lagringen forblir idempotent.
+                meldekortvedtak.meldeperiodebehandlinger.forEach { behandling ->
+                    lagreMeldeperiodebehandling(meldekortvedtak, behandling, tx)
+                }
                 logger.info { "Lagret meldekortvedtak ${meldekortvedtak.id} for sak ${meldekortvedtak.sakId}" }
             }
         }
+    }
+
+    private fun lagreMeldeperiodebehandling(
+        meldekortvedtak: Meldekortvedtak,
+        behandling: Meldeperiodebehandling,
+        tx: TransactionalSession,
+    ) {
+        tx.run(
+            sqlQuery(
+                """
+                INSERT INTO meldeperiodebehandling (
+                    meldekortvedtak_id,
+                    sak_id,
+                    meldeperiode_id,
+                    meldeperiode_kjede_id,
+                    brukers_meldekort_id,
+                    fra_og_med,
+                    til_og_med,
+                    dager
+                ) VALUES (
+                    :meldekortvedtak_id,
+                    :sak_id,
+                    :meldeperiode_id,
+                    :meldeperiode_kjede_id,
+                    :brukers_meldekort_id,
+                    :fra_og_med,
+                    :til_og_med,
+                    to_jsonb(:dager::jsonb)
+                )
+                """,
+                "meldekortvedtak_id" to meldekortvedtak.id.toString(),
+                "sak_id" to meldekortvedtak.sakId.toString(),
+                "meldeperiode_id" to behandling.meldeperiodeId.toString(),
+                "meldeperiode_kjede_id" to behandling.meldeperiodeKjedeId.toString(),
+                "brukers_meldekort_id" to behandling.brukersMeldekortId?.toString(),
+                "fra_og_med" to behandling.periode.fraOgMed,
+                "til_og_med" to behandling.periode.tilOgMed,
+                "dager" to behandling.dager.tilDagerDbJson(),
+            ).asUpdate,
+        )
     }
 
     override fun lagreMeldeperiode(
