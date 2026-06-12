@@ -7,6 +7,10 @@ import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldeperiodebehandlingDag
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Reduksjon
 import java.time.LocalDate
 
+/**
+ * Serialisering av dagene i en meldeperiodebehandling til/fra JSONB-kolonnen `meldeperiodebehandling.dager`.
+ * Selve behandlingen lagres som kolonner i `meldeperiodebehandling`-tabellen; kun listen av dager ligger som JSONB.
+ */
 private data class DagDbJson(
     val dato: LocalDate,
     val status: StatusDb,

@@ -195,7 +195,7 @@ class MeldekortvedtakPostgresRepoTest {
     }
 
     @Test
-    fun `dual-skriver behandlingene til meldeperiodebehandling-tabellen`() {
+    fun `skriver behandlingene til meldeperiodebehandling-tabellen`() {
         withMigratedDb(runIsolated = false) { helper ->
             val periode1 = ObjectMother.periode()
             val periode2 = periode1.plus14Dager()

@@ -12,6 +12,15 @@ import no.nav.tiltakspenger.meldekort.meldekortvedtak.MeldeperiodebehandlingDag
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Reduksjon
 import java.time.LocalDate
 
+/**
+ * Serialisering av hele meldeperiodebehandlinger til/fra den gamle JSONB-kolonnen
+ * `meldekortvedtak.meldeperiodebehandlinger`.
+ *
+ * Etter at lesing og skriving er flyttet til `meldeperiodebehandling`-tabellen (se
+ * `MeldeperiodebehandlingDagDbJson` for det nye dager-formatet) er disse funksjonene ikke lenger i bruk
+ * i produksjonskoden. De beholdes midlertidig fordi kolonnen fortsatt finnes; både kolonnen og denne
+ * filen fjernes når `meldeperiodebehandlinger`-kolonnen droppes (eget steg).
+ */
 private data class MeldeperiodebehandlingDbJson(
     val meldeperiodeId: String,
     val meldeperiodeKjedeId: String,

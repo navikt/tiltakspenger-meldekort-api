@@ -10,7 +10,6 @@ import no.nav.tiltakspenger.meldekort.arena.infra.tilDb
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldeperiodebehandling
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.tilDagerDbJson
-import no.nav.tiltakspenger.meldekort.meldekortvedtak.infra.tilMeldeperiodebehandlingerDbJson
 import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode
 import no.nav.tiltakspenger.meldekort.mottak.MottakRepo
 import no.nav.tiltakspenger.meldekort.mottak.MottattSak
@@ -96,10 +95,9 @@ class MottakPostgresRepo(
             // Meldekortvedtak er immutable etter iverksettelse og dedupliseres på id, jf. V37__meldekortvedtak.sql.
             // ON CONFLICT DO NOTHING gjør lagring idempotent og trygt ved samtidighet mellom PODs / retries fra innsender.
             //
-            // Expand-fase (expand/contract for rullende deploy): vi dual-skriver behandlingene både til den
-            // gamle JSONB-kolonnen `meldeperiodebehandlinger` (som gamle podder fortsatt leser) og til den nye
-            // `meldeperiodebehandling`-tabellen. Når lesing er flyttet og gamle podder er ute, fjernes JSONB-skrivingen
-            // og deretter selve kolonnen (egen migrering).
+            // Behandlingene skrives kun til meldeperiodebehandling-tabellen. Den gamle JSONB-kolonnen
+            // `meldeperiodebehandlinger` på meldekortvedtak skrives ikke lenger (NOT NULL droppet i V41) og
+            // droppes i et eget, senere steg.
             val antallRader = tx.run(
                 sqlQuery(
                     """
@@ -108,15 +106,13 @@ class MottakPostgresRepo(
                         sak_id,
                         opprettet,
                         er_korrigering,
-                        er_automatisk_behandlet,
-                        meldeperiodebehandlinger
+                        er_automatisk_behandlet
                     ) VALUES (
                         :id,
                         :sak_id,
                         :opprettet,
                         :er_korrigering,
-                        :er_automatisk_behandlet,
-                        to_jsonb(:meldeperiodebehandlinger::jsonb)
+                        :er_automatisk_behandlet
                     )
                     ON CONFLICT (id) DO NOTHING
                     """,
@@ -125,7 +121,6 @@ class MottakPostgresRepo(
                     "opprettet" to meldekortvedtak.opprettet,
                     "er_korrigering" to meldekortvedtak.erKorrigering,
                     "er_automatisk_behandlet" to meldekortvedtak.erAutomatiskBehandlet,
-                    "meldeperiodebehandlinger" to meldekortvedtak.meldeperiodebehandlinger.tilMeldeperiodebehandlingerDbJson(),
                 ).asUpdate,
             )
             if (antallRader == 0) {
