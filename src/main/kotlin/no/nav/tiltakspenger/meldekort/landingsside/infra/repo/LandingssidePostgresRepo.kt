@@ -75,11 +75,8 @@ private fun harInnsendteMeldekort(
               AND mb.mottatt IS NOT NULL
             UNION ALL
             SELECT 1
-            FROM meldekortvedtak mv
-            CROSS JOIN LATERAL jsonb_array_elements(mv.meldeperiodebehandlinger) AS mb_vedtak
-            JOIN meldeperiode mp ON mp.sak_id = mv.sak_id
-                                AND mb_vedtak->>'meldeperiodeKjedeId' = mp.kjede_id
-            WHERE mv.sak_id = :sak_id
+            FROM meldeperiodebehandling mb_vedtak
+            WHERE mb_vedtak.sak_id = :sak_id
         ) AS har_innsendte_meldekort
         """,
             "sak_id" to sakId.toString(),
@@ -104,10 +101,9 @@ private fun hentMeldekortTilUtfylling(
           AND mp.kan_fylles_ut_fra_og_med <= :tidsgrense
           AND NOT EXISTS (
               SELECT 1
-              FROM meldekortvedtak mv
-              CROSS JOIN LATERAL jsonb_array_elements(mv.meldeperiodebehandlinger) AS mb_vedtak
-              WHERE mv.sak_id = mp.sak_id
-                AND mb_vedtak->>'meldeperiodeKjedeId' = mp.kjede_id
+              FROM meldeperiodebehandling mb_vedtak
+              WHERE mb_vedtak.sak_id = mp.sak_id
+                AND mb_vedtak.meldeperiode_kjede_id = mp.kjede_id
           )
         ORDER BY mp.kan_fylles_ut_fra_og_med
         """,

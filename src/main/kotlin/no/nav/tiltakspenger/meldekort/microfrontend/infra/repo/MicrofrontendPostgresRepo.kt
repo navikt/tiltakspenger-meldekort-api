@@ -141,10 +141,9 @@ class MicrofrontendPostgresRepo(
                               AND mb.deaktivert IS NULL
                               AND NOT EXISTS (
                                   SELECT 1
-                                  FROM meldekortvedtak mv
-                                  CROSS JOIN LATERAL jsonb_array_elements(mv.meldeperiodebehandlinger) AS mb_vedtak
-                                  WHERE mv.sak_id = mp.sak_id
-                                    AND mb_vedtak->>'meldeperiodeKjedeId' = mp.kjede_id
+                                  FROM meldeperiodebehandling mb_vedtak
+                                  WHERE mb_vedtak.sak_id = mp.sak_id
+                                    AND mb_vedtak.meldeperiode_kjede_id = mp.kjede_id
                               )
                         )
                         SELECT

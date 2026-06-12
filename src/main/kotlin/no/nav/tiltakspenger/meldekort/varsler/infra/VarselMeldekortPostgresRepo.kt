@@ -52,10 +52,9 @@ class VarselMeldekortPostgresRepo(
                       )
                       AND NOT EXISTS (
                           SELECT 1
-                          FROM meldekortvedtak mv
-                          CROSS JOIN LATERAL jsonb_array_elements(mv.meldeperiodebehandlinger) AS mb
-                          WHERE mv.sak_id = :sak_id
-                            AND mb->>'meldeperiodeKjedeId' = mp.kjede_id
+                          FROM meldeperiodebehandling mb
+                          WHERE mb.sak_id = :sak_id
+                            AND mb.meldeperiode_kjede_id = mp.kjede_id
                       )
                     ORDER BY mp.kan_fylles_ut_fra_og_med
                     LIMIT 1

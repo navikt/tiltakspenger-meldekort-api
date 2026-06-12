@@ -184,10 +184,9 @@ class MeldekortPostgresRepo(
                             and mk.deaktivert is null
                             and not exists (
                                 select 1
-                                from meldekortvedtak mv
-                                cross join lateral jsonb_array_elements(mv.meldeperiodebehandlinger) as mb
-                                where mv.sak_id = mp.sak_id
-                                  and mb->>'meldeperiodeKjedeId' = mp.kjede_id
+                                from meldeperiodebehandling mb
+                                where mb.sak_id = mp.sak_id
+                                  and mb.meldeperiode_kjede_id = mp.kjede_id
                             )
                         order by mp.fra_og_med, mp.versjon desc
                         limit 1
@@ -220,10 +219,9 @@ class MeldekortPostgresRepo(
                           AND mp.kan_fylles_ut_fra_og_med <= :tidsgrense
                           AND NOT EXISTS (
                               SELECT 1
-                              FROM meldekortvedtak mv
-                              CROSS JOIN LATERAL jsonb_array_elements(mv.meldeperiodebehandlinger) AS mb_vedtak
-                              WHERE mv.sak_id = mp.sak_id
-                                AND mb_vedtak->>'meldeperiodeKjedeId' = mp.kjede_id
+                              FROM meldeperiodebehandling mb_vedtak
+                              WHERE mb_vedtak.sak_id = mp.sak_id
+                                AND mb_vedtak.meldeperiode_kjede_id = mp.kjede_id
                           )
                         ORDER BY mp.fra_og_med;
                     """,
