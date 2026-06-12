@@ -95,9 +95,7 @@ class MottakPostgresRepo(
             // Meldekortvedtak er immutable etter iverksettelse og dedupliseres på id, jf. V37__meldekortvedtak.sql.
             // ON CONFLICT DO NOTHING gjør lagring idempotent og trygt ved samtidighet mellom PODs / retries fra innsender.
             //
-            // Behandlingene skrives kun til meldeperiodebehandling-tabellen. Den gamle JSONB-kolonnen
-            // `meldeperiodebehandlinger` på meldekortvedtak skrives ikke lenger (NOT NULL droppet i V41) og
-            // droppes i et eget, senere steg.
+            // Behandlingene lagres i meldeperiodebehandling-tabellen (se lagreMeldeperiodebehandling under).
             val antallRader = tx.run(
                 sqlQuery(
                     """
