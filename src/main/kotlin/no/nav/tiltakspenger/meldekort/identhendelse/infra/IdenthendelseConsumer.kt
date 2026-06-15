@@ -42,4 +42,6 @@ class IdenthendelseConsumer(
     }
 
     override fun run() = consumer.run()
+
+    fun stop() = consumer.stop()
 }

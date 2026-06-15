@@ -240,6 +240,26 @@ tasks {
         from(file(".scripts/pre-commit"))
         into(file(".git/hooks"))
     }
+    // Kan stenges gracefully ned med:  pkill -TERM -f tiltakspenger.LokalMainKt
+    register<JavaExec>("runLokalt") {
+        group = "application"
+        description = "Kjører LokalMain (test-source-settet) lokalt med postgres i docker og fakes."
+        // LokalMain ligger i test-source-settet, så vi bruker test-runtime-classpath (ikke main).
+        mainClass.set("no.nav.tiltakspenger.LokalMainKt")
+        classpath = sourceSets["test"].runtimeClasspath
+        standardInput = System.`in`
+        // Graceful shutdown gir exit-kode fra signalet (SIGTERM=143, SIGINT/Ctrl+C=130). Det er normalt og skal ikke
+        // markere tasken som FAILED. Vi godtar derfor disse, men lar ekte krasj (andre koder) fortsatt feile.
+        isIgnoreExitValue = true
+        val execResult = executionResult
+        doLast {
+            val exitValue = execResult.get().exitValue
+            val gracefulShutdownKoder = setOf(0, 130, 143)
+            if (exitValue !in gracefulShutdownKoder) {
+                throw GradleException("runLokalt avsluttet med uventet exit-kode $exitValue.")
+            }
+        }
+    }
 
     build {
         dependsOn("gitHooks")
