@@ -14,12 +14,14 @@ const val MICROFRONTEND_APP: String = "tiltakspenger-meldekort-microfrontend"
 const val MICROFRONTEND_TEAM: String = "tpts"
 
 /**
- * Kafka-implementasjon av [TmsMikrofrontendClient]. Publiserer enable-/disable-meldinger på
- * microfrontend-topic-en med sakId som key.
+ * Kafka-implementasjon av [TmsMikrofrontendClient].
+ * Publiserer enable-/disable-meldinger på microfrontend-topic-en med sakId som key.
  *
- * [produserMelding] er en søm slik at meldingsbyggingen kan testes med en ekte fake i stedet for en
- * mock – i produksjon settes den til [Producer.produce]. [Producer] er en final-klasse rundt
- * KafkaProducer og kan ikke fakes direkte.
+ * [produserMelding] er en søm slik at meldingsbyggingen kan testes med en ekte fake i stedet for en mock – i produksjon settes den til [Producer.produce].
+ * [Producer] er en final-klasse rundt KafkaProducer og kan ikke fakes direkte.
+ *
+ * Se: https://tms-docs.nav.no/microfrontends/microfrontend-ssr/ og https://navikt.github.io/tms-dokumentasjon/microfrontend/ og https://aksel.nav.no/god-praksis/artikler/retningslinjer-for-design-av-mikrofrontends?tema=design
+ * Slack: #minside-microfrontends (eller #team-personbruker)
  */
 class TmsMikrofrontendKafkaProducer(
     private val topicName: String,

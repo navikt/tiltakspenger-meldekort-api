@@ -11,7 +11,6 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.getOrFail
 import no.nav.tiltakspenger.libs.dato.april
-import no.nav.tiltakspenger.libs.dato.februar
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContextAndPostgres
@@ -21,6 +20,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
@@ -37,11 +37,8 @@ import java.time.LocalDateTime
  */
 class MicrofrontendAggregertJobbEndToEndTest {
 
-    // Offset i spørringene er nå(clock).minusMonths(1). Default-klokka er 1. mai 2025, så offset ~ 1. april 2025.
-    private val innenforPeriode: Periode = ObjectMother.periode(tilSisteSøndagEtter = 13.april(2025))
-    private val utenforPeriode: Periode = ObjectMother.periode(tilSisteSøndagEtter = 16.februar(2025))
-    private val innenforOpprettet: LocalDateTime = 15.april(2025).atTime(10, 0)
-    private val utenforOpprettet: LocalDateTime = 3.februar(2025).atTime(10, 0)
+    private val periode: Periode = ObjectMother.periode(tilSisteSøndagEtter = 13.april(2025))
+    private val opprettet: LocalDateTime = 15.april(2025).atTime(10, 0)
 
     @Nested
     inner class Aktivering {
@@ -49,8 +46,8 @@ class MicrofrontendAggregertJobbEndToEndTest {
         @Test
         fun `aggregert jobb aktiverer alle saker som skal aktiveres`() {
             withTestApplicationContextAndPostgres(runIsolated = true) { tac ->
-                val sak1 = mottaSak(tac, periode = innenforPeriode, opprettet = innenforOpprettet)
-                val sak2 = mottaSak(tac, periode = innenforPeriode, opprettet = innenforOpprettet)
+                val sak1 = mottaSak(tac, periode = periode, opprettet = opprettet)
+                val sak2 = mottaSak(tac, periode = periode, opprettet = opprettet)
 
                 val resultat = tac.aktiverMicrofrontendJob.aktiverMicrofrontendForBrukere()
 
@@ -63,8 +60,8 @@ class MicrofrontendAggregertJobbEndToEndTest {
         @Test
         fun `aggregert jobb skiller vellykkede fra feilede saker`() {
             withTestApplicationContextAndPostgres(runIsolated = true) { tac ->
-                val vellykket = mottaSak(tac, periode = innenforPeriode, opprettet = innenforOpprettet)
-                val feilet = mottaSak(tac, periode = innenforPeriode, opprettet = innenforOpprettet)
+                val vellykket = mottaSak(tac, periode = periode, opprettet = opprettet)
+                val feilet = mottaSak(tac, periode = periode, opprettet = opprettet)
                 tac.tmsMikrofrontendClient.kastFeilFor(feilet.id)
 
                 val resultat = tac.aktiverMicrofrontendJob.aktiverMicrofrontendForBrukere()
@@ -77,8 +74,8 @@ class MicrofrontendAggregertJobbEndToEndTest {
         @Test
         fun `respekterer limit`() {
             withTestApplicationContextAndPostgres(runIsolated = true) { tac ->
-                mottaSak(tac, periode = innenforPeriode, opprettet = innenforOpprettet)
-                mottaSak(tac, periode = innenforPeriode, opprettet = innenforOpprettet)
+                mottaSak(tac, periode = periode, opprettet = opprettet)
+                mottaSak(tac, periode = periode, opprettet = opprettet)
 
                 tac.microfrontendRepo.hentSakerHvorMicrofrontendSkalAktiveres(limit = 1).getOrFail().size shouldBe 1
             }
@@ -91,8 +88,8 @@ class MicrofrontendAggregertJobbEndToEndTest {
         @Test
         fun `aggregert jobb inaktiverer alle saker som skal inaktiveres`() {
             withTestApplicationContextAndPostgres(runIsolated = true) { tac ->
-                val sak1 = mottaSak(tac, periode = utenforPeriode, opprettet = utenforOpprettet)
-                val sak2 = mottaSak(tac, periode = utenforPeriode, opprettet = utenforOpprettet)
+                val sak1 = mottaSakUtenRett(tac, periode = periode, opprettet = opprettet)
+                val sak2 = mottaSakUtenRett(tac, periode = periode, opprettet = opprettet)
 
                 val resultat = tac.inaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere()
 
@@ -105,8 +102,8 @@ class MicrofrontendAggregertJobbEndToEndTest {
         @Test
         fun `aggregert jobb skiller vellykkede fra feilede saker`() {
             withTestApplicationContextAndPostgres(runIsolated = true) { tac ->
-                val vellykket = mottaSak(tac, periode = utenforPeriode, opprettet = utenforOpprettet)
-                val feilet = mottaSak(tac, periode = utenforPeriode, opprettet = utenforOpprettet)
+                val vellykket = mottaSakUtenRett(tac, periode = periode, opprettet = opprettet)
+                val feilet = mottaSakUtenRett(tac, periode = periode, opprettet = opprettet)
                 tac.tmsMikrofrontendClient.kastFeilFor(feilet.id)
 
                 val resultat = tac.inaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere()
@@ -119,8 +116,8 @@ class MicrofrontendAggregertJobbEndToEndTest {
         @Test
         fun `respekterer limit`() {
             withTestApplicationContextAndPostgres(runIsolated = true) { tac ->
-                mottaSak(tac, periode = utenforPeriode, opprettet = utenforOpprettet)
-                mottaSak(tac, periode = utenforPeriode, opprettet = utenforOpprettet)
+                mottaSakUtenRett(tac, periode = periode, opprettet = opprettet)
+                mottaSakUtenRett(tac, periode = periode, opprettet = opprettet)
 
                 tac.microfrontendRepo.hentSakerHvorMicrofrontendSkalInaktiveres(limit = 1).getOrFail().size shouldBe 1
             }
@@ -149,11 +146,19 @@ class MicrofrontendAggregertJobbEndToEndTest {
         tac: TestApplicationContextMedPostgres,
         periode: Periode,
         opprettet: LocalDateTime,
+        girRett: Map<LocalDate, Boolean> = periode.tilDager().associateWith { true },
     ): Sak = mottaSakRequest(
         tac = tac,
-        meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = opprettet)),
+        meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = opprettet, girRett = girRett)),
         runJobs = false,
     )
+
+    /** En sak uten en åpen oppgave: siste versjon gir ikke rett på noen dag (opphør/ingen rett). */
+    private suspend fun ApplicationTestBuilder.mottaSakUtenRett(
+        tac: TestApplicationContextMedPostgres,
+        periode: Periode,
+        opprettet: LocalDateTime,
+    ): Sak = mottaSak(tac, periode = periode, opprettet = opprettet, girRett = periode.tilDager().associateWith { false })
 
     /** Repo som returnerer [MicrofrontendFeil.DatabaseFeil] ved henting, for å teste at jobbene håndterer feil uten å kaste. */
     private object FeilendeMicrofrontendRepo : MicrofrontendRepo {

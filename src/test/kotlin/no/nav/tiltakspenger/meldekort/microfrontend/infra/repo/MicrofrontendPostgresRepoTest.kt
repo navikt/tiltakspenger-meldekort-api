@@ -7,7 +7,6 @@ import no.nav.tiltakspenger.TestApplicationContextMedPostgres
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.getOrFail
 import no.nav.tiltakspenger.libs.dato.april
-import no.nav.tiltakspenger.libs.dato.februar
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContextAndPostgres
 import no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottaSakRequest
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -17,8 +16,7 @@ import org.junit.jupiter.api.Test
 /**
  * Fokuserte "happy case"-tester for [no.nav.tiltakspenger.meldekort.microfrontend.infra.repo.MicrofrontendPostgresRepo] – én per spørring/funksjon.
  *
- * Full dekning av kriteriene (offset, gir_rett, allerede aktivert/inaktivert, limit) ligger i
- * [no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendEndToEndTest].
+ * Full dekning av kriteriene (gir rett, allerede aktivert/inaktivert, siste versjon, ingen oppgave igjen, limit) ligger i [no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendEndToEndTest].
  *
  * All seeding går via [mottaSakRequest] (ytterste nivå), ikke direkte mot basen.
  */
@@ -38,7 +36,7 @@ class MicrofrontendPostgresRepoTest {
     }
 
     @Test
-    fun `hentSakerHvorMicrofrontendSkalAktiveres returnerer sak med fersk meldeperiode`() {
+    fun `hentSakerHvorMicrofrontendSkalAktiveres returnerer sak med meldeperiode som gir rett`() {
         withTestApplicationContextAndPostgres { tac ->
             val sak = mottaSakRequest(
                 tac = tac,
@@ -53,12 +51,17 @@ class MicrofrontendPostgresRepoTest {
     }
 
     @Test
-    fun `hentSakerHvorMicrofrontendSkalInaktiveres returnerer sak uten fersk meldeperiode`() {
+    fun `hentSakerHvorMicrofrontendSkalInaktiveres returnerer sak uten meldeperiode som gir rett`() {
         withTestApplicationContextAndPostgres { tac ->
+            val periode = ObjectMother.periode(tilSisteSøndagEtter = 13.april(2025))
             val sak = mottaSakRequest(
                 tac = tac,
                 meldeperioder = listOf(
-                    meldeperiodeDto(periode = ObjectMother.periode(tilSisteSøndagEtter = 16.februar(2025)), opprettet = 3.februar(2025).atTime(10, 0)),
+                    meldeperiodeDto(
+                        periode = periode,
+                        opprettet = 15.april(2025).atTime(10, 0),
+                        girRett = periode.tilDager().associateWith { false },
+                    ),
                 ),
                 runJobs = false,
             )
