@@ -72,6 +72,28 @@ class MeldekortPostgresRepo(
         }
     }
 
+    override fun lagreInnsendtMeldekortFraBruker(meldekort: BrukersMeldekort, sessionContext: SessionContext?): Int {
+        return sessionFactory.withSession(sessionContext) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update meldekort_bruker set
+                        mottatt = :mottatt,
+                        dager = to_jsonb(:dager::jsonb),
+                        locale = :locale
+                    where id = :id
+                        and mottatt is null
+                        and deaktivert is null
+                    """,
+                    "id" to meldekort.id.toString(),
+                    "mottatt" to meldekort.mottatt,
+                    "dager" to meldekort.dager.tilMeldekortDagDbJson(),
+                    "locale" to meldekort.locale,
+                ).asUpdate,
+            )
+        }
+    }
+
     override fun deaktiver(meldekortId: MeldekortId, sessionContext: SessionContext?) {
         sessionFactory.withSession(sessionContext) { session ->
             session.run(

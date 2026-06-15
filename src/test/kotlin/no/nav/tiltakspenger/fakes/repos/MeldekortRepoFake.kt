@@ -36,6 +36,17 @@ class MeldekortRepoFake(
         data.get()[meldekort.id] = meldekort
     }
 
+    override fun lagreInnsendtMeldekortFraBruker(meldekort: BrukersMeldekort, sessionContext: SessionContext?): Int {
+        val eksisterende = data.get()[meldekort.id]
+        // Speiler det betingede UPDATE-et i MeldekortPostgresRepo: skriv kun dersom meldekortet fortsatt er
+        // åpent for innsending (finnes, ikke mottatt og ikke deaktivert).
+        if (eksisterende == null || eksisterende.mottatt != null || eksisterende.deaktivert != null) {
+            return 0
+        }
+        data.get()[meldekort.id] = meldekort
+        return 1
+    }
+
     override fun deaktiver(
         meldekortId: MeldekortId,
         sessionContext: SessionContext?,
