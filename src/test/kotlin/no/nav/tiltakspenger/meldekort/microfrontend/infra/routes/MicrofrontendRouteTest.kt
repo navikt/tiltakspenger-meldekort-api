@@ -33,6 +33,33 @@ class MicrofrontendRouteTest {
     }
 
     @Test
+    fun `microfrontendKortInfo - opphør av eneste meldeperiode gir 0 meldekort til utfylling`() {
+        withTestApplicationContextAndPostgres(clock = tikkendeKlokke1mars2025()) { tac ->
+            val opprettet = nå(tac.clock)
+            // Først et vedtak med rett, deretter opphør av samme meldeperiodekjede (ny versjon uten rett).
+            // Ingen innsendt meldekort eller meldekortvedtak.
+            val sak = mottaSakRequest(
+                tac = tac,
+                meldeperioder = listOf(
+                    meldeperiodeDto(periode = periode, versjon = 1, opprettet = opprettet),
+                    meldeperiodeDto(
+                        periode = periode,
+                        versjon = 2,
+                        opprettet = opprettet.plusDays(1),
+                        girRett = periode.tilDager().associateWith { false },
+                    ),
+                ),
+                runJobs = false,
+            )
+
+            microfrontendKortInfoRequest(fnr = sak.fnr.verdi)!!.shouldBe(
+                antallMeldekortKlarTilInnsending = 0,
+                nesteMuligeInnsendingstidspunkt = null,
+            )
+        }
+    }
+
+    @Test
     fun `microfrontendKortInfo - svarer 500 når henting av meldekort-info feiler`() {
         withTestApplicationContext { _ ->
             microfrontendKortInfoRequest(
