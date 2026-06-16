@@ -126,6 +126,79 @@ class LagreMeldekortRepoTest {
     }
 
     @Nested
+    inner class LagreInnsendtMeldekortFraBruker {
+        @Test
+        fun `oppdaterer mottatt, dager og locale når meldekortet er åpent for innsending`() {
+            withMigratedDb(runIsolated = false) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = null, locale = null)
+                lagreMeldekort(helper, meldekort)
+
+                val innsendt = meldekort.copy(mottatt = nå(fixedClock), locale = "nb")
+                val antallOppdaterte = repo.lagreInnsendtMeldekortFraBruker(innsendt)
+
+                antallOppdaterte shouldBe 1
+                repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
+                    result shouldNotBe null
+                    result!!.mottatt shouldBe innsendt.mottatt
+                    result.locale shouldBe "nb"
+                }
+            }
+        }
+
+        @Test
+        fun `oppdaterer ikke et meldekort som allerede er mottatt`() {
+            withMigratedDb(runIsolated = false) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val alleredeMottatt = nå(fixedClock)
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = alleredeMottatt, locale = "nb")
+                lagreMeldekort(helper, meldekort)
+
+                val nyInnsending = meldekort.copy(mottatt = nå(fixedClock).plusDays(1), locale = "en")
+                val antallOppdaterte = repo.lagreInnsendtMeldekortFraBruker(nyInnsending)
+
+                antallOppdaterte shouldBe 0
+                repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
+                    result shouldNotBe null
+                    result!!.mottatt shouldBe alleredeMottatt
+                    result.locale shouldBe "nb"
+                }
+            }
+        }
+
+        @Test
+        fun `oppdaterer ikke et deaktivert meldekort`() {
+            withMigratedDb(runIsolated = false) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = null, locale = null)
+                lagreMeldekort(helper, meldekort)
+                repo.deaktiver(meldekort.id)
+
+                val innsendt = meldekort.copy(mottatt = nå(fixedClock), locale = "nb")
+                val antallOppdaterte = repo.lagreInnsendtMeldekortFraBruker(innsendt)
+
+                antallOppdaterte shouldBe 0
+                repo.hentForMeldekortId(meldekort.id, meldekort.fnr).also { result ->
+                    result shouldNotBe null
+                    result!!.mottatt shouldBe null
+                }
+            }
+        }
+
+        @Test
+        fun `oppdaterer ikke et ukjent meldekort`() {
+            withMigratedDb(runIsolated = false) { helper ->
+                val repo = helper.meldekortPostgresRepo
+                val meldekort = ObjectMother.meldekort(fnr = helper.nesteFnr(), mottatt = null)
+
+                val antallOppdaterte = repo.lagreInnsendtMeldekortFraBruker(meldekort.copy(mottatt = nå(fixedClock)))
+
+                antallOppdaterte shouldBe 0
+            }
+        }
+    }
+
+    @Nested
     inner class Deaktiver {
         @Test
         fun `deaktiver setter deaktivert`() {
