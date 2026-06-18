@@ -1,26 +1,16 @@
 package no.nav.tiltakspenger.meldekort.infra
 
-import arrow.core.Either
-import arrow.core.right
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.server.application.Application
+import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.util.AttributeKey
-import no.nav.tiltakspenger.libs.common.CorrelationId
-import no.nav.tiltakspenger.libs.jobber.LeaderPodLookup
-import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupClient
-import no.nav.tiltakspenger.libs.jobber.LeaderPodLookupFeil
-import no.nav.tiltakspenger.libs.jobber.RunCheckFactory
-import no.nav.tiltakspenger.libs.jobber.TaskExecutor
 import no.nav.tiltakspenger.libs.tid.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.infra.Configuration.httpPort
-import no.nav.tiltakspenger.meldekort.infra.routes.CALL_ID_MDC_KEY
 import no.nav.tiltakspenger.meldekort.infra.routes.ktorSetup
 import java.time.Clock
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.atomic.AtomicBoolean
 
 fun main() {
     System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
@@ -44,67 +34,57 @@ fun start(
 
     log.info { "starting server" }
 
+    val shutdownPågår = AtomicBoolean(false)
+
     val server = embeddedServer(
         factory = Netty,
-        port = port,
+        configure = {
+            connector {
+                this.port = port
+            }
+            shutdownGracePeriod = 5_000
+            shutdownTimeout = 30_000
+        },
         module = {
+            konfigurerLivssyklus(
+                log = log,
+                isNais = isNais,
+                applicationContext = applicationContext,
+                shutdownPågår = shutdownPågår,
+            )
             ktorSetup(applicationContext = applicationContext)
         },
     )
-    server.application.attributes.put(isReadyKey, true)
 
-    val runCheckFactory = if (isNais) {
-        RunCheckFactory(
-            leaderPodLookup =
-            LeaderPodLookupClient(
-                electorPath = Configuration.electorPath(),
-                logger = KotlinLogging.logger { },
-            ),
-            attributes = server.application.attributes,
-            isReadyKey = isReadyKey,
-        )
-    } else {
-        RunCheckFactory(
-            leaderPodLookup =
-            object : LeaderPodLookup {
-                override fun amITheLeader(localHostName: String): Either<LeaderPodLookupFeil, Boolean> =
-                    true.right()
-            },
-            attributes = server.application.attributes,
-            isReadyKey = isReadyKey,
-        )
+    try {
+        server.start(wait = true)
+    } catch (e: RejectedExecutionException) {
+        // Ved redeploy kan SIGTERM treffe akkurat mens Netty binder server-socketen.
+        // Ktor registrerer sin egen shutdown hook i EmbeddedServer.start(), og dersom den rekker å terminere Netty EventLoopGroup før bind er ferdig, kan Netty kaste RejectedExecutionException("event executor terminated") fra start().
+        // Det er en forventet shutdown-race, ikke en reell oppstartsfeil.
+        // Kilder:
+        // - Ktor lifecycle-events: https://ktor.io/docs/server-events.html
+        // - Ktor shutdown: https://ktor.io/docs/server-shutdown.html
+        // - Ktor EmbeddedServer.start/stop: https://github.com/ktorio/ktor/blob/3.4.3/ktor-server/ktor-server-core/jvm/src/io/ktor/server/engine/EmbeddedServerJvm.kt
+        // - Ktor NettyApplicationEngine.start/stop: https://github.com/ktorio/ktor/blob/3.4.3/ktor-server/ktor-server-netty/jvm/src/io/ktor/server/netty/NettyApplicationEngine.kt
+        // - Netty EventLoopGroup shutdownGracefully: https://netty.io/4.1/api/io/netty/channel/EventLoopGroup.html
+        if (shutdownPågår.get() && e.erNettyEventExecutorTerminert()) {
+            log.info(e) { "Ignorerer Netty startup-feil fordi shutdown allerede pågår" }
+        } else {
+            throw e
+        }
     }
-
-    TaskExecutor.startJob(
-        initialDelay = if (isNais) 1.minutes else 1.seconds,
-        runCheckFactory = runCheckFactory,
-        mdcCallIdKey = CALL_ID_MDC_KEY,
-        tasks = listOf<suspend (CorrelationId) -> Any?>(
-            { applicationContext.sendMeldekortService.sendMeldekort() },
-            { applicationContext.journalførMeldekortService.journalførNyeMeldekort() },
-            { applicationContext.varselJobber.kjørAlle() },
-            { applicationContext.arenaMeldekortStatusService.oppdaterArenaMeldekortStatusForSaker() },
-            { applicationContext.aktiverMicrofrontendJob.aktiverMicrofrontendForBrukere() },
-            { applicationContext.inaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere() },
-        ),
-    )
-
-    if (Configuration.isNais()) {
-        val consumers = listOf(
-            applicationContext.identhendelseConsumer,
-        )
-        consumers.forEach { it.run() }
-    }
-
-    Runtime.getRuntime().addShutdownHook(
-        Thread {
-            server.application.attributes.put(isReadyKey, false)
-            server.stop(gracePeriodMillis = 5_000, timeoutMillis = 30_000)
-        },
-    )
-    server.start(wait = true)
 }
 
-val isReadyKey = AttributeKey<Boolean>("isReady")
+/**
+ * Den eksakte (substring av) feilmeldingen Netty bruker når EventLoopGroup allerede er terminert.
+ * Vi matcher på tekst fordi Netty ikke gir en mer spesifikk exception-type her, så denne må verifiseres ved oppgradering av Ktor/Netty (det finnes en test som låser eksakt streng: erNettyEventExecutorTerminert).
+ */
+private const val NETTY_EVENT_EXECUTOR_TERMINATED = "event executor terminated"
 
-fun Application.isReady() = attributes.getOrNull(isReadyKey) == true
+/**
+ * Sjekker om feilen er Netty sin "event executor terminated"-feil som kan oppstå når SIGTERM treffer under oppstart.
+ * Matcher på meldingstekst, så den må verifiseres ved oppgradering av Ktor/Netty.
+ */
+fun Throwable.erNettyEventExecutorTerminert(): Boolean =
+    this is RejectedExecutionException && message?.contains(NETTY_EVENT_EXECUTOR_TERMINATED) == true

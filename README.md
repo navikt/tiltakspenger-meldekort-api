@@ -29,6 +29,11 @@ Appen kan startes lokalt med main-funksjonen i LokalMain.kt. Som default krever 
 
 Dersom du ønsker å kjøre ekte autentiseringsflyt lokalt, sett miljøvariabelen `BRUK_FAKE_AUTH=false`, f.eks. via run config i Intellij.
 
+# Dokumentasjon
+
+- [Landingsside – hvordan teste](docs/landingsside.md)
+- [Manuelle steg](docs/MANUAL_STEPS.md)
+
 # Arkitektur og pakkestruktur
 
 Prosjektet er organisert etter feature, med DDD- og heksagonale prinsipper som rettesnor. Det betyr at kode først og fremst skal ligge nær den delen av domenet den tilhører, ikke i generelle tekniske lag som `routes`, `clients` eller `repository` på toppnivå.
