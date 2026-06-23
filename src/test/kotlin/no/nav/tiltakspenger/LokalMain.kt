@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.tiltakspenger.dev.devRoutes
 import no.nav.tiltakspenger.libs.tid.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.infra.Configuration
 import no.nav.tiltakspenger.meldekort.infra.start
@@ -14,9 +15,12 @@ fun main() {
 
     val log = KotlinLogging.logger {}
     log.info { "Starter lokal server" }
+    val applicationContext = LokalApplicationContext(Clock.system(zoneIdOslo))
     start(
         log = log,
         isNais = false,
-        applicationContext = LokalApplicationContext(Clock.system(zoneIdOslo)),
+        applicationContext = applicationContext,
+        // Dev-only endepunkter (f.eks. POST /dev/sak). Aldri med i prod.
+        additionalRoutes = { devRoutes(applicationContext) },
     )
 }

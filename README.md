@@ -29,6 +29,29 @@ Appen kan startes lokalt med main-funksjonen i LokalMain.kt. Som default krever 
 
 Dersom du ønsker å kjøre ekte autentiseringsflyt lokalt, sett miljøvariabelen `BRUK_FAKE_AUTH=false`, f.eks. via run config i Intellij.
 
+### Dev-only endepunkt: opprett en sak med meldeperioder
+Når appen kjøres via `LokalMain` registreres et dev-only endepunkt `POST /dev/sak` som oppretter en sak med meldeperioder. Det er **kun** tilgjengelig lokalt (koblet inn via `additionalRoutes` i `LokalMain`, ligger i test-sourceset og er aldri med i prod-artifacten), og krever ingen autentisering.
+
+Endepunktet kjører gjennom samme mapping og service (`MottakFraSaksbehandlingService`) som det ekte motta-endepunktet `POST /saksbehandling/sak`, så flyten blir mest mulig prodlik – det gjenbruker testbuilderne (`ObjectMother`) for å lage payloaden.
+
+Uten body får du sane defaults: tilfeldig `fnr`/`sakId`/`saksnummer` og 4 sammenhengende 14-dagers meldeperioder fordelt **2 bakover** (avsluttede meldekort du kan fylle ut nå) og **2 fremover**.
+
+```sh
+# Alt default
+curl -X POST http://localhost:8083/dev/sak
+
+# Med overrides (alle felter er valgfrie)
+curl -X POST http://localhost:8083/dev/sak -H 'Content-Type: application/json' -d '{
+  "fnr": "12345678910",
+  "antallMeldeperioderBakover": 2,
+  "antallMeldeperioderFremover": 2,
+  "harSoknadUnderBehandling": false,
+  "kanSendeInnHelgForMeldekort": false
+}'
+```
+
+Felter i body (alle valgfrie): `fnr`, `sakId`, `saksnummer`, `antallMeldeperioderBakover` (default 2), `antallMeldeperioderFremover` (default 2), `forsteMeldeperiodeStart` (overstyrer fordelingen og genererer perioder sekvensielt fra denne datoen), `harSoknadUnderBehandling`, `kanSendeInnHelgForMeldekort`. Svaret er `201 Created` med `sakId`, `saksnummer`, `fnr` og en oppsummering av meldeperiodene.
+
 # Dokumentasjon
 
 - [Landingsside – hvordan teste](docs/landingsside.md)

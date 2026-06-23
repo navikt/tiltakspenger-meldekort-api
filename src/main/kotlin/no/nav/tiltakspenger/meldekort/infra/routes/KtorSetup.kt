@@ -12,6 +12,7 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.header
 import io.ktor.server.request.path
+import io.ktor.server.routing.Routing
 import io.ktor.server.routing.routing
 import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
@@ -32,9 +33,13 @@ const val CALL_ID_MDC_KEY = "call-id"
  *
  * Auth-provider og path-prefiks for hver feature eies av feature-pakken selv,
  * via `*Module(applicationContext)`-funksjonene.
+ *
+ * [additionalRoutes] er en hook for å registrere ekstra routes som ikke skal være med i prod
+ * (f.eks. dev-only endepunkter satt opp fra LokalMain). Er `null` i prod.
  */
 fun Application.ktorSetup(
     applicationContext: ApplicationContext,
+    additionalRoutes: (Routing.() -> Unit)? = null,
 ) {
     install(CallId) {
         generate { java.util.UUID.randomUUID().toString() }
@@ -62,6 +67,8 @@ fun Application.ktorSetup(
         brukerModule(applicationContext)
         microfrontendModule(applicationContext.hentMeldekortInfoForMicrofrontendService)
         landingssideModule(applicationContext)
+
+        additionalRoutes?.invoke(this)
     }
 }
 

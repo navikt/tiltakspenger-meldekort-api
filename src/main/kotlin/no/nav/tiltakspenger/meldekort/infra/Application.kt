@@ -27,6 +27,7 @@ fun start(
     applicationContext: ApplicationContext = ApplicationContext(
         clock = Clock.system(zoneIdOslo),
     ),
+    additionalRoutes: (io.ktor.server.routing.Routing.() -> Unit)? = null,
 ) {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
         log.error(e) { e.message }
@@ -52,7 +53,7 @@ fun start(
                 applicationContext = applicationContext,
                 shutdownPågår = shutdownPågår,
             )
-            ktorSetup(applicationContext = applicationContext)
+            ktorSetup(applicationContext = applicationContext, additionalRoutes = additionalRoutes)
         },
     )
 
