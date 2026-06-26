@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import kotlinx.kover.gradle.plugin.dsl.AggregationType
 import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 
-val jvmVersion = JvmTarget.JVM_21
+val jvmVersion = JvmTarget.JVM_25
 val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
 val ktorVersion = "3.4.3"

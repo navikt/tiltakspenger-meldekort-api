@@ -97,12 +97,13 @@ object Configuration {
             ),
         )
 
-    fun applicationProfile() =
-        when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
+    fun applicationProfile(): Profile {
+        return when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
             "prod-gcp" -> Profile.PROD
             "dev-gcp" -> Profile.DEV
             else -> Profile.LOCAL
         }
+    }
 
     private fun config() =
         when (applicationProfile()) {
