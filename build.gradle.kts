@@ -9,7 +9,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 val ktorVersion = "3.4.3"
 val mockkVersion = "1.14.11"
 val felleslibVersion = "0.0.827"
-val kotestVersion = "6.1.11"
+val kotestVersion = "6.2.1"
 val kotlinxCoroutinesVersion = "1.11.0"
 val tmsVarselBuilderVersion = "2.2.0"
 val tmsMikrofrontendSelectorBuilderVersion = "3.0.0"
@@ -26,7 +26,7 @@ plugins {
     application
     kotlin("jvm") version "2.4.0"
     kotlin("plugin.serialization") version "2.4.0"
-    id("com.diffplug.spotless") version "8.6.0"
+    id("com.diffplug.spotless") version "8.7.0"
     id("com.github.ben-manes.versions") version "0.54.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
 }
@@ -73,8 +73,8 @@ dependencies {
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMikrofrontendSelectorBuilderVersion")
 
     // DB
-    implementation("org.flywaydb:flyway-database-postgresql:12.8.1")
-    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("org.flywaydb:flyway-database-postgresql:12.9.0")
+    implementation("com.zaxxer:HikariCP:7.1.0")
     implementation("org.postgresql:postgresql:42.7.11")
     implementation("com.github.seratch:kotliquery:1.9.1")
 
