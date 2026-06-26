@@ -6,8 +6,8 @@ ENV LANG='nb_NO.UTF-8'
 
 WORKDIR /app
 
-COPY build/install/tiltakspenger-meldekort-api/lib/*.jar ./
+COPY build/install/tiltakspenger-meldekort-api/lib/*.jar /app/lib/
 
 USER nobody
 
-CMD ["tiltakspenger-meldekort-api.jar"]
+ENTRYPOINT ["java", "-cp", "/app/lib/*", "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"]
