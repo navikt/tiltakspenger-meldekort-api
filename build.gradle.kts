@@ -1,14 +1,12 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import kotlinx.kover.gradle.plugin.dsl.AggregationType
 import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 
-val jvmVersion = JvmTarget.JVM_25
 val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
 val ktorVersion = "3.4.3"
 val mockkVersion = "1.14.11"
-val felleslibVersion = "0.0.827"
+val felleslibVersion = "0.0.842"
 val kotestVersion = "6.2.1"
 val kotlinxCoroutinesVersion = "1.11.0"
 val tmsVarselBuilderVersion = "2.2.0"
@@ -208,8 +206,8 @@ tasks {
     }
 
     kotlin {
+        jvmToolchain(25)
         compilerOptions {
-            jvmTarget.set(jvmVersion)
             freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
             freeCompilerArgs.add("-Xwarning-level=IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE:disabled")
         }
