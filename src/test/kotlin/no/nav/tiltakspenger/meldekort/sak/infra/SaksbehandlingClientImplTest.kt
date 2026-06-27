@@ -2,7 +2,6 @@ package no.nav.tiltakspenger.meldekort.sak.infra
 
 import arrow.core.left
 import arrow.core.right
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.marcinziolo.kotlin.wiremock.contains
 import com.marcinziolo.kotlin.wiremock.equalTo
 import com.marcinziolo.kotlin.wiremock.post
@@ -10,6 +9,7 @@ import com.marcinziolo.kotlin.wiremock.returns
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.AccessToken
+import no.nav.tiltakspenger.libs.common.withWireMockServer
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingApiError
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
@@ -30,16 +30,6 @@ internal class SaksbehandlingClientImplTest {
         expiresAt = Instant.MAX,
         invaliderCache = {},
     )
-
-    private fun withWireMockServer(block: (WireMockServer) -> Unit) {
-        val server = WireMockServer(0)
-        server.start()
-        try {
-            block(server)
-        } finally {
-            server.stop()
-        }
-    }
 
     @Test
     fun `200-respons gir Right(Unit) og sender Bearer-token og Content-Type JSON`() {

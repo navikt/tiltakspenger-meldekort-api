@@ -12,6 +12,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.withWireMockServer
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortServiceFeil
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -61,16 +62,6 @@ internal class ArenaMeldekortHttpClientTest {
         expiresAt = Instant.MAX,
         invaliderCache = {},
     )
-
-    private fun withWireMockServer(block: (WireMockServer) -> Unit) {
-        val server = WireMockServer(0)
-        server.start()
-        try {
-            block(server)
-        } finally {
-            server.stop()
-        }
-    }
 
     private fun WireMockServer.client() = ArenaMeldekortHttpClient(
         baseUrl = baseUrl(),
