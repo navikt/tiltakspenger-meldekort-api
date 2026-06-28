@@ -9,6 +9,7 @@ import no.nav.tiltakspenger.db.TestDatabaseManager
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.dato.mai
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.Readiness
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.test.common.TestSessionFactory
@@ -79,7 +80,7 @@ private fun <T : ApplicationContext> runTestApplication(
 ) {
     testApplication {
         application {
-            ktorSetup(context)
+            ktorSetup(context, Readiness())
             additionalConfig()
         }
         try {

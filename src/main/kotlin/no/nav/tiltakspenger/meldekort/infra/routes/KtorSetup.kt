@@ -15,6 +15,8 @@ import io.ktor.server.request.path
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.routing
 import no.nav.tiltakspenger.libs.json.objectMapper
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.Readiness
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.healthRoutes
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.TexasAuthenticationProvider
 import no.nav.tiltakspenger.libs.texas.client.TexasClient
@@ -39,6 +41,7 @@ const val CALL_ID_MDC_KEY = "call-id"
  */
 fun Application.ktorSetup(
     applicationContext: ApplicationContext,
+    readiness: Readiness,
     additionalRoutes: (Routing.() -> Unit)? = null,
 ) {
     install(CallId) {
@@ -60,7 +63,7 @@ fun Application.ktorSetup(
     setupAuthentication(applicationContext.texasClient)
 
     routing {
-        healthRoutes()
+        healthRoutes(erKlar = readiness::erKlar)
 
         mottakModule(applicationContext)
         meldekortModule(applicationContext)

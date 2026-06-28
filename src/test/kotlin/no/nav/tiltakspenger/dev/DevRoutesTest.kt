@@ -19,6 +19,7 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.dato.mai
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.Readiness
 import no.nav.tiltakspenger.meldekort.infra.routes.ktorSetup
 import org.junit.jupiter.api.Test
 
@@ -120,7 +121,7 @@ class DevRoutesTest {
         testApplication {
             val tac = TestApplicationContextMedInMemoryDb(clock = klokke)
             application {
-                ktorSetup(tac)
+                ktorSetup(tac, Readiness())
                 routing { devRoutes(tac) }
             }
             block(tac)
