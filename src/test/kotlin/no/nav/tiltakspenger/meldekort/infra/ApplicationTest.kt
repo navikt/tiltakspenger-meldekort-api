@@ -10,7 +10,10 @@ import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.application.ServerReady
 import io.ktor.server.testing.testApplication
 import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.Bakgrunnsprosessoppsett
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Readiness
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.konfigurerOppstart
+import no.nav.tiltakspenger.meldekort.infra.routes.CALL_ID_MDC_KEY
 import no.nav.tiltakspenger.meldekort.infra.routes.ktorSetup
 import org.junit.jupiter.api.Test
 
@@ -22,7 +25,7 @@ class ApplicationTest {
     private val log = KotlinLogging.logger { }
 
     /**
-     * Kjører den faktiske meldekort-livssyklusen ([konfigurerMeldekortLivssyklus]) sammen med det ekte [ktorSetup]-oppsettet og de ekte bakgrunnsprosessene (skedulert [no.nav.tiltakspenger.libs.jobber.TaskExecutor]).
+     * Kjører den faktiske meldekort-oppstarten ([konfigurerOppstart] med [jobber] + [kafkaConsumers]) sammen med det ekte [ktorSetup]-oppsettet og de ekte bakgrunnsprosessene (skedulert [no.nav.tiltakspenger.libs.jobber.TaskExecutor]).
      * Verifiserer at /isready følger ServerReady -> shutdown slik produksjonskoden faktisk kobler det opp, inkludert at samme [Readiness] deles av healthRoutes og livssyklusen.
      */
     @Test
@@ -33,11 +36,17 @@ class ApplicationTest {
         application {
             app = this
             ktorSetup(applicationContext = context, readiness = readiness)
-            konfigurerMeldekortLivssyklus(
+            konfigurerOppstart(
                 log = log,
                 isNais = false,
-                applicationContext = context,
                 readiness = readiness,
+                oppsett = Bakgrunnsprosessoppsett(
+                    mdcCallIdKey = CALL_ID_MDC_KEY,
+                    electorPath = { "test-elector-path" },
+                    tasks = jobber(context),
+                    kafkaConsumers = kafkaConsumers(isNais = false, applicationContext = context),
+                    clock = context.clock,
+                ),
             )
         }
 

@@ -2,10 +2,11 @@ package no.nav.tiltakspenger.meldekort.infra
 
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.ktor.common.oppstart.Readiness
-import no.nav.tiltakspenger.libs.ktor.common.oppstart.startKtorServer
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.Bakgrunnsprosessoppsett
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.startApp
 import no.nav.tiltakspenger.libs.tid.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.infra.Configuration.httpPort
+import no.nav.tiltakspenger.meldekort.infra.routes.CALL_ID_MDC_KEY
 import no.nav.tiltakspenger.meldekort.infra.routes.ktorSetup
 import java.time.Clock
 
@@ -30,16 +31,18 @@ fun start(
         log.error(e) { e.message }
     }
 
-    val readiness = Readiness()
-
-    startKtorServer(log = log, port = port) { shutdownPågår ->
-        konfigurerMeldekortLivssyklus(
-            log = log,
-            isNais = isNais,
-            applicationContext = applicationContext,
-            readiness = readiness,
-            shutdownPågår = shutdownPågår,
-        )
+    startApp(
+        log = log,
+        port = port,
+        isNais = isNais,
+        oppsett = Bakgrunnsprosessoppsett(
+            mdcCallIdKey = CALL_ID_MDC_KEY,
+            electorPath = Configuration::electorPath,
+            tasks = jobber(applicationContext),
+            kafkaConsumers = kafkaConsumers(isNais = isNais, applicationContext = applicationContext),
+            clock = applicationContext.clock,
+        ),
+    ) { readiness ->
         ktorSetup(applicationContext = applicationContext, readiness = readiness, additionalRoutes = additionalRoutes)
     }
 }
