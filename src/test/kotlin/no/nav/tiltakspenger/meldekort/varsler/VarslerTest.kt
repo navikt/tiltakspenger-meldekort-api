@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.varsler
 
 import arrow.core.left
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -13,7 +14,6 @@ import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.Clock
 import java.time.LocalDateTime
 
@@ -159,7 +159,7 @@ class VarslerTest {
 
         @Test
         fun `to SkalAktiveres er ugyldig - kun ett pågående varsel tillatt`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 Varsler(
                     listOf(
                         skalAktiveres(skalAktiveresTidspunkt = mandagKl10),
@@ -172,7 +172,7 @@ class VarslerTest {
         @Test
         fun `SkalAktiveres og Aktiv samtidig er ugyldig`() {
             val clock = nyClock()
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 varsler(
                     aktiv(skalAktiveresTidspunkt = mandagKl10, clock = clock),
                     skalAktiveres(skalAktiveresTidspunkt = tirsdagKl10, clock = clock),
@@ -347,7 +347,7 @@ class VarslerTest {
             val ukjent = aktiv(varselId = VarselId.random(), opprettet = 6.januar(2025).atHour(10))
             val varsler = Varsler(listOf(eksisterende))
 
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 varsler.oppdater(ukjent)
             }
         }

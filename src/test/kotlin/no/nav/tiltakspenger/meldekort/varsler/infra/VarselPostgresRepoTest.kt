@@ -22,7 +22,6 @@ import no.nav.tiltakspenger.meldekort.varsler.Varsel
 import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -189,7 +188,7 @@ class VarselPostgresRepoTest {
                 ),
             )
 
-            assertThrows<Throwable> {
+            shouldThrow<Throwable> {
                 helper.varselPostgresRepo.lagre(
                     aktiv(
                         sakId = sakId,
@@ -236,7 +235,7 @@ class VarselPostgresRepoTest {
                 ),
             )
 
-            assertThrows<Throwable> {
+            shouldThrow<Throwable> {
                 helper.varselPostgresRepo.lagre(
                     inaktivert(
                         sakId = sakId,

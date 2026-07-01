@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.meldeperiode
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
@@ -14,7 +15,6 @@ import no.nav.tiltakspenger.meldekort.meldeperiode.Meldeperiode.Companion.kanFyl
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class MeldeperiodeTest {
     private val id = MeldeperiodeId.random()
@@ -90,7 +90,7 @@ class MeldeperiodeTest {
         fun `perioden inneholder ikke en fredag`() {
             val periode = Periode(fraOgMed = 19.november(2025), tilOgMed = 20.november(2025))
 
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 periode.kanFyllesUtFraOgMed()
             }
         }

@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.varsler
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -8,7 +9,6 @@ import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -49,28 +49,28 @@ class VarselTest {
 
         @Test
         fun `feiler med skalAktiveresTidspunkt før kl 9`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 skalAktiveres(skalAktiveresTidspunkt = 6.januar(2025).atTime(8, 59))
             }
         }
 
         @Test
         fun `feiler med skalAktiveresTidspunkt etter kl 17`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 skalAktiveres(skalAktiveresTidspunkt = 6.januar(2025).atHour(17))
             }
         }
 
         @Test
         fun `feiler med skalAktiveresTidspunkt på lørdag`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 skalAktiveres(skalAktiveresTidspunkt = 4.januar(2025).atHour(10))
             }
         }
 
         @Test
         fun `feiler med skalAktiveresTidspunkt på søndag`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 skalAktiveres(skalAktiveresTidspunkt = 5.januar(2025).atHour(10))
             }
         }
@@ -94,14 +94,14 @@ class VarselTest {
             val varsel = skalAktiveres(skalAktiveresTidspunkt = 10.januar(2025).atHour(9))
             val nå = 6.januar(2025).atHour(10)
 
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 varsel.aktiver(nå)
             }
         }
 
         @Test
         fun `feiler når skalAktiveresEksterntTidspunkt er før skalAktiveresTidspunkt`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 Varsel.SkalAktiveres(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -166,7 +166,7 @@ class VarselTest {
 
         @Test
         fun `feiler når aktiveringstidspunkt er før skalAktiveresTidspunkt`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 Varsel.Aktiv(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -185,7 +185,7 @@ class VarselTest {
 
         @Test
         fun `feiler når eksternAktiveringstidspunkt er før aktiveringstidspunkt`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 Varsel.Aktiv(
                     sakId = sakId,
                     saksnummer = saksnummer,
@@ -204,7 +204,7 @@ class VarselTest {
 
         @Test
         fun `feiler når skalAktiveresEksterntTidspunkt er før skalAktiveresTidspunkt`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 Varsel.Aktiv(
                     sakId = sakId,
                     saksnummer = saksnummer,

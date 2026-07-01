@@ -2,6 +2,8 @@ package no.nav.tiltakspenger.meldekort.meldekort
 
 import arrow.core.left
 import arrow.core.right
+import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
@@ -19,8 +21,6 @@ import no.nav.tiltakspenger.meldekort.meldekort.MeldekortForKjede
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import java.time.temporal.ChronoUnit
 
 class MeldekortForKjedeTest {
@@ -140,7 +140,7 @@ class MeldekortForKjedeTest {
         @Test
         fun `må ha et innsendt meldekort for å korrigere`() {
             val clock = TikkendeKlokke()
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock))
                 val meldekort = ObjectMother.meldekort(mottatt = null, meldeperiode = meldeperiode)
                 MeldekortForKjede(listOf(meldekort)).korriger(
@@ -250,20 +250,20 @@ class MeldekortForKjedeTest {
         @Test
         fun `for hver versjon av en meldeperiode, kan max 1 meldekort ikke være mottatt`() {
             val clock = TikkendeKlokke()
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
                 val meldekort2 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
 
-            assertDoesNotThrow {
+            shouldNotThrowAny {
                 val meldekort1 = ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
                 val meldekort2 =
                     ObjectMother.meldekort(mottatt = null, meldeperiode = ObjectMother.meldeperiode(versjon = 2, opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
 
-            assertDoesNotThrow {
+            shouldNotThrowAny {
                 val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
                 val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
@@ -273,13 +273,13 @@ class MeldekortForKjedeTest {
         @Test
         fun `meldekortene må være sortert på versjon`() {
             val clock = TikkendeKlokke()
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, opprettet = nå(clock)))
                 val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 1, opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
 
-            assertDoesNotThrow {
+            shouldNotThrowAny {
                 val meldekort1 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 1, opprettet = nå(clock)))
                 val meldekort2 = ObjectMother.meldekort(meldeperiode = ObjectMother.meldeperiode(versjon = 2, opprettet = nå(clock)))
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
@@ -288,7 +288,7 @@ class MeldekortForKjedeTest {
 
         @Test
         fun `meldekort med samme meldeperiode versjon må være sortert på mottatt`() {
-            assertThrows<IllegalArgumentException> {
+            shouldThrow<IllegalArgumentException> {
                 val meldekort1 =
                     ObjectMother.meldekort(
                         mottatt = nå(fixedClock),
@@ -301,7 +301,7 @@ class MeldekortForKjedeTest {
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
             }
 
-            assertDoesNotThrow {
+            shouldNotThrowAny {
                 val meldekort1 = ObjectMother.meldekort()
                 val meldekort2 = ObjectMother.meldekort()
                 MeldekortForKjede(listOf(meldekort1, meldekort2))
