@@ -23,7 +23,9 @@ class JournalførMeldekortService(
                 log.info { "Journalfører meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
                 Either.catch {
                     val pdfOgJson = if (meldekort.korrigering) {
-                        pdfgenClient.genererKorrigertMeldekortPdf(meldekort = meldekort)
+                        pdfgenClient.genererKorrigertMeldekortPdf(meldekort = meldekort).map {
+                            it to null
+                        }
                             .getOrElse { return@forEach }
                     } else {
                         pdfgenClient.genererMeldekortPdf(meldekort = meldekort)
@@ -32,10 +34,22 @@ class JournalførMeldekortService(
                     log.info { "Pdf generert for meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
                     val journalpostId = dokarkivClient.journalførMeldekort(
                         meldekort = meldekort,
-                        pdfOgJson = pdfOgJson,
+                        pdfOgJson = pdfOgJson.first,
                         callId = CorrelationId.generate(),
                         clock = clock,
                     )
+                    /*
+                        TODO - fjern denne bolken, og returner kun 1 pdf når vi har verifisert at pdf'ene er lik.
+                     */
+                    pdfOgJson.second?.let {
+                        dokarkivClient.journalførMeldekort(
+                            meldekort = meldekort,
+                            pdfOgJson = it,
+                            callId = CorrelationId.generate(),
+                            clock = clock,
+                        )
+                    }
+
                     log.info { "Meldekort journalført. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}. JournalpostId: $journalpostId" }
                     journalføringRepo.markerJournalført(meldekort.id, journalpostId, nå(clock))
                     log.info { "Meldekort markert som journalført. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}. JournalpostId: $journalpostId" }

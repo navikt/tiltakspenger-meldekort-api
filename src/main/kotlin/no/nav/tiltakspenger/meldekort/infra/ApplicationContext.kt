@@ -277,7 +277,9 @@ open class ApplicationContext(val clock: Clock) {
     }
 
     open val pdfgenClient: PdfgenClient by lazy {
-        PdfgenClientImpl()
+        PdfgenClientImpl(
+            isLocalOrDev = !Configuration.isProd(),
+        )
     }
 
     open val identhendelseService: IdenthendelseService by lazy {

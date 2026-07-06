@@ -46,8 +46,8 @@ object Configuration {
                 "SAKSBEHANDLING_API_AUDIENCE" to "prod-gcp:tpts:tiltakspenger-saksbehandling-api",
                 "SAKSBEHANDLING_API_URL" to "http://tiltakspenger-saksbehandling-api",
                 "MELDEKORT_FRONTEND_URL" to "https://www.nav.no/tiltakspenger/meldekort",
-                "PDFGEN_SCOPE" to "api://prod-gcp.tpts.tiltakspenger-pdfgen/.default",
                 "PDFGEN_URL" to "http://tiltakspenger-pdfgen",
+                "PDFGENRS_URL" to "http://tiltakspenger-pdfgenrs",
                 "ARENA_MELDEKORTSERVICE_URL" to "https://meldekortservice.prod-fss-pub.nais.io",
                 "ARENA_MELDEKORTSERVICE_AUDIENCE" to "prod-fss:meldekort:meldekortservice",
             ),
@@ -62,8 +62,8 @@ object Configuration {
                 "SAKSBEHANDLING_API_AUDIENCE" to "dev-gcp:tpts:tiltakspenger-saksbehandling-api",
                 "SAKSBEHANDLING_API_URL" to "http://tiltakspenger-saksbehandling-api",
                 "MELDEKORT_FRONTEND_URL" to "https://www.ansatt.dev.nav.no/tiltakspenger/meldekort",
-                "PDFGEN_SCOPE" to "api://dev-gcp.tpts.tiltakspenger-pdfgen/.default",
                 "PDFGEN_URL" to "http://tiltakspenger-pdfgen",
+                "PDFGENRS_URL" to "http://tiltakspenger-pdfgenrs",
                 "ARENA_MELDEKORTSERVICE_URL" to "https://meldekortservice-q2.dev-fss-pub.nais.io",
                 "ARENA_MELDEKORTSERVICE_AUDIENCE" to "dev-fss:meldekort:meldekortservice-q2",
             ),
@@ -88,8 +88,8 @@ object Configuration {
                 "KAFKA_KEYSTORE_PATH" to "",
                 "KAFKA_CREDSTORE_PASSWORD" to "",
                 "MELDEKORT_FRONTEND_URL" to "http://localhost:2223/tiltakspenger/meldekort",
-                "PDFGEN_SCOPE" to "localhost",
                 "PDFGEN_URL" to "http://host.docker.internal:8081",
+                "PDFGENRS_URL" to "http://host.docker.internal:8083",
                 "ARENA_MELDEKORTSERVICE_URL" to "http://host.docker.internal:8091",
                 "ARENA_MELDEKORTSERVICE_AUDIENCE" to "meldekortservice",
                 "BRUK_FAKE_AUTH" to System.getenv("BRUK_FAKE_AUTH"),
@@ -135,6 +135,7 @@ object Configuration {
     val dokarkivUrl: String by lazy { config()[Key("DOKARKIV_URL", stringType)] }
     val dokarkivScope: String by lazy { config()[Key("DOKARKIV_SCOPE", stringType)] }
     val pdfgenUrl: String by lazy { config()[Key("PDFGEN_URL", stringType)] }
+    val pdfgenrsUrl: String by lazy { config()[Key("PDFGENRS_URL", stringType)] }
     val varselHendelseTopic: String by lazy { config()[Key("VARSEL_HENDELSE_TOPIC", stringType)] }
     val microfrontendTopic: String by lazy { config()[Key("MICROFRONTEND_TOPIC", stringType)] }
 

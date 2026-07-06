@@ -12,7 +12,6 @@ import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.meldekort.infra.httpClientGeneric
 import no.nav.tiltakspenger.meldekort.journalføring.KunneIkkeGenererePdf
 import no.nav.tiltakspenger.meldekort.journalføring.PdfA
-import no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenClientImpl
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -32,7 +31,7 @@ class PdfgenClientTest {
 
     private fun createPdfgenClient(mockEngine: MockEngine): PdfgenClientImpl {
         val client = httpClientGeneric(mockEngine)
-        return PdfgenClientImpl(client = client)
+        return PdfgenClientImpl(client = client, isLocalOrDev = true)
     }
 
     @Nested
@@ -43,7 +42,7 @@ class PdfgenClientTest {
             val pdfgenClient = createPdfgenClient(mockEngine)
 
             val resp = pdfgenClient.genererMeldekortPdf(ObjectMother.meldekort())
-            val pdf = resp.getOrNull()?.pdf
+            val pdf = resp.getOrNull()?.first?.pdf
 
             pdf?.toBase64() shouldBe PdfA(pdfContent).toBase64()
             resp.getOrNull()!!

@@ -7,7 +7,7 @@ interface PdfgenClient {
     suspend fun genererMeldekortPdf(
         meldekort: BrukersMeldekort,
         errorContext: String = "SakId: ${meldekort.sakId}, saksnummer: ${meldekort.meldeperiode.saksnummer} meldekortId: ${meldekort.id}",
-    ): Either<KunneIkkeGenererePdf, PdfOgJson>
+    ): Either<KunneIkkeGenererePdf, Pair<PdfOgJson, PdfOgJson?>>
 
     suspend fun genererKorrigertMeldekortPdf(
         meldekort: BrukersMeldekort,

@@ -1,6 +1,7 @@
 package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import arrow.core.Either
+import arrow.core.flatMap
 import arrow.core.left
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
@@ -13,6 +14,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.infra.Configuration
@@ -23,6 +26,7 @@ import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
 import no.nav.tiltakspenger.meldekort.journalføring.PdfgenClient
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import java.util.UUID
+import kotlin.time.measureTimedValue
 
 const val PDFGEN_PATH = "api/v1/genpdf/tpts"
 
@@ -31,25 +35,46 @@ const val PDFGEN_PATH = "api/v1/genpdf/tpts"
  */
 class PdfgenClientImpl(
     private val baseUrl: String = Configuration.pdfgenUrl,
+    private val pdfgenrsBaseUrl: String = Configuration.pdfgenrsUrl,
     private val client: HttpClient = httpClientWithRetry(),
+    private val isLocalOrDev: Boolean,
 ) : PdfgenClient {
     private val log = KotlinLogging.logger {}
 
     override suspend fun genererMeldekortPdf(
         meldekort: BrukersMeldekort,
         errorContext: String,
-    ): Either<KunneIkkeGenererePdf, PdfOgJson> {
-        val base = "$baseUrl/$PDFGEN_PATH/meldekort"
-        val uri = if (meldekort.locale == "en") {
-            "$base-en"
+    ): Either<KunneIkkeGenererePdf, Pair<PdfOgJson, PdfOgJson?>> {
+        val pdfgenBaseUrl = "$baseUrl/$PDFGEN_PATH/meldekort"
+        val pdfgenUri = if (meldekort.locale == "en") {
+            "$pdfgenBaseUrl-en"
         } else {
-            base
+            pdfgenBaseUrl
         }
-        return pdfgenRequest(
-            uri = uri,
-            jsonPayload = { meldekort.toDTO() },
-            errorContext = errorContext,
-        )
+
+        val pdfgenrsBaseUrl = "$pdfgenrsBaseUrl/$PDFGEN_PATH/meldekort"
+        val pdfgenrsUri = if (meldekort.locale == "en") {
+            "$pdfgenrsBaseUrl-en"
+        } else {
+            pdfgenrsBaseUrl
+        }
+
+        return if (isLocalOrDev) {
+            runParallel(
+                jsonPayload = { meldekort.toDTO() },
+                errorContext = errorContext,
+                pdfgenUri = pdfgenUri,
+                pdfgenrsUri = pdfgenrsUri,
+            )
+        } else {
+            pdfgenRequest(
+                uri = pdfgenUri,
+                jsonPayload = { meldekort.toDTO() },
+                errorContext = errorContext,
+            ).map {
+                it to null
+            }
+        }
     }
 
     override suspend fun genererKorrigertMeldekortPdf(
@@ -67,6 +92,33 @@ class PdfgenClientImpl(
             jsonPayload = { meldekort.toDTO() },
             errorContext = errorContext,
         )
+    }
+
+    private suspend fun runParallel(
+        jsonPayload: suspend () -> String,
+        errorContext: String,
+        pdfgenUri: String,
+        pdfgenrsUri: String,
+    ): Either<KunneIkkeGenererePdf, Pair<PdfOgJson, PdfOgJson?>> {
+        return coroutineScope {
+            val pdfgenDeferred = async {
+                measureTimedValue { pdfgenRequest(pdfgenUri, jsonPayload, errorContext) }
+            }
+            val pdfgenrsDeferred = async {
+                measureTimedValue { pdfgenRequest(pdfgenrsUri, jsonPayload, errorContext) }
+            }
+
+            val (pdfgenResult, pdfgenDuration) = pdfgenDeferred.await()
+            val (pdfgenrsResult, pdfgenrsDuration) = pdfgenrsDeferred.await()
+
+            log.info { "pdfgen brukte $pdfgenDuration, pdfgenrs brukte $pdfgenrsDuration" }
+
+            pdfgenResult.flatMap { pdfgen ->
+                pdfgenrsResult.map { pdfgenrs ->
+                    Pair(pdfgen, pdfgenrs)
+                }
+            }
+        }
     }
 
     private suspend fun pdfgenRequest(
