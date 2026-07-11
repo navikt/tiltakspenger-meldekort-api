@@ -21,6 +21,15 @@ import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortOversikt
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortServiceFeil
 import no.nav.tiltakspenger.meldekort.infra.httpClientWithRetry
 
+/**
+ * Klient for å hente Arena-meldekort for en bruker fra meldekortservice.
+ *
+ * Kildekode: https://github.com/navikt/meldekortservice
+ * Dokumentasjon: https://confluence.adeo.no/display/TMP/Meldekort-api
+ * API-spec: https://meldekortservice-q2.dev-fss-pub.nais.io/meldekortservice/internal/apidocs/index.html (samme sti på q1- og prod-ingressen)
+ * Slack: #team-meldeplikt
+ * Teamkatalog: https://teamkatalogen.nav.no/team/f0752a93-3728-4f63-bd56-053c1fe99a6e
+ */
 class ArenaMeldekortHttpClient(
     private val baseUrl: String,
     private val getToken: suspend () -> AccessToken,
