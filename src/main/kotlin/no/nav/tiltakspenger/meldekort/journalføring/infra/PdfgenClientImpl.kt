@@ -31,7 +31,13 @@ import kotlin.time.measureTimedValue
 const val PDFGEN_PATH = "api/v1/genpdf/tpts"
 
 /**
- * Konverterer domene til JSON som sendes til https://github.com/navikt/tiltakspenger-pdfgen for å generere PDF.
+ * Konverterer domene til JSON som sendes til pdfgen og pdfgenrs for å generere PDF.
+ *
+ * Kildekode: https://github.com/navikt/tiltakspenger-pdfgen og https://github.com/navikt/tiltakspenger-pdfgenrs
+ * Dokumentasjon: README-ene i kildekode-repoene
+ * API-spec: -
+ * Slack: #tiltakspenger-værsågod (eget team)
+ * Teamkatalog: https://teamkatalogen.nav.no/team/15bca3d2-2584-4167-85ba-faab1f1cfb53
  */
 class PdfgenClientImpl(
     private val baseUrl: String = Configuration.pdfgenUrl,

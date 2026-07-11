@@ -23,14 +23,18 @@ import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import org.slf4j.LoggerFactory
 import java.time.Clock
 
-/***
- * Dokarkiv (tidligere Joark) er en tjeneste som brukes for å opprette journalposter i Nav.
- * https://confluence.adeo.no/display/BOA/opprettJournalpost
- * swagger: https://dokarkiv-q2.dev.intern.nav.no/swagger-ui/index.html#/
- */
 const val INDIVIDSTONAD = "IND"
 const val DOKARKIV_PATH = "rest/journalpostapi/v1/journalpost"
 
+/**
+ * Dokarkiv (tidligere Joark) er en tjeneste som brukes for å opprette journalposter i Nav.
+ *
+ * Kildekode: https://github.com/navikt/dokarkiv
+ * Dokumentasjon: https://confluence.adeo.no/display/BOA/dokarkiv og https://confluence.adeo.no/display/BOA/opprettJournalpost
+ * API-spec: https://dokarkiv.dev.intern.nav.no/swagger-ui/index.html
+ * Slack: #team-dokumentløsninger (https://nav-it.slack.com/archives/C6W9E5GPJ)
+ * Teamkatalog: https://teamkatalogen.nav.no/team/f3388fcd-898e-40da-8d02-0bf1e3a79120
+ */
 class DokarkivClientImpl(
     private val client: HttpClient = httpClientWithRetry(timeout = 30L),
     private val baseUrl: String,
