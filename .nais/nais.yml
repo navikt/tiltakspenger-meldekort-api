@@ -63,6 +63,7 @@ spec:
       rules:
         - application: tiltakspenger-saksbehandling-api
         - application: tiltakspenger-pdfgen
+        - application: tiltakspenger-pdfgenrs
         - application: logging
           namespace: nais-system
         - application: {{ arenaMeldekortServiceApp }}

@@ -42,7 +42,7 @@ const val PDFGEN_PATH = "api/v1/genpdf/tpts"
 class PdfgenClientImpl(
     private val baseUrl: String = Configuration.pdfgenUrl,
     private val pdfgenrsBaseUrl: String = Configuration.pdfgenrsUrl,
-    private val client: HttpClient = httpClientWithRetry(),
+    private val client: HttpClient = httpClientWithRetry(timeout = 10L),
     private val isLocalOrDev: Boolean,
 ) : PdfgenClient {
     private val log = KotlinLogging.logger {}
@@ -67,7 +67,7 @@ class PdfgenClientImpl(
 
         return if (isLocalOrDev) {
             runParallel(
-                jsonPayload = { meldekort.toDTO() },
+                jsonPayload = meldekort.toDTO(),
                 errorContext = errorContext,
                 pdfgenUri = pdfgenUri,
                 pdfgenrsUri = pdfgenrsUri,
@@ -75,7 +75,7 @@ class PdfgenClientImpl(
         } else {
             pdfgenRequest(
                 uri = pdfgenUri,
-                jsonPayload = { meldekort.toDTO() },
+                jsonPayload = meldekort.toDTO(),
                 errorContext = errorContext,
             ).map {
                 it to null
@@ -95,13 +95,13 @@ class PdfgenClientImpl(
         }
         return pdfgenRequest(
             uri = uri,
-            jsonPayload = { meldekort.toDTO() },
+            jsonPayload = meldekort.toDTO(),
             errorContext = errorContext,
         )
     }
 
     private suspend fun runParallel(
-        jsonPayload: suspend () -> String,
+        jsonPayload: String,
         errorContext: String,
         pdfgenUri: String,
         pdfgenrsUri: String,
@@ -129,7 +129,7 @@ class PdfgenClientImpl(
 
     private suspend fun pdfgenRequest(
         uri: String,
-        jsonPayload: suspend () -> String,
+        jsonPayload: String,
         errorContext: String,
     ): Either<KunneIkkeGenererePdf, PdfOgJson> {
         return withContext(Dispatchers.IO) {
@@ -138,7 +138,7 @@ class PdfgenClientImpl(
                     accept(ContentType.Application.Json)
                     header("X-Correlation-ID", UUID.randomUUID())
                     contentType(ContentType.Application.Json)
-                    setBody(jsonPayload())
+                    setBody(jsonPayload)
                 }
                 val status = httpResponse.status
                 val jsonResponse = httpResponse.body<String>()
@@ -147,7 +147,7 @@ class PdfgenClientImpl(
                     Sikkerlogg.error { "Feil ved kall til pdfgen. $errorContext. uri: $uri. jsonResponse: $jsonResponse. jsonPayload: $jsonPayload." }
                     return@withContext KunneIkkeGenererePdf.left()
                 }
-                PdfOgJson(PdfA(httpResponse.body()), jsonPayload())
+                PdfOgJson(PdfA(httpResponse.body()), jsonPayload)
             }.mapLeft {
                 // Either.catch slipper igjennom CancellationException som er ønskelig.
                 log.error(it) { "Feil ved kall til pdfgen. $errorContext. Se sikkerlogg for detaljer." }

@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.meldekort.infra
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.apache5.Apache5
@@ -15,8 +14,6 @@ import io.ktor.serialization.jackson3.JacksonConverter
 import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import java.time.Duration
-
-private val LOG = KotlinLogging.logger {}
 
 private const val SIXTY_SECONDS = 60L
 
@@ -47,8 +44,7 @@ private fun HttpClient.config(timeout: Long) =
             logger =
                 object : Logger {
                     override fun log(message: String) {
-                        LOG.info { "HttpClient detaljer logget til securelog" }
-                        Sikkerlogg.info { message }
+                        Sikkerlogg.debug { message }
                     }
                 }
             level = LogLevel.INFO
