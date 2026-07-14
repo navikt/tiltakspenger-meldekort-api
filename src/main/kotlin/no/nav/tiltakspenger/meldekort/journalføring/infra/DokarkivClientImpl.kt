@@ -47,8 +47,9 @@ class DokarkivClientImpl(
         pdfOgJson: PdfOgJson,
         callId: CorrelationId,
         clock: Clock,
+        pdfgenrs: Boolean,
     ): JournalpostId {
-        val request = meldekort.toJournalpostDokument(pdfOgJson = pdfOgJson, clock = clock)
+        val request = meldekort.toJournalpostDokument(pdfOgJson = pdfOgJson, clock = clock, pdfgenrs = pdfgenrs)
         val meldekortId = meldekort.id
 
         try {

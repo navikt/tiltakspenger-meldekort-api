@@ -36,6 +36,7 @@ fun BrukersMeldekort.toJournalpostDokument(
     journalforendeEnhet: String? = JOURNALFORENDE_ENHET_AUTOMATISK_BEHANDLING,
     pdfOgJson: PdfOgJson,
     clock: Clock,
+    pdfgenrs: Boolean = false,
 ): JournalpostRequest {
     val tittel = this.lagTittel()
     return JournalpostRequest(
@@ -61,7 +62,7 @@ fun BrukersMeldekort.toJournalpostDokument(
                 ),
             ),
         ),
-        eksternReferanseId = this.id.toString(),
+        eksternReferanseId = if (pdfgenrs) "${this.id}-pdfgenrs" else this.id.toString(),
     )
 }
 

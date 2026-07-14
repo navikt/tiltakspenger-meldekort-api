@@ -47,6 +47,7 @@ class JournalførMeldekortService(
                             pdfOgJson = it,
                             callId = CorrelationId.generate(),
                             clock = clock,
+                            pdfgenrs = true,
                         )
                     }
 

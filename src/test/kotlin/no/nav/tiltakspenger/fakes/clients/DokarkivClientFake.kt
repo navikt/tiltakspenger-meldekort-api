@@ -20,6 +20,7 @@ class DokarkivClientFake(
         pdfOgJson: PdfOgJson,
         callId: CorrelationId,
         clock: Clock,
+        pdfgenrs: Boolean,
     ): JournalpostId {
         return journalpostIdGenerator.generer().also {
             log.info("Fake journalføring av meldekort ${meldekort.id}, returnerer journalpostId=$it")
