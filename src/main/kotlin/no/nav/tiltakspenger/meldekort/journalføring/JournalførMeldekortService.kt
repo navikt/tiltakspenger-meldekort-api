@@ -23,9 +23,7 @@ class JournalførMeldekortService(
                 log.info { "Journalfører meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
                 Either.catch {
                     val pdfOgJson = if (meldekort.korrigering) {
-                        pdfgenClient.genererKorrigertMeldekortPdf(meldekort = meldekort).map {
-                            it to null
-                        }
+                        pdfgenClient.genererKorrigertMeldekortPdf(meldekort = meldekort)
                             .getOrElse { return@forEach }
                     } else {
                         pdfgenClient.genererMeldekortPdf(meldekort = meldekort)

@@ -65,7 +65,7 @@ class PdfgenClientTest {
             val pdfgenClient = createPdfgenClient(mockEngine)
 
             val resp = pdfgenClient.genererKorrigertMeldekortPdf(ObjectMother.meldekort(korrigering = true))
-            val pdf = resp.getOrNull()?.pdf
+            val pdf = resp.getOrNull()?.first?.pdf
 
             pdf?.toBase64() shouldBe PdfA(pdfContent).toBase64()
             resp.getOrNull()!!

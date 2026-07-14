@@ -86,18 +86,28 @@ class PdfgenClientImpl(
     override suspend fun genererKorrigertMeldekortPdf(
         meldekort: BrukersMeldekort,
         errorContext: String,
-    ): Either<KunneIkkeGenererePdf, PdfOgJson> {
+    ): Either<KunneIkkeGenererePdf, Pair<PdfOgJson, PdfOgJson?>> {
         val base = "$baseUrl/$PDFGEN_PATH/meldekort-korrigert"
-        val uri = if (meldekort.locale == "en") {
-            "$base-en"
+        val uri = if (meldekort.locale == "en") "$base-en" else base
+        val pdfgenrsBase = "$pdfgenrsBaseUrl/$PDFGEN_PATH/meldekort-korrigert"
+        val pdfgenrsUri = if (meldekort.locale == "en") "$pdfgenrsBase-en" else pdfgenrsBase
+
+        return if (isLocalOrDev) {
+            runParallel(
+                jsonPayload = meldekort.toDTO(),
+                errorContext = errorContext,
+                pdfgenUri = pdfgenrsUri,
+                pdfgenrsUri = pdfgenrsUri,
+            )
         } else {
-            base
+            pdfgenRequest(
+                uri = uri,
+                jsonPayload = meldekort.toDTO(),
+                errorContext = errorContext,
+            ).map {
+                it to null
+            }
         }
-        return pdfgenRequest(
-            uri = uri,
-            jsonPayload = meldekort.toDTO(),
-            errorContext = errorContext,
-        )
     }
 
     private suspend fun runParallel(
