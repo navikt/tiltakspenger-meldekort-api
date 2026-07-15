@@ -20,7 +20,7 @@ import kotlin.streams.asSequence
  * Deteksjonen er heuristikker.
  * Flere setninger på én linje flagges når en setningsavslutter (`.`, `!`, `?`) etterfølges av mellomrom og stor forbokstav.
  * Brukket setning flagges når en fortsettelseslinje starter med liten bokstav og forrige linje i samme avsnitt ikke er avsluttet.
- * Norske/engelske forkortelser, tall (listepunkter, datoer) og innhold i backticks/kodeblokker er unntatt.
+ * Unntatt fra sjekkene er forkortelser, interjeksjoner, tall (listepunkter, datoer), sitater, innhold i backticks/kodeblokker/rå strenger og linjer som ser ut som kode.
  */
 class EnSetningPerLinjeKonsistTest {
     @Test
@@ -107,19 +107,30 @@ class EnSetningPerLinjeKonsistTest {
 
     /**
      * Trekker ut kommentarinnholdet (KDoc, blokkommentarer og `//`-kommentarer) fra kildekodelinjer.
-     * Linjer inne i kodeblokker (```) i kommentarer hoppes over.
+     * Linjer inne i kodeblokker (```) i kommentarer og inne i rå strenger (tre anførselstegn) hoppes over.
      * [Tekstlinje.gruppe] identifiserer sammenhengende avsnitt: blanke linjer, kodeblokker og bytte av kommentarblokk starter en ny gruppe.
+     * Trailing-kommentarer (kommentar etter kode på samme linje) isoleres i hver sin gruppe, siden nabolinjers kommentarer er uavhengige av hverandre.
      */
     private fun List<String>.toKommentarlinjer(): List<Tekstlinje> {
         val kommentarlinjer = mutableListOf<Tekstlinje>()
         var iBlokkommentar = false
         var iKodeblokk = false
+        var iRåstreng = false
         var gruppe = 0
 
         forEachIndexed { index, linje ->
             val linjenummer = index + 1
             val trimmet = linje.trim()
 
+            if (iRåstreng) {
+                if (linje.harOddetallRåstrengmarkører()) {
+                    iRåstreng = false
+                }
+                gruppe++
+                return@forEachIndexed
+            }
+
+            val erBlokklinje = iBlokkommentar || trimmet.startsWith("/*")
             val kommentartekst =
                 when {
                     iBlokkommentar -> {
@@ -138,9 +149,16 @@ class EnSetningPerLinjeKonsistTest {
 
                     else -> linje.tekstEtterLinjekommentar()
                 }
+            val erTrailingKommentar = kommentartekst != null && !erBlokklinje && !trimmet.startsWith("//")
 
             when {
-                kommentartekst == null -> gruppe++
+                kommentartekst == null -> {
+                    gruppe++
+                    iKodeblokk = false
+                    if (linje.harOddetallRåstrengmarkører()) {
+                        iRåstreng = true
+                    }
+                }
 
                 kommentartekst.startsWith("```") -> {
                     iKodeblokk = !iKodeblokk
@@ -151,10 +169,17 @@ class EnSetningPerLinjeKonsistTest {
 
                 kommentartekst.isEmpty() -> gruppe++
 
+                erTrailingKommentar -> {
+                    gruppe++
+                    kommentarlinjer.add(Tekstlinje(linjenummer, kommentartekst, gruppe))
+                    gruppe++
+                }
+
                 else -> kommentarlinjer.add(Tekstlinje(linjenummer, kommentartekst, gruppe))
             }
             if (trimmet.contains("*/")) {
                 gruppe++
+                iKodeblokk = false
             }
         }
         return kommentarlinjer
@@ -206,17 +231,20 @@ class EnSetningPerLinjeKonsistTest {
 
     /**
      * Heuristikk for om en linje inneholder mer enn én setning.
-     * Flagger setningsavslutter etterfulgt av mellomrom og stor forbokstav, med unntak for forkortelser, tall og innhold i backticks.
+     * Flagger setningsavslutter etterfulgt av mellomrom og stor forbokstav.
+     * Unntak: forkortelser, interjeksjoner, tall og innhold i backticks eller sitater (som maskeres før sjekken).
      */
     private fun String.harFlereSetninger(): Boolean {
-        val tekstUtenKodespenn = replace(inlineKodespennRegex, "kode")
-        return setningsskilleRegex.findAll(tekstUtenKodespenn).any { match ->
-            val avslutter = tekstUtenKodespenn[match.range.first]
+        val maskertTekst =
+            replace(inlineKodespennRegex, "kode")
+                .replace(sitatRegex, "sitat")
+        return setningsskilleRegex.findAll(maskertTekst).any { match ->
+            val avslutter = maskertTekst[match.range.first]
             val ordFørAvslutter =
-                tekstUtenKodespenn
+                maskertTekst
                     .take(match.range.first)
                     .trimEnd { char -> char in avsluttendeTegn }
-                    .takeLastWhile { char -> char.isLetterOrDigit() || char == '.' }
+                    .takeLastWhile { char -> char.isLetterOrDigit() || char == '.' || char == '%' }
                     .trimStart('.')
                     .lowercase()
 
@@ -234,13 +262,16 @@ class EnSetningPerLinjeKonsistTest {
      * Heuristikk for setninger som er brukket over flere linjer.
      * Flagger en fortsettelseslinje som starter med liten bokstav når forrige linje i samme avsnitt ikke er avsluttet.
      * Markørlinjer (listepunkter, KDoc-tags, overskrifter) starter aldri med liten bokstav og er dermed automatisk unntatt.
+     * Linjer som ser ut som kode (utkommentert kode eller kodeeksempler uten gjerder) unntas også.
      */
     private fun List<Tekstlinje>.finnBrukneSetninger(): List<Tekstlinje> =
         zipWithNext().mapNotNull { (forrige, denne) ->
             denne.takeIf {
                 denne.gruppe == forrige.gruppe &&
                     denne.tekst.first().isLowerCase() &&
-                    forrige.tekst.erUavsluttet()
+                    forrige.tekst.erUavsluttet() &&
+                    !forrige.tekst.erKodeaktig() &&
+                    !denne.tekst.erKodeaktig()
             }
         }
 
@@ -249,6 +280,10 @@ class EnSetningPerLinjeKonsistTest {
         val sisteTegn = trimEnd { char -> char in avsluttendeTegn || char.isWhitespace() }.lastOrNull() ?: return false
         return sisteTegn !in ".!?:"
     }
+
+    private fun String.erKodeaktig(): Boolean = kodeaktigRegex.containsMatchIn(this)
+
+    private fun String.harOddetallRåstrengmarkører(): Boolean = råstrengRegex.findAll(this).count() % 2 == 1
 
     private fun Path.markdownFiler(): Sequence<Path> =
         Files
@@ -276,21 +311,31 @@ class EnSetningPerLinjeKonsistTest {
 
     private companion object {
         /** Setningsavslutter, eventuelle avsluttende tegn (sitat/parentes/utheving), mellomrom, eventuelle innledende tegn og stor forbokstav. */
-        private val setningsskilleRegex = Regex("""[.!?]["'`»)\]*_]*\s+[\[("«]*\p{Lu}""")
+        private val setningsskilleRegex = Regex("""[.!?]["'`»)\]*_]*\s+[\[("«*_]*\p{Lu}""")
 
-        /** Tegn som kan stå inntil setningsavslutteren uten å være del av ordet (sitat/parentes/utheving). */
-        private val avsluttendeTegn = "\"'`»)]*_"
+        /** Tegn som kan stå inntil setningsavslutteren uten å være del av ordet (sitat/parentes/utheving/generics). */
+        private val avsluttendeTegn = "\"'`»)]*_>"
 
         private val inlineKodespennRegex = Regex("""`[^`]+`""")
 
+        /** Sitater («...» og "...") behandles som atomisk innhold på linje med kodespenn. */
+        private val sitatRegex = Regex("""«[^»]+»|"[^"]+"""")
+
+        /** Rå streng-markør (tre anførselstegn) — et oddetall på en kodelinje åpner eller lukker en rå streng. */
+        private val råstrengRegex = Regex("\"{3}")
+
+        /** Utkommentert kode og kodeeksempler: Kotlin-nøkkelord, kall-uttrykk eller tilordning. */
+        private val kodeaktigRegex = Regex("""^(val|var|fun|if|when|for|while|return|import)\b|^[\w.]+\(.*\)$|\s=\s""")
+
         private val forkortelser =
             setOf(
-                "f.eks", "bl.a", "dvs", "osv", "ca", "jf", "nr", "evt", "e.l", "o.l",
+                "f.eks", "bl.a", "dvs", "osv", "ca", "jf", "jfr", "nr", "evt", "e.l", "o.l",
                 "mv", "m.m", "m.fl", "pga", "ift", "iht", "mht", "inkl", "hhv",
+                "ifm", "mtp", "vha", "vedr", "ref",
                 "e.g", "i.e", "etc", "vs",
             )
 
-        private val interjeksjoner = setOf("nb", "obs")
+        private val interjeksjoner = setOf("nb", "obs", "viktig", "merk")
 
         private val ekskluderteKataloger = setOf("build", ".gradle", ".git", ".idea", "node_modules")
     }
