@@ -8,7 +8,8 @@ import no.nav.tiltakspenger.meldekort.varsler.Varsler
 interface VarselRepo {
 
     /**
-     * Lagrer (insert eller update) et varsel. Domenet eier dataene.
+     * Lagrer (insert eller update) et varsel.
+     * Domenet eier dataene.
      * @param aktiveringsmetadata Valgfri metadata fra klienten ved aktivering, kun for debugging i databasen.
      * @param inaktiveringsmetadata Valgfri metadata fra klienten ved inaktivering, kun for debugging i databasen.
      */

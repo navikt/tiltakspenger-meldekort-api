@@ -20,7 +20,8 @@ fun main() {
         log = log,
         isNais = false,
         applicationContext = applicationContext,
-        // Dev-only endepunkter (f.eks. POST /dev/sak). Aldri med i prod.
+        // Dev-only endepunkter (f.eks. POST /dev/sak).
+        // Aldri med i prod.
         additionalRoutes = { devRoutes(applicationContext) },
     )
 }

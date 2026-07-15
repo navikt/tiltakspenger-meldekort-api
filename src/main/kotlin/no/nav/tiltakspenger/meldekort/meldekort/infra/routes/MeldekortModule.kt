@@ -12,8 +12,8 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.korrige
  * Bruker auth-provider [IdentityProvider.TOKENX] og path-prefiks `/brukerfrontend`.
  *
  * TODO jah: `/brukerfrontend` + TOKENX deles nå mellom denne og [no.nav.tiltakspenger.meldekort.bruker.infra.routes.brukerModule].
- *  To moduler binder samme path/auth, og begge hevder i KDoc å "eie" prefikset. Vurder å samle prefiks + auth
- *  ett sted (f.eks. en delt `brukerfrontendModule { ... }` eller en konstant for path-en) i neste iterasjon.
+ *  To moduler binder samme path/auth, og begge hevder i KDoc å "eie" prefikset.
+ *  Vurder å samle prefiks + auth ett sted (f.eks. en delt `brukerfrontendModule { ... }` eller en konstant for path-en) i neste iterasjon.
  */
 fun Routing.meldekortModule(applicationContext: ApplicationContext) {
     val hentMeldekortService = applicationContext.hentMeldekortService

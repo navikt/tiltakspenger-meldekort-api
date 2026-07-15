@@ -20,11 +20,9 @@ interface SakVarselRepo {
      * Markerer saken som vurdert (skal_vurdere_varsel = false) med optimistisk lås på
      * `sist_flagget_tidspunkt`.
      *
-     * Oppdateringen gjøres kun dersom [sistFlaggetTidspunktVedLesing] matcher verdien i
-     * databasen akkurat nå. Hvis en konkurrerende transaksjon har kalt
-     * [flaggForVarselvurdering] etter at jobben leste saken, kaster vi [no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil]
-     * slik at varseljobbens transaksjon ruller tilbake. Saken forblir da flagget og plukkes
-     * opp i neste kjøring med oppdatert datagrunnlag.
+     * Oppdateringen gjøres kun dersom [sistFlaggetTidspunktVedLesing] matcher verdien i databasen akkurat nå.
+     * Hvis en konkurrerende transaksjon har kalt [flaggForVarselvurdering] etter at jobben leste saken, kaster vi [no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil] slik at varseljobbens transaksjon ruller tilbake.
+     * Saken forblir da flagget og plukkes opp i neste kjøring med oppdatert datagrunnlag.
      */
     fun markerVarselVurdert(
         sakId: SakId,

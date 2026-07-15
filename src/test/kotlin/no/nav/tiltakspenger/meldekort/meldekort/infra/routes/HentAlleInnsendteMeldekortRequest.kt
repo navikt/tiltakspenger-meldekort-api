@@ -15,8 +15,8 @@ typealias JsonResponse = String
  * Route: [no.nav.tiltakspenger.meldekort.meldekort.infra.routes.hentInnsendteMeldekortRoute]
  * Response DTO: [AlleMeldekortDTO]
  *
- * Returnerer rå JSON. Tester som trenger domeneverdier bør hente dem via repo/service i testen,
- * mens wire-formatet kan sjekkes med [shouldBeAlleMeldekortJson].
+ * Returnerer rå JSON.
+ * Tester som trenger domeneverdier bør hente dem via repo/service i testen, mens wire-formatet kan sjekkes med [shouldBeAlleMeldekortJson].
  */
 suspend fun ApplicationTestBuilder.hentAlleInnsendteMeldekortRequest(
     fnr: String,

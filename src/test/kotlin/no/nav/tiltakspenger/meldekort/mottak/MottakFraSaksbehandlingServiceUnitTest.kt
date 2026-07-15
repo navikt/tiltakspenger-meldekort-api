@@ -25,10 +25,8 @@ import org.junit.jupiter.api.Test
  * Enhetstester med mocks for de defensive feilbranchene der en write inne i transaksjonen kaster
  * (rethrow → ytre Either.catch → [FeilVedMottakAvSak.LagringFeilet]).
  *
- * Disse to grenene (sak-lagring og meldekortvedtak-lagring kaster) er ikke realistisk reproduserbare
- * mot en ekte base via det naturlige mottaks-flytet, og dekkes derfor med mocks. Den ene grenen som
- * *er* reproduserbar mot ekte Postgres (databasekonstraint-brudd ved meldeperiode-insert) dekkes som
- * ende-til-ende-test i [no.nav.tiltakspenger.meldekort.mottak.infra.routes.MottakFraSaksbehandlingEndToEndTest].
+ * Disse to grenene (sak-lagring og meldekortvedtak-lagring kaster) er ikke realistisk reproduserbare mot en ekte base via det naturlige mottaks-flytet, og dekkes derfor med mocks.
+ * Den ene grenen som *er* reproduserbar mot ekte Postgres (databasekonstraint-brudd ved meldeperiode-insert) dekkes som ende-til-ende-test i [no.nav.tiltakspenger.meldekort.mottak.infra.routes.MottakFraSaksbehandlingEndToEndTest].
  *
  * TODO: Når servicen ryddes opp (fjerne de indre defensive catch-ene), kan denne mock-baserte testen fjernes.
  */

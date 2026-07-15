@@ -30,10 +30,14 @@ private val log = KotlinLogging.logger { }
  * Kriteriet er bevisst likt varsler-pakken (se [no.nav.tiltakspenger.meldekort.microfrontend.infra.repo.MicrofrontendPostgresRepo] `HAR_KJEDE_SOM_MANGLER_INNSENDING`), slik at kort og varsler henger sammen.
  *
  * ### Nyanser
- *  - **Vises «evig».** Kortet skrus ikke av basert på tid/alder, kun når retten faller bort eller noen har sendt inn – likt varslene.
- *  - **Framtidige perioder holder kortet åpent.** En kjede som gir rett men ennå ikke kan fylles ut (`kan_fylles_ut_fra_og_med` fram i tid) teller som åpen oppgave; kortet viser da «neste kan sendes inn \<dato\>» (antall klare = 0).
- *  - **Kun siste versjon teller (annullering/stans/opphør).** Et nytt rammevedtak lager en ny versjon av kjeden og «annullerer» den forrige; ved å se på siste versjon fanges bortfall av rett automatisk.
- *  - **Idempotens.** Feiler meldingen mot TMS står statusen urørt og prøves igjen ved neste kjøring.
+ *  - **Vises «evig».**
+ *    Kortet skrus ikke av basert på tid/alder, kun når retten faller bort eller noen har sendt inn – likt varslene.
+ *  - **Framtidige perioder holder kortet åpent.**
+ *    En kjede som gir rett men ennå ikke kan fylles ut (`kan_fylles_ut_fra_og_med` fram i tid) teller som åpen oppgave; kortet viser da «neste kan sendes inn \<dato\>» (antall klare = 0).
+ *  - **Kun siste versjon teller (annullering/stans/opphør).**
+ *    Et nytt rammevedtak lager en ny versjon av kjeden og «annullerer» den forrige; ved å se på siste versjon fanges bortfall av rett automatisk.
+ *  - **Idempotens.**
+ *    Feiler meldingen mot TMS står statusen urørt og prøves igjen ved neste kjøring.
  *
  * ### Routen (`GET /meldekort-kort-info`)
  * Serverer kun *innholdet* i boksen (antall klare til innsending nå + neste mulige innsendingstidspunkt), ikke om den vises, se [no.nav.tiltakspenger.meldekort.microfrontend.infra.repo.MicrofrontendPostgresRepo.hentMeldekortInfo].

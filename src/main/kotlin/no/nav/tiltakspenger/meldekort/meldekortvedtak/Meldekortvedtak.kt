@@ -28,7 +28,10 @@ data class Meldekortvedtak(
 data class Meldeperiodebehandling(
     val meldeperiodeId: MeldeperiodeId,
     val meldeperiodeKjedeId: MeldeperiodeKjedeId,
-    /** null dersom meldekortbehandlingen ikke er basert på et brukerinnsendt meldekort. Kan brukes for å joine mot meldekort_bruker-tabellen. */
+    /**
+     *  null dersom meldekortbehandlingen ikke er basert på et brukerinnsendt meldekort.
+     *  Kan brukes for å joine mot meldekort_bruker-tabellen.
+     */
     val brukersMeldekortId: MeldekortId?,
     val periode: Periode,
     val dager: List<MeldeperiodebehandlingDag>,

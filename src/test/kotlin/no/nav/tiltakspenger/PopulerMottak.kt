@@ -10,12 +10,11 @@ import no.nav.tiltakspenger.meldekort.sak.Sak
 /**
  * Populering av testdata via mottak-skrivesiden ([no.nav.tiltakspenger.meldekort.mottak.MottakRepo]).
  *
- * Skrivemetodene `lagre`/`oppdater` på sak, meldeperiode og meldekortvedtak ble flyttet ut av
- * lese-repoene (CQRS) og inn i mottak. Disse hjelperne lar tester populere data uten å forholde seg
- * til at writes nå går via [TestApplicationContext.mottakRepo].
+ * Skrivemetodene `lagre`/`oppdater` på sak, meldeperiode og meldekortvedtak ble flyttet ut av lese-repoene (CQRS) og inn i mottak.
+ * Disse hjelperne lar tester populere data uten å forholde seg til at writes nå går via [TestApplicationContext.mottakRepo].
  *
- * Tester bygger fortsatt opp lesemodellen [Sak] via `ObjectMother`. Hjelperne projiserer den ned til
- * skrivemodellen [MottattSak] internt, slik at kallstedene slipper å forholde seg til splittet.
+ * Tester bygger fortsatt opp lesemodellen [Sak] via `ObjectMother`.
+ * Hjelperne projiserer den ned til skrivemodellen [MottattSak] internt, slik at kallstedene slipper å forholde seg til splittet.
  * Tester som heller vil jobbe direkte mot skrivemodellen kan bruke [MottattSak]-overloadene.
  */
 fun Sak.tilMottattSak(): MottattSak = MottattSak(

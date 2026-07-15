@@ -126,10 +126,8 @@ class VarselPostgresRepoTest {
     fun `hentVarslerSomSkalAktiveres returnerer alle SkalAktiveres og respekterer limit`() {
         val klokke = 6.januar(2025).atHour(12)
         withMigratedDb(clock = fixedClockAt(klokke)) { helper ->
-            // hentSakerMedVarslerSomSkalAktiveres filtrerer på skal_aktiveres_tidspunkt <= nå,
-            // så alle kandidatene må ha skalAktiveresTidspunkt i fortiden for at testen skal
-            // dekke filtrering og limit. Tidspunktene må også ligge innenfor
-            // 09:00-17:00 på en virkedag pga. invarianter på Varsel.SkalAktiveres.
+            // hentSakerMedVarslerSomSkalAktiveres filtrerer på skal_aktiveres_tidspunkt <= nå, så alle kandidatene må ha skalAktiveresTidspunkt i fortiden for at testen skal dekke filtrering og limit.
+            // Tidspunktene må også ligge innenfor 09:00-17:00 på en virkedag pga. invarianter på Varsel.SkalAktiveres.
             val eldst = skalAktiveres(sakId = SakId.random(), saksnummer = "sak-a", fnr = Fnr.random(), skalAktiveresTidspunkt = klokke.minusHours(3), opprettet = klokke.minusHours(3))
             val mellom = skalAktiveres(sakId = SakId.random(), saksnummer = "sak-b", fnr = Fnr.random(), skalAktiveresTidspunkt = klokke.minusHours(2), opprettet = klokke.minusHours(2))
             val yngst = skalAktiveres(sakId = SakId.random(), saksnummer = "sak-c", fnr = Fnr.random(), skalAktiveresTidspunkt = klokke.minusHours(1), opprettet = klokke.minusHours(1))

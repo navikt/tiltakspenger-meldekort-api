@@ -62,9 +62,8 @@ class SakVarselRepoFake(
     }
 
     private fun nesteTidspunkt(): LocalDateTime {
-        // Bruk tellerbasert "tidspunkt" for å garantere unike verdier. Vi pakker en
-        // AtomicLong inn i et LocalDateTime via nanos-feltet, slik at to raske kall alltid
-        // får ulike verdier (i motsetning til nå() som kan gi samme verdi).
+        // Bruk tellerbasert "tidspunkt" for å garantere unike verdier.
+        // Vi pakker en AtomicLong inn i et LocalDateTime via nanos-feltet, slik at to raske kall alltid får ulike verdier (i motsetning til nå() som kan gi samme verdi).
         val n = teller.incrementAndGet()
         return LocalDateTime.of(1970, 1, 1, 0, 0).plusNanos(n)
     }

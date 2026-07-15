@@ -196,8 +196,8 @@ class LagreMeldekortFraBrukerServiceTest {
             )
             val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-            // Selvmotsigelse: skrivingen traff 0 rader, men den nye lesingen viser fortsatt et åpent
-            // meldekort (KAN_UTFYLLES). Dette skal pakkes inn som en uventet feil (havner i sikkerlogg).
+            // Selvmotsigelse: skrivingen traff 0 rader, men den nye lesingen viser fortsatt et åpent meldekort (KAN_UTFYLLES).
+            // Dette skal pakkes inn som en uventet feil (havner i sikkerlogg).
             val racendeMeldekortRepo = object : MeldekortRepo by tac.meldekortRepo {
                 override fun lagreInnsendtMeldekortFraBruker(
                     meldekort: BrukersMeldekort,

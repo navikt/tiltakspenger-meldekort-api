@@ -28,13 +28,10 @@ class VarselPostgresRepo(
      * @param aktiveringsmetadata overlagres bare dersom den ikke er null
      * @param inaktiveringsmetadata overlagres bare dersom den ikke er null
      *
-     * Optimistisk lås basert på tilstand: tilstandsmaskinen er fremoverrettet (SkalAktiveres →
-     * Aktiv? → SkalInaktiveres → Inaktivert) og hver tilstand besøkes maks én gang. Vi krever
-     * derfor at eksisterende rad har den forventede forrige tilstanden ved oppdatering. Hvis en
-     * konkurrerende skriving har endret tilstanden i mellomtiden, kastes [OptimistiskLåsFeil]
-     * og hele transaksjonen rulles tilbake. For [SkalAktiveres] (initial tilstand) finnes det
-     * ingen gyldig forrige tilstand, så enhver konflikt på `varsel_id` regnes som en samtidig
-     * skriving og fører til [OptimistiskLåsFeil].
+     * Optimistisk lås basert på tilstand: tilstandsmaskinen er fremoverrettet (SkalAktiveres → Aktiv? → SkalInaktiveres → Inaktivert) og hver tilstand besøkes maks én gang.
+     * Vi krever derfor at eksisterende rad har den forventede forrige tilstanden ved oppdatering.
+     * Hvis en konkurrerende skriving har endret tilstanden i mellomtiden, kastes [OptimistiskLåsFeil] og hele transaksjonen rulles tilbake.
+     * For [SkalAktiveres] (initial tilstand) finnes det ingen gyldig forrige tilstand, så enhver konflikt på `varsel_id` regnes som en samtidig skriving og fører til [OptimistiskLåsFeil].
      */
     override fun lagre(
         varsel: Varsel,
@@ -129,9 +126,9 @@ class VarselPostgresRepo(
     }
 
     /**
-     * Forventet tilstand i databasen før den nye tilstanden lagres. Følger tilstandsmaskinen i
-     * [Varsel]. Returnerer null for [SkalAktiveres] siden dette er initialtilstanden og kun kan
-     * lagres via insert.
+     * Forventet tilstand i databasen før den nye tilstanden lagres.
+     * Følger tilstandsmaskinen i [Varsel].
+     * Returnerer null for [SkalAktiveres] siden dette er initialtilstanden og kun kan lagres via insert.
      */
     private fun Varsel.forventetForrigeDatabaseType(): String? = when (this) {
         is SkalAktiveres -> null

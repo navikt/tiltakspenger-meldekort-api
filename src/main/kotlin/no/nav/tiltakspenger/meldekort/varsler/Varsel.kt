@@ -48,7 +48,8 @@ sealed interface Varsel {
     val skalAktiveresEksterntTidspunkt: LocalDateTime?
 
     /**
-     * Begrunnelse for hvorfor varselet skal aktiveres. Skal ikke inneholde personopplysninger, kun tekniske grunner for debugging i databasen.
+     * Begrunnelse for hvorfor varselet skal aktiveres.
+     * Skal ikke inneholde personopplysninger, kun tekniske grunner for debugging i databasen.
      */
     val skalAktiveresBegrunnelse: String
 
@@ -69,13 +70,23 @@ sealed interface Varsel {
      */
     val eksternAktiveringstidspunkt: LocalDateTime?
 
-    /** Planlagt tidspunkt for inaktivering. Settes når varselet går fra [SkalAktiveres] eller [Aktiv] til [SkalInaktiveres]. */
+    /**
+     *  Planlagt tidspunkt for inaktivering.
+     *  Settes når varselet går fra [SkalAktiveres] eller [Aktiv] til [SkalInaktiveres].
+     */
     val skalInaktiveresTidspunkt: LocalDateTime?
 
-    /** Begrunnelse for hvorfor varselet skal inaktiveres. Skal ikke inneholde personopplysninger, kun tekniske grunner for debugging i databasen. Settes når varselet går fra [SkalAktiveres] eller [Aktiv] til [SkalInaktiveres]. */
+    /**
+     *  Begrunnelse for hvorfor varselet skal inaktiveres.
+     *  Skal ikke inneholde personopplysninger, kun tekniske grunner for debugging i databasen.
+     *  Settes når varselet går fra [SkalAktiveres] eller [Aktiv] til [SkalInaktiveres].
+     */
     val skalInaktiveresBegrunnelse: String?
 
-    /** Faktisk tidspunkt varselet ble inaktivert. Kun satt i tilstanden [Inaktivert]. */
+    /**
+     *  Faktisk tidspunkt varselet ble inaktivert.
+     *  Kun satt i tilstanden [Inaktivert].
+     */
     val inaktiveringstidspunkt: LocalDateTime?
 
     /** Settes kun når vi oppretter varselet. */
@@ -87,7 +98,10 @@ sealed interface Varsel {
     /** True hvis vi er i tilstanden [Inaktivert]. */
     val erInaktivert: Boolean get() = this is Inaktivert
 
-    /** Ikke produsert på Kafka enda. Min side får hendelsen først når varselet går over i [Aktiv]. */
+    /**
+     *  Ikke produsert på Kafka enda.
+     *  Min side får hendelsen først når varselet går over i [Aktiv].
+     */
     data class SkalAktiveres(
         override val sakId: SakId,
         override val saksnummer: String,
@@ -170,7 +184,10 @@ sealed interface Varsel {
         }
     }
 
-    /** Varselet er produsert på Kafka mot Min side. Kan forberede inaktivering via [forberedInaktivering]. */
+    /**
+     *  Varselet er produsert på Kafka mot Min side.
+     *  Kan forberede inaktivering via [forberedInaktivering].
+     */
     data class Aktiv(
         override val sakId: SakId,
         override val saksnummer: String,
@@ -203,9 +220,8 @@ sealed interface Varsel {
          * [aktiveringstidspunkt] – vi kan inaktivere umiddelbart etter aktivering dersom vi
          * oppdager at varselet ikke skulle vært sendt.
          *
-         * Produksjonskode skal gå via [Varsler.forberedInaktivering] slik at hele aggregatet
-         * valideres før persistering. Denne funksjonen er ment som en ren tilstandsovergang på
-         * enkeltobjektet.
+         * Produksjonskode skal gå via [Varsler.forberedInaktivering] slik at hele aggregatet valideres før persistering.
+         * Denne funksjonen er ment som en ren tilstandsovergang på enkeltobjektet.
          */
         fun forberedInaktivering(
             skalInaktiveresTidspunkt: LocalDateTime,
@@ -261,8 +277,8 @@ sealed interface Varsel {
          * Inaktiverer varselet. [inaktiveringstidspunkt] kan være lik eller etter
          * [skalInaktiveresTidspunkt].
          *
-         * Produksjonskode skal gå via [Varsler.inaktiver] slik at hele aggregatet valideres før
-         * persistering. Denne funksjonen er ment som en ren tilstandsovergang på enkeltobjektet.
+         * Produksjonskode skal gå via [Varsler.inaktiver] slik at hele aggregatet valideres før persistering.
+         * Denne funksjonen er ment som en ren tilstandsovergang på enkeltobjektet.
          */
         fun inaktiver(inaktiveringstidspunkt: LocalDateTime): Inaktivert = Inaktivert(
             sakId = sakId,
@@ -285,7 +301,10 @@ sealed interface Varsel {
             "Varsel.SkalInaktiveres(varselId=$varselId, sakId=$sakId, saksnummer='$saksnummer', fnr=*****, skalAktiveresTidspunkt=$skalAktiveresTidspunkt, skalAktiveresBegrunnelse=$skalAktiveresBegrunnelse, aktiveringstidspunkt=$aktiveringstidspunkt, skalInaktiveresTidspunkt=$skalInaktiveresTidspunkt, skalInaktiveresBegrunnelse=$skalInaktiveresBegrunnelse)"
     }
 
-    /** Varselet har tidligere vært aktivt, men er nå inaktivert. Terminal tilstand. */
+    /**
+     *  Varselet har tidligere vært aktivt, men er nå inaktivert.
+     *  Terminal tilstand.
+     */
     data class Inaktivert(
         override val sakId: SakId,
         override val saksnummer: String,
@@ -346,11 +365,9 @@ private fun Varsel.erEksternVarslingAntattSendtPå(
         is Varsel.Inaktivert -> inaktiveringstidspunkt
     }
 
-    // Når Kafka-hendelsen er sendt til Min side kan vi ikke vite sikkert om Altinn/SMS faktisk
-    // rakk å gå ut før en eventuell inaktivering. Vi bruker et lite slingringsmonn i konservativ
-    // retning: hvis inaktivering/vurdering skjer rett før utsettSendingTil, antar vi at ekstern
-    // varsling kan ha gått ut og utsetter neste eksterne varsling til neste virkedag. Det er bedre
-    // at et fåtall brukere får SMS én dag senere enn at samme bruker får to SMS-er samme dag.
+    // Når Kafka-hendelsen er sendt til Min side kan vi ikke vite sikkert om Altinn/SMS faktisk rakk å gå ut før en eventuell inaktivering.
+    // Vi bruker et lite slingringsmonn i konservativ retning: hvis inaktivering/vurdering skjer rett før utsettSendingTil, antar vi at ekstern varsling kan ha gått ut og utsetter neste eksterne varsling til neste virkedag.
+    // Det er bedre at et fåtall brukere får SMS én dag senere enn at samme bruker får to SMS-er samme dag.
     return tidspunktSomAvgjørOmEksternVarslingKanHaGåttUt
         .plus(EKSTERN_VARSLING_ANTATT_SENDT_SLINGRINGSMONN) >= eksternVarslingstidspunkt
 }

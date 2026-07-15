@@ -7,7 +7,8 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
 import java.time.Clock
 
 /**
- * I prod kun serialisert ut til frontend. Frontend bruker [harSak] for å diskriminere mellom de to variantene
+ * I prod kun serialisert ut til frontend.
+ * Frontend bruker [harSak] for å diskriminere mellom de to variantene
  */
 sealed interface BrukerDTO {
     val harSak: Boolean

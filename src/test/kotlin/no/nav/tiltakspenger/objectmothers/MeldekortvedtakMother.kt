@@ -20,9 +20,8 @@ import java.time.LocalDateTime
 interface MeldekortvedtakMother {
 
     /**
-     * Bygger et [Meldekortvedtak] (f.eks. papirmeldekort behandlet i saksbehandling-api) for kjeden
-     * til det gitte [meldekort]et. Praktisk for å teste at uinnsendte meldekort ekskluderes når det
-     * finnes et meldekortvedtak for kjeden.
+     * Bygger et [Meldekortvedtak] (f.eks. papirmeldekort behandlet i saksbehandling-api) for kjeden til det gitte [meldekort]et.
+     * Praktisk for å teste at uinnsendte meldekort ekskluderes når det finnes et meldekortvedtak for kjeden.
      */
     fun meldekortvedtak(
         meldekort: BrukersMeldekort,

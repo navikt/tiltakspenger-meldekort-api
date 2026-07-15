@@ -15,13 +15,12 @@ import java.time.Clock
 import java.time.LocalDateTime
 
 /**
- * Alle varsler på en sak. Invariant:
+ * Alle varsler på en sak.
+ * Invariant:
  *  - Maks ett varsel i tilstand [Varsel.SkalAktiveres] eller [Varsel.Aktiv] (et "pågående" varsel).
  *  - Varsler i tilstand [Varsel.SkalInaktiveres] er pågående inaktiveringer, og det kan finnes flere.
- *  - Et pågående varsel kan sameksistere med pågående inaktiveringer (f.eks. når bruker har
- *    sendt inn meldekortet for en meldeperiode, men det er en ny meldeperiode som mangler
- *    innsending). I den samme transaksjonen forbereder vi inaktivering av det gamle og oppretter
- *    et nytt [Varsel.SkalAktiveres] for den nye meldeperioden.
+ *  - Et pågående varsel kan sameksistere med pågående inaktiveringer (f.eks. når bruker har sendt inn meldekortet for en meldeperiode, men det er en ny meldeperiode som mangler innsending).
+ *    I den samme transaksjonen forbereder vi inaktivering av det gamle og oppretter et nytt [Varsel.SkalAktiveres] for den nye meldeperioden.
  */
 data class Varsler(
     val value: List<Varsel>,

@@ -19,8 +19,8 @@ import java.time.temporal.TemporalAdjusters
  * Tester formatene veldig eksplisitt da disse ender opp direkte i brevet til bruker og vi har valgt å gjøre
  * formateringen her og ikke i tiltakspenger-pdfgen.
  *
- * DTO-ene er private i produksjonskoden, så vi asserter mot den serialiserte JSON-en (det som faktisk sendes
- * til pdfgen) i stedet for mot DTO-typene. Forventede verdier er hardkodede strings, ikke utledet fra domenet.
+ * DTO-ene er private i produksjonskoden, så vi asserter mot den serialiserte JSON-en (det som faktisk sendes til pdfgen) i stedet for mot DTO-typene.
+ * Forventede verdier er hardkodede strings, ikke utledet fra domenet.
  *
  * Obs! Asserts går mot hardkodede verdier i tilfelle formatet blir oppdatert i tiltakspenger-libs.
  */
@@ -98,7 +98,10 @@ class BrevMeldekortDTOTest {
         }
     }
 
-    /** Forventet serialisert status per dag, i rekkefølge. Hardkodede strings - ingen kobling til domene-enumen. */
+    /**
+     *  Forventet serialisert status per dag, i rekkefølge.
+     *  Hardkodede strings - ingen kobling til domene-enumen.
+     */
     private val forventedeStatusStrings = listOf(
         "DELTATT_UTEN_LØNN_I_TILTAKET",
         "FRAVÆR_ANNET",
@@ -116,7 +119,10 @@ class BrevMeldekortDTOTest {
         "IKKE_BESVART",
     )
 
-    /** Domenestatusene som mates inn (setup). Holdes parallelt med [forventedeStatusStrings]. */
+    /**
+     *  Domenestatusene som mates inn (setup).
+     *  Holdes parallelt med [forventedeStatusStrings].
+     */
     private val domeneStatuser = listOf(
         MeldekortDagStatus.DELTATT_UTEN_LØNN_I_TILTAKET,
         MeldekortDagStatus.FRAVÆR_ANNET,

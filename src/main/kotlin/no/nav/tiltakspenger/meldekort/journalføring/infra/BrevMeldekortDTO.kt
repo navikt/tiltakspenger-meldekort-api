@@ -17,9 +17,8 @@ import no.nav.tiltakspenger.meldekort.utils.toNorskUkenummer
 /**
  * Serialiserer et [BrukersMeldekort] til JSON-en som sendes til tiltakspenger-pdfgen for å generere brevet (PDF).
  *
- * Dette er den eneste offentlige inngangen til brev-DTO-ene. Selve DTO-ene er private slik at de ikke lekker
- * ut av denne fila, og slik at koblingen mot domenet (`BrukersMeldekort`/`MeldekortDag`/`MeldekortDagStatus`)
- * holdes innenfor mappingen her.
+ * Dette er den eneste offentlige inngangen til brev-DTO-ene.
+ * Selve DTO-ene er private slik at de ikke lekker ut av denne fila, og slik at koblingen mot domenet (`BrukersMeldekort`/`MeldekortDag`/`MeldekortDagStatus`) holdes innenfor mappingen her.
  *
  * Datoer formateres her fordi vi ikke bruker tid på å opprette hjelpemetoder i pdfgen-core per nå.
  */

@@ -170,12 +170,14 @@ class VarselPostgresEndToEndTest {
     @Test
     fun `vurder varsel oppretter ikke varsel når meldekortvedtak finnes selv om bruker aldri sendte inn og meldeperioden får ny versjon`() {
         // Scenario:
-        //   1. Saksbehandling-api sender sak med meldeperiode v1 (rammevedtak). Bruker sender ikke inn.
-        //   2. Det opprettes et meldekortvedtak for kjeden (f.eks. papirmeldekort). Varseljobben kjøres ikke ennå.
+        //   1. Saksbehandling-api sender sak med meldeperiode v1 (rammevedtak).
+        //      Bruker sender ikke inn.
+        //   2. Det opprettes et meldekortvedtak for kjeden (f.eks. papirmeldekort).
+        //      Varseljobben kjøres ikke ennå.
         //   3. Saksbehandling-api sender et nytt rammevedtak som gir meldeperiode v2 for
-        //      samme kjede.
-        //   4. Varseljobben kjøres. Siden kjeden allerede har et meldekortvedtak skal det
-        //      ikke opprettes noe varsel (eksklusjon basert på meldekortvedtak).
+        // samme kjede.
+        //   4. Varseljobben kjøres.
+        //      Siden kjeden allerede har et meldekortvedtak skal det ikke opprettes noe varsel (eksklusjon basert på meldekortvedtak).
         val periode = 24.februar(2025) til 9.mars(2025)
         val opprettet = 1.mars(2025).atHour(10)
         // 10. mars - kanFyllesUtFraOgMed (7. mars 15:00) har passert, så uten vedtak-eksklusjonen
@@ -285,11 +287,8 @@ class VarselPostgresEndToEndTest {
                 ),
             )
 
-            // Når meldeperioden opphører før varselet er aktivert (skalAktiveresTidspunkt i
-            // fremtiden), går varselet rett fra SkalAktiveres til SkalInaktiveres, og deretter
-            // til Inaktivert via InaktiverVarslerService. Vi publiserer en inaktivering mot
-            // Min side fordi vi kan ha rukket å publisere aktiveringen på Kafka uten at
-            // lagringen lyktes (sikkerhetsnett).
+            // Når meldeperioden opphører før varselet er aktivert (skalAktiveresTidspunkt i fremtiden), går varselet rett fra SkalAktiveres til SkalInaktiveres, og deretter til Inaktivert via InaktiverVarslerService.
+            // Vi publiserer en inaktivering mot Min side fordi vi kan ha rukket å publisere aktiveringen på Kafka uten at lagringen lyktes (sikkerhetsnett).
             val varsler = tac.varselRepo.hentVarslerForSakId(sak.id)
             varsler shouldHaveSize 1
             val inaktivertVarsel = varsler.single().shouldBeInstanceOf<Varsel.Inaktivert>()
@@ -509,7 +508,8 @@ class VarselPostgresEndToEndTest {
     fun `kjørVurderVarsler lar varsel som allerede skal inaktiveres stå uendret etter korrigering av meldekort`() {
         // Uke 9+10
         val periode = 24.februar(2025) til 9.mars(2025)
-        // Mandagen etter meldeperioden. Tidspunktet skal være ubetydelig.
+        // Mandagen etter meldeperioden.
+        // Tidspunktet skal være ubetydelig.
         val klokke = TikkendeKlokke(fixedClockAt(10.mars(2025).atHour(10)))
 
         withTestApplicationContextAndPostgres(clock = klokke, runIsolated = true) { tac ->
@@ -572,11 +572,10 @@ class VarselPostgresEndToEndTest {
     }
 
     /**
-     * Scenario fra bruker: sak med 2 innvilgede meldeperioder. Første varsel aktiveres,
-     * bruker sender inn meldekort for første periode, varselet skal inaktiveres. Deretter
-     * skal et NYTT varsel opprettes for den andre meldeperioden – selv uten at nye
-     * hendelser kommer inn fra saksbehandling. Dette krever at InaktiverVarslerService
-     * re-flagger saken for vurdering etter inaktivering.
+     * Scenario fra bruker: sak med 2 innvilgede meldeperioder.
+     * Første varsel aktiveres, bruker sender inn meldekort for første periode, varselet skal inaktiveres.
+     * Deretter skal et NYTT varsel opprettes for den andre meldeperioden – selv uten at nye hendelser kommer inn fra saksbehandling.
+     * Dette krever at InaktiverVarslerService re-flagger saken for vurdering etter inaktivering.
      */
     @Test
     fun `2 meldeperioder - etter innsending av første meldekort opprettes nytt varsel for andre meldeperiode`() {
@@ -621,14 +620,13 @@ class VarselPostgresEndToEndTest {
      * Regresjonstest for samtidighetsproblemet på `sak.sist_flagget_tidspunkt`:
      *
      *  1. Et meldekort mottas → `flaggForVarselvurdering` setter flagg=true og oppdaterer
-     *     `sist_flagget_tidspunkt` via clock_timestamp().
+     * `sist_flagget_tidspunkt` via clock_timestamp().
      *  2. Varseljobben starter og leser sakene som skal vurderes (flagg=true, med tidspunkt).
      *  3. Under jobbens transaksjon kommer det inn et NYTT meldekort som på nytt kaller
-     *     `flaggForVarselvurdering` – dette oppdaterer `sist_flagget_tidspunkt` til en ny
-     *     verdi.
-     *  4. Jobben kaller `markerVarselVurdert` med tidspunktet den leste i steg 2. Optimistisk
-     *     lås oppdager at tidspunktet er endret og kaster [OptimistiskLåsFeil]. Transaksjonen
-     *     ruller tilbake og saken forblir flagget.
+     * `flaggForVarselvurdering` – dette oppdaterer `sist_flagget_tidspunkt` til en ny
+     * verdi.
+     *  4. Jobben kaller `markerVarselVurdert` med tidspunktet den leste i steg 2. Optimistisk lås oppdager at tidspunktet er endret og kaster [OptimistiskLåsFeil].
+     *     Transaksjonen ruller tilbake og saken forblir flagget.
      *  5. Saken plukkes opp i neste kjøring og vurderes på nytt – ingen hendelse går tapt.
      */
     @Test
@@ -642,9 +640,8 @@ class VarselPostgresEndToEndTest {
                 tac = tac,
                 meldeperioder = listOf(meldeperiodeDto(periode = periode, opprettet = 1.mars(2025).atHour(10))),
             )
-            // AktiverVarslerService re-flagger saken etter aktivering (slik at VurderVarsel får
-            // en ny runde på Aktiv-tilstanden). Kjør vurder-jobben en ekstra gang for å tømme
-            // flagget og gi en rein starttilstand for testen.
+            // AktiverVarslerService re-flagger saken etter aktivering (slik at VurderVarsel får en ny runde på Aktiv-tilstanden).
+            // Kjør vurder-jobben en ekstra gang for å tømme flagget og gi en rein starttilstand for testen.
             KjørJobberForTester.kjørVurderVarsler(tac)
             tac.sakVarselRepo.hentSakerSomSkalVurdereVarsel().map { it.sakId } shouldBe emptyList()
 

@@ -30,9 +30,8 @@ import org.junit.jupiter.api.Test
  * låse den dev-spesifikke logikken: defaulten med 2 meldeperioder bakover + 2 fremover, og at en sak
  * faktisk blir opprettet via den ekte mottak-flyten (samme service som `POST /saksbehandling/sak`).
  *
- * Vi asserter rett på JSON-strengen (ingen deserialisering) slik at et hvilket som helst kontraktsbrudd mot
- * konsumenten – endret feltnavn, rekkefølge, type e.l. – får testen til å feile. Klokka er fast (1. mai 2025),
- * så meldeperiodene blir deterministiske og kan skrives ut eksplisitt.
+ * Vi asserter rett på JSON-strengen (ingen deserialisering) slik at et hvilket som helst kontraktsbrudd mot konsumenten – endret feltnavn, rekkefølge, type e.l. – får testen til å feile.
+ * Klokka er fast (1. mai 2025), så meldeperiodene blir deterministiske og kan skrives ut eksplisitt.
  */
 class DevRoutesTest {
 
@@ -130,8 +129,9 @@ class DevRoutesTest {
 }
 
 /**
- * Asserter mot forventet JSON med streng semantikk (feltnavn, rekkefølge, type), uten å serialisere/deserialisere
- * en DTO. Whitespace ignoreres av JSON-parseren. Samme tilnærming som `String.shouldBeAlleMeldekortJson`.
+ * Asserter mot forventet JSON med streng semantikk (feltnavn, rekkefølge, type), uten å serialisere/deserialisere en DTO.
+ * Whitespace ignoreres av JSON-parseren.
+ * Samme tilnærming som `String.shouldBeAlleMeldekortJson`.
  */
 private fun String.shouldBeOpprettSakJson(forventet: String) {
     this.shouldEqualJson {

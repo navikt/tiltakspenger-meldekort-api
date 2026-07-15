@@ -53,8 +53,8 @@ suspend fun ApplicationTestBuilder.hentBrukerUtenSakRequest(
 )
 
 /**
- * Deserialiserer rett til konkret subtype [T]. Vi har ikke Jackson-diskriminator på [BrukerDTO]
- * i prod, så tester må vite hvilken variant de forventer (slik en typet frontend også gjør).
+ * Deserialiserer rett til konkret subtype [T].
+ * Vi har ikke Jackson-diskriminator på [BrukerDTO] i prod, så tester må vite hvilken variant de forventer (slik en typet frontend også gjør).
  */
 private suspend inline fun <reified T : BrukerDTO> ApplicationTestBuilder.hentBrukerResponseAs(
     fnr: String,

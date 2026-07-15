@@ -64,7 +64,9 @@ class MottakFraSaksbehandlingService(
                 }.onLeft {
                     throw RuntimeException("Feil under lagring eller oppdatering av sak.", it)
                 }
-                // Vi flagger saken kun for ny varselsvurdering dersom vi har meldeperioder. Team Min Side bør støtte at en bruker bytter fødselsnummer. På sikt kan vi vurdere om vi ønsker å varsle brukere som kan melde helg, men det er forsvinnende få slike saker og de bør få en mer direkte beskjed i f.eks. Modia.
+                // Vi flagger saken kun for ny varselsvurdering dersom vi har meldeperioder.
+                // Team Min Side bør støtte at en bruker bytter fødselsnummer.
+                // På sikt kan vi vurdere om vi ønsker å varsle brukere som kan melde helg, men det er forsvinnende få slike saker og de bør få en mer direkte beskjed i f.eks. Modia.
                 meldeperioderForLagring.forEach { meldeperiode ->
                     val meldeperiodeId = meldeperiode.id
                     Either.catch {

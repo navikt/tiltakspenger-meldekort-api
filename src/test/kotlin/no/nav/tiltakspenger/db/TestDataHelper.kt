@@ -43,14 +43,18 @@ class TestDataHelper(
     /** Deterministisk, unikt saksnummer (delt på tvers av tester i samme test-db). */
     fun nesteSaksnummer(): String = idGenerators.saksnummerGenerator.generer()
 
-    /** Deterministisk, unikt fnr. Foretrekkes fremfor `Fnr.random()` for å unngå flaky kollisjoner. */
+    /**
+     *  Deterministisk, unikt fnr.
+     *  Foretrekkes fremfor `Fnr.random()` for å unngå flaky kollisjoner.
+     */
     fun nesteFnr() = idGenerators.fnrGenerator.generer()
 }
 
 private val testDatabaseManager = TestDatabaseManager()
 
 /**
- * @param runIsolated Tømmer databasen før denne testen for kjøre i isolasjon. Brukes når man gjør operasjoner på tvers av saker.
+ * @param runIsolated Tømmer databasen før denne testen for kjøre i isolasjon.
+ *        Brukes når man gjør operasjoner på tvers av saker.
  */
 fun withMigratedDb(runIsolated: Boolean = true, clock: Clock = TikkendeKlokke(), test: (TestDataHelper) -> Unit) {
     testDatabaseManager.withMigratedDbTestDataHelper(runIsolated = runIsolated, clock = clock, test = test)

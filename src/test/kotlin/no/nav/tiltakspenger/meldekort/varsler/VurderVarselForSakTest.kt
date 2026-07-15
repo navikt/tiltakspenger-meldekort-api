@@ -226,9 +226,10 @@ class VurderVarselForSakTest {
 
     @Test
     fun `vanlig flyt - aktivt varsel og meldekort mottatt for forrige meldeperiode - forbered inaktivering og opprett nytt i samme runde`() {
-        // 2 meldeperioder. Første varsel aktivert. Bruker sender inn meldekort; andre
-        // meldeperiode (nesteFredag) mangler fortsatt innsending. I samme transaksjon skal
-        // det aktive varselet forberedes for inaktivering OG et nytt SkalAktiveres opprettes.
+        // 2 meldeperioder.
+        // Første varsel aktivert.
+        // Bruker sender inn meldekort; andre meldeperiode (nesteFredag) mangler fortsatt innsending.
+        // I samme transaksjon skal det aktive varselet forberedes for inaktivering OG et nytt SkalAktiveres opprettes.
         val forrigeFredag = LocalDateTime.of(2025, 2, 28, 9, 0)
         val dennesFredag = LocalDateTime.of(2025, 3, 14, 12, 0)
         val nesteFredag = LocalDateTime.of(2025, 3, 21, 9, 0)

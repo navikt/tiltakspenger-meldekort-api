@@ -18,10 +18,12 @@ import java.time.LocalDateTime
  *
  * Se også BrukersMeldekort i tiltakspenger-saksbehandling-api.
  *
- * @param id Unik identifikator for denne utfyllingen/innsendingen. Eies av meldekort-api.
+ * @param id Unik identifikator for denne utfyllingen/innsendingen.
+ *        Eies av meldekort-api.
  * @param deaktivert settes dersom meldeperioden har fått en ny versjon (pga revurdering), og forrige meldekort-versjon ikke er mottatt fra bruker
  * @param mottatt Tidspunktet mottatt fra bruker
- * @param dager Et innslag per dag i meldeperioden. Må være sortert.
+ * @param dager Et innslag per dag i meldeperioden.
+ *        Må være sortert.
  */
 data class BrukersMeldekort(
     val id: MeldekortId,
@@ -54,7 +56,8 @@ data class BrukersMeldekort(
 
     /**
      * Om den er klar til innsending nå.
-     * OBS! Denne dupliserer logikken som finnes for [no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo.hentAlleMeldekortKlarTilInnsending]. Om den ene endres så burde begge endres
+     * OBS! Denne dupliserer logikken som finnes for [no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo.hentAlleMeldekortKlarTilInnsending].
+     * Om den ene endres så burde begge endres
      */
     fun klarTilInnsending(clock: Clock): Boolean = status(clock) == MeldekortStatus.KAN_UTFYLLES
 

@@ -21,20 +21,19 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
- * Dev-only endepunkter. Registreres KUN fra LokalMain (via `additionalRoutes`),
- * og er aldri med i prod-bygget (ligger i test-sourceset og kobles ikke inn fra ktorSetup i prod).
+ * Dev-only endepunkter.
+ * Registreres KUN fra LokalMain (via `additionalRoutes`), og er aldri med i prod-bygget (ligger i test-sourceset og kobles ikke inn fra ktorSetup i prod).
  *
  * Hensikten er å enkelt opprette en sak med meldeperioder lokalt, med fornuftige defaults og noen overrides.
- * Vi gjenbruker testbuilderne ([ObjectMother]) og kjører gjennom akkurat samme mapping ([tilMottattSak])
- * og service ([ApplicationContext.mottakFraSaksbehandlingService]) som det ekte motta-endepunktet
- * (`POST /saksbehandling/sak`) bruker — så flyten blir mest mulig prodlik. Eneste forskjell er at vi hopper
- * over HTTP-auth (AzureAD) og bygger DTO-en selv i stedet for å motta den fra saksbehandling-api.
+ * Vi gjenbruker testbuilderne ([ObjectMother]) og kjører gjennom akkurat samme mapping ([tilMottattSak]) og service ([ApplicationContext.mottakFraSaksbehandlingService]) som det ekte motta-endepunktet (`POST /saksbehandling/sak`) bruker — så flyten blir mest mulig prodlik.
+ * Eneste forskjell er at vi hopper over HTTP-auth (AzureAD) og bygger DTO-en selv i stedet for å motta den fra saksbehandling-api.
  */
 fun Routing.devRoutes(applicationContext: ApplicationContext) {
     val logger = KotlinLogging.logger {}
 
     route("/dev") {
-        // Oppretter en sak med meldeperioder. Body er valgfri – uten body får du sane defaults.
+        // Oppretter en sak med meldeperioder.
+        // Body er valgfri – uten body får du sane defaults.
         post("/sak") {
             val request = call.receiveText()
                 .takeIf { it.isNotBlank() }

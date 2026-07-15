@@ -188,8 +188,8 @@ class MeldekortPostgresRepo(
     /**
      * Henter neste meldekort som kan utfylles av bruker.
      *
-     * Et meldekort regnes ikke som manglende innsending dersom det finnes et meldekortvedtak for kjeden
-     * (f.eks. papirmeldekort behandlet i saksbehandling-api). Da skal ikke bruker måtte fylle det ut på nytt.
+     * Et meldekort regnes ikke som manglende innsending dersom det finnes et meldekortvedtak for kjeden (f.eks. papirmeldekort behandlet i saksbehandling-api).
+     * Da skal ikke bruker måtte fylle det ut på nytt.
      */
     override fun hentNesteMeldekortTilUtfylling(fnr: Fnr, sessionContext: SessionContext?): BrukersMeldekort? {
         return sessionFactory.withSession(sessionContext) { session ->
@@ -223,8 +223,8 @@ class MeldekortPostgresRepo(
      * OBS! Denne dupliserer logikken som finnes for [BrukersMeldekort.klarTilInnsending].
      * Om den ene endres så burde begge endres.
      *
-     * Et meldekort regnes ikke som klart til innsending dersom det finnes et meldekortvedtak for kjeden
-     * (f.eks. papirmeldekort behandlet i saksbehandling-api). Da skal ikke bruker måtte fylle det ut på nytt.
+     * Et meldekort regnes ikke som klart til innsending dersom det finnes et meldekortvedtak for kjeden (f.eks. papirmeldekort behandlet i saksbehandling-api).
+     * Da skal ikke bruker måtte fylle det ut på nytt.
      */
     override fun hentAlleMeldekortKlarTilInnsending(fnr: Fnr, sessionContext: SessionContext?): List<BrukersMeldekort> {
         return sessionFactory.withSession(sessionContext) { session ->

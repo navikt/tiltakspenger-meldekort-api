@@ -24,8 +24,8 @@ class LandingssidePostgresRepo(
         sessionContext: SessionContext?,
     ): LandingssideSak? {
         return sessionFactory.withSession(sessionContext) { session ->
-            // Slår opp saken én gang på fnr (unik indeks). Resten av spørringene filtrerer direkte på
-            // sak_id (indeksert) og slipper dermed å joine mot sak igjen.
+            // Slår opp saken én gang på fnr (unik indeks).
+            // Resten av spørringene filtrerer direkte på sak_id (indeksert) og slipper dermed å joine mot sak igjen.
             // Hvis denne er null har vi ingen sak for denne brukeren i ny eller gammel løsning.
             val sakRad = hentSakRad(fnr, session) ?: return@withSession null
 

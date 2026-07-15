@@ -472,10 +472,8 @@ class MottakFraSaksbehandlingEndToEndTest {
     }
 
     /**
-     * Treffer den defensive `LagringFeilet`-grenen (HTTP 500) via en genuin databasefeil mot ekte Postgres:
-     * en ny meldeperiode-id med samme `(sak_id, kjede_id, versjon)` som en allerede lagret meldeperiode
-     * bryter `unique_kjede_id_versjon` (se V7-migreringen). Lagringen skjer i én transaksjon, så hele
-     * forsøket skal rulles tilbake.
+     * Treffer den defensive `LagringFeilet`-grenen (HTTP 500) via en genuin databasefeil mot ekte Postgres: en ny meldeperiode-id med samme `(sak_id, kjede_id, versjon)` som en allerede lagret meldeperiode bryter `unique_kjede_id_versjon` (se V7-migreringen).
+     * Lagringen skjer i én transaksjon, så hele forsøket skal rulles tilbake.
      */
     @Test
     fun `Skal returnere 500 og rulle tilbake når lagring bryter databasekonstraint`() {

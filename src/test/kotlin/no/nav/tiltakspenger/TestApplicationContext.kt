@@ -37,6 +37,9 @@ sealed class TestApplicationContext(
 
     fun nesteSaksnummer(): String = saksnummergenerator.generer()
 
-    /** Deterministisk, unikt fnr. Foretrekkes fremfor `Fnr.random()` for å unngå flaky kollisjoner. */
+    /**
+     *  Deterministisk, unikt fnr.
+     *  Foretrekkes fremfor `Fnr.random()` for å unngå flaky kollisjoner.
+     */
     fun nesteFnr(): Fnr = fnrGenerator.generer()
 }

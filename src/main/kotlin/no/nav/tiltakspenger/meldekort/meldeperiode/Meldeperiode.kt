@@ -16,7 +16,8 @@ import java.time.temporal.TemporalAdjusters
  *
  * @param id ULID/UUID som unikt identifiserer denne versjonen av meldeperioden for denne saken.
  * @param kjedeId ULID/UUID som unikt identifiserer kjeden av meldeperioder for denne saken.
- * @param versjon Angir hvilken versjon meldeperioden dette er. Når vi får nye vedtak som påvirker en spesifikk meldeperiode, vil denne øke.
+ * @param versjon Angir hvilken versjon meldeperioden dette er.
+ *        Når vi får nye vedtak som påvirker en spesifikk meldeperiode, vil denne øke.
  */
 data class Meldeperiode(
     val id: MeldeperiodeId,

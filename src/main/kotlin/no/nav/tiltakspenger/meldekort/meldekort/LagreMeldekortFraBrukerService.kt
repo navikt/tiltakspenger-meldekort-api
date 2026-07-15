@@ -101,9 +101,8 @@ class LagreMeldekortFraBrukerService(
     }
 
     /**
-     * Den betingede skrivingen traff 0 rader fordi meldekortet ikke lenger var åpent for innsending. Leser
-     * meldekortet på nytt (i samme transaksjon som skrivingen) for å skille mellom de mulige årsakene og gi
-     * bruker en presis feilmelding.
+     * Den betingede skrivingen traff 0 rader fordi meldekortet ikke lenger var åpent for innsending.
+     * Leser meldekortet på nytt (i samme transaksjon som skrivingen) for å skille mellom de mulige årsakene og gi bruker en presis feilmelding.
      */
     private fun bestemÅrsakForAvvistInnsending(
         meldekortId: MeldekortId,
@@ -120,8 +119,8 @@ class LagreMeldekortFraBrukerService(
             MeldekortStatus.INNSENDT ->
                 KunneIkkeLagreMeldekortFraBruker.MeldekortErAlleredeMottatt(meldekortId)
 
-            // KAN_UTFYLLES/IKKE_KLAR her er en selvmotsigelse: skrivingen traff 0 rader, men meldekortet
-            // framstår fortsatt som åpent. Behandles som en uventet feil slik at den havner i sikkerlogg.
+            // KAN_UTFYLLES/IKKE_KLAR her er en selvmotsigelse: skrivingen traff 0 rader, men meldekortet framstår fortsatt som åpent.
+            // Behandles som en uventet feil slik at den havner i sikkerlogg.
             MeldekortStatus.KAN_UTFYLLES, MeldekortStatus.IKKE_KLAR ->
                 KunneIkkeLagreMeldekortFraBruker.UventetFeilVedLagring(
                     meldekortId = meldekortId,

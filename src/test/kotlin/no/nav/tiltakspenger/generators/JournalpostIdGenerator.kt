@@ -11,9 +11,8 @@ interface JournalpostIdGenerator {
 /**
  * Trådsikker, deterministisk journalpost-id-generator for tester.
  *
- * Genererer sekvensielle id-er. Deles på et høyere nivå (se [no.nav.tiltakspenger.db.IdGenerators]
- * som holdes av test-db-manageren), på samme måte som de andre generatorene, slik at journalførte
- * meldekort i samme test-db får unike og forutsigbare journalpost-id-er.
+ * Genererer sekvensielle id-er.
+ * Deles på et høyere nivå (se [no.nav.tiltakspenger.db.IdGenerators] som holdes av test-db-manageren), på samme måte som de andre generatorene, slik at journalførte meldekort i samme test-db får unike og forutsigbare journalpost-id-er.
  */
 class JournalpostIdGeneratorSerial(
     første: Long = 1,

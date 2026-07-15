@@ -10,13 +10,11 @@ import java.time.Instant
 /**
  * Fake av [TexasClient].
  *
- * I motsetning til en fake som er låst til én bruker, dekoder denne selve bearer-token-et (en ekte
- * JWT bygget av [no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator]) og speiler claimsene
- * tilbake i introspeksjonen — slik den ekte Texas-tjenesten gjør. Hvilken person et kall
- * autentiseres som, styres altså av `pid`-claimet i token-et.
+ * I motsetning til en fake som er låst til én bruker, dekoder denne selve bearer-token-et (en ekte JWT bygget av [no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator]) og speiler claimsene tilbake i introspeksjonen — slik den ekte Texas-tjenesten gjør.
+ * Hvilken person et kall autentiseres som, styres altså av `pid`-claimet i token-et.
  *
- * Konsekvens: en test-kontekst er ikke knyttet til ett bestemt fødselsnummer. Vil du teste flere
- * personer i samme test, send ulike `fnr` til route-hjelperne (de bygger token med riktig `pid`).
+ * Konsekvens: en test-kontekst er ikke knyttet til ett bestemt fødselsnummer.
+ * Vil du teste flere personer i samme test, send ulike `fnr` til route-hjelperne (de bygger token med riktig `pid`).
  */
 class TexasClientFakeTest : TexasClient {
     override suspend fun introspectToken(

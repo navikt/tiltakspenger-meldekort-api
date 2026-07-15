@@ -14,15 +14,14 @@ import java.time.LocalDateTime
  * Den brukervendte teksten og HTTP-statusen ligger derimot i route-laget (`SendInnMeldekortRoute.toErrorJson`),
  * siden det er en transport-/presentasjonsdetalj.
  *
- * [loggMelding] er bevisst fri for personopplysninger (fnr, utfylte dager, stedinformasjon e.l.) slik at den
- * trygt kan logges i vanlig logg. Potensielt sensitive detaljer (f.eks. [UventetFeilVedLagring.throwable])
- * skal kun til sikkerlogg.
+ * [loggMelding] er bevisst fri for personopplysninger (fnr, utfylte dager, stedinformasjon e.l.) slik at den trygt kan logges i vanlig logg.
+ * Potensielt sensitive detaljer (f.eks. [UventetFeilVedLagring.throwable]) skal kun til sikkerlogg.
  */
 sealed interface KunneIkkeLagreMeldekortFraBruker {
     /**
-     * Melding trygg for vanlig logg. Inneholder interne IDer, men ingen personopplysninger. Settes sammen av
-     * [beskrivelse] og en teknisk markør for om bruker kan prøve igjen ([kanPrøveIgjen]), slik at loggen alene
-     * gir en komplett tolkning av feilen.
+     * Melding trygg for vanlig logg.
+     * Inneholder interne IDer, men ingen personopplysninger.
+     * Settes sammen av [beskrivelse] og en teknisk markør for om bruker kan prøve igjen ([kanPrøveIgjen]), slik at loggen alene gir en komplett tolkning av feilen.
      */
     val loggMelding: String
         get() = buildString {
@@ -31,7 +30,10 @@ sealed interface KunneIkkeLagreMeldekortFraBruker {
             append(")")
         }
 
-    /** Kjernebeskrivelsen av hva som gikk galt. Fri for personopplysninger, men kan inneholde interne IDer. */
+    /**
+     *  Kjernebeskrivelsen av hva som gikk galt.
+     *  Fri for personopplysninger, men kan inneholde interne IDer.
+     */
     val beskrivelse: String
 
     /**
@@ -67,13 +69,13 @@ sealed interface KunneIkkeLagreMeldekortFraBruker {
     val kanPrøveIgjenTidspunkt: LocalDateTime? get() = null
 
     /**
-     * Meldekortet finnes ikke for den innloggede brukeren (feil/ukjent id, eller meldekortet tilhører en annen
-     * person). Bruker bør gå tilbake til oversikten og velge meldekortet på nytt. Et nytt forsøk på den samme
-     * innsendingen vil ikke hjelpe.
+     * Meldekortet finnes ikke for den innloggede brukeren (feil/ukjent id, eller meldekortet tilhører en annen person).
+     * Bruker bør gå tilbake til oversikten og velge meldekortet på nytt.
+     * Et nytt forsøk på den samme innsendingen vil ikke hjelpe.
      *
-     * Logges som [Loggnivå.WARN]: oppslaget gjøres på `meldekortId` fra request-body, som er brukerkontrollert
-     * input. En oppdiktet eller utdatert id kan derfor provosere denne uten at det er en feil hos oss, og vi kan
-     * ikke skille det fra et reelt problem. Vi velger derfor det minst alarmerende nivået.
+     * Logges som [Loggnivå.WARN]: oppslaget gjøres på `meldekortId` fra request-body, som er brukerkontrollert input.
+     * En oppdiktet eller utdatert id kan derfor provosere denne uten at det er en feil hos oss, og vi kan ikke skille det fra et reelt problem.
+     * Vi velger derfor det minst alarmerende nivået.
      */
     data class FantIkkeMeldekort(val meldekortId: MeldekortId) : KunneIkkeLagreMeldekortFraBruker {
         override val beskrivelse: String =
@@ -83,14 +85,12 @@ sealed interface KunneIkkeLagreMeldekortFraBruker {
     }
 
     /**
-     * Meldekortet finnes, men vi finner ingen gjeldende meldeperiode for kjeden. Dette er en intern
-     * inkonsistens som ikke skal kunne oppstå, og som et nytt forsøk ikke retter opp. Bruker bør kontakte oss
-     * dersom problemet vedvarer.
+     * Meldekortet finnes, men vi finner ingen gjeldende meldeperiode for kjeden.
+     * Dette er en intern inkonsistens som ikke skal kunne oppstå, og som et nytt forsøk ikke retter opp.
+     * Bruker bør kontakte oss dersom problemet vedvarer.
      *
-     * Logges som [Loggnivå.ERROR] (i motsetning til [FantIkkeMeldekort]): oppslaget gjøres på `kjedeId` avledet
-     * fra det allerede lagrede meldekortet — ikke fra request-body — så brukeren kan ikke styre eller provosere
-     * det. Når den feiler, peker vårt eget meldekort på en kjede uten meldeperiode, altså en feil i våre data
-     * eller logikk som vi bør undersøke.
+     * Logges som [Loggnivå.ERROR] (i motsetning til [FantIkkeMeldekort]): oppslaget gjøres på `kjedeId` avledet fra det allerede lagrede meldekortet — ikke fra request-body — så brukeren kan ikke styre eller provosere det.
+     * Når den feiler, peker vårt eget meldekort på en kjede uten meldeperiode, altså en feil i våre data eller logikk som vi bør undersøke.
      */
     data class FantIkkeMeldeperiode(
         val meldekortId: MeldekortId,
@@ -103,8 +103,8 @@ sealed interface KunneIkkeLagreMeldekortFraBruker {
     }
 
     /**
-     * Meldekortet er allerede mottatt/sendt inn tidligere. Innsendingen er altså allerede registrert, og et nytt
-     * forsøk vil gi samme svar.
+     * Meldekortet er allerede mottatt/sendt inn tidligere.
+     * Innsendingen er altså allerede registrert, og et nytt forsøk vil gi samme svar.
      *
      * Logges som [Loggnivå.WARN]: en forventet situasjon (typisk dobbel innsending) som ikke krever oppfølging.
      */
@@ -117,8 +117,8 @@ sealed interface KunneIkkeLagreMeldekortFraBruker {
 
     /**
      * Meldeperioden meldekortet ble fylt ut for er erstattet av en nyere versjon (typisk pga. en revurdering).
-     * Dette meldekortet er ikke lenger gyldig. Bruker må gå tilbake til oversikten og sende inn det nyeste
-     * meldekortet i stedet — å prøve dette på nytt hjelper ikke.
+     * Dette meldekortet er ikke lenger gyldig.
+     * Bruker må gå tilbake til oversikten og sende inn det nyeste meldekortet i stedet — å prøve dette på nytt hjelper ikke.
      *
      * Logges som [Loggnivå.WARN]: en forventet konsekvens av at meldeperioden er oppdatert, ikke en feil hos oss.
      */
@@ -135,14 +135,12 @@ sealed interface KunneIkkeLagreMeldekortFraBruker {
     }
 
     /**
-     * Meldekortet er deaktivert. Et meldekort deaktiveres når meldeperioden får en ny versjon (typisk pga. en
-     * revurdering) før dette meldekortet er sendt inn, og det blir aldri utfyllbart igjen. Dette er samme
-     * bruker-situasjon som [MeldekortetsMeldeperiodeErErstattet]: bruker må gå tilbake til oversikten og sende
-     * inn det nyeste meldekortet — å prøve dette på nytt hjelper ikke.
+     * Meldekortet er deaktivert.
+     * Et meldekort deaktiveres når meldeperioden får en ny versjon (typisk pga. en revurdering) før dette meldekortet er sendt inn, og det blir aldri utfyllbart igjen.
+     * Dette er samme bruker-situasjon som [MeldekortetsMeldeperiodeErErstattet]: bruker må gå tilbake til oversikten og sende inn det nyeste meldekortet — å prøve dette på nytt hjelper ikke.
      *
-     * Logges som [Loggnivå.WARN]: en forventet konsekvens av at meldeperioden er oppdatert. I praksis fanges
-     * dette normalt allerede av [MeldekortetsMeldeperiodeErErstattet] (deaktivering henger sammen med en nyere
-     * meldeperiode-versjon); denne varianten finnes for at statushåndteringen skal være eksplisitt og robust.
+     * Logges som [Loggnivå.WARN]: en forventet konsekvens av at meldeperioden er oppdatert.
+     * I praksis fanges dette normalt allerede av [MeldekortetsMeldeperiodeErErstattet] (deaktivering henger sammen med en nyere meldeperiode-versjon); denne varianten finnes for at statushåndteringen skal være eksplisitt og robust.
      */
     data class MeldekortErDeaktivert(val meldekortId: MeldekortId) : KunneIkkeLagreMeldekortFraBruker {
         override val beskrivelse: String =
@@ -169,8 +167,8 @@ sealed interface KunneIkkeLagreMeldekortFraBruker {
     }
 
     /**
-     * Uventet feil ved selve lagringen/utfyllingen (f.eks. brudd på en domeneinvariant eller en feil mot
-     * databasen). Feilen kan være forbigående, så bruker kan prøve å sende inn på nytt.
+     * Uventet feil ved selve lagringen/utfyllingen (f.eks. brudd på en domeneinvariant eller en feil mot databasen).
+     * Feilen kan være forbigående, så bruker kan prøve å sende inn på nytt.
      *
      * Logges som [Loggnivå.ERROR]: en uventet feil vi bør undersøke. [throwable] kan inneholde personopplysninger
      * (f.eks. utfylte dager) og skal derfor kun logges til sikkerlogg. [loggMelding] er trygg for vanlig logg.

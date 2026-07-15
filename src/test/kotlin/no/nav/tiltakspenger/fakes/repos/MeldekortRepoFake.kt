@@ -17,9 +17,8 @@ import java.time.Clock
 import java.time.LocalDateTime
 
 /**
- * In-memory fake som modellerer `meldekort_bruker`-tabellen. Den implementerer flere repo-porter
- * ([MeldekortRepo], [SendMeldekortRepo], [JournalføringRepo]) over samme backing-store, slik at
- * tester ser konsistente data uavhengig av hvilket domene-repo de går via – akkurat som mot én DB.
+ * In-memory fake som modellerer `meldekort_bruker`-tabellen.
+ * Den implementerer flere repo-porter ([MeldekortRepo], [SendMeldekortRepo], [JournalføringRepo]) over samme backing-store, slik at tester ser konsistente data uavhengig av hvilket domene-repo de går via – akkurat som mot én DB.
  */
 class MeldekortRepoFake(
     private val clock: Clock,

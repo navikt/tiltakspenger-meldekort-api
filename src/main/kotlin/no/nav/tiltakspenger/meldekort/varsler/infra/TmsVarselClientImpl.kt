@@ -18,9 +18,8 @@ import java.time.ZonedDateTime
 /**
  * Tjeneste for å sende varsel til bruker.
  *
- * All logikk rundt *når* ekstern varsling (SMS/e-post via Altinn) skal leveres til bruker
- * ligger i domenet. Klienten oversetter kun domenets eksterne varslingstidspunkt fra
- * [LocalDateTime] til [ZonedDateTime] og sender det videre som Min side' `utsettSendingTil`.
+ * All logikk rundt *når* ekstern varsling (SMS/e-post via Altinn) skal leveres til bruker ligger i domenet.
+ * Klienten oversetter kun domenets eksterne varslingstidspunkt fra [LocalDateTime] til [ZonedDateTime] og sender det videre som Min side' `utsettSendingTil`.
  *
  * @link https://navikt.github.io/tms-dokumentasjon/varsler/
  */
@@ -32,7 +31,8 @@ class TmsVarselClientImpl(
     private val logger = KotlinLogging.logger {}
 
     /**
-     * Bygger varselhendelsen (uten Kafka-publisering). Trygg å kalle utenfor transaksjon.
+     * Bygger varselhendelsen (uten Kafka-publisering).
+     * Trygg å kalle utenfor transaksjon.
      */
     override fun byggVarsel(
         varselId: VarselId,

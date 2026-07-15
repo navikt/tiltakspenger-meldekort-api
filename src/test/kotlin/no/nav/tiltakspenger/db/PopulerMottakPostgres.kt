@@ -12,9 +12,8 @@ import no.nav.tiltakspenger.meldekort.sak.Sak
  * Populering av testdata mot Postgres via mottak-skrivesiden
  * ([no.nav.tiltakspenger.meldekort.mottak.infra.MottakPostgresRepo]).
  *
- * Skrivemetodene `lagre`/`oppdater` på sak, meldeperiode og meldekortvedtak ble flyttet ut av
- * lese-repoene (CQRS) og inn i mottak. Disse hjelperne lar tester populere data uten å forholde seg
- * til at writes nå går via [TestDataHelper.mottakPostgresRepo].
+ * Skrivemetodene `lagre`/`oppdater` på sak, meldeperiode og meldekortvedtak ble flyttet ut av lese-repoene (CQRS) og inn i mottak.
+ * Disse hjelperne lar tester populere data uten å forholde seg til at writes nå går via [TestDataHelper.mottakPostgresRepo].
  *
  * Tester som heller vil jobbe direkte mot skrivemodellen kan bruke [MottattSak]-overloadene.
  */

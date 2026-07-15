@@ -10,8 +10,8 @@ import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendFeil
 import no.nav.tiltakspenger.meldekort.microfrontend.TmsMikrofrontendClient
 
 /**
- * Recording-fake for [TmsMikrofrontendClient]. Registrerer aktiverte/inaktiverte brukere slik at
- * tester kan verifisere mot faken i stedet for mot en mock.
+ * Recording-fake for [TmsMikrofrontendClient].
+ * Registrerer aktiverte/inaktiverte brukere slik at tester kan verifisere mot faken i stedet for mot en mock.
  *
  * Bruk [kastFeilFor] for å simulere at kallet mot det eksterne systemet feiler (returnerer [MicrofrontendFeil.KafkaFeil])
  * for en gitt sak.

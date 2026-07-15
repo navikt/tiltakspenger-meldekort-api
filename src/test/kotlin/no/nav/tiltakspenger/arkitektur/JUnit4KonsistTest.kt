@@ -6,8 +6,8 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import org.junit.jupiter.api.Test
 
 /**
- * Vi bruker JUnit 5 (Jupiter). JUnit 4 (`junit.framework.*` og `org.junit.*` utenom
- * `org.junit.jupiter.*` / `org.junit.platform.*`) skal ikke brukes i testkode.
+ * Vi bruker JUnit 5 (Jupiter).
+ * JUnit 4 (`junit.framework.*` og `org.junit.*` utenom `org.junit.jupiter.*` / `org.junit.platform.*`) skal ikke brukes i testkode.
  */
 class JUnit4KonsistTest {
     @Test

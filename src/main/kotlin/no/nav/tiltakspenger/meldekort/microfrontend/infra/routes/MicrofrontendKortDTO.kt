@@ -7,8 +7,8 @@ import java.time.LocalDateTime
 /**
  * Serialiserer [MicrofrontendMeldekortInfo] til JSON-en som sendes til brukers meldekort-microfrontend.
  *
- * Dette er den eneste offentlige inngangen til [MicrofrontendKortDTO]. Selve DTO-en er privat slik at den
- * ikke lekker ut av denne fila, og slik at mappingen fra domenet holdes her.
+ * Dette er den eneste offentlige inngangen til [MicrofrontendKortDTO].
+ * Selve DTO-en er privat slik at den ikke lekker ut av denne fila, og slik at mappingen fra domenet holdes her.
  */
 fun MicrofrontendMeldekortInfo.toDTO(): String = serialize(
     MicrofrontendKortDTO(

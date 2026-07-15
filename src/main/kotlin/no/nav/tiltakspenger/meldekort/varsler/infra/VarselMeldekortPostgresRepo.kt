@@ -14,7 +14,8 @@ class VarselMeldekortPostgresRepo(
 ) : VarselMeldekortRepo {
 
     /**
-     * Finner første kjede i saken som "mangler innsending". En kjede mangler innsending dersom:
+     * Finner første kjede i saken som "mangler innsending".
+     * En kjede mangler innsending dersom:
      * 1. Nyeste versjon har maks_antall_dager_for_periode > 0 (bruker har rett til å fylle ut minst én dag)
      * 2. Det aldri er mottatt et meldekort for noen meldeperiode i kjeden
      */

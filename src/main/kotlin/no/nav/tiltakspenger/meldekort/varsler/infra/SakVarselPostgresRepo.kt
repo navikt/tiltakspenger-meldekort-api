@@ -42,12 +42,10 @@ class SakVarselPostgresRepo(
     ): List<SakForVarselvurdering> {
         return sessionFactory.withSession(sessionContext) { session ->
             session.run(
-                // Henter kun de feltene VurderVarselService trenger. Vi henter spesielt IKKE
-                // meldeperioder her (en N+1-spørring ville bli kjørt hvert 10. sek). Sortering
-                // på sist_flagget_tidspunkt NULLS FIRST gir oss "first flagged, first served" –
-                // saker som har stått lengst i kø prioriteres, og ingen sak kan sulte. NULLS
-                // FIRST plukker også opp saker som ikke er flagget eksplisitt enda (f.eks.
-                // ved første kjøring etter migrering).
+                // Henter kun de feltene VurderVarselService trenger.
+                // Vi henter spesielt IKKE meldeperioder her (en N+1-spørring ville bli kjørt hvert 10. sek).
+                // Sortering på sist_flagget_tidspunkt NULLS FIRST gir oss "first flagged, first served" – saker som har stått lengst i kø prioriteres, og ingen sak kan sulte.
+                // NULLS FIRST plukker også opp saker som ikke er flagget eksplisitt enda (f.eks. ved første kjøring etter migrering).
                 sqlQuery(
                     """
                     SELECT id, saksnummer, fnr, sist_flagget_tidspunkt
@@ -78,13 +76,10 @@ class SakVarselPostgresRepo(
         sessionFactory.withSession(sessionContext) { session ->
             val antallOppdatert = session.run(
                 sqlQuery(
-                    // Optimistisk lås: oppdater kun hvis sist_flagget_tidspunkt ikke har endret
-                    // seg siden jobben leste saken. IS NOT DISTINCT FROM håndterer NULL korrekt
-                    // (NULL IS NOT DISTINCT FROM NULL = true). Hvis tidspunktet er endret har en
-                    // konkurrerende transaksjon flagget saken på nytt (typisk mottak av nytt
-                    // meldekort). Vi kaster OptimistiskLåsFeil slik at varseljobbens transaksjon
-                    // rulles tilbake, og saken plukkes opp på nytt i neste kjøring med oppdatert
-                    // datagrunnlag.
+                    // Optimistisk lås: oppdater kun hvis sist_flagget_tidspunkt ikke har endret seg siden jobben leste saken.
+                    // IS NOT DISTINCT FROM håndterer NULL korrekt (NULL IS NOT DISTINCT FROM NULL = true).
+                    // Hvis tidspunktet er endret har en konkurrerende transaksjon flagget saken på nytt (typisk mottak av nytt meldekort).
+                    // Vi kaster OptimistiskLåsFeil slik at varseljobbens transaksjon rulles tilbake, og saken plukkes opp på nytt i neste kjøring med oppdatert datagrunnlag.
                     """
                     UPDATE sak SET
                         skal_vurdere_varsel = false,

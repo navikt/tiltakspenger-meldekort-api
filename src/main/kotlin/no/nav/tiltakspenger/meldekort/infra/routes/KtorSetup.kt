@@ -36,8 +36,8 @@ const val CALL_ID_MDC_KEY = "call-id"
  * Auth-provider og path-prefiks for hver feature eies av feature-pakken selv,
  * via `*Module(applicationContext)`-funksjonene.
  *
- * [additionalRoutes] er en hook for å registrere ekstra routes som ikke skal være med i prod
- * (f.eks. dev-only endepunkter satt opp fra LokalMain). Er `null` i prod.
+ * [additionalRoutes] er en hook for å registrere ekstra routes som ikke skal være med i prod (f.eks. dev-only endepunkter satt opp fra LokalMain).
+ * Er `null` i prod.
  */
 fun Application.ktorSetup(
     applicationContext: ApplicationContext,

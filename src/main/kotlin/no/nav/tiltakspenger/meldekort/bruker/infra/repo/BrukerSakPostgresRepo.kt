@@ -13,8 +13,8 @@ class BrukerSakPostgresRepo(
 ) : BrukerSakRepo {
 
     /**
-     * Henter kun feltene som trengs av brukerflyten — ingen meldeperioder eller meldekortvedtak
-     * joines inn. Slik unngår vi at konsumenter feiltolker `emptyList()` som "ingen data finnes".
+     * Henter kun feltene som trengs av brukerflyten — ingen meldeperioder eller meldekortvedtak joines inn.
+     * Slik unngår vi at konsumenter feiltolker `emptyList()` som "ingen data finnes".
      */
     override fun hentForBruker(
         fnr: Fnr,

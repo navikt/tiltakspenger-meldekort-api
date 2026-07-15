@@ -26,12 +26,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
- * EndToEnd-tester for microfrontend på sak-nivå. All seeding går via [mottaSakRequest] (ytterste nivå,
- * slik som i prod) – vi bygger ikke opp data direkte i basen.
+ * EndToEnd-tester for microfrontend på sak-nivå.
+ * All seeding går via [mottaSakRequest] (ytterste nivå, slik som i prod) – vi bygger ikke opp data direkte i basen.
  *
- * Disse testene rører kun én konkret sak (per-sak-jobbene, eller kriterie-sjekk av at nettopp denne saken
- * er med/ikke med i kryss-sak-spørringen) og kjører derfor uten isolasjon. Kriterietestene sjekker bevisst
- * mot saken sin egen id med høy `limit`, slik at resultatet er deterministisk uavhengig av andre saker i basen.
+ * Disse testene rører kun én konkret sak (per-sak-jobbene, eller kriterie-sjekk av at nettopp denne saken er med/ikke med i kryss-sak-spørringen) og kjører derfor uten isolasjon.
+ * Kriterietestene sjekker bevisst mot saken sin egen id med høy `limit`, slik at resultatet er deterministisk uavhengig av andre saker i basen.
  *
  * Den aggregerte jobb-oppførselen (aktiver/inaktiver alle, limit, ukjent feil) testes isolert i
  * [MicrofrontendAggregertJobbEndToEndTest].
@@ -480,8 +479,8 @@ class MicrofrontendEndToEndTest {
     ): Sak = mottaSak(tac, periode = periode, opprettet = opprettet, girRett = periode.tilDager().associateWith { false })
 
     /**
-     * Sjekker om nettopp [sak] er blant sakene kryss-sak-spørringen vil aktivere. Bruker høy limit slik at
-     * resultatet ikke påvirkes av hvor mange andre saker som tilfeldigvis ligger i den delte test-basen.
+     * Sjekker om nettopp [sak] er blant sakene kryss-sak-spørringen vil aktivere.
+     * Bruker høy limit slik at resultatet ikke påvirkes av hvor mange andre saker som tilfeldigvis ligger i den delte test-basen.
      */
     private fun MicrofrontendRepo.skalAktiveres(sak: Sak): Boolean =
         hentSakerHvorMicrofrontendSkalAktiveres(limit = Int.MAX_VALUE).getOrFail().map { it.sakId }.contains(sak.id)

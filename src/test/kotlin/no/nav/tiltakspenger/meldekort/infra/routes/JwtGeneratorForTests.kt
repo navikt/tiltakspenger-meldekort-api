@@ -40,7 +40,8 @@ data class JwtGenerator(
     }
 
     /**
-     * @param saksbehandler Overstyrer preferredUsername, navIdent og groups. Defaultverdier er samme som ObjectMother.saksbehandler()
+     * @param saksbehandler Overstyrer preferredUsername, navIdent og groups.
+     *        Defaultverdier er samme som ObjectMother.saksbehandler()
      */
     fun createJwtForSaksbehandler(
         jwtKeyId: String = jwkKeyId,

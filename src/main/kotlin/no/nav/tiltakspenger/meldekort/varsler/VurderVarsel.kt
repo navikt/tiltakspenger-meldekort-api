@@ -54,9 +54,8 @@ internal fun vurderVarselForSak(
                 logger = logger,
             )
         }
-        // Hvis sist_flagget_tidspunkt er endret siden vi leste saken kaster markerVarselVurdert
-        // OptimistiskLåsFeil og hele transaksjonen rulles tilbake. Saken forblir flagget og
-        // plukkes opp på nytt i neste kjøring, slik at hendelsen ikke går tapt.
+        // Hvis sist_flagget_tidspunkt er endret siden vi leste saken kaster markerVarselVurdert OptimistiskLåsFeil og hele transaksjonen rulles tilbake.
+        // Saken forblir flagget og plukkes opp på nytt i neste kjøring, slik at hendelsen ikke går tapt.
         markerVarselVurdert(vurderingstidspunkt, sistFlaggetTidspunktVedLesing, tx)
     }
 
@@ -134,8 +133,8 @@ private fun opprettNyttVarsel(
         lagreVarsel(nyttVarsel, sessionContext)
         logger.info { "Opprettet varsel ${nyttVarsel.varselId} for sak $sakId" }
     }.onLeft { feil ->
-        // Vi har allerede sjekket at det ikke finnes noe pågående varsel. Hvis vi likevel ender
-        // her er det et invariantbrudd – kast og rull tilbake transaksjonen for retry.
+        // Vi har allerede sjekket at det ikke finnes noe pågående varsel.
+        // Hvis vi likevel ender her er det et invariantbrudd – kast og rull tilbake transaksjonen for retry.
         logger.warn { "Kunne ikke opprette varsel for sak $sakId: ${feil.melding}" }
         error("Kunne ikke opprette varsel for sak $sakId: ${feil.melding}")
     }
@@ -206,12 +205,12 @@ private fun forberedInaktiveringHvisNødvendig(
     lagreVarsel: (Varsel, SessionContext) -> Unit,
     logger: KLogger,
 ): Either<VurderVarselUtfall, Unit> {
-    // Ingen kjeder mangler innsending lenger. Forbered inaktivering av det pågående varselet.
+    // Ingen kjeder mangler innsending lenger.
+    // Forbered inaktivering av det pågående varselet.
     //
-    // Også for SkalAktiveres går vi rett til SkalInaktiveres (uten å gå via Aktiv). Vi kan ha
-    // publisert aktiveringen på Kafka uten at lagringen lyktes, så for sikkerhets skyld må vi
-    // alltid publisere en inaktivering mot Min side (som er idempotent og ignorerer varselId den ikke kjenner til). InaktiverVarslerService håndterer dette
-    // basert på SkalInaktiveres-tilstanden.
+    // Også for SkalAktiveres går vi rett til SkalInaktiveres (uten å gå via Aktiv).
+    // Vi kan ha publisert aktiveringen på Kafka uten at lagringen lyktes, så for sikkerhets skyld må vi alltid publisere en inaktivering mot Min side (som er idempotent og ignorerer varselId den ikke kjenner til).
+    // InaktiverVarslerService håndterer dette basert på SkalInaktiveres-tilstanden.
 
     when (val pågående = varsler.pågåendeOppretting) {
         is Varsel.SkalAktiveres, is Varsel.Aktiv -> {

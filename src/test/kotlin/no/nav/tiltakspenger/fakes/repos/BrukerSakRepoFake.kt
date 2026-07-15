@@ -8,8 +8,8 @@ import no.nav.tiltakspenger.meldekort.bruker.SakForBruker
 /**
  * In-memory speiling av [no.nav.tiltakspenger.meldekort.bruker.infra.repo.BrukerSakPostgresRepo].
  *
- * Leser fra samme underliggende lager som [SakRepoFake] for å unngå at fake-grensesnittet
- * inneholder duplikat tilstand. Returnerer kun feltene som er definert i [SakForBruker].
+ * Leser fra samme underliggende lager som [SakRepoFake] for å unngå at fake-grensesnittet inneholder duplikat tilstand.
+ * Returnerer kun feltene som er definert i [SakForBruker].
  */
 class BrukerSakRepoFake(
     private val sakRepoFake: SakRepoFake,

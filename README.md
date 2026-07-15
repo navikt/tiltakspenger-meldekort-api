@@ -7,7 +7,9 @@ Dette er backenden til [tiltakspenger-meldekort](https://github.com/navikt/tilta
 En del av satsningen ["Flere i arbeid – P4"](https://memu.no/artikler/stor-satsing-skal-fornye-navs-utdaterte-it-losninger-og-digitale-verktoy/)
 
 # Komme i gang
-Klone repoet. Vi anbefaler at man setter opp via meta-repoet: https://github.com/navikt/tiltakspenger-meldekort
+
+Klone repoet.
+Vi anbefaler at man setter opp via meta-repoet: https://github.com/navikt/tiltakspenger-meldekort
 ## Forutsetninger
 - [JDK](https://jdk.java.net/)
 - [Kotlin](https://kotlinlang.org/)
@@ -25,12 +27,16 @@ For å bygge artifaktene:
 ---
 
 ## Lokal kjøring
-Appen kan startes lokalt med main-funksjonen i LokalMain.kt. Som default krever denne kun database kjørende lokalt, andre eksterne tjenester erstattes av fakes.
+
+Appen kan startes lokalt med main-funksjonen i LokalMain.kt.
+Som default krever denne kun database kjørende lokalt, andre eksterne tjenester erstattes av fakes.
 
 Dersom du ønsker å kjøre ekte autentiseringsflyt lokalt, sett miljøvariabelen `BRUK_FAKE_AUTH=false`, f.eks. via run config i Intellij.
 
 ### Dev-only endepunkt: opprett en sak med meldeperioder
-Når appen kjøres via `LokalMain` registreres et dev-only endepunkt `POST /dev/sak` som oppretter en sak med meldeperioder. Det er **kun** tilgjengelig lokalt (koblet inn via `additionalRoutes` i `LokalMain`, ligger i test-sourceset og er aldri med i prod-artifacten), og krever ingen autentisering.
+
+Når appen kjøres via `LokalMain` registreres et dev-only endepunkt `POST /dev/sak` som oppretter en sak med meldeperioder.
+Det er **kun** tilgjengelig lokalt (koblet inn via `additionalRoutes` i `LokalMain`, ligger i test-sourceset og er aldri med i prod-artifacten), og krever ingen autentisering.
 
 Endepunktet kjører gjennom samme mapping og service (`MottakFraSaksbehandlingService`) som det ekte motta-endepunktet `POST /saksbehandling/sak`, så flyten blir mest mulig prodlik – det gjenbruker testbuilderne (`ObjectMother`) for å lage payloaden.
 
@@ -50,7 +56,8 @@ curl -X POST http://localhost:8083/dev/sak -H 'Content-Type: application/json' -
 }'
 ```
 
-Felter i body (alle valgfrie): `fnr`, `sakId`, `saksnummer`, `antallMeldeperioderBakover` (default 2), `antallMeldeperioderFremover` (default 2), `forsteMeldeperiodeStart` (overstyrer fordelingen og genererer perioder sekvensielt fra denne datoen), `harSoknadUnderBehandling`, `kanSendeInnHelgForMeldekort`. Svaret er `201 Created` med `sakId`, `saksnummer`, `fnr` og en oppsummering av meldeperiodene.
+Felter i body (alle valgfrie): `fnr`, `sakId`, `saksnummer`, `antallMeldeperioderBakover` (default 2), `antallMeldeperioderFremover` (default 2), `forsteMeldeperiodeStart` (overstyrer fordelingen og genererer perioder sekvensielt fra denne datoen), `harSoknadUnderBehandling`, `kanSendeInnHelgForMeldekort`.
+Svaret er `201 Created` med `sakId`, `saksnummer`, `fnr` og en oppsummering av meldeperiodene.
 
 # Dokumentasjon
 
@@ -59,9 +66,12 @@ Felter i body (alle valgfrie): `fnr`, `sakId`, `saksnummer`, `antallMeldeperiode
 
 # Arkitektur og pakkestruktur
 
-Prosjektet er organisert etter feature, med DDD- og heksagonale prinsipper som rettesnor. Det betyr at kode først og fremst skal ligge nær den delen av domenet den tilhører, ikke i generelle tekniske lag som `routes`, `clients` eller `repository` på toppnivå.
+Prosjektet er organisert etter feature, med DDD- og heksagonale prinsipper som rettesnor.
+Det betyr at kode først og fremst skal ligge nær den delen av domenet den tilhører, ikke i generelle tekniske lag som `routes`, `clients` eller `repository` på toppnivå.
 
-Målet er at domenet skal være lett å forstå uten å måtte lese teknisk integrasjonskode. Domenekoden beskriver begreper, regler, tilstander, kommandoer, porter og applikasjonsflyt. Tekniske detaljer legges i `infra`.
+Målet er at domenet skal være lett å forstå uten å måtte lese teknisk integrasjonskode.
+Domenekoden beskriver begreper, regler, tilstander, kommandoer, porter og applikasjonsflyt.
+Tekniske detaljer legges i `infra`.
 
 ## Avhengighetsretning
 
@@ -128,7 +138,8 @@ Domenet skal i minst mulig grad kjenne til transport, database, Ktor, Kafka, HTT
 
 ## Hva hører hjemme i `infra`?
 
-`infra` er adapterlaget mot tekniske detaljer og eksterne systemer. Kode i `infra` kan kjenne til domenet, men domenet skal ikke kjenne til `infra`.
+`infra` er adapterlaget mot tekniske detaljer og eksterne systemer.
+Kode i `infra` kan kjenne til domenet, men domenet skal ikke kjenne til `infra`.
 
 Legg dette i `infra`:
 
@@ -156,7 +167,8 @@ Eksempler:
 - Microfrontend: `meldekort/microfrontend/infra/routes/MicrofrontendRoutes.kt` og `MicrofrontendKortDTO.kt`
 - Saksbehandling: `meldekort/sak/infra/routes/SakFraSaksbehandlingRoute.kt`
 
-Route-kode skal være tynn: autentisering, parsing, validering av transportformat, kall til domenet/service og mapping til HTTP-respons. Forretningsregler skal flyttes inn i domenemodellen eller domenetjenesten som eier dataene.
+Route-kode skal være tynn: autentisering, parsing, validering av transportformat, kall til domenet/service og mapping til HTTP-respons.
+Forretningsregler skal flyttes inn i domenemodellen eller domenetjenesten som eier dataene.
 
 ### HTTP-klienter og eksterne DTO-er
 
@@ -172,7 +184,8 @@ Eksempler:
 - Pdfgen-adapter: `meldekort/journalfring/infra/PdfgenClientImpl.kt`
 - Arena-adapter: `meldekort/arena/infra/ArenaMeldekortHttpClient.kt`
 
-Domenet bør kun forholde seg til porten og domenemodeller. Adapteren mapper mellom ekstern DTO og domenemodell.
+Domenet bør kun forholde seg til porten og domenemodeller.
+Adapteren mapper mellom ekstern DTO og domenemodell.
 
 ### Kafka, topic-håndtering og Kafka-DTO-er
 
@@ -185,7 +198,8 @@ Eksempler:
 - Kafka producer-adapter for varsler: `meldekort/varsler/infra/TmsVarselClientImpl.kt`
 - Kafka wiring og topic-konfigurasjon: `meldekort/infra/ApplicationContext.kt` og `meldekort/infra/Configuration.kt`
 
-Kafka-spesifikke DTO-er skal ligge i relevant `<feature>.infra`. Dersom meldingen inneholder informasjon domenet trenger, mapper adapteren meldingen til en domenekommando eller domenemodell før domenet kalles.
+Kafka-spesifikke DTO-er skal ligge i relevant `<feature>.infra`.
+Dersom meldingen inneholder informasjon domenet trenger, mapper adapteren meldingen til en domenekommando eller domenemodell før domenet kalles.
 
 ### Repositories og databasekode
 
@@ -217,7 +231,9 @@ Eksempler:
 
 ## Teststruktur
 
-Tester skal speile produksjonsstrukturen. Hvis produksjonskode ligger i `meldekort/varsler/infra`, skal testen ligge i tilsvarende struktur under `src/test/kotlin`. Dette gjør det enklere å se hvilke tester som hører til hvilken feature og unngår parallelle strukturer basert på tekniske lag.
+Tester skal speile produksjonsstrukturen.
+Hvis produksjonskode ligger i `meldekort/varsler/infra`, skal testen ligge i tilsvarende struktur under `src/test/kotlin`.
+Dette gjør det enklere å se hvilke tester som hører til hvilken feature og unngår parallelle strukturer basert på tekniske lag.
 
 Eksempler:
 
