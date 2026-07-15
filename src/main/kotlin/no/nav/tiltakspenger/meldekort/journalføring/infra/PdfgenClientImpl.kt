@@ -96,7 +96,7 @@ class PdfgenClientImpl(
             runParallel(
                 jsonPayload = meldekort.toDTO(),
                 errorContext = errorContext,
-                pdfgenUri = pdfgenrsUri,
+                pdfgenUri = uri,
                 pdfgenrsUri = pdfgenrsUri,
             )
         } else {
