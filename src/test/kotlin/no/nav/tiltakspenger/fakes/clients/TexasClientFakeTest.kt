@@ -54,6 +54,7 @@ class TexasClientFakeTest : TexasClient {
         audienceTarget: String,
         identityProvider: IdentityProvider,
         rewriteAudienceTarget: Boolean,
+        skipCache: Boolean,
     ): AccessToken {
         return accessToken()
     }
@@ -62,6 +63,7 @@ class TexasClientFakeTest : TexasClient {
         userToken: String,
         audienceTarget: String,
         identityProvider: IdentityProvider,
+        skipCache: Boolean,
     ): AccessToken {
         return accessToken()
     }
@@ -69,6 +71,5 @@ class TexasClientFakeTest : TexasClient {
     private fun accessToken(): AccessToken = AccessToken(
         token = "asdf",
         expiresAt = Instant.now().plusSeconds(3600),
-        invaliderCache = { },
     )
 }

@@ -49,8 +49,8 @@ import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
 import no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo
 import no.nav.tiltakspenger.meldekort.sak.infra.SaksbehandlingClientImpl
+import no.nav.tiltakspenger.meldekort.sending.SendMeldekortJobb
 import no.nav.tiltakspenger.meldekort.sending.SendMeldekortRepo
-import no.nav.tiltakspenger.meldekort.sending.SendMeldekortService
 import no.nav.tiltakspenger.meldekort.sending.infra.SendMeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.varsler.AktiverVarslerService
 import no.nav.tiltakspenger.meldekort.varsler.InaktiverVarslerService
@@ -227,8 +227,8 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
-    val sendMeldekortService: SendMeldekortService by lazy {
-        SendMeldekortService(
+    val sendMeldekortJobb: SendMeldekortJobb by lazy {
+        SendMeldekortJobb(
             sendMeldekortRepo = sendMeldekortRepo,
             saksbehandlingClient = saksbehandlingClient,
             clock = clock,

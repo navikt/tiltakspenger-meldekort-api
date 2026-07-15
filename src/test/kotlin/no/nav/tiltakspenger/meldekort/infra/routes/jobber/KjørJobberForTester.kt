@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.meldekort.infra.routes.jobber
 
-import arrow.core.Either
 import no.nav.tiltakspenger.TestApplicationContext
 
 /**
@@ -9,7 +8,7 @@ import no.nav.tiltakspenger.TestApplicationContext
 object KjørJobberForTester {
 
     suspend fun kjørSendMeldekortTilSaksbehandling(tac: TestApplicationContext) {
-        tac.sendMeldekortService.sendMeldekort()
+        tac.sendMeldekortJobb.sendMeldekort()
     }
 
     suspend fun kjørJournalførMeldekort(tac: TestApplicationContext) {

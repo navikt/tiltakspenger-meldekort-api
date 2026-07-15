@@ -60,7 +60,6 @@ internal class ArenaMeldekortHttpClientTest {
     private fun accessToken(token: String = "test-token") = AccessToken(
         token = token,
         expiresAt = Instant.MAX,
-        invaliderCache = {},
     )
 
     private fun WireMockServer.client() = ArenaMeldekortHttpClient(

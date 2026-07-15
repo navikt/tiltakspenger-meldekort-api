@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.meldekort.jobb.JobbResultat
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
 
 class ArenaMeldekortStatusService(
@@ -14,7 +15,7 @@ class ArenaMeldekortStatusService(
 
     suspend fun hentArenaMeldekortStatus(fnr: Fnr): ArenaMeldekortStatus {
         arenaMeldekortClient.hentMeldekort(fnr).onLeft {
-            logger.warn { "Kunne ikke hente meldekort fra arena - $it" }
+            logger.warn { "Kunne ikke hente meldekort fra Arena - $it" }
             return ArenaMeldekortStatus.UKJENT
         }.onRight {
             if (it == null) {
@@ -25,7 +26,7 @@ class ArenaMeldekortStatusService(
         }
 
         val historiskeMeldekort = arenaMeldekortClient.hentHistoriskeMeldekort(fnr).getOrElse {
-            logger.warn { "Kunne ikke hente historiske meldekort fra arena - $it" }
+            logger.warn { "Kunne ikke hente historiske meldekort fra Arena - $it" }
             return ArenaMeldekortStatus.UKJENT
         }
 
@@ -36,28 +37,33 @@ class ArenaMeldekortStatusService(
         }
     }
 
-    suspend fun oppdaterArenaMeldekortStatusForSaker() {
-        Either.catch {
+    /** Returnerer [JobbResultat.IngenArbeid] når ingen saker manglet arena-status, slik at jobben kan melde fra om den hadde arbeid. */
+    suspend fun oppdaterArenaMeldekortStatusForSaker(): JobbResultat {
+        return Either.catch {
             // Saker uten meldeperioder og meldekortvedtak.
             val saker = sakRepo.hentSakerUtenArenaStatus()
 
-            logger.debug { "Fant ${saker.size} saker med ukjent arena status" }
+            if (saker.isNotEmpty()) {
+                logger.debug { "Fant ${saker.size} saker med ukjent Arena-status" }
+            }
 
             saker.forEach { sak ->
                 Either.catch {
                     val arenaMeldekortStatus = hentArenaMeldekortStatus(sak.fnr)
                     if (arenaMeldekortStatus != ArenaMeldekortStatus.UKJENT) {
                         sakRepo.oppdaterArenaStatus(sak.id, arenaMeldekortStatus)
-                        logger.info { "Oppdaterte arena status for sak ${sak.id} til $arenaMeldekortStatus" }
+                        logger.info { "Oppdaterte Arena-status for sak ${sak.id} til $arenaMeldekortStatus" }
                     } else {
-                        logger.warn { "Arena status for sak ${sak.id} er ukjent" }
+                        logger.warn { "Arena-status for sak ${sak.id} er ukjent" }
                     }
                 }.onLeft {
-                    logger.warn(it) { "Feil under oppdatering av arena meldekort status for sak ${sak.id}" }
+                    logger.warn(it) { "Feil under oppdatering av Arena-meldekortstatus for sak ${sak.id}" }
                 }
             }
-        }.onLeft {
-            logger.error(it) { "Ukjent feil skjedde under oppdatering av arena meldekort status for saker" }
+            if (saker.isEmpty()) JobbResultat.IngenArbeid else JobbResultat.UtførteArbeid
+        }.getOrElse {
+            logger.error(it) { "Ukjent feil skjedde under oppdatering av Arena-meldekortstatus for saker" }
+            JobbResultat.Feilet
         }
     }
 }

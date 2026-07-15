@@ -28,7 +28,6 @@ internal class SaksbehandlingClientImplTest {
     private fun accessToken(token: String = "test-token") = AccessToken(
         token = token,
         expiresAt = Instant.MAX,
-        invaliderCache = {},
     )
 
     @Test

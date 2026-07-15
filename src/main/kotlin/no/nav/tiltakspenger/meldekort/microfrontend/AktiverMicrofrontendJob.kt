@@ -17,7 +17,7 @@ class AktiverMicrofrontendJob(
         return microfrontendRepo.hentSakerHvorMicrofrontendSkalAktiveres().fold(
             ifLeft = { feil ->
                 log.error(feil.throwable) { "Kunne ikke hente saker for aktivering av microfrontend. Prøver igjen ved neste jobbkjøring." }
-                MicrofrontendJobbResultat.tom
+                MicrofrontendJobbResultat.henteFeil
             },
             ifRight = { saker -> aktiver(saker) },
         )
@@ -42,6 +42,6 @@ class AktiverMicrofrontendJob(
             log.info { "Aktiverte microfrontend for ${vellykkede.size} sak(er)" }
         }
 
-        return MicrofrontendJobbResultat(vellykkede = vellykkede, feilede = feilede.map { it.first })
+        return MicrofrontendJobbResultat(vellykkede = vellykkede, feilede = feilede.map { it.first }, kunneIkkeHenteSaker = false)
     }
 }

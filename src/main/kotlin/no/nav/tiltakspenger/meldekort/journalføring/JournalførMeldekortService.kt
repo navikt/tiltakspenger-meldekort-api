@@ -5,6 +5,7 @@ import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.meldekort.jobb.JobbResultat
 import java.time.Clock
 
 class JournalførMeldekortService(
@@ -15,9 +16,11 @@ class JournalførMeldekortService(
 ) {
     private val log = KotlinLogging.logger { }
 
-    suspend fun journalførNyeMeldekort() {
-        Either.catch {
-            journalføringRepo.hentDeSomSkalJournalføres().forEach { meldekort ->
+    /** Returnerer [JobbResultat.IngenArbeid] når ingen meldekort skulle journalføres, slik at jobben kan melde fra om den hadde arbeid. */
+    suspend fun journalførNyeMeldekort(): JobbResultat {
+        return Either.catch {
+            val skalJournalføres = journalføringRepo.hentDeSomSkalJournalføres()
+            skalJournalføres.forEach { meldekort ->
                 val saksnummer = meldekort.meldeperiode.saksnummer
 
                 log.info { "Journalfører meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
@@ -37,7 +40,7 @@ class JournalførMeldekortService(
                         clock = clock,
                     )
                     /*
-                        TODO - fjern denne bolken, og returner kun 1 pdf når vi har verifisert at pdf'ene er lik.
+                        TODO - fjern denne bolken, og returner kun én pdf når vi har verifisert at pdf-ene er like.
                      */
                     pdfOgJson.second?.let {
                         dokarkivClient.journalførMeldekort(
@@ -56,8 +59,10 @@ class JournalførMeldekortService(
                     log.error(it) { "Ukjent feil skjedde under generering av brev og journalføring av meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
                 }
             }
-        }.onLeft {
+            if (skalJournalføres.isEmpty()) JobbResultat.IngenArbeid else JobbResultat.UtførteArbeid
+        }.getOrElse {
             log.error(it) { "Ukjent feil skjedde under journalføring av meldekort." }
+            JobbResultat.Feilet
         }
     }
 }

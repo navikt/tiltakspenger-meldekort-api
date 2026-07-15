@@ -18,6 +18,7 @@ class TexasClientFakeLokal : TexasClient {
         audienceTarget: String,
         identityProvider: IdentityProvider,
         rewriteAudienceTarget: Boolean,
+        skipCache: Boolean,
     ): AccessToken {
         return accessToken()
     }
@@ -26,6 +27,7 @@ class TexasClientFakeLokal : TexasClient {
         userToken: String,
         audienceTarget: String,
         identityProvider: IdentityProvider,
+        skipCache: Boolean,
     ): AccessToken {
         return accessToken()
     }
@@ -33,7 +35,6 @@ class TexasClientFakeLokal : TexasClient {
     private fun accessToken(): AccessToken = AccessToken(
         token = "asdf",
         expiresAt = Instant.now().plusSeconds(3600),
-        invaliderCache = { },
     )
 
     /**

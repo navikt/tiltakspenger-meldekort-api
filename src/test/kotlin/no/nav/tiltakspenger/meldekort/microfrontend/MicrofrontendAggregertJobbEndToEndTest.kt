@@ -24,15 +24,12 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
- * EndToEnd-tester for de aggregerte microfrontend-jobbene ([AktiverMicrofrontendJob.aktiverMicrofrontendForBrukere] /
- * [InaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere]) og feilhåndteringen deres.
+ * EndToEnd-tester for de aggregerte microfrontend-jobbene ([AktiverMicrofrontendJob.aktiverMicrofrontendForBrukere] / [InaktiverMicrofrontendJob.inaktiverMicrofrontendForBrukere]) og feilhåndteringen deres.
  *
- * Disse kjører isolert ([withTestApplicationContextAndPostgres] med `runIsolated = true`) fordi resultatet er
- * avhengig av kryss-sak-spørringene [MicrofrontendRepo.hentSakerHvorMicrofrontendSkalAktiveres] /
- * [MicrofrontendRepo.hentSakerHvorMicrofrontendSkalInaktiveres] – de ser på alle saker i basen samtidig.
+ * Disse kjører isolert ([withTestApplicationContextAndPostgres] med `runIsolated = true`) fordi resultatet er avhengig av kryss-sak-spørringene [MicrofrontendRepo.hentSakerHvorMicrofrontendSkalAktiveres] / [MicrofrontendRepo.hentSakerHvorMicrofrontendSkalInaktiveres] – de ser på alle saker i basen samtidig.
  *
- * Utfallet sjekkes mot [MicrofrontendJobbResultat] som jobbene returnerer (vellykkede/feilede saker), ikke
- * mot recording-faken. Per-sak-oppførsel (én bruker) testes uten isolasjon i [MicrofrontendEndToEndTest].
+ * Utfallet sjekkes mot [MicrofrontendJobbResultat] som jobbene returnerer (vellykkede/feilede saker), ikke mot recording-faken.
+ * Per-sak-oppførsel (én bruker) testes uten isolasjon i [MicrofrontendEndToEndTest].
  * All seeding går via [mottaSakRequest] (ytterste nivå, slik som i prod).
  */
 class MicrofrontendAggregertJobbEndToEndTest {
@@ -128,17 +125,17 @@ class MicrofrontendAggregertJobbEndToEndTest {
     inner class HentingFeiler {
 
         @Test
-        fun `aktivering gir tomt resultat dersom henting av saker feiler`() {
+        fun `aktivering gir henteFeil-resultat dersom henting av saker feiler`() {
             val job = AktiverMicrofrontendJob(FeilendeMicrofrontendRepo, TmsMikrofrontendClientFake())
 
-            job.aktiverMicrofrontendForBrukere() shouldBe MicrofrontendJobbResultat.tom
+            job.aktiverMicrofrontendForBrukere() shouldBe MicrofrontendJobbResultat.henteFeil
         }
 
         @Test
-        fun `inaktivering gir tomt resultat dersom henting av saker feiler`() {
+        fun `inaktivering gir henteFeil-resultat dersom henting av saker feiler`() {
             val job = InaktiverMicrofrontendJob(FeilendeMicrofrontendRepo, TmsMikrofrontendClientFake())
 
-            job.inaktiverMicrofrontendForBrukere() shouldBe MicrofrontendJobbResultat.tom
+            job.inaktiverMicrofrontendForBrukere() shouldBe MicrofrontendJobbResultat.henteFeil
         }
     }
 

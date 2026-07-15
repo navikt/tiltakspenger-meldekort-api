@@ -38,7 +38,7 @@ class DokarkivClientTest {
     """.trimIndent()
 
     private fun getMockToken(): AccessToken {
-        return AccessToken("token", Instant.now().plusSeconds(3600)) {}
+        return AccessToken("token", Instant.now().plusSeconds(3600))
     }
 
     private fun createDokarkivClient(mockResponse: String, status: HttpStatusCode): DokarkivClientImpl {
