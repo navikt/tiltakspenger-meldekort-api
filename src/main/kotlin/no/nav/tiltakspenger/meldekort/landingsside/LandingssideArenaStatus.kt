@@ -18,8 +18,7 @@ data class LandingssideArenaStatus(
 
     companion object {
         /**
-         * Brukeren har en arena-status å vise dersom de enten har innsendte meldekort i arena,
-         * eller har tiltakspenger-meldekort i arena (uavhengig av om de er klare til utfylling).
+         * Brukeren har en arena-status å vise dersom de enten har innsendte meldekort i arena, eller har tiltakspenger-meldekort i arena (uavhengig av om de er klare til utfylling).
          * Returnerer null når det ikke finnes noe relevant i arena.
          */
         fun create(

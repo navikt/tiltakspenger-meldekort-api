@@ -136,8 +136,7 @@ class VarselPostgresRepo(
         is Aktiv -> "SkalAktiveres"
 
         is SkalInaktiveres ->
-            // Vi kan gå direkte fra SkalAktiveres til SkalInaktiveres uten å innom Aktiv,
-            // f.eks. dersom vi oppdager at varselet ikke skulle vært sendt før det ble aktivert.
+            // Vi kan gå direkte fra SkalAktiveres til SkalInaktiveres uten å innom Aktiv, f.eks. dersom vi oppdager at varselet ikke skulle vært sendt før det ble aktivert.
             if (aktiveringstidspunkt == null) "SkalAktiveres" else "Aktiv"
 
         is Inaktivert -> "SkalInaktiveres"

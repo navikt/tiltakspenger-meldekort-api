@@ -97,15 +97,12 @@ fun Routing.devRoutes(applicationContext: ApplicationContext) {
 }
 
 /**
- * Bygger sammenhengende 14-dagers meldeperioder fordelt rundt [idag]: [antallBakover] perioder som ligger
- * helt i fortiden, etterfulgt av [antallFremover] perioder fra og med inneværende periode og fremover.
+ * Bygger sammenhengende 14-dagers meldeperioder fordelt rundt [idag]: [antallBakover] perioder som ligger helt i fortiden, etterfulgt av [antallFremover] perioder fra og med inneværende periode og fremover.
  * Default (2 + 2) gir altså 2 ferdige meldekort man kan fylle ut nå, og 2 som ligger frem i tid.
  *
- * Settes [forsteMeldeperiodeStart] eksplisitt, ignoreres fordelingen og periodene genereres bare
- * sekvensielt fra og med mandagen på/før den datoen.
+ * Settes [forsteMeldeperiodeStart] eksplisitt, ignoreres fordelingen og periodene genereres bare sekvensielt fra og med mandagen på/før den datoen.
  *
- * Gjenbruker [ObjectMother.periode] (mandags-snapping) og `Periode.plus14Dager` (neste sammenhengende
- * periode) i stedet for å regne ut datoene selv.
+ * Gjenbruker [ObjectMother.periode] (mandags-snapping) og `Periode.plus14Dager` (neste sammenhengende periode) i stedet for å regne ut datoene selv.
  */
 private fun byggMeldeperioder(
     antallBakover: Int,

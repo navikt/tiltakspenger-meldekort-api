@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test
  * Vi bruker Jackson 3 (`tools.jackson.*`).
  * Jackson 2 (`com.fasterxml.jackson.*`) ligger fortsatt på classpath transitivt via tredjeparts­libs, men skal ikke brukes direkte i produksjonskode.
  *
- * Eneste lovlige unntak er `com.fasterxml.jackson.annotation.*` — annotasjons-artefakten deles
- * mellom Jackson 2 og 3 og brukes også av Jackson 3.
+ * Eneste lovlige unntak er `com.fasterxml.jackson.annotation.*` — annotasjons-artefakten deles mellom Jackson 2 og 3 og brukes også av Jackson 3.
  */
 class JacksonVersjonKonsistTest {
     @Test

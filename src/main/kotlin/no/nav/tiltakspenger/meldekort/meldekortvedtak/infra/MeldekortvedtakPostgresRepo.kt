@@ -24,8 +24,7 @@ object MeldekortvedtakPostgresRepo {
     fun hentForSakId(sakId: SakId, session: Session): List<Meldekortvedtak> {
         // Ett meldekortvedtak har én eller flere meldeperiodebehandlinger.
         // Vi joiner og grupperer i Kotlin.
-        // Radene materialiseres fullt ut inne i .map (til Rad) før ResultSet lukkes - hentForSakId kalles nestet
-        // inne i SakPostgresRepo.fromRow sin egen åpne ResultSet, så vi kan ikke holde på Row-referanser.
+        // Radene materialiseres fullt ut inne i .map (til Rad) før ResultSet lukkes - hentForSakId kalles nestet inne i SakPostgresRepo.fromRow sin egen åpne ResultSet, så vi kan ikke holde på Row-referanser.
         val rader = session.run(
             sqlQuery(
                 """

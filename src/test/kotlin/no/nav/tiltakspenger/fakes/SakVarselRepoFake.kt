@@ -16,9 +16,7 @@ class SakVarselRepoFake(
     private val flaggedForVurdering = Atomic(mutableMapOf<SakId, LocalDateTime>())
     private val vurdertTidspunkt = Atomic(mutableMapOf<SakId, LocalDateTime>())
 
-    // Monotonisk stigende tellerbasert tidspunkt for å etterligne clock_timestamp()s egenskap
-    // om alltid-nye verdier – slik at den optimistiske låsen kan testes uten å være avhengig
-    // av reell wallclock-presisjon.
+    // Monotonisk stigende tellerbasert tidspunkt for å etterligne clock_timestamp()s egenskap om alltid-nye verdier – slik at den optimistiske låsen kan testes uten å være avhengig av reell wallclock-presisjon.
     private val teller = AtomicLong(0)
 
     override fun flaggForVarselvurdering(sakId: SakId, sessionContext: SessionContext?) {
@@ -28,8 +26,7 @@ class SakVarselRepoFake(
     override fun hentSakerSomSkalVurdereVarsel(limit: Int, sessionContext: SessionContext?): List<SakForVarselvurdering> {
         return flaggedForVurdering.get()
             .asSequence()
-            // first-flagged-first-served: sorter på tidspunkt. nesteTidspunkt() garanterer
-            // unike verdier slik at sorteringen er deterministisk.
+            // first-flagged-first-served: sorter på tidspunkt. nesteTidspunkt() garanterer unike verdier slik at sorteringen er deterministisk.
             .sortedBy { it.value }
             .mapNotNull { (sakId, tidspunkt) ->
                 sakRepoFake.hent(sakId)?.let { sak ->

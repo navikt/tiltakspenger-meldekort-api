@@ -320,8 +320,7 @@ class MicrofrontendEndToEndTest {
     }
 
     /**
-     * Tidshorisont og flere kjeder: kortet vises så lenge minst én kjede mangler innsending – uavhengig av om kjeden
-     * kan fylles ut nå («tidligere») eller først senere («fremtidig»).
+     * Tidshorisont og flere kjeder: kortet vises så lenge minst én kjede mangler innsending – uavhengig av om kjeden kan fylles ut nå («tidligere») eller først senere («fremtidig»).
      * En fremtidig kjede holder altså kortet åpent selv om den ikke kan sendes inn ennå.
      */
     @Nested

@@ -216,9 +216,7 @@ sealed interface Varsel {
         }
 
         /**
-         * Markerer varselet for inaktivering. [skalInaktiveresTidspunkt] kan være lik eller etter
-         * [aktiveringstidspunkt] – vi kan inaktivere umiddelbart etter aktivering dersom vi
-         * oppdager at varselet ikke skulle vært sendt.
+         * Markerer varselet for inaktivering. [skalInaktiveresTidspunkt] kan være lik eller etter [aktiveringstidspunkt] – vi kan inaktivere umiddelbart etter aktivering dersom vi oppdager at varselet ikke skulle vært sendt.
          *
          * Produksjonskode skal gå via [Varsler.forberedInaktivering] slik at hele aggregatet valideres før persistering.
          * Denne funksjonen er ment som en ren tilstandsovergang på enkeltobjektet.

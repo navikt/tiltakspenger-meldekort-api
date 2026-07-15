@@ -9,8 +9,7 @@ import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortClient
 /**
  * Aggregatet som kombinerer landingsside-saken med status fra arena.
  *
- * Selve kombineringen (Landingsside + Arena) bor her i landingsside-pakken, mens de Arena-spesifikke/rene
- * delene ligger under [no.nav.tiltakspenger.meldekort.arena] slik at de forsvinner samlet når arena-pakken slettes.
+ * Selve kombineringen (Landingsside + Arena) bor her i landingsside-pakken, mens de Arena-spesifikke/rene delene ligger under [no.nav.tiltakspenger.meldekort.arena] slik at de forsvinner samlet når arena-pakken slettes.
  */
 class FellesLandingssideService(
     private val landingssideRepo: LandingssideRepo,

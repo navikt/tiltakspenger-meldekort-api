@@ -200,8 +200,7 @@ class SendInnMeldekortRouteTest {
     fun `sendInnMeldekort - uventet feil under utfylling gir 500 med ErrorJson-feil`() = runTest {
         withTestApplicationContext(clock = tikkendeKlokke1mars2025()) { tac ->
             val fnr = tac.nesteFnr()
-            // Meldekortet er klart til innsending, men tomme dager (sendt via hjelperen) bryter en
-            // domeneinvariant under utfylling og gir en uventet feil.
+            // Meldekortet er klart til innsending, men tomme dager (sendt via hjelperen) bryter en domeneinvariant under utfylling og gir en uventet feil.
             val meldekort = tac.lagMeldekort(
                 ObjectMother.meldeperiode(periode = januarPeriode, fnr = fnr, opprettet = nå(tac.clock)),
             )

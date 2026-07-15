@@ -20,8 +20,7 @@ class LandingssideRepoFake(
         return LandingssideSak(
             fnr = sak.fnr,
             arenaMeldekortStatus = sak.arenaMeldekortStatus,
-            // Speiler LandingssidePostgresRepo: et meldekortvedtak (inkl. papirmeldekort uten
-            // meldekort_bruker-rad) teller som innsendt på lik linje med innsendte meldekort_bruker.
+            // Speiler LandingssidePostgresRepo: et meldekortvedtak (inkl. papirmeldekort uten meldekort_bruker-rad) teller som innsendt på lik linje med innsendte meldekort_bruker.
             harInnsendteMeldekort = meldekortRepoFake.hentSisteUtfylteMeldekort(fnr) != null ||
                 meldekortvedtakRepoFake.hentForSakId(sak.id).isNotEmpty(),
             meldekortTilUtfylling = meldekortRepoFake.hentAlleMeldekortKlarTilInnsending(fnr)

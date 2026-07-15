@@ -11,8 +11,7 @@ import no.nav.tiltakspenger.meldekort.varsler.KjedeSomManglerInnsending
 interface VarselMeldekortRepo {
 
     /**
-     * Finner første meldeperiodekjede for en gitt sak hvor vi aldri har mottatt et meldekort,
-     * sortert på når kjeden tidligst kan fylles ut.
+     * Finner første meldeperiodekjede for en gitt sak hvor vi aldri har mottatt et meldekort, sortert på når kjeden tidligst kan fylles ut.
      *
      * En kjede "mangler innsending" dersom:
      * 1. Den nyeste meldeperiode-versjonen i kjeden har minst én dag som gir rett

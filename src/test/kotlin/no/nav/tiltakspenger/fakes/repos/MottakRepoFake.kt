@@ -9,9 +9,7 @@ import no.nav.tiltakspenger.meldekort.mottak.MottattSak
 /**
  * In-memory speiling av [no.nav.tiltakspenger.meldekort.mottak.infra.MottakPostgresRepo].
  *
- * Skrivesiden (mottak fra saksbehandling-api) deler underliggende state med lese-fakene
- * ved å delegere til de samme [SakRepoFake]/[MeldeperiodeRepoFake]/[MeldekortvedtakRepoFake]-instansene
- * som koden under test leser fra.
+ * Skrivesiden (mottak fra saksbehandling-api) deler underliggende state med lese-fakene ved å delegere til de samme [SakRepoFake]/[MeldeperiodeRepoFake]/[MeldekortvedtakRepoFake]-instansene som koden under test leser fra.
  */
 class MottakRepoFake(
     private val sakRepo: SakRepoFake,

@@ -108,11 +108,9 @@ class VarselPostgresEndToEndTest {
 
             val varsler = tac.varselRepo.hentVarslerForSakId(sak.id)
             varsler shouldHaveSize 1
-            // Varselet produseres umiddelbart på Kafka (med utsettSendingTil=mandag kl 9),
-            // så det er i Aktiv-tilstand selv om Min side utsetter SMS-leveransen til mandag.
+            // Varselet produseres umiddelbart på Kafka (med utsettSendingTil=mandag kl 9), så det er i Aktiv-tilstand selv om Min side utsetter SMS-leveransen til mandag.
             val aktivtVarsel = varsler.single().shouldBeInstanceOf<Varsel.Aktiv>()
-            // skalAktiveresTidspunkt = kanFyllesUtFraOgMed (fredag 7. mars 15:00). Det er
-            // skalAktiveresEksterntTidspunkt / utsettSendingTil som flyttes til mandag kl 9.
+            // skalAktiveresTidspunkt = kanFyllesUtFraOgMed (fredag 7. mars 15:00). Det er skalAktiveresEksterntTidspunkt / utsettSendingTil som flyttes til mandag kl 9.
             aktivtVarsel.skalAktiveresTidspunkt shouldBe 7.mars(2025).atTime(15, 0)
             aktivtVarsel.skalAktiveresEksterntTidspunkt shouldBe 10.mars(2025).atHour(9)
 
@@ -156,8 +154,7 @@ class VarselPostgresEndToEndTest {
             val varsler = tac.varselRepo.hentVarslerForSakId(sak.id)
             varsler shouldHaveSize 1
             // Periode 10.-23. mars har kanFyllesUtFraOgMed = fredag 21. mars 15:00 (i fremtiden).
-            // AktiverVarslerService aktiverer kun varsler der skalAktiveresTidspunkt har passert,
-            // så varselet forblir SkalAktiveres til den datoen kommer.
+            // AktiverVarslerService aktiverer kun varsler der skalAktiveresTidspunkt har passert, så varselet forblir SkalAktiveres til den datoen kommer.
             val planlagtVarsel = varsler.single().shouldBeInstanceOf<Varsel.SkalAktiveres>()
             planlagtVarsel.skalAktiveresTidspunkt shouldBe periode.kanFyllesUtFraOgMed()
 
@@ -174,14 +171,12 @@ class VarselPostgresEndToEndTest {
         //      Bruker sender ikke inn.
         //   2. Det opprettes et meldekortvedtak for kjeden (f.eks. papirmeldekort).
         //      Varseljobben kjøres ikke ennå.
-        //   3. Saksbehandling-api sender et nytt rammevedtak som gir meldeperiode v2 for
-        // samme kjede.
+        //   3. Saksbehandling-api sender et nytt rammevedtak som gir meldeperiode v2 for samme kjede.
         //   4. Varseljobben kjøres.
         //      Siden kjeden allerede har et meldekortvedtak skal det ikke opprettes noe varsel (eksklusjon basert på meldekortvedtak).
         val periode = 24.februar(2025) til 9.mars(2025)
         val opprettet = 1.mars(2025).atHour(10)
-        // 10. mars - kanFyllesUtFraOgMed (7. mars 15:00) har passert, så uten vedtak-eksklusjonen
-        // ville varselet blitt opprettet umiddelbart.
+        // 10. mars - kanFyllesUtFraOgMed (7. mars 15:00) har passert, så uten vedtak-eksklusjonen ville varselet blitt opprettet umiddelbart.
         val klokke = TikkendeKlokke(fixedClockAt(10.mars(2025).atHour(10)))
 
         withTestApplicationContextAndPostgres(clock = klokke, runIsolated = true) { tac ->
@@ -194,8 +189,7 @@ class VarselPostgresEndToEndTest {
             )
             tac.varselRepo.hentVarslerForSakId(sak.id) shouldHaveSize 0
 
-            // 2. Meldekortvedtak for kjeden – bruker har aldri sendt inn meldekort selv,
-            //    så brukersMeldekortId = null (f.eks. automatisk behandlet vedtak).
+            // 2. Meldekortvedtak for kjeden – bruker har aldri sendt inn meldekort selv, så brukersMeldekortId = null (f.eks. automatisk behandlet vedtak).
             val kjedeId = MeldeperiodeKjedeId.fraPeriode(periode)
             tac.lagreMeldekortvedtak(
                 Meldekortvedtak(
@@ -244,8 +238,7 @@ class VarselPostgresEndToEndTest {
             // 4. Kjør varseljobben.
             KjørJobberForTester.kjørVarsler(tac)
 
-            // Det skal ikke være opprettet noe varsel – meldekortvedtaket ekskluderer
-            // kjeden fra varselvurderingen.
+            // Det skal ikke være opprettet noe varsel – meldekortvedtaket ekskluderer kjeden fra varselvurderingen.
             tac.varselRepo.hentVarslerForSakId(sak.id) shouldHaveSize 0
             val hendelser = tac.varselClient.snapshotVarselhendelser()
             hendelser.sendteVarsler shouldHaveSize 0
@@ -345,9 +338,7 @@ class VarselPostgresEndToEndTest {
                 ),
             )
 
-            // Når første meldeperiode opphører mens varselet fortsatt er SkalAktiveres,
-            // forbereder VurderVarsel inaktivering av det stale varselet og oppretter samtidig
-            // et nytt SkalAktiveres for andre meldeperiode (kanFyllesUtFraOgMed = 4. april 15:00).
+            // Når første meldeperiode opphører mens varselet fortsatt er SkalAktiveres, forbereder VurderVarsel inaktivering av det stale varselet og oppretter samtidig et nytt SkalAktiveres for andre meldeperiode (kanFyllesUtFraOgMed = 4. april 15:00).
             // InaktiverVarslerService inaktiverer deretter det opprinnelige varselet.
             val varsler = tac.varselRepo.hentVarslerForSakId(sak.id)
             varsler shouldHaveSize 2
@@ -419,8 +410,7 @@ class VarselPostgresEndToEndTest {
             varsler.filterIsInstance<Varsel.Inaktivert>().single().varselId shouldBe sendtVarsel.varselId
             val nyttAktivtVarsel = varsler.filterIsInstance<Varsel.Aktiv>().single()
             // skalAktiveresTidspunkt = kanFyllesUtFraOgMed (fredag 7. mars 15:00) – uendret.
-            // Det er skalAktiveresEksterntTidspunkt / utsettSendingTil som flyttes til neste virkedag
-            // kl. 09 fordi ekstern varsling allerede er antatt sendt samme dag.
+            // Det er skalAktiveresEksterntTidspunkt / utsettSendingTil som flyttes til neste virkedag kl. 09 fordi ekstern varsling allerede er antatt sendt samme dag.
             nyttAktivtVarsel.skalAktiveresTidspunkt shouldBe 7.mars(2025).atTime(15, 0)
             nyttAktivtVarsel.skalAktiveresEksterntTidspunkt shouldBe 11.mars(2025).atHour(9)
 
@@ -605,8 +595,7 @@ class VarselPostgresEndToEndTest {
             sendInnNesteMeldekort(tac = tac, fnr = sak.fnr.verdi)
 
             // Etter innsending: første varsel inaktivert, nytt varsel for andre meldeperiode.
-            // Andre meldeperiode har kanFyllesUtFraOgMed = 21. mars 15:00 (i fremtiden), så det
-            // nye varselet er SkalAktiveres til AktiverVarslerService kjører på den datoen.
+            // Andre meldeperiode har kanFyllesUtFraOgMed = 21. mars 15:00 (i fremtiden), så det nye varselet er SkalAktiveres til AktiverVarslerService kjører på den datoen.
             val varsler = tac.varselRepo.hentVarslerForSakId(sak.id)
             varsler shouldHaveSize 2
             varsler.filterIsInstance<Varsel.Inaktivert>().single().varselId shouldBe førsteVarsel.varselId
@@ -622,9 +611,7 @@ class VarselPostgresEndToEndTest {
      *  1. Et meldekort mottas → `flaggForVarselvurdering` setter flagg=true og oppdaterer
      * `sist_flagget_tidspunkt` via clock_timestamp().
      *  2. Varseljobben starter og leser sakene som skal vurderes (flagg=true, med tidspunkt).
-     *  3. Under jobbens transaksjon kommer det inn et NYTT meldekort som på nytt kaller
-     * `flaggForVarselvurdering` – dette oppdaterer `sist_flagget_tidspunkt` til en ny
-     * verdi.
+     *  3. Under jobbens transaksjon kommer det inn et NYTT meldekort som på nytt kaller `flaggForVarselvurdering` – dette oppdaterer `sist_flagget_tidspunkt` til en ny verdi.
      *  4. Jobben kaller `markerVarselVurdert` med tidspunktet den leste i steg 2. Optimistisk lås oppdager at tidspunktet er endret og kaster [OptimistiskLåsFeil].
      *     Transaksjonen ruller tilbake og saken forblir flagget.
      *  5. Saken plukkes opp i neste kjøring og vurderes på nytt – ingen hendelse går tapt.
@@ -651,8 +638,7 @@ class VarselPostgresEndToEndTest {
             sakerFørJobb.map { it.sakId } shouldBe listOf(sak.id)
             val sistFlaggetTidspunktVedLesing = sakerFørJobb.single().sistFlaggetTidspunkt
 
-            // 3. Simuler racet: jobben åpner sin transaksjon, leser saken, og MENS den holder
-            //    på, kommer det et nytt meldekort (ny transaksjon som flagger for vurdering).
+            // 3. Simuler racet: jobben åpner sin transaksjon, leser saken, og MENS den holder på, kommer det et nytt meldekort (ny transaksjon som flagger for vurdering).
             //    Jobben forsøker deretter markerVarselVurdert med tidspunktet fra steg 2.
             val feil = shouldThrow<Throwable> {
                 tac.sessionFactory.withTransactionContext(disableSessionCounter = true) { txJobb ->
@@ -665,8 +651,7 @@ class VarselPostgresEndToEndTest {
                         tac.sakVarselRepo.flaggForVarselvurdering(sak.id, sessionContext = txMeldekort)
                     }
 
-                    // Jobben fullfører sin vurdering, men optimistisk lås skal avvise
-                    // oppdateringen siden sist_flagget_tidspunkt er endret i mellomtiden.
+                    // Jobben fullfører sin vurdering, men optimistisk lås skal avvise oppdateringen siden sist_flagget_tidspunkt er endret i mellomtiden.
                     tac.sakVarselRepo.markerVarselVurdert(
                         sakId = sak.id,
                         vurdertTidspunkt = nå(klokke),

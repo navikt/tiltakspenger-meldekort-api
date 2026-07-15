@@ -12,8 +12,7 @@ class TmsVarselClientFake : VarselClient {
     private val sendteVarsler = mutableListOf<SendtVarsel>()
     private val inaktiverteVarsler = mutableListOf<VarselId>()
 
-    // Mellomlagrer fnr/utsettSendingTil pr varselId mellom byggVarsel og sendVarsel,
-    // slik at vi kan rapportere disse i [SendtVarsel] når sendVarsel faktisk publiserer.
+    // Mellomlagrer fnr/utsettSendingTil pr varselId mellom byggVarsel og sendVarsel, slik at vi kan rapportere disse i [SendtVarsel] når sendVarsel faktisk publiserer.
     private val byggetMenIkkeSendt = mutableMapOf<VarselId, ByggetVarsel>()
 
     fun hentSendteVarsler(): List<SendtVarsel> = sendteVarsler.toList()

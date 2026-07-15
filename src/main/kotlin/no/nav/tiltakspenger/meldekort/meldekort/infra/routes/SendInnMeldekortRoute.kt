@@ -56,9 +56,7 @@ fun Route.sendInnMeldekortRoute(
 }
 
 /**
- * Logger feilen i tråd med dens egen tolkning: [KunneIkkeLagreMeldekortFraBruker.loggnivå] avgjør nivået i
- * vanlig logg, mens en eventuell [KunneIkkeLagreMeldekortFraBruker.throwable] (som kan inneholde
- * personopplysninger) kun går til sikkerlogg, med en referanse fra vanlig logg.
+ * Logger feilen i tråd med dens egen tolkning: [KunneIkkeLagreMeldekortFraBruker.loggnivå] avgjør nivået i vanlig logg, mens en eventuell [KunneIkkeLagreMeldekortFraBruker.throwable] (som kan inneholde personopplysninger) kun går til sikkerlogg, med en referanse fra vanlig logg.
  */
 private fun KunneIkkeLagreMeldekortFraBruker.logg() {
     val vanligLoggMelding = if (throwable != null) "$loggMelding Se sikkerlogg for detaljer." else loggMelding
@@ -70,9 +68,8 @@ private fun KunneIkkeLagreMeldekortFraBruker.logg() {
 }
 
 /**
- * Oversetter en [KunneIkkeLagreMeldekortFraBruker] til en HTTP-status og en [ErrorJson] som bruker kan lese,
- * enten i frontend eller direkte i JSON-responsen. [ErrorJson.melding] er derfor brukervennlig og fri for
- * interne IDer og personopplysninger - de hører kun hjemme i (sikker)loggen via [feil]'ens `loggMelding`.
+ * Oversetter en [KunneIkkeLagreMeldekortFraBruker] til en HTTP-status og en [ErrorJson] som bruker kan lese, enten i frontend eller direkte i JSON-responsen.
+ * [ErrorJson.melding] er derfor brukervennlig og fri for interne IDer og personopplysninger - de hører kun hjemme i (sikker)loggen via [feil]'ens `loggMelding`.
  */
 private fun KunneIkkeLagreMeldekortFraBruker.toErrorJson(): Pair<HttpStatusCode, ErrorJson> = when (this) {
     is KunneIkkeLagreMeldekortFraBruker.FantIkkeMeldekort -> HttpStatusCode.NotFound to ErrorJson(

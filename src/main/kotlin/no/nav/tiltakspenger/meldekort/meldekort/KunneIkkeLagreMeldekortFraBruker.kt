@@ -8,11 +8,8 @@ import java.time.LocalDateTime
 /**
  * Forventede feil ved innsending av meldekort fra bruker (se [LagreMeldekortFraBrukerService]).
  *
- * Typen samler hele forståelsen av hvordan en feil skal tolkes: hva som har skjedd, hva bruker kan forvente, om
- * bruker kan prøve å sende inn på nytt ([kanPrøveIgjen]), hvor alvorlig feilen er for oss som drifter tjenesten
- * ([loggnivå]), og om det finnes potensielt sensitive detaljer som kun skal til sikkerlogg ([throwable]).
- * Den brukervendte teksten og HTTP-statusen ligger derimot i route-laget (`SendInnMeldekortRoute.toErrorJson`),
- * siden det er en transport-/presentasjonsdetalj.
+ * Typen samler hele forståelsen av hvordan en feil skal tolkes: hva som har skjedd, hva bruker kan forvente, om bruker kan prøve å sende inn på nytt ([kanPrøveIgjen]), hvor alvorlig feilen er for oss som drifter tjenesten ([loggnivå]), og om det finnes potensielt sensitive detaljer som kun skal til sikkerlogg ([throwable]).
+ * Den brukervendte teksten og HTTP-statusen ligger derimot i route-laget (`SendInnMeldekortRoute.toErrorJson`), siden det er en transport-/presentasjonsdetalj.
  *
  * [loggMelding] er bevisst fri for personopplysninger (fnr, utfylte dager, stedinformasjon e.l.) slik at den trygt kan logges i vanlig logg.
  * Potensielt sensitive detaljer (f.eks. [UventetFeilVedLagring.throwable]) skal kun til sikkerlogg.
@@ -39,32 +36,25 @@ sealed interface KunneIkkeLagreMeldekortFraBruker {
     /**
      * Om bruker kan forvente at et nytt forsøk på å sende inn det samme meldekortet kan lykkes.
      *
-     * `true` betyr at feilen er forbigående eller tidsavhengig (f.eks. teknisk feil eller at meldekortet ennå
-     * ikke er klart). `false` betyr at et nytt forsøk på det samme meldekortet gir samme resultat, og at bruker
-     * må gjøre noe annet (f.eks. gå til oversikten og velge et annet/nyere meldekort) eller kontakte oss.
+     * `true` betyr at feilen er forbigående eller tidsavhengig (f.eks. teknisk feil eller at meldekortet ennå ikke er klart). `false` betyr at et nytt forsøk på det samme meldekortet gir samme resultat, og at bruker må gjøre noe annet (f.eks. gå til oversikten og velge et annet/nyere meldekort) eller kontakte oss.
      */
     val kanPrøveIgjen: Boolean
 
     /**
-     * Hvor alvorlig feilen er for oss som drifter tjenesten, og dermed hvilket nivå [loggMelding] skal logges på
-     * i vanlig logg.
+     * Hvor alvorlig feilen er for oss som drifter tjenesten, og dermed hvilket nivå [loggMelding] skal logges på i vanlig logg.
      *
-     * [Loggnivå.WARN] brukes for forventede feil som typisk skyldes brukerens situasjon eller timing (4xx), og
-     * som ikke krever at vi gjør noe. [Loggnivå.ERROR] brukes for feil som ikke skal kunne oppstå eller som er
-     * uventede (5xx), og som vi bør undersøke.
+     * [Loggnivå.WARN] brukes for forventede feil som typisk skyldes brukerens situasjon eller timing (4xx), og som ikke krever at vi gjør noe.
+     * [Loggnivå.ERROR] brukes for feil som ikke skal kunne oppstå eller som er uventede (5xx), og som vi bør undersøke.
      */
     val loggnivå: Loggnivå
 
     /**
-     * Eventuell underliggende feil som kan inneholde personopplysninger og derfor kun skal logges til
-     * sikkerlogg. `null` for feil der hele konteksten allerede er fanget trygt i [loggMelding].
+     * Eventuell underliggende feil som kan inneholde personopplysninger og derfor kun skal logges til sikkerlogg. `null` for feil der hele konteksten allerede er fanget trygt i [loggMelding].
      */
     val throwable: Throwable? get() = null
 
     /**
-     * Tidspunktet bruker tidligst kan forvente at et nytt forsøk lykkes, der vi kjenner det (f.eks. når
-     * meldekortet først kan fylles ut). `null` når feilen ikke er tidsavhengig eller vi ikke har et konkret
-     * tidspunkt å oppgi.
+     * Tidspunktet bruker tidligst kan forvente at et nytt forsøk lykkes, der vi kjenner det (f.eks. når meldekortet først kan fylles ut). `null` når feilen ikke er tidsavhengig eller vi ikke har et konkret tidspunkt å oppgi.
      */
     val kanPrøveIgjenTidspunkt: LocalDateTime? get() = null
 

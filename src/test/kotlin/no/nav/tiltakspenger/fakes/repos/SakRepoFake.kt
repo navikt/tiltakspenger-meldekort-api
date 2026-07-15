@@ -12,11 +12,9 @@ import no.nav.tiltakspenger.meldekort.sak.SakRepo
 /**
  * In-memory speiling av [no.nav.tiltakspenger.meldekort.sak.infra.SakPostgresRepo].
  *
- * Lagrer kun sak-row-feltene internt, slik `sak`-tabellen gjør. `meldeperioder` og `meldekortvedtak`
- * lagres i egne fakes og joines inn i [hent].
+ * Lagrer kun sak-row-feltene internt, slik `sak`-tabellen gjør. `meldeperioder` og `meldekortvedtak` lagres i egne fakes og joines inn i [hent].
  *
- * For at join skal fungere må samme [meldeperiodeRepo]/[meldekortvedtakRepo]-instans deles med koden
- * under test (typisk via en felles `TestApplicationContext`).
+ * For at join skal fungere må samme [meldeperiodeRepo]/[meldekortvedtakRepo]-instans deles med koden under test (typisk via en felles `TestApplicationContext`).
  */
 class SakRepoFake(
     private val meldeperiodeRepo: MeldeperiodeRepoFake = MeldeperiodeRepoFake(),
@@ -28,8 +26,7 @@ class SakRepoFake(
     internal fun alleSaker(): Collection<Sak> = data.get().values
 
     /**
-     * Skrivesiden eies av mottak ([no.nav.tiltakspenger.meldekort.mottak.MottakRepo]),
-     * kalles via [no.nav.tiltakspenger.fakes.repos.MottakRepoFake].
+     * Skrivesiden eies av mottak ([no.nav.tiltakspenger.meldekort.mottak.MottakRepo]), kalles via [no.nav.tiltakspenger.fakes.repos.MottakRepoFake].
      */
     fun lagre(sak: MottattSak) {
         // Inserter kun sak-row; meldeperioder/meldekortvedtak persistes via egne repo-er.

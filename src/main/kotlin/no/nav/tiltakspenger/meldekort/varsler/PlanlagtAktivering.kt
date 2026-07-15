@@ -27,8 +27,7 @@ internal data class PlanlagtAktivering(
     companion object {
         /**
          * Lager planen for nytt varsel basert på den tidligste kjeden som mangler innsending.
-         * [skalAktiveresTidspunkt] kan ligge tilbake i tid, mens [skalAktiveresEksterntTidspunkt]
-         * alltid vil være nå eller frem i tid og beregnes av [Varsler].
+         * [skalAktiveresTidspunkt] kan ligge tilbake i tid, mens [skalAktiveresEksterntTidspunkt] alltid vil være nå eller frem i tid og beregnes av [Varsler].
          */
         fun forManglendeInnsending(
             førsteKjedeSomManglerInnsending: KjedeSomManglerInnsending,

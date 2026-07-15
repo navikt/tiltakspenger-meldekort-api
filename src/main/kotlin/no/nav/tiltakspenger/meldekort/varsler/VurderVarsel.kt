@@ -142,9 +142,7 @@ private fun opprettNyttVarsel(
 
 /**
  * I dette tilfellet har vi ett pågående varsel (SkalAktiveres eller Aktiv) og minst én kjede som mangler innsending.
- * Vi gjør en sammenligning av det pågående varselet og den planlagte aktiveringen basert på den tidligste kjeden som mangler innsending
- * for å avgjøre om vi er fornøyd med nåværende varsel eller om vi vil inaktivere det og opprette et nytt som samsvarer med
- * oppdatert kanFyllesUtFraOgMed.
+ * Vi gjør en sammenligning av det pågående varselet og den planlagte aktiveringen basert på den tidligste kjeden som mangler innsending for å avgjøre om vi er fornøyd med nåværende varsel eller om vi vil inaktivere det og opprette et nytt som samsvarer med oppdatert kanFyllesUtFraOgMed.
  *
  * Returnerer left/right kun for at den kan testes lettere.
  */

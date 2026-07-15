@@ -11,10 +11,7 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
 
 /**
- * Verifiserer at [MeldekortRepoFake] speiler ekskluderingen i
- * [no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo]:
- * Et uinnsendt meldekort regnes ikke som "mangler innsending" dersom det finnes et
- * meldekortvedtak (f.eks. papirmeldekort) for kjeden.
+ * Verifiserer at [MeldekortRepoFake] speiler ekskluderingen i [no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortPostgresRepo]: Et uinnsendt meldekort regnes ikke som "mangler innsending" dersom det finnes et meldekortvedtak (f.eks. papirmeldekort) for kjeden.
  */
 class MeldekortRepoFakeTest {
     private val clock = fixedClockAt(1.mars(2025))

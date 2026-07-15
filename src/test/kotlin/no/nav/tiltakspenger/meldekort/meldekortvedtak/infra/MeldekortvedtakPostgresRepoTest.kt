@@ -272,12 +272,9 @@ class MeldekortvedtakPostgresRepoTest {
     }
 
     /**
-     * Lagrer en meldeperiode (kreves av fremmednøkkelen meldeperiodebehandling.meldeperiode_id)
-     * og bygger en [Meldeperiodebehandling] som peker på den.
+     * Lagrer en meldeperiode (kreves av fremmednøkkelen meldeperiodebehandling.meldeperiode_id) og bygger en [Meldeperiodebehandling] som peker på den.
      *
-     * Når [medBrukersMeldekort] er true lagres også et brukers meldekort for meldeperioden, og
-     * behandlingens brukersMeldekortId settes til dette meldekortet (kreves av fremmednøkkelen
-     * meldeperiodebehandling.brukers_meldekort_id).
+     * Når [medBrukersMeldekort] er true lagres også et brukers meldekort for meldeperioden, og behandlingens brukersMeldekortId settes til dette meldekortet (kreves av fremmednøkkelen meldeperiodebehandling.brukers_meldekort_id).
      */
     private fun TestDataHelper.lagreMeldeperiodeOgByggBehandling(
         sak: Sak,

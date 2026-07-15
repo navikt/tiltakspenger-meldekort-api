@@ -49,8 +49,7 @@ class TmsVarselClientImpl(
 
     /**
      * Publiserer en allerede bygd varselhendelse på Kafka.
-     * Dersom `utsettSendingTil` (i payloaden) er null eller tilbake i tid sender Min side
-     * eksternt varsel til Altinn umiddelbart.
+     * Dersom `utsettSendingTil` (i payloaden) er null eller tilbake i tid sender Min side eksternt varsel til Altinn umiddelbart.
      */
     override fun sendVarsel(varselId: VarselId, metadata: SendtVarselMetadata) {
         logger.info { "Sender varsel med id $varselId" }

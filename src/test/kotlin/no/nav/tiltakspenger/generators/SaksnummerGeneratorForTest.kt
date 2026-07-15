@@ -6,8 +6,7 @@ import arrow.atomic.Atomic
  * Trådsikker generator for saksnumre i tester.
  * Saksnummer er på formatet yyyyMMddLLLL (8 siffer dato + 4 siffer løpenr).
  *
- * Instansen deles på et høyere nivå (se [no.nav.tiltakspenger.db.IdGenerators] som holdes av
- * test-db-manageren) slik at tester som kjører mot samme (ikke-isolerte) test-db får unike saksnumre.
+ * Instansen deles på et høyere nivå (se [no.nav.tiltakspenger.db.IdGenerators] som holdes av test-db-manageren) slik at tester som kjører mot samme (ikke-isolerte) test-db får unike saksnumre.
  */
 class SaksnummerGeneratorForTest(
     første: String = "202101011001",

@@ -47,9 +47,7 @@ class MeldeperiodeRepoFake : MeldeperiodeRepo {
 
     /**
      * Henter siste versjon av hver meldeperiodekjede for en sak, sortert på perioden.
-     * Speiler [no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo.hentSisteMeldeperioderForSakId]:
-     * `select distinct on (fra_og_med) ... order by fra_og_med, versjon desc`
-     * dvs. siste versjon per fraOgMed, sortert stigende på fraOgMed.
+     * Speiler [no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRepo.hentSisteMeldeperioderForSakId]: `select distinct on (fra_og_med) ... order by fra_og_med, versjon desc` dvs. siste versjon per fraOgMed, sortert stigende på fraOgMed.
      */
     fun hentForSakId(sakId: SakId): List<Meldeperiode> {
         return data.get().values

@@ -21,8 +21,7 @@ import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.sak.Sak
 
 /**
- * Henter brukerens neste meldekort via [hentBrukerMedSakRequest], bygger request-body, sender inn via [sendInnMeldekortRequest],
- * og returnerer nyttig info for videre kjeding.
+ * Henter brukerens neste meldekort via [hentBrukerMedSakRequest], bygger request-body, sender inn via [sendInnMeldekortRequest], og returnerer nyttig info for videre kjeding.
  */
 suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
     tac: TestApplicationContext,
@@ -64,8 +63,7 @@ suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
 }
 
 /**
- * Henter brukerens neste meldekort via [hentBrukerMedSakRequest], bygger request-body, sender inn via [sendInnMeldekortRequest],
- * og returnerer nyttig info for videre kjeding.
+ * Henter brukerens neste meldekort via [hentBrukerMedSakRequest], bygger request-body, sender inn via [sendInnMeldekortRequest], og returnerer nyttig info for videre kjeding.
  */
 @Suppress("unused")
 suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(

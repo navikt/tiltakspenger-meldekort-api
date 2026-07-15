@@ -76,8 +76,7 @@ interface MeldekortvedtakMother {
     )
 
     /**
-     * Bygger en [SakTilMeldekortApiDTO.MeldekortvedtakDTO] for samme meldeperiode som [meldeperiode],
-     * slik at den kan legges på en [SakTilMeldekortApiDTO] og sendes inn på mottak-routen.
+     * Bygger en [SakTilMeldekortApiDTO.MeldekortvedtakDTO] for samme meldeperiode som [meldeperiode], slik at den kan legges på en [SakTilMeldekortApiDTO] og sendes inn på mottak-routen.
      */
     fun meldekortvedtakDTO(
         meldeperiode: SakTilMeldekortApiDTO.MeldeperiodeDTO,

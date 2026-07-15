@@ -61,8 +61,7 @@ class LagreMeldekortFraBrukerServiceTest {
 
             tac.lagreMeldekortFraBrukerService.lagreMeldekortFraBruker(lagreKommando) shouldBe Unit.right()
 
-            // Verifiserer at den betingede skrivingen faktisk committet og persisterte i ekte Postgres -
-            // ikke bare at fake-en oppfører seg riktig.
+            // Verifiserer at den betingede skrivingen faktisk committet og persisterte i ekte Postgres - ikke bare at fake-en oppfører seg riktig.
             val oppdatertMeldekort = tac.meldekortRepo.hentForMeldekortId(meldekort.id, meldekort.fnr)
             oppdatertMeldekort shouldBe meldekort.copy(
                 dager = lagreKommando.dager,
@@ -117,8 +116,7 @@ class LagreMeldekortFraBrukerServiceTest {
             )
             val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-            // Simulerer at meldekortet ble deaktivert mellom lesingen og den betingede skrivingen: skrivingen
-            // treffer 0 rader, og den nye lesingen avdekker at meldekortet nå er deaktivert.
+            // Simulerer at meldekortet ble deaktivert mellom lesingen og den betingede skrivingen: skrivingen treffer 0 rader, og den nye lesingen avdekker at meldekortet nå er deaktivert.
             val racendeMeldekortRepo = object : MeldekortRepo by tac.meldekortRepo {
                 override fun lagreInnsendtMeldekortFraBruker(
                     meldekort: BrukersMeldekort,
@@ -154,8 +152,7 @@ class LagreMeldekortFraBrukerServiceTest {
             )
             val lagreKommando = lagMeldekortFraBrukerKommando(meldekort)
 
-            // Simulerer at meldekortet ikke lenger finnes ved den nye lesingen (som skjer i transaksjonen,
-            // altså med sessionContext != null): den betingede skrivingen traff 0 rader.
+            // Simulerer at meldekortet ikke lenger finnes ved den nye lesingen (som skjer i transaksjonen, altså med sessionContext != null): den betingede skrivingen traff 0 rader.
             val racendeMeldekortRepo = object : MeldekortRepo by tac.meldekortRepo {
                 override fun lagreInnsendtMeldekortFraBruker(
                     meldekort: BrukersMeldekort,
@@ -289,8 +286,7 @@ class LagreMeldekortFraBrukerServiceTest {
         withTestApplicationContext { tac ->
             val lagreMeldekortFraBrukerService = tac.lagreMeldekortFraBrukerService
 
-            // Lagrer meldekortet direkte uten å lagre meldeperioden, slik at oppslaget på siste meldeperiode
-            // returnerer null.
+            // Lagrer meldekortet direkte uten å lagre meldeperioden, slik at oppslaget på siste meldeperiode returnerer null.
             val meldekort = ObjectMother.meldekort(
                 meldeperiode = ObjectMother.meldeperiode(periode = gyldigPeriode, opprettet = nå(tac.clock)),
                 mottatt = null,
@@ -340,8 +336,7 @@ class LagreMeldekortFraBrukerServiceTest {
         withTestApplicationContext { tac ->
             val lagreMeldekortFraBrukerService = tac.lagreMeldekortFraBrukerService
 
-            // Meldekortet er deaktivert, men meldeperioden er fortsatt den siste (passerer erstattet-sjekken),
-            // slik at vi havner i DEAKTIVERT-grenen i statushåndteringen.
+            // Meldekortet er deaktivert, men meldeperioden er fortsatt den siste (passerer erstattet-sjekken), slik at vi havner i DEAKTIVERT-grenen i statushåndteringen.
             val meldeperiode = ObjectMother.meldeperiode(periode = gyldigPeriode, opprettet = nå(tac.clock))
             tac.lagreMeldeperiode(meldeperiode)
             val meldekort = ObjectMother.meldekort(

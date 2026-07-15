@@ -17,8 +17,7 @@ import java.time.Clock
 /**
  * Felles base for test-kontekster.
  * Inneholder fakes for eksterne klienter som er felles for alle test-varianter.
- * Bruk [TestApplicationContextMedInMemoryDb] for tester uten database,
- * eller [TestApplicationContextMedPostgres] for tester med ekte Postgres.
+ * Bruk [TestApplicationContextMedInMemoryDb] for tester uten database, eller [TestApplicationContextMedPostgres] for tester med ekte Postgres.
  */
 sealed class TestApplicationContext(
     clock: Clock,

@@ -26,9 +26,7 @@ import org.junit.jupiter.api.Test
 /**
  * Tester for det dev-only endepunktet [devRoutes] (`POST /dev/sak`).
  *
- * Endepunktet er bevisst dev-only og kobles kun inn fra LokalMain, men vi tester det likevel for å
- * låse den dev-spesifikke logikken: defaulten med 2 meldeperioder bakover + 2 fremover, og at en sak
- * faktisk blir opprettet via den ekte mottak-flyten (samme service som `POST /saksbehandling/sak`).
+ * Endepunktet er bevisst dev-only og kobles kun inn fra LokalMain, men vi tester det likevel for å låse den dev-spesifikke logikken: defaulten med 2 meldeperioder bakover + 2 fremover, og at en sak faktisk blir opprettet via den ekte mottak-flyten (samme service som `POST /saksbehandling/sak`).
  *
  * Vi asserter rett på JSON-strengen (ingen deserialisering) slik at et hvilket som helst kontraktsbrudd mot konsumenten – endret feltnavn, rekkefølge, type e.l. – får testen til å feile.
  * Klokka er fast (1. mai 2025), så meldeperiodene blir deterministiske og kan skrives ut eksplisitt.

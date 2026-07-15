@@ -17,14 +17,11 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
 
 /**
- * Verifiserer at "neste meldekort til utfylling" (det som avgjør hva bruker mangler innsending på)
- * tar høyde for at en kjede kan være håndtert utenfor den digitale flyten:
+ * Verifiserer at "neste meldekort til utfylling" (det som avgjør hva bruker mangler innsending på) tar høyde for at en kjede kan være håndtert utenfor den digitale flyten:
  *  - via et saksbehandlervedtak (papirmeldekort) -> [task 2]
  *  - via at bruker allerede har sendt inn et digitalt meldekort -> [task 3]
  *
- * I begge tilfeller skal en SENERE søknadsbehandling som er håndtert ikke "blokkere",
- * og neste meldekort til utfylling skal være den første meldeperioden fra den TIDLIGERE
- * (andre) søknadsbehandlingen som faktisk mangler innsending.
+ * I begge tilfeller skal en SENERE søknadsbehandling som er håndtert ikke "blokkere", og neste meldekort til utfylling skal være den første meldeperioden fra den TIDLIGERE (andre) søknadsbehandlingen som faktisk mangler innsending.
  */
 class NesteMeldekortNårKjedenErHåndtertTest {
 

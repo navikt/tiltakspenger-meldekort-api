@@ -34,13 +34,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
- * Ende-til-ende-tester for mottak av sak fra saksbehandling-api: kjører ekte requests inn på
- * [no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottakFraSaksbehandlingRoute] og verifiserer
- * både HTTP-svar (status/body) og sideeffekter (lagret sak, meldeperioder, meldekort, meldekortvedtak).
+ * Ende-til-ende-tester for mottak av sak fra saksbehandling-api: kjører ekte requests inn på [no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottakFraSaksbehandlingRoute] og verifiserer både HTTP-svar (status/body) og sideeffekter (lagret sak, meldeperioder, meldekort, meldekortvedtak).
  *
- * Vi mocker ikke servicen for å treffe `Left`-grenene i route + service; vi fremprovoserer dem med
- * ekte/fake database i stedet (duplikat → [no.nav.tiltakspenger.meldekort.mottak.FeilVedMottakAvSak.FinnesUtenDiff],
- * diff på meldeperiode → MeldeperiodeFinnesMedDiff, databasekonstraint-brudd → LagringFeilet).
+ * Vi mocker ikke servicen for å treffe `Left`-grenene i route + service; vi fremprovoserer dem med ekte/fake database i stedet (duplikat → [no.nav.tiltakspenger.meldekort.mottak.FeilVedMottakAvSak.FinnesUtenDiff], diff på meldeperiode → MeldeperiodeFinnesMedDiff, databasekonstraint-brudd → LagringFeilet).
  */
 class MottakFraSaksbehandlingEndToEndTest {
 
@@ -423,8 +419,7 @@ class MottakFraSaksbehandlingEndToEndTest {
     @Test
     fun `Skal returnere 400 dersom DTO ikke kan parses til en gyldig sakId`() = runTest {
         withTestApplicationContext { _ ->
-            // SakId.fromString på ugyldig id kaster IllegalArgumentException → 400 (klientfeil),
-            // ikke 500. Slik unngår avsender unødvendige retries og alarmer.
+            // SakId.fromString på ugyldig id kaster IllegalArgumentException → 400 (klientfeil), ikke 500. Slik unngår avsender unødvendige retries og alarmer.
             val ugyldigDto = ObjectMother.sakDTO(sakId = "ikke-en-gyldig-sakid")
             defaultRequestWithAssertions(
                 method = HttpMethod.Post,
@@ -445,8 +440,7 @@ class MottakFraSaksbehandlingEndToEndTest {
     @Test
     fun `Skal returnere 400 ved payload som bryter domeneinvariant`() = runTest {
         withTestApplicationContext { tac ->
-            // To meldeperioder med samme periode og samme versjon bryter Sak.init sin
-            // require(a.periode.tilOgMed < b.periode.fraOgMed || (a.periode == b.periode && a.versjon < b.versjon)).
+            // To meldeperioder med samme periode og samme versjon bryter Sak.init sin require(a.periode.tilOgMed < b.periode.fraOgMed || (a.periode == b.periode && a.versjon < b.versjon)).
             // Skal gi 400 (klientfeil), ikke 500 (som ville trigget retries og alarmer hos avsender).
             val periode = ObjectMother.meldeperiodeDto(periode = førstePeriode, opprettet = nå(tac.clock))
             val ugyldigSakDto = ObjectMother.sakDTO(

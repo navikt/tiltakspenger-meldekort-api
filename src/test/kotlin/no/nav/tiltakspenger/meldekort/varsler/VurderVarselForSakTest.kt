@@ -58,8 +58,7 @@ class VurderVarselForSakTest {
 
         lagredeVarsler shouldHaveSize 1
         val nyttVarsel = lagredeVarsler.single().shouldBeInstanceOf<Varsel.SkalAktiveres>()
-        // skalAktiveresTidspunkt = kjedens kanFyllesUtFraOgMed (kan være i fortiden – det er OK,
-        // brukeren kunne ha sendt inn meldekortet fra og med dette tidspunktet).
+        // skalAktiveresTidspunkt = kjedens kanFyllesUtFraOgMed (kan være i fortiden – det er OK, brukeren kunne ha sendt inn meldekortet fra og med dette tidspunktet).
         nyttVarsel.skalAktiveresTidspunkt shouldBe LocalDateTime.of(2025, 3, 7, 15, 0)
         vurderteTidspunkt shouldBe listOf(nå)
     }
@@ -94,9 +93,7 @@ class VurderVarselForSakTest {
 
     @Test
     fun `SkalAktiveres med ingen kjeder forbereder inaktivering direkte`() {
-        // Når meldeperioden opphører før varselet er aktivert må vi gå rett fra SkalAktiveres
-        // til SkalInaktiveres (sikkerhetsnett: aktiveringen kan ha blitt publisert på Kafka uten
-        // at vi rakk å persistere overgangen til Aktiv).
+        // Når meldeperioden opphører før varselet er aktivert må vi gå rett fra SkalAktiveres til SkalInaktiveres (sikkerhetsnett: aktiveringen kan ha blitt publisert på Kafka uten at vi rakk å persistere overgangen til Aktiv).
         val nå = LocalDateTime.of(2025, 3, 10, 10, 0)
         val eksisterendeVarsel = Varsel.SkalAktiveres(
             sakId = sak.id,
@@ -393,8 +390,7 @@ class VurderVarselForSakTest {
 
     @Test
     fun `SkalInaktiveres alene blokkerer ikke nytt varsel`() {
-        // Hvis sak har SkalInaktiveres men ikke noe pågående Aktiv/SkalAktiveres,
-        // kan vurderingsjobben opprette nytt varsel med en gang.
+        // Hvis sak har SkalInaktiveres men ikke noe pågående Aktiv/SkalAktiveres, kan vurderingsjobben opprette nytt varsel med en gang.
         val nå = LocalDateTime.of(2025, 3, 14, 12, 0)
         val skalInaktiveresVarsel = Varsel.SkalInaktiveres(
             sakId = sak.id,

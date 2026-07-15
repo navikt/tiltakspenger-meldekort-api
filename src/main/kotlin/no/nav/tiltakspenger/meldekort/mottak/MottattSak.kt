@@ -32,8 +32,7 @@ data class MottattSak(
      * Sammenligner den mottatte saken med en allerede lagret [Sak].
      * Leseside-felter (f.eks. arenaMeldekortStatus) er ikke relevante for om de er like, og holdes utenfor.
      *
-     * Skrivemodellen får her kjenne til lesemodellen [Sak] (men ikke omvendt) – det er en akseptert,
-     * enveis avhengighet.
+     * Skrivemodellen får her kjenne til lesemodellen [Sak] (men ikke omvendt) – det er en akseptert, enveis avhengighet.
      */
     fun erLik(eksisterende: Sak): Boolean =
         id == eksisterende.id &&

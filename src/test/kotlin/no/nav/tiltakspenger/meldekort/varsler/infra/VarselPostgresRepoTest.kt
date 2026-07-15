@@ -368,8 +368,7 @@ class VarselPostgresRepoTest {
             )
             helper.varselPostgresRepo.lagre(opprinnelig)
 
-            // Begge transaksjonene leser samme tilstand (SkalAktiveres) og produserer
-            // hver sin neste tilstand basert på den.
+            // Begge transaksjonene leser samme tilstand (SkalAktiveres) og produserer hver sin neste tilstand basert på den.
             val grenA = opprinnelig.aktiver(opprinnelig.skalAktiveresTidspunkt.plusMinutes(5))
             val grenB = opprinnelig.forberedInaktivering(
                 skalInaktiveresTidspunkt = opprinnelig.skalAktiveresTidspunkt.plusHours(2),
@@ -408,8 +407,7 @@ class VarselPostgresRepoTest {
             // Første lagre: insert lykkes.
             helper.varselPostgresRepo.lagre(varsel)
 
-            // Andre lagre: SkalAktiveres er initialtilstanden og har ingen gyldig forrige tilstand,
-            // så enhver konflikt på varsel_id skal regnes som samtidig skriving og kaste.
+            // Andre lagre: SkalAktiveres er initialtilstanden og har ingen gyldig forrige tilstand, så enhver konflikt på varsel_id skal regnes som samtidig skriving og kaste.
             shouldThrow<OptimistiskLåsFeil> {
                 helper.varselPostgresRepo.lagre(varsel)
             }
@@ -436,8 +434,7 @@ class VarselPostgresRepoTest {
             val aktiv = skalAktiveres.aktiver(skalAktiveres.skalAktiveresTidspunkt.plusMinutes(5))
             helper.varselPostgresRepo.lagre(aktiv)
 
-            // Andre lagre av samme Aktiv-overgang skal kaste fordi DB nå er i Aktiv,
-            // mens overgangen forventer at DB var i SkalAktiveres.
+            // Andre lagre av samme Aktiv-overgang skal kaste fordi DB nå er i Aktiv, mens overgangen forventer at DB var i SkalAktiveres.
             shouldThrow<OptimistiskLåsFeil> {
                 helper.varselPostgresRepo.lagre(aktiv)
             }

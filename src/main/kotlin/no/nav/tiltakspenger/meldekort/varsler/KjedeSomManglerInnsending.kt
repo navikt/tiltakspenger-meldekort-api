@@ -7,8 +7,7 @@ import java.time.LocalDateTime
 
 /**
  * Representerer en meldeperiodekjede som mangler innsending fra bruker.
- * En kjede mangler innsending dersom vi aldri har mottatt et meldekort for
- * noen meldeperiode i kjeden.
+ * En kjede mangler innsending dersom vi aldri har mottatt et meldekort for noen meldeperiode i kjeden.
  *
  * Brukes av [VurderVarselService] for å avgjøre om en sak skal ha et aktivt varsel.
  *

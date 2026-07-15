@@ -21,9 +21,7 @@ class SakVarselPostgresRepo(
         sessionFactory.withSession(sessionContext) { session ->
             session.run(
                 sqlQuery(
-                    // clock_timestamp() sikrer en ny verdi per kall (ulikt now()/
-                    // transaction_timestamp() som er konstant innen en transaksjon), slik at
-                    // den optimistiske låsen i markerVarselVurdert oppdager samtidige flagginger.
+                    // clock_timestamp() sikrer en ny verdi per kall (ulikt now()/ transaction_timestamp() som er konstant innen en transaksjon), slik at den optimistiske låsen i markerVarselVurdert oppdager samtidige flagginger.
                     """
                     UPDATE sak
                     SET skal_vurdere_varsel = true,

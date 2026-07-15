@@ -62,8 +62,7 @@ data class Meldeperiode(
 
         /**
          * Validerer at meldeperiodene er sortert etter periode og versjon.
-         * Brukes som invariant av både lesemodellen [no.nav.tiltakspenger.meldekort.sak.Sak] og
-         * skrivemodellen [no.nav.tiltakspenger.meldekort.mottak.MottattSak].
+         * Brukes som invariant av både lesemodellen [no.nav.tiltakspenger.meldekort.sak.Sak] og skrivemodellen [no.nav.tiltakspenger.meldekort.mottak.MottattSak].
          */
         fun List<Meldeperiode>.krevSortertEtterPeriodeOgVersjon() {
             zipWithNext().forEach { (a, b) ->

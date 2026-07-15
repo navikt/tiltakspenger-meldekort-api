@@ -43,8 +43,7 @@ class SakVarselPostgresRepoTest {
                 .take(2)
 
             resultat.map { it.sakId } shouldContainExactly forventet.map { it.id }
-            // Sjekk at saksnummer/fnr returneres slik at VurderVarselService ikke trenger
-            // å laste hele Sak-aggregatet.
+            // Sjekk at saksnummer/fnr returneres slik at VurderVarselService ikke trenger å laste hele Sak-aggregatet.
             resultat.map { it.saksnummer } shouldContainExactly forventet.map { it.saksnummer }
             resultat.map { it.fnr } shouldContainExactly forventet.map { it.fnr }
         }
@@ -57,8 +56,7 @@ class SakVarselPostgresRepoTest {
             val nySak = sakMedMeldeperiode()
             lagreSak(helper, gammelSak, nySak)
 
-            // Marker begge som vurdert, og flagg dem på nytt i en bestemt rekkefølge slik at
-            // gammelSak får et tidligere sist_flagget_tidspunkt enn nySak.
+            // Marker begge som vurdert, og flagg dem på nytt i en bestemt rekkefølge slik at gammelSak får et tidligere sist_flagget_tidspunkt enn nySak.
             helper.sakVarselPostgresRepo.markerVarselVurdert(gammelSak.id, nå(fixedClock), null)
             helper.sakVarselPostgresRepo.markerVarselVurdert(nySak.id, nå(fixedClock), null)
             helper.sakVarselPostgresRepo.flaggForVarselvurdering(gammelSak.id)
@@ -118,8 +116,7 @@ class SakVarselPostgresRepoTest {
             val sak = sakMedMeldeperiode()
             lagreSak(helper, sak)
 
-            // Simuler at jobben leste saken før noe ble flagget (sist_flagget_tidspunkt = null)
-            // og at et meldekort kom inn i mellomtiden og oppdaterte tidspunktet.
+            // Simuler at jobben leste saken før noe ble flagget (sist_flagget_tidspunkt = null) og at et meldekort kom inn i mellomtiden og oppdaterte tidspunktet.
             helper.sakVarselPostgresRepo.flaggForVarselvurdering(sak.id)
 
             io.kotest.assertions.throwables.shouldThrow<OptimistiskLåsFeil> {

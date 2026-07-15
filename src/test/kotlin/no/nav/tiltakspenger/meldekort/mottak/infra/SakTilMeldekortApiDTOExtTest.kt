@@ -59,8 +59,7 @@ class SakTilMeldekortApiDTOExtTest {
         val behandling = vedtak.meldeperiodebehandlinger.single()
         behandling.dager shouldHaveSize 14
 
-        // Verifiser at alle enumverdier ble forsøkt mappet (besøkt) ved å sjekke at
-        // antall unike status- og reduksjon-verdier i resultatet matcher det vi sendte inn.
+        // Verifiser at alle enumverdier ble forsøkt mappet (besøkt) ved å sjekke at antall unike status- og reduksjon-verdier i resultatet matcher det vi sendte inn.
         behandling.dager.map { it.status }.toSet() shouldBe MeldekortDagStatus.entries.toSet()
         behandling.dager.map { it.reduksjon }.toSet() shouldBe Reduksjon.entries.toSet()
     }

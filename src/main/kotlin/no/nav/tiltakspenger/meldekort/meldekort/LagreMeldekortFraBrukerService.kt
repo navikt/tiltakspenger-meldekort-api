@@ -25,8 +25,7 @@ class LagreMeldekortFraBrukerService(
         return Either.catch {
             lagreMeldekortFraBrukerInternal(kommando)
         }.getOrElse {
-            // Uventede exceptions (domeneinvarianter, DB-feil o.l.) legges inn i eithern slik at kalleren
-            // får én samlet feiltype å forholde seg til. throwable kan være sensitiv og logges i sikkerlogg.
+            // Uventede exceptions (domeneinvarianter, DB-feil o.l.) legges inn i eithern slik at kalleren får én samlet feiltype å forholde seg til. throwable kan være sensitiv og logges i sikkerlogg.
             KunneIkkeLagreMeldekortFraBruker.UventetFeilVedLagring(kommando.id, it).left()
         }
     }
@@ -68,8 +67,7 @@ class LagreMeldekortFraBrukerService(
                     clock = clock,
                 )
                 sessionFactory.withTransactionContext { tx ->
-                    // Betinget skriv: håndhever atomisk at meldekortet fortsatt er KAN_UTFYLLES, slik at to
-                    // samtidige innsendinger ikke begge kan lagre (TOCTOU mot erInnsendt-sjekken over).
+                    // Betinget skriv: håndhever atomisk at meldekortet fortsatt er KAN_UTFYLLES, slik at to samtidige innsendinger ikke begge kan lagre (TOCTOU mot erInnsendt-sjekken over).
                     val antallOppdaterteRader = meldekortRepo.lagreInnsendtMeldekortFraBruker(utfyltMeldekort, tx)
                     if (antallOppdaterteRader > 0) {
                         // Flagg saken for varselvurdering - den asynkrone jobben håndterer selve varselet
@@ -93,8 +91,7 @@ class LagreMeldekortFraBrukerService(
             MeldekortStatus.DEAKTIVERT ->
                 KunneIkkeLagreMeldekortFraBruker.MeldekortErDeaktivert(meldekortId).left()
 
-            // Allerede filtrert ut av erInnsendt-sjekken over; håndteres her kun for at when-et skal være
-            // uttømmende.
+            // Allerede filtrert ut av erInnsendt-sjekken over; håndteres her kun for at when-et skal være uttømmende.
             MeldekortStatus.INNSENDT ->
                 KunneIkkeLagreMeldekortFraBruker.MeldekortErAlleredeMottatt(meldekortId).left()
         }

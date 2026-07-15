@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
-import kotlin.io.path.name
 import kotlin.io.path.readLines
 import kotlin.streams.asSequence
 
@@ -15,8 +14,12 @@ import kotlin.streams.asSequence
  * Håndhever konvensjonen om én setning per linje i KDoc, kommentarer og markdown-filer.
  * Se «KDoc og kommentarer: én setning per linje» i AGENTS-backend.md i monorepo-rota.
  *
- * Regelen her dekker den ene halvdelen av konvensjonen: en linje skal ikke inneholde mer enn én setning.
- * Deteksjonen er en heuristikk: en setningsavslutter (`.`, `!`, `?`) etterfulgt av mellomrom og stor forbokstav tolkes som starten på en ny setning.
+ * Konvensjonen har to halvdeler, og begge håndheves:
+ * en linje skal ikke inneholde mer enn én setning, og en setning skal ikke brekkes over flere linjer.
+ *
+ * Deteksjonen er heuristikker.
+ * Flere setninger på én linje flagges når en setningsavslutter (`.`, `!`, `?`) etterfølges av mellomrom og stor forbokstav.
+ * Brukket setning flagges når en fortsettelseslinje starter med liten bokstav og forrige linje i samme avsnitt ikke er avsluttet.
  * Norske/engelske forkortelser, tall (listepunkter, datoer) og innhold i backticks/kodeblokker er unntatt.
  */
 class EnSetningPerLinjeKonsistTest {
@@ -34,7 +37,26 @@ class EnSetningPerLinjeKonsistTest {
                         .map { kommentarlinje -> "${file.path.toProjectRelativeLocation()}:${kommentarlinje.linjenummer}: ${kommentarlinje.tekst}" }
                 }
 
-        withClue(violations.toFailureMessage(kilde = "KDoc/kommentarer")) {
+        withClue(violations.toFailureMessage(intro = "Skriv én setning per linje i KDoc/kommentarer")) {
+            violations.shouldBeEmpty()
+        }
+    }
+
+    @Test
+    fun `kdoc og kommentarer brekker ikke en setning over flere linjer`() {
+        val violations =
+            Konsist
+                .scopeFromProject()
+                .files
+                .flatMap { file ->
+                    file.text
+                        .lines()
+                        .toKommentarlinjer()
+                        .finnBrukneSetninger()
+                        .map { kommentarlinje -> "${file.path.toProjectRelativeLocation()}:${kommentarlinje.linjenummer}: ${kommentarlinje.tekst}" }
+                }
+
+        withClue(violations.toFailureMessage(intro = "Ikke brekk en setning over flere linjer i KDoc/kommentarer — slå sammen med forrige linje")) {
             violations.shouldBeEmpty()
         }
     }
@@ -53,7 +75,26 @@ class EnSetningPerLinjeKonsistTest {
                         .map { markdownlinje -> "${moduleRoot.relativize(markdownFil)}:${markdownlinje.linjenummer}: ${markdownlinje.tekst}" }
                 }.toList()
 
-        withClue(violations.toFailureMessage(kilde = "markdown")) {
+        withClue(violations.toFailureMessage(intro = "Skriv én setning per linje i markdown")) {
+            violations.shouldBeEmpty()
+        }
+    }
+
+    @Test
+    fun `markdown-filer brekker ikke en setning over flere linjer`() {
+        val moduleRoot = Path.of(System.getProperty("user.dir"))
+        val violations =
+            moduleRoot
+                .markdownFiler()
+                .flatMap { markdownFil ->
+                    markdownFil
+                        .readLines()
+                        .toMarkdownProsalinjer()
+                        .finnBrukneSetninger()
+                        .map { markdownlinje -> "${moduleRoot.relativize(markdownFil)}:${markdownlinje.linjenummer}: ${markdownlinje.tekst}" }
+                }.toList()
+
+        withClue(violations.toFailureMessage(intro = "Ikke brekk en setning over flere linjer i markdown — slå sammen med forrige linje")) {
             violations.shouldBeEmpty()
         }
     }
@@ -61,16 +102,19 @@ class EnSetningPerLinjeKonsistTest {
     private data class Tekstlinje(
         val linjenummer: Int,
         val tekst: String,
+        val gruppe: Int,
     )
 
     /**
      * Trekker ut kommentarinnholdet (KDoc, blokkommentarer og `//`-kommentarer) fra kildekodelinjer.
      * Linjer inne i kodeblokker (```) i kommentarer hoppes over.
+     * [Tekstlinje.gruppe] identifiserer sammenhengende avsnitt: blanke linjer, kodeblokker og bytte av kommentarblokk starter en ny gruppe.
      */
     private fun List<String>.toKommentarlinjer(): List<Tekstlinje> {
         val kommentarlinjer = mutableListOf<Tekstlinje>()
         var iBlokkommentar = false
         var iKodeblokk = false
+        var gruppe = 0
 
         forEachIndexed { index, linje ->
             val linjenummer = index + 1
@@ -95,15 +139,22 @@ class EnSetningPerLinjeKonsistTest {
                     else -> linje.tekstEtterLinjekommentar()
                 }
 
-            if (kommentartekst == null) {
-                return@forEachIndexed
+            when {
+                kommentartekst == null -> gruppe++
+
+                kommentartekst.startsWith("```") -> {
+                    iKodeblokk = !iKodeblokk
+                    gruppe++
+                }
+
+                iKodeblokk -> {}
+
+                kommentartekst.isEmpty() -> gruppe++
+
+                else -> kommentarlinjer.add(Tekstlinje(linjenummer, kommentartekst, gruppe))
             }
-            if (kommentartekst.startsWith("```")) {
-                iKodeblokk = !iKodeblokk
-                return@forEachIndexed
-            }
-            if (!iKodeblokk && kommentartekst.isNotEmpty()) {
-                kommentarlinjer.add(Tekstlinje(linjenummer, kommentartekst))
+            if (trimmet.contains("*/")) {
+                gruppe++
             }
         }
         return kommentarlinjer
@@ -130,21 +181,25 @@ class EnSetningPerLinjeKonsistTest {
     /**
      * Trekker ut prosalinjene fra en markdown-fil.
      * Kodeblokker (```) og tabellinjer hoppes over.
+     * [Tekstlinje.gruppe] identifiserer sammenhengende avsnitt: blanke linjer, kodeblokker og tabeller starter en ny gruppe.
      */
     private fun List<String>.toMarkdownProsalinjer(): List<Tekstlinje> {
         val prosalinjer = mutableListOf<Tekstlinje>()
         var iKodeblokk = false
+        var gruppe = 0
 
         forEachIndexed { index, linje ->
             val trimmet = linje.trim()
             if (trimmet.startsWith("```")) {
                 iKodeblokk = !iKodeblokk
+                gruppe++
                 return@forEachIndexed
             }
             if (iKodeblokk || trimmet.startsWith("|") || trimmet.isEmpty()) {
+                gruppe++
                 return@forEachIndexed
             }
-            prosalinjer.add(Tekstlinje(index + 1, trimmet))
+            prosalinjer.add(Tekstlinje(index + 1, trimmet, gruppe))
         }
         return prosalinjer
     }
@@ -175,6 +230,26 @@ class EnSetningPerLinjeKonsistTest {
         }
     }
 
+    /**
+     * Heuristikk for setninger som er brukket over flere linjer.
+     * Flagger en fortsettelseslinje som starter med liten bokstav når forrige linje i samme avsnitt ikke er avsluttet.
+     * Markørlinjer (listepunkter, KDoc-tags, overskrifter) starter aldri med liten bokstav og er dermed automatisk unntatt.
+     */
+    private fun List<Tekstlinje>.finnBrukneSetninger(): List<Tekstlinje> =
+        zipWithNext().mapNotNull { (forrige, denne) ->
+            denne.takeIf {
+                denne.gruppe == forrige.gruppe &&
+                    denne.tekst.first().isLowerCase() &&
+                    forrige.tekst.erUavsluttet()
+            }
+        }
+
+    /** En linje regnes som avsluttet når siste tegn (etter stripping av avsluttende tegn) er setningsavslutter eller kolon. */
+    private fun String.erUavsluttet(): Boolean {
+        val sisteTegn = trimEnd { char -> char in avsluttendeTegn || char.isWhitespace() }.lastOrNull() ?: return false
+        return sisteTegn !in ".!?:"
+    }
+
     private fun Path.markdownFiler(): Sequence<Path> =
         Files
             .walk(this)
@@ -185,12 +260,12 @@ class EnSetningPerLinjeKonsistTest {
                 ekskluderteKataloger.any { katalog -> relativePath == katalog || relativePath.startsWith("$katalog/") }
             }
 
-    private fun List<String>.toFailureMessage(kilde: String): String =
+    private fun List<String>.toFailureMessage(intro: String): String =
         if (isEmpty()) {
-            "Ingen brudd på én-setning-per-linje i $kilde."
+            "Ingen brudd på én-setning-per-linje."
         } else {
-            "Skriv én setning per linje i $kilde (se AGENTS-backend.md i monorepo-rota).\n" +
-                "Fant $size linje(r) med flere setninger:\n" +
+            "$intro (se AGENTS-backend.md i monorepo-rota).\n" +
+                "Fant $size linje(r) som bryter regelen:\n" +
                 joinToString("\n") { violation -> "- $violation" }
         }
 
@@ -200,8 +275,8 @@ class EnSetningPerLinjeKonsistTest {
     }
 
     private companion object {
-        /** Setningsavslutter, eventuelle avsluttende tegn (sitat/parentes/utheving), mellomrom og stor forbokstav. */
-        private val setningsskilleRegex = Regex("""[.!?]["'`»)\]*_]*\s+\p{Lu}""")
+        /** Setningsavslutter, eventuelle avsluttende tegn (sitat/parentes/utheving), mellomrom, eventuelle innledende tegn og stor forbokstav. */
+        private val setningsskilleRegex = Regex("""[.!?]["'`»)\]*_]*\s+[\[("«]*\p{Lu}""")
 
         /** Tegn som kan stå inntil setningsavslutteren uten å være del av ordet (sitat/parentes/utheving). */
         private val avsluttendeTegn = "\"'`»)]*_"
