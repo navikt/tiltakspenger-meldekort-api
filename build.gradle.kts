@@ -125,7 +125,7 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-json:$kotestVersion")
     testImplementation("io.kotest:kotest-extensions:$kotestVersion")
     // Delte arkitekturregler; drar inn konsist transitivt (api-avhengighet). Egen versjon inntil felleslibVersion bumpes forbi httpklient-splitten.
-    testImplementation("com.github.navikt.tiltakspenger-libs:konsist-regler:0.0.885")
+    testImplementation("com.github.navikt.tiltakspenger-libs:konsist-regler:0.0.895")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$kotlinxCoroutinesVersion")
 

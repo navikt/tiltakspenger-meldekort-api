@@ -1,7 +1,10 @@
 package no.nav.tiltakspenger.arkitektur
 
 import com.lemonappdev.konsist.api.Konsist
+import no.nav.tiltakspenger.libs.konsist.BoundaryKlasser
+import no.nav.tiltakspenger.libs.konsist.DomeneImportWhitelist
 import no.nav.tiltakspenger.libs.konsist.EnSetningPerLinje
+import no.nav.tiltakspenger.libs.konsist.InfraImport
 import no.nav.tiltakspenger.libs.konsist.IngenJUnit4
 import no.nav.tiltakspenger.libs.konsist.IngenJackson2
 import no.nav.tiltakspenger.libs.konsist.IngenJupiterAsserts
@@ -11,7 +14,6 @@ import java.nio.file.Path
 
 /**
  * Kjører de delte arkitekturreglene fra tiltakspenger-libs (`konsist-regler`) på dette repoet.
- * Repo-spesifikke regler (boundary-dataklasser, domene-/infra-importer) ligger fortsatt i egne tester her i pakka.
  */
 class FellesArkitekturKonsistTest {
     @Test
@@ -52,6 +54,37 @@ class FellesArkitekturKonsistTest {
     @Test
     fun `markdown-filer brekker ikke en setning over flere linjer`() {
         EnSetningPerLinje.assertBrukneSetningerIMarkdown(repoRot())
+    }
+
+    @Test
+    fun `kun infra-pakker kan importere infra-pakker`() {
+        InfraImport.assert(Konsist.scopeFromProduction())
+    }
+
+    @Test
+    fun `domene-filer importerer kun tillatte pakker`() {
+        DomeneImportWhitelist.assert(
+            scope = Konsist.scopeFromProduction(),
+            erDomenepakke = { pakke -> pakke.startsWith("no.nav.tiltakspenger.meldekort") },
+            tillattePakker = listOf(
+                "arrow.core",
+                "io.github.oshai.kotlinlogging",
+                "java.time",
+                "java.util",
+                "kotlin",
+                "no.nav.tiltakspenger.libs.common",
+                "no.nav.tiltakspenger.libs.dato",
+                "no.nav.tiltakspenger.libs.meldekort",
+                "no.nav.tiltakspenger.libs.periode",
+                "no.nav.tiltakspenger.libs.persistering.domene",
+                "no.nav.tiltakspenger.meldekort",
+            ),
+        )
+    }
+
+    @Test
+    fun `boundary-klasser ligger i infra-pakker`() {
+        BoundaryKlasser.assert(Konsist.scopeFromProduction())
     }
 
     /** Enmodul-repo: testens arbeidskatalog er repo-rota. */
