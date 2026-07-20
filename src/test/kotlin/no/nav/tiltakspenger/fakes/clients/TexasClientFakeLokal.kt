@@ -4,6 +4,7 @@ import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.libs.texas.client.TexasIntrospectionResponse
+import java.time.Clock
 import java.time.Instant
 
 class TexasClientFakeLokal : TexasClient {
@@ -34,7 +35,8 @@ class TexasClientFakeLokal : TexasClient {
 
     private fun accessToken(): AccessToken = AccessToken(
         token = "asdf",
-        expiresAt = Instant.now().plusSeconds(3600),
+        // TODO jah: Ikke bruk Clock.systemUTC() i tester. Fiks alle.
+        expiresAt = Instant.now(Clock.systemUTC()).plusSeconds(3600),
     )
 
     /**

@@ -155,7 +155,7 @@ class HentMeldekortRepoTest {
         fun `skal hente første meldekort når det andre ikke er klart til utfylling`() {
             withMigratedDb(runIsolated = false) { helper ->
                 val fnr = helper.nesteFnr()
-                val førstePeriode = ObjectMother.periode(LocalDate.now().minusWeeks(2))
+                val førstePeriode = ObjectMother.periode(nå(fixedClock).toLocalDate().minusWeeks(2))
 
                 val førsteMeldekort = ObjectMother.meldekort(
                     fnr = fnr,
@@ -187,7 +187,7 @@ class HentMeldekortRepoTest {
         fun `skal hente meldekort som ikke er klart til utfylling`() {
             withMigratedDb(runIsolated = false) { helper ->
                 val fnr = helper.nesteFnr()
-                val førstePeriode = ObjectMother.periode(LocalDate.now())
+                val førstePeriode = ObjectMother.periode(nå(fixedClock).toLocalDate())
 
                 val førsteMeldekort = ObjectMother.meldekort(
                     fnr = fnr,

@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.fakes.clients
 
 import com.auth0.jwt.JWT
 import no.nav.tiltakspenger.libs.common.AccessToken
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.libs.texas.client.TexasIntrospectionResponse
@@ -68,6 +69,6 @@ class TexasClientFakeTest : TexasClient {
 
     private fun accessToken(): AccessToken = AccessToken(
         token = "asdf",
-        expiresAt = Instant.now().plusSeconds(3600),
+        expiresAt = Instant.now(fixedClock).plusSeconds(3600),
     )
 }

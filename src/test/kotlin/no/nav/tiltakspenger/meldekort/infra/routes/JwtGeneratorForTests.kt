@@ -11,6 +11,7 @@ import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
+import java.time.Clock
 import java.time.Instant
 import java.util.Base64
 import java.util.UUID
@@ -55,9 +56,10 @@ data class JwtGenerator(
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
         groups: List<String>? = listOf("ROLE_SAKSBEHANDLER"),
         saksbehandler: Saksbehandler? = null,
-        expiresAt: Instant = Instant.now().plusSeconds(1800),
-        issuedAt: Instant = Instant.now().minusSeconds(5),
-        notBefore: Instant = Instant.now().minusSeconds(5),
+        // TODO jah: Ikke bruk Clock.systemUTC() i tester. Fiks alle.
+        expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
+        issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
+        notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
     ): String {
         val algorithm = Algorithm.RSA256(null, privateKey)
         return JWT.create()
@@ -88,9 +90,10 @@ data class JwtGenerator(
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
         roles: List<String>? = listOf("TEST_ROLLE_1", "TEST_ROLLE_2"),
         oid: String? = subject,
-        expiresAt: Instant = Instant.now().plusSeconds(1800),
-        issuedAt: Instant = Instant.now().minusSeconds(5),
-        notBefore: Instant = Instant.now().minusSeconds(5),
+        // TODO jah: Ikke bruk Clock.systemUTC() i tester. Fiks alle.
+        expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
+        issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
+        notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
     ): String {
         val algorithm = Algorithm.RSA256(null, privateKey)
         return JWT.create()
@@ -119,9 +122,10 @@ data class JwtGenerator(
         azp: String? = "744e4092-4215-4e02-87df-a61aaf1b95b5",
         fnr: String = Fnr.random().verdi,
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
-        expiresAt: Instant = Instant.now().plusSeconds(1800),
-        issuedAt: Instant = Instant.now().minusSeconds(5),
-        notBefore: Instant = Instant.now().minusSeconds(5),
+        // TODO jah: Ikke bruk Clock.systemUTC() i tester. Fiks alle.
+        expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
+        issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
+        notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
     ): String {
         val algorithm = Algorithm.RSA256(null, privateKey)
         return JWT.create()
