@@ -18,11 +18,13 @@ import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.json.serialize
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetBody
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContextAndPostgres
 import no.nav.tiltakspenger.meldekort.mottak.infra.tilMottattSak
@@ -407,9 +409,11 @@ class MottakFraSaksbehandlingEndToEndTest {
                     path("/saksbehandling/sak")
                 },
                 jwt = JwtGenerator().createJwtForSystembruker(),
-                forventetStatus = HttpStatusCode.BadRequest,
-                forventetBody = "Feil ved parsing av sak fra saksbehandling-api",
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons(
+                    status = HttpStatusCode.BadRequest,
+                    body = ForventetBody.Eksakt("Feil ved parsing av sak fra saksbehandling-api"),
+                    contentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                ),
             ) {
                 setBody("{ ikke gyldig json")
             }
@@ -428,9 +432,11 @@ class MottakFraSaksbehandlingEndToEndTest {
                     path("/saksbehandling/sak")
                 },
                 jwt = JwtGenerator().createJwtForSystembruker(),
-                forventetStatus = HttpStatusCode.BadRequest,
-                forventetBody = "Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ikke-en-gyldig-sakid. Antall meldeperioder: 0. Antall meldekortvedtak: 0.",
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons(
+                    status = HttpStatusCode.BadRequest,
+                    body = ForventetBody.Eksakt("Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ikke-en-gyldig-sakid. Antall meldeperioder: 0. Antall meldekortvedtak: 0."),
+                    contentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                ),
             ) {
                 setBody(serialize(ugyldigDto))
             }
@@ -454,9 +460,11 @@ class MottakFraSaksbehandlingEndToEndTest {
                     path("/saksbehandling/sak")
                 },
                 jwt = JwtGenerator().createJwtForSystembruker(),
-                forventetStatus = HttpStatusCode.BadRequest,
-                forventetBody = "Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ${ugyldigSakDto.sakId}. Antall meldeperioder: 2. Antall meldekortvedtak: 0.",
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons(
+                    status = HttpStatusCode.BadRequest,
+                    body = ForventetBody.Eksakt("Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ${ugyldigSakDto.sakId}. Antall meldeperioder: 2. Antall meldekortvedtak: 0."),
+                    contentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                ),
             ) {
                 setBody(serialize(ugyldigSakDto))
             }

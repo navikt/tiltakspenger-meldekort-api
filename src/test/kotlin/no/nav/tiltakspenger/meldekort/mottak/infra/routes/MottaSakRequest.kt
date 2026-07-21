@@ -14,10 +14,12 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.json.serialize
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.jobber.KjørJobberForTester
+import no.nav.tiltakspenger.meldekort.infra.routes.tilForventetBody
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.objectmothers.ObjectMother.meldeperiodeDto
 
@@ -77,9 +79,11 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
             path("/saksbehandling/sak")
         },
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = ForventetRespons(
+            status = forventetStatus,
+            body = forventetBody.tilForventetBody(),
+            contentType = forventetContentType,
+        ),
     ) {
         setBody(serialize(requestDto))
     }

@@ -6,8 +6,10 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
+import no.nav.tiltakspenger.meldekort.infra.routes.tilForventetBody
 import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendMeldekortInfo
 
 /**
@@ -24,9 +26,11 @@ suspend fun ApplicationTestBuilder.microfrontendKortInfoRequest(
         method = HttpMethod.Get,
         uri = "/din-side/microfrontend/meldekort-kort-info",
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = ForventetRespons(
+            status = forventetStatus,
+            body = forventetBody.tilForventetBody(),
+            contentType = forventetContentType,
+        ),
     )
     return if (response.status == HttpStatusCode.OK) {
         deserialize<MicrofrontendMeldekortInfo>(response.bodyAsText())

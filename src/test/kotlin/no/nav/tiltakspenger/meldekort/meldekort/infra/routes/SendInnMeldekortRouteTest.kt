@@ -12,11 +12,13 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetBody
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerMedSakRequest
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.shouldBe
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.tilMeldekortTilBrukerDTO
@@ -59,9 +61,11 @@ class SendInnMeldekortRouteTest {
                 method = HttpMethod.Post,
                 uri = "/brukerfrontend/send-inn",
                 jwt = JwtGenerator().createJwtForUser(fnr = fnr.verdi),
-                forventetStatus = HttpStatusCode.BadRequest,
-                forventetBody = """{"melding":"Vi klarte ikke å lese inn meldekortet du sendte. Prøv igjen.","kode":"ugyldig_meldekort_innsending"}""",
-                forventetContentType = ContentType.Application.Json,
+                forventet = ForventetRespons(
+                    status = HttpStatusCode.BadRequest,
+                    body = ForventetBody.Eksakt("""{"melding":"Vi klarte ikke å lese inn meldekortet du sendte. Prøv igjen.","kode":"ugyldig_meldekort_innsending"}"""),
+                    contentType = ContentType.Application.Json,
+                ),
             ) {
                 setBody("dette er ikke gyldig json")
             }

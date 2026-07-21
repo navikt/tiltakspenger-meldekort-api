@@ -10,10 +10,12 @@ import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.serialize
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerMedSakRequest
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.jobber.KjørJobberForTester
+import no.nav.tiltakspenger.meldekort.infra.routes.tilForventetBody
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagFraBrukerDTO
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagStatusDTO
@@ -118,9 +120,11 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
         method = HttpMethod.Post,
         uri = "/brukerfrontend/send-inn",
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = ForventetRespons(
+            status = forventetStatus,
+            body = forventetBody.tilForventetBody(),
+            contentType = forventetContentType,
+        ),
     ) {
         setBody(serialize(requestDto))
     }

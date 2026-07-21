@@ -9,9 +9,11 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.json.serialize
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.jobber.KjørJobberForTester
+import no.nav.tiltakspenger.meldekort.infra.routes.tilForventetBody
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortTilBrukerDTO
 
 /**
@@ -66,9 +68,11 @@ suspend fun ApplicationTestBuilder.korrigerMeldekortRequest(
         method = HttpMethod.Patch,
         uri = "/brukerfrontend/$meldekortId/korriger?locale=$locale",
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = ForventetRespons(
+            status = forventetStatus,
+            body = forventetBody.tilForventetBody(),
+            contentType = forventetContentType,
+        ),
     ) {
         setBody(requestBody)
     }

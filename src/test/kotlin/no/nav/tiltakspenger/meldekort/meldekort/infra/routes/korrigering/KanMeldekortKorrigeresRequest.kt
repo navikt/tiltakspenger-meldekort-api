@@ -7,8 +7,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.withCharset
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
+import no.nav.tiltakspenger.meldekort.infra.routes.tilForventetBody
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering.kanKorrigeresRoute]
@@ -26,9 +28,11 @@ suspend fun ApplicationTestBuilder.kanMeldekortKorrigeresRequest(
         method = HttpMethod.Get,
         uri = "/brukerfrontend/$meldekortId/kan-korrigeres",
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = ForventetRespons(
+            status = forventetStatus,
+            body = forventetBody.tilForventetBody(),
+            contentType = forventetContentType,
+        ),
     )
     return if (response.status == HttpStatusCode.OK) {
         deserialize<KanKorrigereMeldekortDto>(response.bodyAsText())

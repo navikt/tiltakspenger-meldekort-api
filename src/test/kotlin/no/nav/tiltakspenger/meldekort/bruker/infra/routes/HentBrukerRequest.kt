@@ -9,8 +9,10 @@ import io.ktor.http.path
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.util.url
 import no.nav.tiltakspenger.libs.json.deserialize
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
+import no.nav.tiltakspenger.meldekort.infra.routes.tilForventetBody
 
 /**
  * Route: [no.nav.tiltakspenger.meldekort.bruker.infra.routes.hentBrukerRoute]
@@ -70,9 +72,11 @@ private suspend inline fun <reified T : BrukerDTO> ApplicationTestBuilder.hentBr
             path("/brukerfrontend/bruker")
         },
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = ForventetRespons(
+            status = forventetStatus,
+            body = forventetBody.tilForventetBody(),
+            contentType = forventetContentType,
+        ),
     )
     return if (response.status == HttpStatusCode.OK) {
         deserialize<T>(response.bodyAsText())

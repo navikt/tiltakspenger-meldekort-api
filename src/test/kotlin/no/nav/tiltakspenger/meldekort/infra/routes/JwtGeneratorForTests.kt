@@ -56,7 +56,7 @@ data class JwtGenerator(
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
         groups: List<String>? = listOf("ROLE_SAKSBEHANDLER"),
         saksbehandler: Saksbehandler? = null,
-        // TODO jah: Ikke bruk Clock.systemUTC() i tester. Fiks alle.
+        // TODO jah: Fiks alle brukene av Clock.systemUTC() i tester.
         expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
         issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
         notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
@@ -90,7 +90,7 @@ data class JwtGenerator(
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
         roles: List<String>? = listOf("TEST_ROLLE_1", "TEST_ROLLE_2"),
         oid: String? = subject,
-        // TODO jah: Ikke bruk Clock.systemUTC() i tester. Fiks alle.
+        // TODO jah: Fiks alle brukene av Clock.systemUTC() i tester.
         expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
         issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
         notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
@@ -122,7 +122,7 @@ data class JwtGenerator(
         azp: String? = "744e4092-4215-4e02-87df-a61aaf1b95b5",
         fnr: String = Fnr.random().verdi,
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
-        // TODO jah: Ikke bruk Clock.systemUTC() i tester. Fiks alle.
+        // TODO jah: Fiks alle brukene av Clock.systemUTC() i tester.
         expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
         issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
         notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),

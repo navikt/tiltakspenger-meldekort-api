@@ -35,7 +35,7 @@ class TexasClientFakeLokal : TexasClient {
 
     private fun accessToken(): AccessToken = AccessToken(
         token = "asdf",
-        // TODO jah: Ikke bruk Clock.systemUTC() i tester. Fiks alle.
+        // TODO jah: Fiks alle brukene av Clock.systemUTC() i tester.
         expiresAt = Instant.now(Clock.systemUTC()).plusSeconds(3600),
     )
 

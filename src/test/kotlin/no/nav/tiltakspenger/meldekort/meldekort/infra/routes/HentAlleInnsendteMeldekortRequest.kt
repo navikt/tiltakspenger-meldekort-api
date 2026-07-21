@@ -5,8 +5,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
+import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
-import no.nav.tiltakspenger.meldekort.infra.routes.defaultRequestWithAssertions
+import no.nav.tiltakspenger.meldekort.infra.routes.tilForventetBody
 import no.nav.tiltakspenger.meldekort.meldekort.infra.AlleMeldekortDTO
 
 typealias JsonResponse = String
@@ -29,9 +31,11 @@ suspend fun ApplicationTestBuilder.hentAlleInnsendteMeldekortRequest(
         method = HttpMethod.Get,
         uri = "/brukerfrontend/meldekort/innsendte",
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = ForventetRespons(
+            status = forventetStatus,
+            body = forventetBody.tilForventetBody(),
+            contentType = forventetContentType,
+        ),
     )
     return if (response.status == forventetStatus) response.bodyAsText() else null
 }
