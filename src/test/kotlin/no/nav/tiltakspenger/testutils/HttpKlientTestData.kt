@@ -11,7 +11,9 @@ import no.nav.tiltakspenger.libs.httpklient.infra.kall.AuthTokenProvider
 import java.time.Instant
 import kotlin.time.Duration
 
-// TODO jah: Dette er ikke noe som er unikt for meldekort-api. Flytt til libs. Og bytt til å bruke det. Se over andre tilfeller og alle de andre repoene også.
+// TODO jah: Dette er ikke noe som er unikt for meldekort-api.
+//  Flytt til libs, og bytt til å bruke det.
+//  Se over andre tilfeller og alle de andre repoene også.
 val testTokenProvider = object : AuthTokenProvider {
     override suspend fun hentToken(skipCache: Boolean) = AccessToken("test-token", Instant.now(fixedClock).plusSeconds(3600))
 }
