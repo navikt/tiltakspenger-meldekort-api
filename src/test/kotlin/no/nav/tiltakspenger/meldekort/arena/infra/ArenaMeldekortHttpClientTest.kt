@@ -1,6 +1,5 @@
 package no.nav.tiltakspenger.meldekort.arena.infra
 
-import arrow.core.left
 import arrow.core.right
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.marcinziolo.kotlin.wiremock.contains
@@ -9,13 +8,14 @@ import com.marcinziolo.kotlin.wiremock.get
 import com.marcinziolo.kotlin.wiremock.returns
 import com.marcinziolo.kotlin.wiremock.returnsJson
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.test.runTest
-import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.withWireMockServer
-import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortServiceFeil
+import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
+import no.nav.tiltakspenger.testutils.testTokenProvider
 import org.junit.jupiter.api.Test
-import java.time.Instant
 import java.time.LocalDate
 
 /**
@@ -24,9 +24,9 @@ import java.time.LocalDate
  * Verifiserer HTTP-flyten mot arena meldekortservice:
  *  - 200 deserialiseres til [no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortOversikt].
  *  - 204 (No Content) på /meldekort gir `null` (ingen meldekort i arena).
- *  - Andre statuser på /meldekort gir [ArenaMeldekortServiceFeil.HttpFeil].
- *  - Feil på /historiskemeldekort gir `null` (vi bryr oss ikke om feilhåndtering der).
- *  - Exception ved utsending fanges og mappes til [ArenaMeldekortServiceFeil.UkjentFeil].
+ *  - Andre statuser på /meldekort gir [HttpKlientError.UventetStatus].
+ *  - Feilstatus på /historiskemeldekort gir `null` (brukeren finnes ikke).
+ *  - Transportfeil gir [HttpKlientError.IngenRespons].
  */
 internal class ArenaMeldekortHttpClientTest {
     private val fnr = Fnr.fromString("12345678910")
@@ -57,14 +57,10 @@ internal class ArenaMeldekortHttpClientTest {
         }
     """.trimIndent()
 
-    private fun accessToken(token: String = "test-token") = AccessToken(
-        token = token,
-        expiresAt = Instant.MAX,
-    )
-
     private fun WireMockServer.client() = ArenaMeldekortHttpClient(
         baseUrl = baseUrl(),
-        getToken = { accessToken() },
+        clock = fixedClock,
+        authTokenProvider = testTokenProvider,
     )
 
     @Test
@@ -103,7 +99,7 @@ internal class ArenaMeldekortHttpClientTest {
     }
 
     @Test
-    fun `hentMeldekort - annen feilstatus gir HttpFeil`() {
+    fun `hentMeldekort - annen feilstatus gir UventetStatus`() {
         withWireMockServer { wiremock ->
             wiremock.get {
                 url equalTo "/meldekortservice/api/v2/meldekort"
@@ -112,21 +108,29 @@ internal class ArenaMeldekortHttpClientTest {
             }
 
             runTest {
-                wiremock.client().hentMeldekort(fnr) shouldBe ArenaMeldekortServiceFeil.HttpFeil(500).left()
+                val feil = wiremock.client().hentMeldekort(fnr)
+                    .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
+                    .value
+
+                feil.shouldBeInstanceOf<HttpKlientError.UventetStatus>().statusCode shouldBe 500
             }
         }
     }
 
     @Test
-    fun `hentMeldekort - exception ved utsending gir UkjentFeil`() {
-        // Peker mot en port ingen lytter på for å trigge ConnectException som fanges av Either.catch.
+    fun `hentMeldekort - transportfeil gir IngenRespons`() {
+        // Peker mot en port ingen lytter på for å trigge ConnectException.
         val client = ArenaMeldekortHttpClient(
             baseUrl = "http://localhost:1",
-            getToken = { accessToken() },
+            clock = fixedClock,
+            authTokenProvider = testTokenProvider,
         )
 
         runTest {
-            client.hentMeldekort(fnr) shouldBe ArenaMeldekortServiceFeil.UkjentFeil.left()
+            client.hentMeldekort(fnr)
+                .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
+                .value
+                .shouldBeInstanceOf<HttpKlientError.IngenRespons>()
         }
     }
 
@@ -162,14 +166,18 @@ internal class ArenaMeldekortHttpClientTest {
     }
 
     @Test
-    fun `hentHistoriskeMeldekort - exception ved utsending gir UkjentFeil`() {
+    fun `hentHistoriskeMeldekort - transportfeil gir IngenRespons`() {
         val client = ArenaMeldekortHttpClient(
             baseUrl = "http://localhost:1",
-            getToken = { accessToken() },
+            clock = fixedClock,
+            authTokenProvider = testTokenProvider,
         )
 
         runTest {
-            client.hentHistoriskeMeldekort(fnr) shouldBe ArenaMeldekortServiceFeil.UkjentFeil.left()
+            client.hentHistoriskeMeldekort(fnr)
+                .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
+                .value
+                .shouldBeInstanceOf<HttpKlientError.IngenRespons>()
         }
     }
 }

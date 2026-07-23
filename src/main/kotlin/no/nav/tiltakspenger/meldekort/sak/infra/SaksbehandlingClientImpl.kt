@@ -1,21 +1,22 @@
 package no.nav.tiltakspenger.meldekort.sak.infra
 
 import arrow.core.Either
-import arrow.core.left
-import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.future.await
-import no.nav.tiltakspenger.libs.common.AccessToken
+import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
+import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlient
+import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlientConfig
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.AuthTokenProvider
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.KlientAuth
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.SerialisertJson
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.Statusregel
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.HttpTransport
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.JavaHttpTransport
 import no.nav.tiltakspenger.libs.json.serialize
-import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
-import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingApiError
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
 import java.net.URI
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
+import java.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 
 /**
  * Klient for å sende innsendte meldekort til tiltakspenger-saksbehandling-api.
@@ -25,60 +26,35 @@ import kotlin.time.toJavaDuration
  * API-spec: -
  * Slack: #tiltakspenger-værsågod (eget team)
  * Teamkatalog: https://teamkatalogen.nav.no/team/15bca3d2-2584-4167-85ba-faab1f1cfb53
+ *
+ * Ingen retry, som den gamle klienten; jobben som kaller prøver usendte meldekort på nytt ved neste kjøring.
+ *
+ * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class SaksbehandlingClientImpl(
     baseUrl: String,
-    val getToken: suspend () -> AccessToken,
+    clock: Clock,
+    authTokenProvider: AuthTokenProvider,
     connectTimeout: Duration = 10.seconds,
-    private val timeout: Duration = 10.seconds,
+    timeout: Duration = 10.seconds,
+    transport: HttpTransport = JavaHttpTransport(connectTimeout = connectTimeout),
 ) : SaksbehandlingClient {
+    private val httpKlient: HttpKlient = HttpKlient(
+        clock = clock,
+        config = HttpKlientConfig(
+            timeout = timeout,
+            auth = KlientAuth.System(authTokenProvider),
+        ),
+        transport = transport,
+    )
 
     private val saksbehandlingApiMeldekortUri = URI.create("$baseUrl/meldekort/motta")
 
-    private val client = java.net.http.HttpClient.newBuilder()
-        .connectTimeout(connectTimeout.toJavaDuration())
-        .followRedirects(java.net.http.HttpClient.Redirect.NEVER)
-        .build()
-
-    private val logger = KotlinLogging.logger {}
-
-    override suspend fun sendMeldekort(meldekort: BrukersMeldekort): Either<SaksbehandlingApiError, Unit> {
-        val jsonPayload = serialize(meldekort.toSaksbehandlingMeldekortDTO())
-
-        return Either.catch {
-            logger.info { "Sender kall til saksbehandling med id ${meldekort.id}" }
-
-            val request = createRequest(token = getToken(), jsonPayload = jsonPayload)
-            val httpResponse = client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
-
-            val responseBody = httpResponse.body()
-            val status = httpResponse.statusCode()
-            if (status != 200) {
-                val melding = "Feil ved kall til tiltakspenger-saksbehandling-api - Status $status - Id: ${meldekort.id}"
-                logger.error { "$melding - Se sikkerlogg for detaljer." }
-                Sikkerlogg.error { "$melding - Response: $responseBody - Payload: $jsonPayload" }
-                return SaksbehandlingApiError.left()
-            }
-            Unit
-        }.mapLeft {
-            // Either.catch slipper igjennom CancellationException som er ønskelig.
-            logger.error(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. Se sikkerlogg for detaljer." }
-            Sikkerlogg.error(it) { "Feil ved kall til tiltakspenger-saksbehandling-api.. jsonPayload: $jsonPayload, uri: $saksbehandlingApiMeldekortUri" }
-            SaksbehandlingApiError
-        }
-    }
-
-    private fun createRequest(
-        token: AccessToken,
-        jsonPayload: String,
-    ): HttpRequest? {
-        return HttpRequest.newBuilder()
-            .uri(saksbehandlingApiMeldekortUri)
-            .timeout(timeout.toJavaDuration())
-            .header("Authorization", "Bearer ${token.token}")
-            .header("Accept", "application/json")
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-            .build()
+    override suspend fun sendMeldekort(meldekort: BrukersMeldekort): Either<HttpKlientError, Unit> {
+        return httpKlient.postJsonUtenSvar(
+            uri = saksbehandlingApiMeldekortUri,
+            body = SerialisertJson(serialize(meldekort.toSaksbehandlingMeldekortDTO())),
+            godta = Statusregel.Eksakt(200),
+        ).map { }
     }
 }

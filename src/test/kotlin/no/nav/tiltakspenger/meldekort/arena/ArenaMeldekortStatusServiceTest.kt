@@ -134,6 +134,5 @@ class ArenaMeldekortStatusServiceTest {
     fun `arena-datatyper kan konstrueres`() {
         ArenaFravaerType(fraDato = 1.januar(2025), tilDato = 2.januar(2025), type = "ORDINAER") shouldBe
             ArenaFravaerType(fraDato = 1.januar(2025), tilDato = 2.januar(2025), type = "ORDINAER")
-        ArenaMeldekortServiceFeil.HttpFeil(status = 500).status shouldBe 500
     }
 }

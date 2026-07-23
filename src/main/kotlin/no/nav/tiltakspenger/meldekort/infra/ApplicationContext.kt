@@ -3,12 +3,15 @@ package no.nav.tiltakspenger.meldekort.infra
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.kafka.Producer
 import no.nav.tiltakspenger.libs.kafka.config.KafkaConfigImpl
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
+import no.nav.tiltakspenger.libs.logging.infra.KotlinLoggingSikkerlogg
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.libs.texas.client.TexasHttpClient
+import no.nav.tiltakspenger.libs.texas.client.TexasSystemTokenProvider
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatusService
 import no.nav.tiltakspenger.meldekort.arena.infra.ArenaMeldekortHttpClient
@@ -212,18 +215,25 @@ open class ApplicationContext(val clock: Clock) {
             landingssideRepo = landingssideRepo,
             arenaMeldekortClient = arenaMeldekortClient,
             redirectUrl = Configuration.meldekortFrontendUrl,
+            sikkerlogg = sikkerlogg,
+        )
+    }
+
+    open val sikkerlogg: Sikkerlogg by lazy {
+        KotlinLoggingSikkerlogg(
+            appNavn = Configuration.naisAppName,
+            gcpProsjektId = Configuration.gcpTeamProjectId,
         )
     }
 
     open val saksbehandlingClient: SaksbehandlingClient by lazy {
         SaksbehandlingClientImpl(
             baseUrl = Configuration.saksbehandlingApiUrl,
-            getToken = {
-                texasClient.getSystemToken(
-                    Configuration.saksbehandlingApiAudience,
-                    IdentityProvider.AZUREAD,
-                )
-            },
+            clock = clock,
+            authTokenProvider = TexasSystemTokenProvider(
+                texasClient = texasClient,
+                audienceTarget = Configuration.saksbehandlingApiAudience,
+            ),
         )
     }
 
@@ -232,6 +242,7 @@ open class ApplicationContext(val clock: Clock) {
             sendMeldekortRepo = sendMeldekortRepo,
             saksbehandlingClient = saksbehandlingClient,
             clock = clock,
+            sikkerlogg = sikkerlogg,
         )
     }
 
@@ -241,6 +252,7 @@ open class ApplicationContext(val clock: Clock) {
             pdfgenClient = pdfgenClient,
             dokarkivClient = dokarkivClient,
             clock = clock,
+            sikkerlogg = sikkerlogg,
         )
     }
 
@@ -267,18 +279,18 @@ open class ApplicationContext(val clock: Clock) {
     open val dokarkivClient: DokarkivClient by lazy {
         DokarkivClientImpl(
             baseUrl = Configuration.dokarkivUrl,
-            getToken = {
-                texasClient.getSystemToken(
-                    Configuration.dokarkivScope,
-                    IdentityProvider.AZUREAD,
-                )
-            },
+            clock = clock,
+            authTokenProvider = TexasSystemTokenProvider(
+                texasClient = texasClient,
+                audienceTarget = Configuration.dokarkivScope,
+            ),
         )
     }
 
     open val pdfgenClient: PdfgenClient by lazy {
         PdfgenClientImpl(
             isLocalOrDev = !Configuration.isProd(),
+            clock = clock,
         )
     }
 
@@ -298,12 +310,11 @@ open class ApplicationContext(val clock: Clock) {
     open val arenaMeldekortClient: ArenaMeldekortClient by lazy {
         ArenaMeldekortHttpClient(
             baseUrl = Configuration.arenaMeldekortServiceUrl,
-            getToken = {
-                texasClient.getSystemToken(
-                    Configuration.arenaMeldekortServiceAudience,
-                    IdentityProvider.AZUREAD,
-                )
-            },
+            clock = clock,
+            authTokenProvider = TexasSystemTokenProvider(
+                texasClient = texasClient,
+                audienceTarget = Configuration.arenaMeldekortServiceAudience,
+            ),
         )
     }
 
@@ -311,6 +322,7 @@ open class ApplicationContext(val clock: Clock) {
         ArenaMeldekortStatusService(
             arenaMeldekortClient = arenaMeldekortClient,
             sakRepo = sakRepo,
+            sikkerlogg = sikkerlogg,
         )
     }
 

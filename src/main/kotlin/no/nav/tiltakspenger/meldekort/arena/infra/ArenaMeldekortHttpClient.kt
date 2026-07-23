@@ -1,25 +1,25 @@
 package no.nav.tiltakspenger.meldekort.arena.infra
 
 import arrow.core.Either
-import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.right
-import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.accept
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import no.nav.tiltakspenger.libs.common.AccessToken
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
+import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlient
+import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlientConfig
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.AuthTokenProvider
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.Header
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.KlientAuth
+import no.nav.tiltakspenger.libs.httpklient.infra.retry.Retry
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.HttpTransport
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.JavaHttpTransport
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortOversikt
-import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortServiceFeil
-import no.nav.tiltakspenger.meldekort.infra.httpClientWithRetry
+import java.net.URI
+import java.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Klient for å hente Arena-meldekort for en bruker fra meldekortservice.
@@ -29,72 +29,59 @@ import no.nav.tiltakspenger.meldekort.infra.httpClientWithRetry
  * API-spec: https://meldekortservice-q2.dev-fss-pub.nais.io/meldekortservice/internal/apidocs/index.html (samme sti på q1- og prod-ingressen)
  * Slack: #team-meldeplikt
  * Teamkatalog: https://teamkatalogen.nav.no/team/f0752a93-3728-4f63-bd56-053c1fe99a6e
+ *
+ * Timeouten på 60 sekunder er arvet fra den gamle ktor-klienten; meldekortservice ligger i FSS og kan være treg.
+ * Retryen replikerer den gamle ktor-klienten (`httpClientWithRetry`): fire forsøk totalt med konstant 100 ms delay.
+ *
+ * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class ArenaMeldekortHttpClient(
     private val baseUrl: String,
-    private val getToken: suspend () -> AccessToken,
-    private val httpClient: HttpClient = httpClientWithRetry(),
+    clock: Clock,
+    authTokenProvider: AuthTokenProvider,
+    connectTimeout: Duration = 5.seconds,
+    timeout: Duration = 60.seconds,
+    transport: HttpTransport = JavaHttpTransport(connectTimeout = connectTimeout),
 ) : ArenaMeldekortClient {
-    private val logger = KotlinLogging.logger {}
+    private val httpKlient: HttpKlient = HttpKlient(
+        clock = clock,
+        config = HttpKlientConfig(
+            timeout = timeout,
+            auth = KlientAuth.System(authTokenProvider),
+            retry = Retry.Fast(maksForsøk = 4, delay = 100.milliseconds, retryIkkeIdempotente = true),
+        ),
+        transport = transport,
+    )
 
-    // Returnerer null.right dersom det ikke finnes meldekort for brukeren i arena
-    override suspend fun hentMeldekort(fnr: Fnr): Either<ArenaMeldekortServiceFeil, ArenaMeldekortOversikt?> {
-        val response = request(fnr, "meldekortservice/api/v2/meldekort").getOrElse {
-            return it.left()
-        }
-
-        val status = response.status
-
-        if (status == HttpStatusCode.OK) {
-            return response.body<ArenaMeldekortResponse>().tilArenaMeldekortOversikt().right()
-        }
-
-        if (status == HttpStatusCode.NoContent) {
-            return null.right()
-        }
-
-        logger.warn { "Feil-response fra meldekortservice/meldekort - $status" }
-        return ArenaMeldekortServiceFeil.HttpFeil(status.value).left()
+    /** `Right(null)` betyr at brukeren ikke har meldekort i Arena (meldekortservice svarer `204`). */
+    override suspend fun hentMeldekort(fnr: Fnr): Either<HttpKlientError, ArenaMeldekortOversikt?> {
+        return httpKlient.getJsonEllerNull<ArenaMeldekortResponse>(
+            uri = URI.create("$baseUrl/meldekortservice/api/v2/meldekort"),
+            nullVedStatus = setOf(204),
+            headere = listOf(identHeader(fnr)),
+        ).map { it.body?.tilArenaMeldekortOversikt() }
     }
 
+    /**
+     * meldekortservice svarer med feilstatus (typisk `503`) på historikk-oppslag når brukeren ikke finnes.
+     * Vi kaller aldri denne uten å ha kalt [hentMeldekort] først, så alle feilstatuser tolkes som «brukeren finnes ikke» og gir `Right(null)` — kun transportfeil o.l. gir Left.
+     */
     override suspend fun hentHistoriskeMeldekort(
         fnr: Fnr,
         antallMeldeperioder: Int,
-    ): Either<ArenaMeldekortServiceFeil, ArenaMeldekortOversikt?> {
-        val response = request(
-            fnr,
-            "meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder",
-        ).getOrElse {
-            return it.left()
-        }
-
-        val status = response.status
-
-        if (status == HttpStatusCode.OK) {
-            return response.body<ArenaMeldekortResponse>().tilArenaMeldekortOversikt().right()
-        }
-
-        // historiskemeldekort returnerer 503-feil dersom brukeren ikke finnes.
-        // Vi kaller aldri denne uten å kalle /meldekort først, så velger å ikke bry oss om feilhåndtering her
-        logger.info { "Feil-response fra meldekortservice/historiskemeldekort (dette betyr antagelig at brukeren ikke finnes) - $status" }
-        return null.right()
+    ): Either<HttpKlientError, ArenaMeldekortOversikt?> {
+        return httpKlient.getJsonEllerNull<ArenaMeldekortResponse>(
+            uri = URI.create("$baseUrl/meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=$antallMeldeperioder"),
+            nullVedStatus = setOf(204),
+            headere = listOf(identHeader(fnr)),
+        ).fold(
+            ifRight = { it.body?.tilArenaMeldekortOversikt().right() },
+            ifLeft = { feil ->
+                if (feil is HttpKlientError.UventetStatus) null.right() else feil.left()
+            },
+        )
     }
 
-    private suspend fun request(
-        fnr: Fnr,
-        path: String,
-    ): Either<ArenaMeldekortServiceFeil, HttpResponse> {
-        return Either.catch {
-            val token = getToken()
-
-            httpClient.get("$baseUrl/$path") {
-                accept(ContentType.Application.Json)
-                bearerAuth(token.token)
-                header("ident", fnr.verdi)
-            }.right()
-        }.getOrElse {
-            logger.warn(it) { "Feil ved request til arena meldekortservice - ${it.message}" }
-            ArenaMeldekortServiceFeil.UkjentFeil.left()
-        }
-    }
+    /** Fnr sendes som header og markeres sensitiv slik at den maskeres i rå request-strengen (sikkerlogg). */
+    private fun identHeader(fnr: Fnr) = Header("ident", fnr.verdi, sensitiv = true)
 }

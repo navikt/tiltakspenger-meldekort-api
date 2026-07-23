@@ -2,30 +2,29 @@ package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import arrow.core.Either
 import arrow.core.flatMap
-import arrow.core.left
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.accept
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
-import no.nav.tiltakspenger.libs.logging.Sikkerlogg
+import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
+import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlient
+import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlientConfig
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.NavHeadere
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.SerialisertJson
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.Statusregel
+import no.nav.tiltakspenger.libs.httpklient.infra.retry.Retry
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.HttpTransport
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.JavaHttpTransport
 import no.nav.tiltakspenger.meldekort.infra.Configuration
-import no.nav.tiltakspenger.meldekort.infra.httpClientWithRetry
-import no.nav.tiltakspenger.meldekort.journalføring.KunneIkkeGenererePdf
 import no.nav.tiltakspenger.meldekort.journalføring.PdfA
 import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
 import no.nav.tiltakspenger.meldekort.journalføring.PdfgenClient
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
+import java.net.URI
+import java.time.Clock
 import java.util.UUID
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTimedValue
 
 const val PDFGEN_PATH = "api/v1/genpdf/tpts"
@@ -38,95 +37,77 @@ const val PDFGEN_PATH = "api/v1/genpdf/tpts"
  * API-spec: -
  * Slack: #tiltakspenger-værsågod (eget team)
  * Teamkatalog: https://teamkatalogen.nav.no/team/15bca3d2-2584-4167-85ba-faab1f1cfb53
+ *
+ * pdfgen har ingen autentisering, derfor ingen auth i klienten.
+ * Retryen replikerer den gamle ktor-klienten (`httpClientWithRetry`): fire forsøk totalt med konstant 100 ms delay.
+ *
+ * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class PdfgenClientImpl(
     private val baseUrl: String = Configuration.pdfgenUrl,
     private val pdfgenrsBaseUrl: String = Configuration.pdfgenrsUrl,
-    private val client: HttpClient = httpClientWithRetry(timeout = 10L),
     private val isLocalOrDev: Boolean,
+    clock: Clock,
+    connectTimeout: Duration = 5.seconds,
+    timeout: Duration = 10.seconds,
+    transport: HttpTransport = JavaHttpTransport(connectTimeout = connectTimeout),
 ) : PdfgenClient {
     private val log = KotlinLogging.logger {}
 
+    private val httpKlient: HttpKlient = HttpKlient(
+        clock = clock,
+        config = HttpKlientConfig(
+            timeout = timeout,
+            retry = Retry.Fast(maksForsøk = 4, delay = 100.milliseconds, retryIkkeIdempotente = true),
+        ),
+        transport = transport,
+    )
+
     override suspend fun genererMeldekortPdf(
         meldekort: BrukersMeldekort,
-        errorContext: String,
-    ): Either<KunneIkkeGenererePdf, Pair<PdfOgJson, PdfOgJson?>> {
-        val pdfgenBaseUrl = "$baseUrl/$PDFGEN_PATH/meldekort"
-        val pdfgenUri = if (meldekort.locale == "en") {
-            "$pdfgenBaseUrl-en"
-        } else {
-            pdfgenBaseUrl
-        }
-
-        val pdfgenrsBaseUrl = "$pdfgenrsBaseUrl/$PDFGEN_PATH/meldekort"
-        val pdfgenrsUri = if (meldekort.locale == "en") {
-            "$pdfgenrsBaseUrl-en"
-        } else {
-            pdfgenrsBaseUrl
-        }
-
-        return if (isLocalOrDev) {
-            runParallel(
-                jsonPayload = meldekort.toDTO(),
-                errorContext = errorContext,
-                pdfgenUri = pdfgenUri,
-                pdfgenrsUri = pdfgenrsUri,
-            )
-        } else {
-            pdfgenRequest(
-                uri = pdfgenUri,
-                jsonPayload = meldekort.toDTO(),
-                errorContext = errorContext,
-            ).map {
-                it to null
-            }
-        }
+    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>> {
+        return generer(meldekort, path = "meldekort")
     }
 
     override suspend fun genererKorrigertMeldekortPdf(
         meldekort: BrukersMeldekort,
-        errorContext: String,
-    ): Either<KunneIkkeGenererePdf, Pair<PdfOgJson, PdfOgJson?>> {
-        val base = "$baseUrl/$PDFGEN_PATH/meldekort-korrigert"
-        val uri = if (meldekort.locale == "en") "$base-en" else base
-        val pdfgenrsBase = "$pdfgenrsBaseUrl/$PDFGEN_PATH/meldekort-korrigert"
-        val pdfgenrsUri = if (meldekort.locale == "en") "$pdfgenrsBase-en" else pdfgenrsBase
+    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>> {
+        return generer(meldekort, path = "meldekort-korrigert")
+    }
+
+    private suspend fun generer(
+        meldekort: BrukersMeldekort,
+        path: String,
+    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>> {
+        val språksuffiks = if (meldekort.locale == "en") "-en" else ""
+        val pdfgenUri = URI.create("$baseUrl/$PDFGEN_PATH/$path$språksuffiks")
+        val pdfgenrsUri = URI.create("$pdfgenrsBaseUrl/$PDFGEN_PATH/$path$språksuffiks")
+        val jsonPayload = meldekort.toDTO()
 
         return if (isLocalOrDev) {
-            runParallel(
-                jsonPayload = meldekort.toDTO(),
-                errorContext = errorContext,
-                pdfgenUri = uri,
-                pdfgenrsUri = pdfgenrsUri,
-            )
+            runParallel(jsonPayload = jsonPayload, pdfgenUri = pdfgenUri, pdfgenrsUri = pdfgenrsUri)
         } else {
-            pdfgenRequest(
-                uri = uri,
-                jsonPayload = meldekort.toDTO(),
-                errorContext = errorContext,
-            ).map {
-                it to null
-            }
+            pdfgenRequest(uri = pdfgenUri, jsonPayload = jsonPayload).map { it to null }
         }
     }
 
     private suspend fun runParallel(
         jsonPayload: String,
-        errorContext: String,
-        pdfgenUri: String,
-        pdfgenrsUri: String,
-    ): Either<KunneIkkeGenererePdf, Pair<PdfOgJson, PdfOgJson?>> {
+        pdfgenUri: URI,
+        pdfgenrsUri: URI,
+    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>> {
         return coroutineScope {
             val pdfgenDeferred = async {
-                measureTimedValue { pdfgenRequest(pdfgenUri, jsonPayload, errorContext) }
+                measureTimedValue { pdfgenRequest(pdfgenUri, jsonPayload) }
             }
             val pdfgenrsDeferred = async {
-                measureTimedValue { pdfgenRequest(pdfgenrsUri, jsonPayload, errorContext) }
+                measureTimedValue { pdfgenRequest(pdfgenrsUri, jsonPayload) }
             }
 
             val (pdfgenResult, pdfgenDuration) = pdfgenDeferred.await()
             val (pdfgenrsResult, pdfgenrsDuration) = pdfgenrsDeferred.await()
 
+            // Midlertidig sammenlikningslogg mens pdfgenrs verifiseres mot pdfgen (kjører kun lokalt/dev); fjernes sammen med dobbeltkjøringen.
             log.info { "pdfgen brukte $pdfgenDuration, pdfgenrs brukte $pdfgenrsDuration" }
 
             pdfgenResult.flatMap { pdfgen ->
@@ -138,32 +119,14 @@ class PdfgenClientImpl(
     }
 
     private suspend fun pdfgenRequest(
-        uri: String,
+        uri: URI,
         jsonPayload: String,
-        errorContext: String,
-    ): Either<KunneIkkeGenererePdf, PdfOgJson> {
-        return withContext(Dispatchers.IO) {
-            Either.catch {
-                val httpResponse = client.post(uri) {
-                    accept(ContentType.Application.Json)
-                    header("X-Correlation-ID", UUID.randomUUID())
-                    contentType(ContentType.Application.Json)
-                    setBody(jsonPayload)
-                }
-                val status = httpResponse.status
-                val jsonResponse = httpResponse.body<String>()
-                if (status != HttpStatusCode.OK) {
-                    log.error { "Feil ved kall til pdfgen. $errorContext. Status: $status. uri: $uri. Se sikkerlogg for detaljer." }
-                    Sikkerlogg.error { "Feil ved kall til pdfgen. $errorContext. uri: $uri. jsonResponse: $jsonResponse. jsonPayload: $jsonPayload." }
-                    return@withContext KunneIkkeGenererePdf.left()
-                }
-                PdfOgJson(PdfA(httpResponse.body()), jsonPayload)
-            }.mapLeft {
-                // Either.catch slipper igjennom CancellationException som er ønskelig.
-                log.error(it) { "Feil ved kall til pdfgen. $errorContext. Se sikkerlogg for detaljer." }
-                Sikkerlogg.error(it) { "Feil ved kall til pdfgen. $errorContext. jsonPayload: $jsonPayload, uri: $uri" }
-                KunneIkkeGenererePdf
-            }
-        }
+    ): Either<HttpKlientError, PdfOgJson> {
+        return httpKlient.postJsonMotPdf(
+            uri = uri,
+            body = SerialisertJson(jsonPayload),
+            headere = listOf(NavHeadere.xCorrelationId(UUID.randomUUID().toString())),
+            godta = Statusregel.Eksakt(200),
+        ).map { PdfOgJson(PdfA(it.body), jsonPayload) }
     }
 }

@@ -1,27 +1,35 @@
 package no.nav.tiltakspenger.meldekort.journalføring.infra
 
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.accept
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.header
-import io.ktor.client.request.parameter
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.http.isSuccess
-import no.nav.tiltakspenger.libs.common.AccessToken
+import arrow.core.Either
+import arrow.core.flatMap
+import arrow.core.left
+import arrow.core.right
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
+import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
+import no.nav.tiltakspenger.libs.httpklient.harStatus
+import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlient
+import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlientConfig
+import no.nav.tiltakspenger.libs.httpklient.infra.feil.bodySomJson
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.AuthTokenProvider
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.KlientAuth
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.NavHeadere
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.SerialisertJson
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.Statusregel
+import no.nav.tiltakspenger.libs.httpklient.infra.retry.Retry
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.HttpTransport
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.JavaHttpTransport
 import no.nav.tiltakspenger.libs.json.objectMapper
-import no.nav.tiltakspenger.meldekort.infra.httpClientWithRetry
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.journalføring.DokarkivClient
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
-import org.slf4j.LoggerFactory
+import java.net.URI
 import java.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 const val INDIVIDSTONAD = "IND"
 const val DOKARKIV_PATH = "rest/journalpostapi/v1/journalpost"
@@ -34,13 +42,37 @@ const val DOKARKIV_PATH = "rest/journalpostapi/v1/journalpost"
  * API-spec: https://dokarkiv.dev.intern.nav.no/swagger-ui/index.html
  * Slack: #team-dokumentløsninger (https://nav-it.slack.com/archives/C6W9E5GPJ)
  * Teamkatalog: https://teamkatalogen.nav.no/team/f3388fcd-898e-40da-8d02-0bf1e3a79120
+ *
+ * `409 Conflict` er et domeneutfall (meldekortet er allerede journalført, dedup på eksternReferanseId) med samme bodyform som `201`: den utledes fra feiltypen med [harStatus]/[bodySomJson] i stedet for å stå i statusregelen.
+ * Dedupen er også grunnen til at [Retry.Fast.retryIkkeIdempotente] er trygt her: et nytt forsøk etter et uvisst utfall gir i verste fall en `409` som behandles som suksess.
+ *
+ * Klienten logger ikke feil selv; feillogging skjer én gang i [no.nav.tiltakspenger.meldekort.journalføring.JournalførMeldekortService].
+ * Unntaket er én error-linje når dokarkiv oppretter journalposten uten å ferdigstille den — kallet er da en suksess (ingen Left å logge hos kalleren), men tilstanden krever manuell oppfølging.
+ *
+ * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class DokarkivClientImpl(
-    private val client: HttpClient = httpClientWithRetry(timeout = 30L),
-    private val baseUrl: String,
-    private val getToken: suspend () -> AccessToken,
+    baseUrl: String,
+    clock: Clock,
+    authTokenProvider: AuthTokenProvider,
+    connectTimeout: Duration = 5.seconds,
+    timeout: Duration = 30.seconds,
+    transport: HttpTransport = JavaHttpTransport(connectTimeout = connectTimeout),
 ) : DokarkivClient {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = KotlinLogging.logger {}
+
+    private val httpKlient: HttpKlient = HttpKlient(
+        clock = clock,
+        config = HttpKlientConfig(
+            timeout = timeout,
+            auth = KlientAuth.System(authTokenProvider),
+            // Paritet med den gamle ktor-klienten (`httpClientWithRetry`): fire forsøk totalt med konstant 100 ms delay.
+            retry = Retry.Fast(maksForsøk = 4, delay = 100.milliseconds, retryIkkeIdempotente = true),
+        ),
+        transport = transport,
+    )
+
+    private val opprettJournalpostUri = URI.create("$baseUrl/$DOKARKIV_PATH")
 
     override suspend fun journalførMeldekort(
         meldekort: BrukersMeldekort,
@@ -48,43 +80,42 @@ class DokarkivClientImpl(
         callId: CorrelationId,
         clock: Clock,
         pdfgenrs: Boolean,
-    ): JournalpostId {
+    ): Either<HttpKlientError, JournalpostId> {
         val request = meldekort.toJournalpostDokument(pdfOgJson = pdfOgJson, clock = clock, pdfgenrs = pdfgenrs)
-        val meldekortId = meldekort.id
 
-        try {
-            log.info("Henter credentials for å arkivere i Dokarkiv")
-            val token = getToken().token
-            log.info("Hent credentials til arkiv OK. Starter journalføring av søknad")
-            val res = client.post("$baseUrl/$DOKARKIV_PATH") {
-                accept(ContentType.Application.Json)
-                header("X-Correlation-ID", INDIVIDSTONAD)
-                header("Nav-Callid", callId)
-                parameter("forsoekFerdigstill", request.kanFerdigstilleAutomatisk())
-                bearerAuth(token)
-                contentType(ContentType.Application.Json)
-                setBody(objectMapper.writeValueAsString(request))
-            }
-            val httpResponse = res.call.response
+        return httpKlient.postJson<DokarkivResponse>(
+            uri = URI.create("$opprettJournalpostUri?forsoekFerdigstill=${request.kanFerdigstilleAutomatisk()}"),
+            body = SerialisertJson(objectMapper.writeValueAsString(request)),
+            headere = listOf(
+                NavHeadere.xCorrelationId(callId.value),
+                // Dokarkiv bruker «Nav-Callid»-varianten (uten bindestrek før Id); navCallId ville gitt det andre headernavnet «Nav-Call-Id».
+                NavHeadere.navCallid(callId.value),
+            ),
+            godta = Statusregel.Eksakt(201),
+        ).fold(
+            ifRight = { respons ->
+                respons.body.verifiserFerdigstilt(request.kanFerdigstilleAutomatisk()).right()
+            },
+            ifLeft = { feil ->
+                when {
+                    // Allerede journalført (dedup): samme bodyform som 201, utledes fra feiltypen.
+                    feil.harStatus(409) && feil is HttpKlientError.UventetStatus ->
+                        feil.bodySomJson<DokarkivResponse>()
+                            .map { it.journalpostId }
 
-            if (!httpResponse.status.isSuccess() && httpResponse.status != HttpStatusCode.Conflict) {
-                throw IllegalStateException("Feil ved journalføring av meldekort $meldekortId. Status: ${httpResponse.status}")
-            }
+                    else -> feil.left()
+                }
+            },
+        )
+    }
 
-            val responseBody = res.call.body<DokarkivResponse>()
-            if (httpResponse.status == HttpStatusCode.Conflict) {
-                log.warn("Meldekort med id $meldekortId har allerede blitt journalført (409 Conflict) med journalpostId ${responseBody.journalpostId}")
-            } else {
-                log.info("Vi har opprettet journalpost med id: ${responseBody.journalpostId} for meldekort $meldekortId")
-            }
-
-            if (request.kanFerdigstilleAutomatisk() && !responseBody.journalpostferdigstilt) {
-                log.error("Journalpost ${responseBody.journalpostId} for meldekort $meldekortId ble ikke ferdigstilt")
-            }
-            return responseBody.journalpostId
-        } catch (throwable: Throwable) {
-            throw RuntimeException("DokarkivClient: Fikk en ukjent exception.", throwable)
+    private fun DokarkivResponse.verifiserFerdigstilt(kanFerdigstilleAutomatisk: Boolean): JournalpostId {
+        if (kanFerdigstilleAutomatisk && !journalpostferdigstilt) {
+            // Suksess uten Left, så kalleren har ingen feil å logge — dette driftssignalet (manuell ferdigstilling i Gosys) logges derfor her.
+            log.error { "Dokarkiv opprettet journalpost $journalpostId uten å ferdigstille den. Se sikkerlogg for detaljer." }
+            Sikkerlogg.error { "Dokarkiv opprettet journalpost $journalpostId uten å ferdigstille den." }
         }
+        return journalpostId
     }
 
     data class DokarkivResponse(

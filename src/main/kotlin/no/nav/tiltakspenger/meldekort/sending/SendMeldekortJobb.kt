@@ -4,6 +4,8 @@ import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.httpklient.loggFeil
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.jobb.JobbResultat
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
 import java.time.Clock
@@ -13,6 +15,7 @@ class SendMeldekortJobb(
     private val sendMeldekortRepo: SendMeldekortRepo,
     private val saksbehandlingClient: SaksbehandlingClient,
     private val clock: Clock,
+    private val sikkerlogg: Sikkerlogg = Sikkerlogg,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -28,7 +31,7 @@ class SendMeldekortJobb(
 
                 Either.catch {
                     saksbehandlingClient.sendMeldekort(meldekort).getOrElse {
-                        logger.warn { "Feil under sending av meldekort med id ${meldekort.id} til SaksbehandlingApi" }
+                        it.loggFeil(logger, "sending av meldekort til saksbehandling-api", "meldekortId: ${meldekort.id}", sikkerlogg)
                         return@forEach
                     }
                     logger.info { "Meldekort sendt til saksbehandling: ${meldekort.id}" }

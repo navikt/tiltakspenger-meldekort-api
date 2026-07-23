@@ -1,16 +1,12 @@
 package no.nav.tiltakspenger.meldekort.journalføring.infra
 
-import arrow.core.left
 import io.kotest.matchers.shouldBe
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.test.runTest
-import no.nav.tiltakspenger.meldekort.infra.httpClientGeneric
-import no.nav.tiltakspenger.meldekort.journalføring.KunneIkkeGenererePdf
+import no.nav.tiltakspenger.libs.common.fixedClock
+import no.nav.tiltakspenger.libs.common.getOrFail
+import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.FakeHttpTransport
 import no.nav.tiltakspenger.meldekort.journalføring.PdfA
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
@@ -19,64 +15,85 @@ import org.junit.jupiter.api.Test
 class PdfgenClientTest {
     private val pdfContent = "dette er innholdet i pdf vi får tilbake fra pdfGen".toByteArray()
 
-    private fun createMockEngine(content: ByteArray, status: HttpStatusCode, contentType: ContentType): MockEngine {
-        return MockEngine {
-            respond(
-                content = content,
-                status = status,
-                headers = headersOf(HttpHeaders.ContentType, contentType.toString()),
-            )
-        }
-    }
+    private fun klient(transport: FakeHttpTransport, isLocalOrDev: Boolean = true) = PdfgenClientImpl(
+        baseUrl = "http://pdfgen",
+        pdfgenrsBaseUrl = "http://pdfgenrs",
+        isLocalOrDev = isLocalOrDev,
+        clock = fixedClock,
+        transport = transport,
+    )
 
-    private fun createPdfgenClient(mockEngine: MockEngine): PdfgenClientImpl {
-        val client = httpClientGeneric(mockEngine)
-        return PdfgenClientImpl(client = client, isLocalOrDev = true)
-    }
+    private fun FakeHttpTransport.leggIKøPdf() = leggIKøBytes(pdfContent, contentType = "application/pdf")
 
     @Nested
     inner class GenererMeldekortPdf {
         @Test
-        fun `får tilbake en pdf hvis alt går ok`() = runTest {
-            val mockEngine = createMockEngine(pdfContent, HttpStatusCode.OK, ContentType.Application.Pdf)
-            val pdfgenClient = createPdfgenClient(mockEngine)
+        fun `lokalt eller i dev genereres pdf fra begge pdfgen-appene`() = runTest {
+            val transport = FakeHttpTransport()
+            transport.leggIKøPdf()
+            transport.leggIKøPdf()
 
-            val resp = pdfgenClient.genererMeldekortPdf(ObjectMother.meldekort())
-            val pdf = resp.getOrNull()?.first?.pdf
+            val resp = klient(transport).genererMeldekortPdf(ObjectMother.meldekort()).getOrFail()
 
-            pdf?.toBase64() shouldBe PdfA(pdfContent).toBase64()
-            resp.getOrNull()!!
+            resp.first.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
+            resp.second!!.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
+            transport.mottatteKall.map { it.uri.toString() }.toSet() shouldBe setOf(
+                "http://pdfgen/api/v1/genpdf/tpts/meldekort",
+                "http://pdfgenrs/api/v1/genpdf/tpts/meldekort",
+            )
         }
 
         @Test
-        fun `kaster en feil hvis generering av pdf ikke går ok`() = runTest {
-            val mockEngine = createMockEngine(ByteArray(0), HttpStatusCode.NotFound, ContentType.Application.Json)
-            val pdfgenClient = createPdfgenClient(mockEngine)
+        fun `i prod genereres pdf kun fra pdfgen`() = runTest {
+            val transport = FakeHttpTransport()
+            transport.leggIKøPdf()
 
-            pdfgenClient.genererMeldekortPdf(ObjectMother.meldekort()) shouldBe KunneIkkeGenererePdf.left()
+            val resp = klient(transport, isLocalOrDev = false).genererMeldekortPdf(ObjectMother.meldekort()).getOrFail()
+
+            resp.first.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
+            resp.second shouldBe null
+            transport.mottatteKall.single().uri.toString() shouldBe "http://pdfgen/api/v1/genpdf/tpts/meldekort"
+        }
+
+        @Test
+        fun `feilstatus gir UventetStatus`() = runTest {
+            val transport = FakeHttpTransport()
+            transport.leggIKøStatus(404, body = "ikke funnet")
+
+            val feil = klient(transport, isLocalOrDev = false).genererMeldekortPdf(ObjectMother.meldekort())
+                .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
+                .value
+
+            feil.shouldBeInstanceOf<HttpKlientError.UventetStatus>().statusCode shouldBe 404
         }
     }
 
     @Nested
     inner class GenererKorrigertMeldekortPdf {
         @Test
-        fun `får tilbake en pdf hvis alt går ok`() = runTest {
-            val mockEngine = createMockEngine(pdfContent, HttpStatusCode.OK, ContentType.Application.Pdf)
-            val pdfgenClient = createPdfgenClient(mockEngine)
+        fun `bruker korrigert-malen og engelsk variant for engelsk locale`() = runTest {
+            val transport = FakeHttpTransport()
+            transport.leggIKøPdf()
 
-            val resp = pdfgenClient.genererKorrigertMeldekortPdf(ObjectMother.meldekort(korrigering = true))
-            val pdf = resp.getOrNull()?.first?.pdf
+            val resp = klient(transport, isLocalOrDev = false)
+                .genererKorrigertMeldekortPdf(ObjectMother.meldekort(korrigering = true, locale = "en"))
+                .getOrFail()
 
-            pdf?.toBase64() shouldBe PdfA(pdfContent).toBase64()
-            resp.getOrNull()!!
+            resp.first.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
+            transport.mottatteKall.single().uri.toString() shouldBe "http://pdfgen/api/v1/genpdf/tpts/meldekort-korrigert-en"
         }
 
         @Test
-        fun `kaster en feil hvis generering av pdf ikke går ok`() = runTest {
-            val mockEngine = createMockEngine(ByteArray(0), HttpStatusCode.NotFound, ContentType.Application.Json)
-            val pdfgenClient = createPdfgenClient(mockEngine)
+        fun `feilstatus gir UventetStatus`() = runTest {
+            val transport = FakeHttpTransport()
+            transport.leggIKøStatus(404, body = "ikke funnet")
 
-            pdfgenClient.genererKorrigertMeldekortPdf(ObjectMother.meldekort(korrigering = true)) shouldBe KunneIkkeGenererePdf.left()
+            val feil = klient(transport, isLocalOrDev = false)
+                .genererKorrigertMeldekortPdf(ObjectMother.meldekort(korrigering = true))
+                .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
+                .value
+
+            feil.shouldBeInstanceOf<HttpKlientError.UventetStatus>().statusCode shouldBe 404
         }
     }
 }

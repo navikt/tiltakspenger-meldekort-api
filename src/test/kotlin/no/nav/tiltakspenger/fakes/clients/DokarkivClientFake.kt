@@ -1,8 +1,11 @@
 package no.nav.tiltakspenger.fakes.clients
 
+import arrow.core.Either
+import arrow.core.right
 import no.nav.tiltakspenger.generators.JournalpostIdGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGeneratorSerial
 import no.nav.tiltakspenger.libs.common.CorrelationId
+import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
 import no.nav.tiltakspenger.meldekort.journalføring.DokarkivClient
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
@@ -21,9 +24,9 @@ class DokarkivClientFake(
         callId: CorrelationId,
         clock: Clock,
         pdfgenrs: Boolean,
-    ): JournalpostId {
+    ): Either<HttpKlientError, JournalpostId> {
         return journalpostIdGenerator.generer().also {
             log.info("Fake journalføring av meldekort ${meldekort.id}, returnerer journalpostId=$it")
-        }
+        }.right()
     }
 }

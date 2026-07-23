@@ -5,6 +5,8 @@ import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.CorrelationId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.httpklient.loggFeil
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.jobb.JobbResultat
 import java.time.Clock
 
@@ -13,6 +15,7 @@ class JournalførMeldekortService(
     private val pdfgenClient: PdfgenClient,
     private val dokarkivClient: DokarkivClient,
     private val clock: Clock,
+    private val sikkerlogg: Sikkerlogg = Sikkerlogg,
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -25,12 +28,19 @@ class JournalførMeldekortService(
 
                 log.info { "Journalfører meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
                 Either.catch {
+                    val kontekst = "Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}"
                     val pdfOgJson = if (meldekort.korrigering) {
                         pdfgenClient.genererKorrigertMeldekortPdf(meldekort = meldekort)
-                            .getOrElse { return@forEach }
+                            .getOrElse {
+                                it.loggFeil(log, "generering av korrigert meldekort-pdf", kontekst, sikkerlogg)
+                                return@forEach
+                            }
                     } else {
                         pdfgenClient.genererMeldekortPdf(meldekort = meldekort)
-                            .getOrElse { return@forEach }
+                            .getOrElse {
+                                it.loggFeil(log, "generering av meldekort-pdf", kontekst, sikkerlogg)
+                                return@forEach
+                            }
                     }
                     log.info { "Pdf generert for meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
                     val journalpostId = dokarkivClient.journalførMeldekort(
@@ -38,18 +48,24 @@ class JournalførMeldekortService(
                         pdfOgJson = pdfOgJson.first,
                         callId = CorrelationId.generate(),
                         clock = clock,
-                    )
+                    ).getOrElse {
+                        it.loggFeil(log, "journalføring av meldekort i dokarkiv", kontekst, sikkerlogg)
+                        return@forEach
+                    }
                     /*
                         TODO - fjern denne bolken, og returner kun én pdf når vi har verifisert at pdf-ene er like.
                      */
-                    pdfOgJson.second?.let {
+                    pdfOgJson.second?.let { pdfgenrsPdf ->
                         dokarkivClient.journalførMeldekort(
                             meldekort = meldekort,
-                            pdfOgJson = it,
+                            pdfOgJson = pdfgenrsPdf,
                             callId = CorrelationId.generate(),
                             clock = clock,
                             pdfgenrs = true,
-                        )
+                        ).getOrElse {
+                            it.loggFeil(log, "journalføring av pdfgenrs-meldekort i dokarkiv", kontekst, sikkerlogg)
+                            return@forEach
+                        }
                     }
 
                     log.info { "Meldekort journalført. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}. JournalpostId: $journalpostId" }

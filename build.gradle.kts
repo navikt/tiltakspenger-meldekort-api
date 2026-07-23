@@ -6,7 +6,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
 val ktorVersion = "3.4.3"
 val mockkVersion = "1.14.11"
-val felleslibVersion = "0.0.20260722143244"
+val felleslibVersion = "0.0.20260723155827"
 val kotestVersion = "6.2.2"
 val kotlinxCoroutinesVersion = "1.11.0"
 val tmsVarselBuilderVersion = "2.2.0"
@@ -77,6 +77,7 @@ dependencies {
     implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:texas:$felleslibVersion")
+    implementation("com.github.navikt.tiltakspenger-libs:httpklient-infrastruktur:$felleslibVersion")
     implementation("com.github.navikt.tiltakspenger-libs:ktor-common:$felleslibVersion")
 
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilderVersion")
@@ -89,10 +90,6 @@ dependencies {
     implementation("com.github.seratch:kotliquery:1.9.1")
 
     // Http
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache5:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation("io.ktor:ktor-http:$ktorVersion")
 
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
@@ -129,7 +126,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$kotlinxCoroutinesVersion")
 
-    testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
@@ -139,6 +135,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-postgresql:$testContainersVersion")
 
     testImplementation("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
+    testImplementation(testFixtures("com.github.navikt.tiltakspenger-libs:httpklient-infrastruktur:$felleslibVersion"))
     testImplementation("com.github.navikt.tiltakspenger-libs:ktor-test-common:$felleslibVersion")
     testImplementation("com.github.navikt.tiltakspenger-libs:persistering-test-common:$felleslibVersion")
 
@@ -165,6 +162,8 @@ kover {
                     classes(
                         "no.nav.tiltakspenger.meldekort.**.*PostgresRepo*",
                         "no.nav.tiltakspenger.meldekort.arena.**",
+                        "no.nav.tiltakspenger.meldekort.journalføring.infra.DokarkivClientImpl",
+                        "no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenClientImpl",
                         "no.nav.tiltakspenger.meldekort.bruker.**",
                         "no.nav.tiltakspenger.meldekort.landingsside.**",
                         "no.nav.tiltakspenger.meldekort.meldekortvedtak.**",

@@ -18,6 +18,7 @@ fun main() {
     val applicationContext = LokalApplicationContext(Clock.system(zoneIdOslo))
     start(
         log = log,
+        host = "127.0.0.1",
         isNais = false,
         applicationContext = applicationContext,
         // Dev-only endepunkter (f.eks. POST /dev/sak).

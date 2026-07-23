@@ -92,6 +92,8 @@ class FellesArkitekturKonsistTest {
                 "kotlin",
                 "no.nav.tiltakspenger.libs.common",
                 "no.nav.tiltakspenger.libs.dato",
+                "no.nav.tiltakspenger.libs.httpklient",
+                "no.nav.tiltakspenger.libs.logging",
                 "no.nav.tiltakspenger.libs.meldekort",
                 "no.nav.tiltakspenger.libs.periode",
                 "no.nav.tiltakspenger.libs.persistering.domene",
