@@ -1,25 +1,21 @@
 package no.nav.tiltakspenger.meldekort.arena.infra
 
 import arrow.core.right
-import com.github.tomakehurst.wiremock.WireMockServer
-import com.marcinziolo.kotlin.wiremock.contains
-import com.marcinziolo.kotlin.wiremock.equalTo
-import com.marcinziolo.kotlin.wiremock.get
-import com.marcinziolo.kotlin.wiremock.returns
-import com.marcinziolo.kotlin.wiremock.returnsJson
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
-import no.nav.tiltakspenger.libs.common.withWireMockServer
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
+import no.nav.tiltakspenger.libs.httpklient.infra.transport.FakeHttpTransport
+import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.testutils.testTokenProvider
 import org.junit.jupiter.api.Test
+import java.io.IOException
 import java.time.LocalDate
 
 /**
- * WireMock-test for [ArenaMeldekortHttpClient].
+ * Tester [ArenaMeldekortHttpClient] over [FakeHttpTransport]: hele klient-pipelinen kjører, kun nettverket byttes ut.
  *
  * Verifiserer HTTP-flyten mot arena meldekortservice:
  *  - 200 deserialiseres til [no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortOversikt].
@@ -30,6 +26,8 @@ import java.time.LocalDate
  */
 internal class ArenaMeldekortHttpClientTest {
     private val fnr = Fnr.fromString("12345678910")
+
+    private val baseUrl = "http://meldekortservice"
 
     private val okBody = """
         {
@@ -57,127 +55,95 @@ internal class ArenaMeldekortHttpClientTest {
         }
     """.trimIndent()
 
-    private fun WireMockServer.client() = ArenaMeldekortHttpClient(
-        baseUrl = baseUrl(),
+    private fun client(transport: FakeHttpTransport) = ArenaMeldekortHttpClient(
+        baseUrl = baseUrl,
         clock = fixedClock,
         authTokenProvider = testTokenProvider,
+        transport = transport,
     )
 
     @Test
-    fun `hentMeldekort - 200 deserialiseres og sender ident og Bearer-token`() {
-        withWireMockServer { wiremock ->
-            wiremock.get {
-                url equalTo "/meldekortservice/api/v2/meldekort"
-                headers contains "Authorization" equalTo "Bearer test-token"
-                headers contains "ident" equalTo fnr.verdi
-            } returnsJson {
-                statusCode = 200
-                body = okBody
-            }
+    fun `hentMeldekort - 200 deserialiseres og sender ident og Bearer-token`() = runTest {
+        val transport = FakeHttpTransport().apply { leggIKøJson(okBody) }
 
-            runTest {
-                val oversikt = wiremock.client().hentMeldekort(fnr).getOrNull()!!
-                oversikt.personId shouldBe 123L
-                oversikt.meldekortListe!!.single().fraDato shouldBe LocalDate.parse("2025-01-06")
-            }
-        }
+        val oversikt = client(transport).hentMeldekort(fnr).getOrNull()!!
+
+        oversikt.personId shouldBe 123L
+        oversikt.meldekortListe!!.single().fraDato shouldBe LocalDate.parse("2025-01-06")
+
+        val kall = transport.mottatteKall.single()
+        kall.metode shouldBe "GET"
+        kall.uri.toString() shouldBe "$baseUrl/meldekortservice/api/v2/meldekort"
+        kall.request.headers().firstValue("Authorization").get() shouldBe "Bearer test-token"
+        kall.request.headers().firstValue("ident").get() shouldBe fnr.verdi
     }
 
     @Test
-    fun `hentMeldekort - 204 gir null`() {
-        withWireMockServer { wiremock ->
-            wiremock.get {
-                url equalTo "/meldekortservice/api/v2/meldekort"
-            } returns {
-                statusCode = 204
-            }
+    fun `hentMeldekort - 204 gir null`() = runTest {
+        val transport = FakeHttpTransport().apply { leggIKøTomRespons(statusCode = 204) }
 
-            runTest {
-                wiremock.client().hentMeldekort(fnr) shouldBe null.right()
-            }
-        }
+        client(transport).hentMeldekort(fnr) shouldBe null.right()
     }
 
     @Test
-    fun `hentMeldekort - annen feilstatus gir UventetStatus`() {
-        withWireMockServer { wiremock ->
-            wiremock.get {
-                url equalTo "/meldekortservice/api/v2/meldekort"
-            } returns {
-                statusCode = 500
-            }
+    fun `hentMeldekort - annen feilstatus gir UventetStatus`() = runTest {
+        val transport = FakeHttpTransport().apply { leggIKøStatusForAlleForsøk(statusCode = 500) }
 
-            runTest {
-                val feil = wiremock.client().hentMeldekort(fnr)
-                    .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
-                    .value
+        val feil = client(transport).hentMeldekort(fnr)
+            .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
+            .value
 
-                feil.shouldBeInstanceOf<HttpKlientError.UventetStatus>().statusCode shouldBe 500
-            }
-        }
+        feil.shouldBeInstanceOf<HttpKlientError.UventetStatus>().statusCode shouldBe 500
     }
 
     @Test
-    fun `hentMeldekort - transportfeil gir IngenRespons`() {
-        // Peker mot en port ingen lytter på for å trigge ConnectException.
-        val client = ArenaMeldekortHttpClient(
-            baseUrl = "http://localhost:1",
+    fun `hentMeldekort - transportfeil gir IngenRespons`() = runTest {
+        val transport = FakeHttpTransport().apply { leggIKøKastForAlleForsøk(IOException("connection refused")) }
+
+        client(transport).hentMeldekort(fnr)
+            .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
+            .value
+            .shouldBeInstanceOf<HttpKlientError.IngenRespons>()
+    }
+
+    @Test
+    fun `hentHistoriskeMeldekort - 200 deserialiseres`() = runTest {
+        val transport = FakeHttpTransport().apply { leggIKøJson(okBody) }
+
+        client(transport).hentHistoriskeMeldekort(fnr).getOrNull()!!.personId shouldBe 123L
+
+        transport.mottatteKall.single().uri.toString() shouldBe
+            "$baseUrl/meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=10"
+    }
+
+    @Test
+    fun `hentHistoriskeMeldekort - feilstatus gir null`() = runTest {
+        val transport = FakeHttpTransport().apply { leggIKøStatusForAlleForsøk(statusCode = 503) }
+
+        client(transport).hentHistoriskeMeldekort(fnr) shouldBe null.right()
+    }
+
+    @Test
+    fun `hentHistoriskeMeldekort - transportfeil gir IngenRespons`() = runTest {
+        val transport = FakeHttpTransport().apply { leggIKøKastForAlleForsøk(IOException("connection refused")) }
+
+        client(transport).hentHistoriskeMeldekort(fnr)
+            .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
+            .value
+            .shouldBeInstanceOf<HttpKlientError.IngenRespons>()
+    }
+
+    /**
+     * Dekker default-verdien for `transport`, altså produksjonsoppkoblingen.
+     * De øvrige testene sender inn [FakeHttpTransport], så uten denne ville linja stått udekket.
+     * Å bygge klienten rører ingenting på nettverket.
+     */
+    @Test
+    fun `kan bygges med produksjonstransporten som default`() {
+        ArenaMeldekortHttpClient(
+            baseUrl = baseUrl,
             clock = fixedClock,
             authTokenProvider = testTokenProvider,
-        )
-
-        runTest {
-            client.hentMeldekort(fnr)
-                .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
-                .value
-                .shouldBeInstanceOf<HttpKlientError.IngenRespons>()
-        }
-    }
-
-    @Test
-    fun `hentHistoriskeMeldekort - 200 deserialiseres`() {
-        withWireMockServer { wiremock ->
-            wiremock.get {
-                url equalTo "/meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=10"
-            } returnsJson {
-                statusCode = 200
-                body = okBody
-            }
-
-            runTest {
-                wiremock.client().hentHistoriskeMeldekort(fnr).getOrNull()!!.personId shouldBe 123L
-            }
-        }
-    }
-
-    @Test
-    fun `hentHistoriskeMeldekort - feilstatus gir null`() {
-        withWireMockServer { wiremock ->
-            wiremock.get {
-                url equalTo "/meldekortservice/api/v2/historiskemeldekort?antallMeldeperioder=10"
-            } returns {
-                statusCode = 503
-            }
-
-            runTest {
-                wiremock.client().hentHistoriskeMeldekort(fnr) shouldBe null.right()
-            }
-        }
-    }
-
-    @Test
-    fun `hentHistoriskeMeldekort - transportfeil gir IngenRespons`() {
-        val client = ArenaMeldekortHttpClient(
-            baseUrl = "http://localhost:1",
-            clock = fixedClock,
-            authTokenProvider = testTokenProvider,
-        )
-
-        runTest {
-            client.hentHistoriskeMeldekort(fnr)
-                .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
-                .value
-                .shouldBeInstanceOf<HttpKlientError.IngenRespons>()
-        }
+        ).shouldBeInstanceOf<ArenaMeldekortClient>()
     }
 }
