@@ -6,7 +6,7 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
 val ktorVersion = "3.4.3"
 val mockkVersion = "1.14.11"
-val felleslibVersion = "0.0.20260723155827"
+val felleslibVersion = "0.0.20260726200910"
 val kotestVersion = "6.2.2"
 val kotlinxCoroutinesVersion = "1.11.0"
 val tmsVarselBuilderVersion = "2.2.0"
@@ -121,7 +121,7 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-json:$kotestVersion")
     testImplementation("io.kotest:kotest-extensions:$kotestVersion")
-    // Delte arkitekturregler; drar inn konsist transitivt (api-avhengighet). Egen versjon inntil felleslibVersion bumpes forbi httpklient-splitten.
+    // Delte arkitekturregler; drar inn konsist transitivt (api-avhengighet).
     testImplementation("com.github.navikt.tiltakspenger-libs:konsist-regler:$felleslibVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$kotlinxCoroutinesVersion")
@@ -134,6 +134,8 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:$testContainersVersion")
     testImplementation("org.testcontainers:testcontainers-postgresql:$testContainersVersion")
 
+    // Starter lokal postgres for LokalMain; hører hjemme i test-sourcesettet sammen med den.
+    testImplementation("com.github.navikt.tiltakspenger-libs:lokal-oppstart:$felleslibVersion")
     testImplementation("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
     testImplementation(testFixtures("com.github.navikt.tiltakspenger-libs:httpklient-infrastruktur:$felleslibVersion"))
     testImplementation("com.github.navikt.tiltakspenger-libs:ktor-test-common:$felleslibVersion")

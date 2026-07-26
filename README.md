@@ -29,7 +29,21 @@ For å bygge artifaktene:
 ## Lokal kjøring
 
 Appen kan startes lokalt med main-funksjonen i LokalMain.kt.
-Som default krever denne kun database kjørende lokalt, andre eksterne tjenester erstattes av fakes.
+Alle eksterne tjenester erstattes av fakes, så det eneste appen trenger utenfra er en postgres.
+
+**Databasen starter seg selv — du trenger ikke kjøre `./up.sh` først.**
+`LokalMain` sjekker om postgres svarer på porten fra `Configuration` (5435).
+Gjør den det, rører vi ingenting.
+Gjør den ikke det, letes `docker-compose.yml` opp oppover fra repoet (den ligger i monorepo-rota), tjenesten `postgresMeldekort` startes med `docker compose up -d`, og vi venter til databasen tar imot tilkoblinger.
+Porten og det navngitte volumet er de samme som før, så dataene dine overlever både omstart av appen og av containeren.
+
+Går noe galt underveis — docker er ikke startet, compose-fila finnes ikke, porten er opptatt av noe annet — får du en feilmelding som sier hva som er galt og hva du gjør med det, i stedet for en tilkoblingsfeil fra connection poolen.
+
+Vil du heller kjøre uten compose-oppsettet, sett miljøvariabelen `LOKAL_DB_MODUS=testcontainers`.
+Da starter vi en egen postgres-container via Testcontainers, på en tilfeldig port som appen plukker opp selv.
+Databasen er da tom ved hver oppstart med mindre du også setter `TESTCONTAINERS_REUSE_ENABLE=true`.
+
+Selve oppstartslogikken ligger i `tiltakspenger-libs:lokal-oppstart` (`startLokalPostgres`), slik at de andre appene i flåten kan bruke den samme.
 
 Dersom du ønsker å kjøre ekte autentiseringsflyt lokalt, sett miljøvariabelen `BRUK_FAKE_AUTH=false`, f.eks. via run config i Intellij.
 
