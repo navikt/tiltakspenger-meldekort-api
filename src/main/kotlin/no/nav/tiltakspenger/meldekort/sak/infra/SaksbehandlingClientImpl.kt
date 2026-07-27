@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.seconds
  *
  * Ingen retry, som den gamle klienten; jobben som kaller prøver usendte meldekort på nytt ved neste kjøring.
  *
- * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
+ * @param transport Transporten som gjør nettverkskallet; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class SaksbehandlingClientImpl(
     baseUrl: String,

@@ -33,7 +33,7 @@ import kotlin.time.Duration.Companion.seconds
  * Timeouten på 60 sekunder er arvet fra den gamle ktor-klienten; meldekortservice ligger i FSS og kan være treg.
  * Retryen replikerer den gamle ktor-klienten (`httpClientWithRetry`): fire forsøk totalt med konstant 100 ms delay.
  *
- * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
+ * @param transport Transporten som gjør nettverkskallet; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class ArenaMeldekortHttpClient(
     private val baseUrl: String,

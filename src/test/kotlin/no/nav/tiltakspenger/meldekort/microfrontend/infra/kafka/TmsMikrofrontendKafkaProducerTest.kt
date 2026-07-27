@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class TmsMikrofrontendKafkaProducerTest {
     private val topic = "test-topic"
 
-    /** Ekte fake av Kafka-sømmen – fanger produserte meldinger uten mock. */
+    /** Ekte fake av Kafka-publiseringen – fanger produserte meldinger uten mock. */
     private class ProdusertMeldingFake {
         data class Melding(val topic: String, val key: String, val value: String)
 

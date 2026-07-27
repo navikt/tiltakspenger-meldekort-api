@@ -48,7 +48,7 @@ const val DOKARKIV_PATH = "rest/journalpostapi/v1/journalpost"
  * Klienten logger ikke feil selv; feillogging skjer én gang i [no.nav.tiltakspenger.meldekort.journalføring.JournalførMeldekortService].
  * Unntaket er én error-linje når dokarkiv oppretter journalposten uten å ferdigstille den — kallet er da en suksess (ingen Left å logge hos kalleren), men tilstanden krever manuell oppfølging.
  *
- * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
+ * @param transport Transporten som gjør nettverkskallet; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class DokarkivClientImpl(
     baseUrl: String,

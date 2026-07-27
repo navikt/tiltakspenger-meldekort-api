@@ -36,7 +36,7 @@ const val PDFGEN_PATH = "api/v1/genpdf/tpts"
  * pdfgenrs har ingen autentisering, derfor ingen auth i klienten.
  * Retryen replikerer den gamle ktor-klienten (`httpClientWithRetry`): fire forsøk totalt med konstant 100 ms delay.
  *
- * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
+ * @param transport Transporten som gjør nettverkskallet; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class PdfgenClientImpl(
     private val baseUrl: String = Configuration.pdfgenrsUrl,
