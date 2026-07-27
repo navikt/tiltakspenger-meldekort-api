@@ -45,27 +45,12 @@ class JournalførMeldekortService(
                     log.info { "Pdf generert for meldekort. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}" }
                     val journalpostId = dokarkivClient.journalførMeldekort(
                         meldekort = meldekort,
-                        pdfOgJson = pdfOgJson.first,
+                        pdfOgJson = pdfOgJson,
                         callId = CorrelationId.generate(),
                         clock = clock,
                     ).getOrElse {
                         it.loggFeil(log, "journalføring av meldekort i dokarkiv", kontekst, sikkerlogg)
                         return@forEach
-                    }
-                    /*
-                        TODO - fjern denne bolken, og returner kun én pdf når vi har verifisert at pdf-ene er like.
-                     */
-                    pdfOgJson.second?.let { pdfgenrsPdf ->
-                        dokarkivClient.journalførMeldekort(
-                            meldekort = meldekort,
-                            pdfOgJson = pdfgenrsPdf,
-                            callId = CorrelationId.generate(),
-                            clock = clock,
-                            pdfgenrs = true,
-                        ).getOrElse {
-                            it.loggFeil(log, "journalføring av pdfgenrs-meldekort i dokarkiv", kontekst, sikkerlogg)
-                            return@forEach
-                        }
                     }
 
                     log.info { "Meldekort journalført. Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}. JournalpostId: $journalpostId" }

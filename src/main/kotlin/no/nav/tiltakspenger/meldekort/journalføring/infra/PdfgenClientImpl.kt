@@ -1,10 +1,6 @@
 package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import arrow.core.Either
-import arrow.core.flatMap
-import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
 import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlient
 import no.nav.tiltakspenger.libs.httpklient.infra.HttpKlientConfig
@@ -25,35 +21,30 @@ import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.measureTimedValue
 
 const val PDFGEN_PATH = "api/v1/genpdf/tpts"
 
 /**
- * Konverterer domene til JSON som sendes til pdfgen og pdfgenrs for å generere PDF.
+ * Konverterer domene til JSON som sendes til pdfgenrs for å generere PDF.
  *
- * Kildekode: https://github.com/navikt/tiltakspenger-pdfgen og https://github.com/navikt/tiltakspenger-pdfgenrs
- * Dokumentasjon: README-ene i kildekode-repoene
+ * Kildekode: https://github.com/navikt/tiltakspenger-pdfgenrs
+ * Dokumentasjon: README-en i kildekode-repoet
  * API-spec: -
  * Slack: #tiltakspenger-værsågod (eget team)
  * Teamkatalog: https://teamkatalogen.nav.no/team/15bca3d2-2584-4167-85ba-faab1f1cfb53
  *
- * pdfgen har ingen autentisering, derfor ingen auth i klienten.
+ * pdfgenrs har ingen autentisering, derfor ingen auth i klienten.
  * Retryen replikerer den gamle ktor-klienten (`httpClientWithRetry`): fire forsøk totalt med konstant 100 ms delay.
  *
  * @param transport Nettverks-sømmen til [HttpKlient]; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
 class PdfgenClientImpl(
-    private val baseUrl: String = Configuration.pdfgenUrl,
-    private val pdfgenrsBaseUrl: String = Configuration.pdfgenrsUrl,
-    private val isLocalOrDev: Boolean,
+    private val baseUrl: String = Configuration.pdfgenrsUrl,
     clock: Clock,
     connectTimeout: Duration = 5.seconds,
     timeout: Duration = 10.seconds,
     transport: HttpTransport = JavaHttpTransport(connectTimeout = connectTimeout),
 ) : PdfgenClient {
-    private val log = KotlinLogging.logger {}
-
     private val httpKlient: HttpKlient = HttpKlient(
         clock = clock,
         config = HttpKlientConfig(
@@ -65,57 +56,25 @@ class PdfgenClientImpl(
 
     override suspend fun genererMeldekortPdf(
         meldekort: BrukersMeldekort,
-    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>> {
+    ): Either<HttpKlientError, PdfOgJson> {
         return generer(meldekort, path = "meldekort")
     }
 
     override suspend fun genererKorrigertMeldekortPdf(
         meldekort: BrukersMeldekort,
-    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>> {
+    ): Either<HttpKlientError, PdfOgJson> {
         return generer(meldekort, path = "meldekort-korrigert")
     }
 
     private suspend fun generer(
         meldekort: BrukersMeldekort,
         path: String,
-    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>> {
+    ): Either<HttpKlientError, PdfOgJson> {
         val språksuffiks = if (meldekort.locale == "en") "-en" else ""
-        val pdfgenUri = URI.create("$baseUrl/$PDFGEN_PATH/$path$språksuffiks")
-        val pdfgenrsUri = URI.create("$pdfgenrsBaseUrl/$PDFGEN_PATH/$path$språksuffiks")
+        val uri = URI.create("$baseUrl/$PDFGEN_PATH/$path$språksuffiks")
         val jsonPayload = meldekort.toDTO()
 
-        return if (isLocalOrDev) {
-            runParallel(jsonPayload = jsonPayload, pdfgenUri = pdfgenUri, pdfgenrsUri = pdfgenrsUri)
-        } else {
-            pdfgenRequest(uri = pdfgenUri, jsonPayload = jsonPayload).map { it to null }
-        }
-    }
-
-    private suspend fun runParallel(
-        jsonPayload: String,
-        pdfgenUri: URI,
-        pdfgenrsUri: URI,
-    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>> {
-        return coroutineScope {
-            val pdfgenDeferred = async {
-                measureTimedValue { pdfgenRequest(pdfgenUri, jsonPayload) }
-            }
-            val pdfgenrsDeferred = async {
-                measureTimedValue { pdfgenRequest(pdfgenrsUri, jsonPayload) }
-            }
-
-            val (pdfgenResult, pdfgenDuration) = pdfgenDeferred.await()
-            val (pdfgenrsResult, pdfgenrsDuration) = pdfgenrsDeferred.await()
-
-            // Midlertidig sammenlikningslogg mens pdfgenrs verifiseres mot pdfgen (kjører kun lokalt/dev); fjernes sammen med dobbeltkjøringen.
-            log.info { "pdfgen brukte $pdfgenDuration, pdfgenrs brukte $pdfgenrsDuration" }
-
-            pdfgenResult.flatMap { pdfgen ->
-                pdfgenrsResult.map { pdfgenrs ->
-                    Pair(pdfgen, pdfgenrs)
-                }
-            }
-        }
+        return pdfgenRequest(uri = uri, jsonPayload = jsonPayload)
     }
 
     private suspend fun pdfgenRequest(

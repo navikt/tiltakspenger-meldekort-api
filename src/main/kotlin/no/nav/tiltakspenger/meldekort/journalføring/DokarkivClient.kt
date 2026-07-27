@@ -12,6 +12,5 @@ interface DokarkivClient {
         pdfOgJson: PdfOgJson,
         callId: CorrelationId,
         clock: Clock,
-        pdfgenrs: Boolean = false,
     ): Either<HttpKlientError, JournalpostId>
 }

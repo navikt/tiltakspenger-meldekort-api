@@ -8,7 +8,6 @@ import no.nav.tiltakspenger.libs.logging.infra.KotlinLoggingSikkerlogg
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
-import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.client.TexasClient
 import no.nav.tiltakspenger.libs.texas.client.TexasHttpClient
 import no.nav.tiltakspenger.libs.texas.client.TexasSystemTokenProvider
@@ -289,7 +288,6 @@ open class ApplicationContext(val clock: Clock) {
 
     open val pdfgenClient: PdfgenClient by lazy {
         PdfgenClientImpl(
-            isLocalOrDev = !Configuration.isProd(),
             clock = clock,
         )
     }

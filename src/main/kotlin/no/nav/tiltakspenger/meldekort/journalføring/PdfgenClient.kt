@@ -7,9 +7,9 @@ import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 interface PdfgenClient {
     suspend fun genererMeldekortPdf(
         meldekort: BrukersMeldekort,
-    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>>
+    ): Either<HttpKlientError, PdfOgJson>
 
     suspend fun genererKorrigertMeldekortPdf(
         meldekort: BrukersMeldekort,
-    ): Either<HttpKlientError, Pair<PdfOgJson, PdfOgJson?>>
+    ): Either<HttpKlientError, PdfOgJson>
 }

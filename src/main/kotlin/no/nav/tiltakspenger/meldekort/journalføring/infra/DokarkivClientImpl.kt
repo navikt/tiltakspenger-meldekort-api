@@ -1,7 +1,6 @@
 package no.nav.tiltakspenger.meldekort.journalføring.infra
 
 import arrow.core.Either
-import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -79,9 +78,8 @@ class DokarkivClientImpl(
         pdfOgJson: PdfOgJson,
         callId: CorrelationId,
         clock: Clock,
-        pdfgenrs: Boolean,
     ): Either<HttpKlientError, JournalpostId> {
-        val request = meldekort.toJournalpostDokument(pdfOgJson = pdfOgJson, clock = clock, pdfgenrs = pdfgenrs)
+        val request = meldekort.toJournalpostDokument(pdfOgJson = pdfOgJson, clock = clock)
 
         return httpKlient.postJson<DokarkivResponse>(
             uri = URI.create("$opprettJournalpostUri?forsoekFerdigstill=${request.kanFerdigstilleAutomatisk()}"),

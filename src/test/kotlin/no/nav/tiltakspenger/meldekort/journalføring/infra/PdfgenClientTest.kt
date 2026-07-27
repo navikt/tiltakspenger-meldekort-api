@@ -15,10 +15,8 @@ import org.junit.jupiter.api.Test
 class PdfgenClientTest {
     private val pdfContent = "dette er innholdet i pdf vi får tilbake fra pdfGen".toByteArray()
 
-    private fun klient(transport: FakeHttpTransport, isLocalOrDev: Boolean = true) = PdfgenClientImpl(
-        baseUrl = "http://pdfgen",
-        pdfgenrsBaseUrl = "http://pdfgenrs",
-        isLocalOrDev = isLocalOrDev,
+    private fun klient(transport: FakeHttpTransport) = PdfgenClientImpl(
+        baseUrl = "http://pdfgenrs",
         clock = fixedClock,
         transport = transport,
     )
@@ -28,31 +26,14 @@ class PdfgenClientTest {
     @Nested
     inner class GenererMeldekortPdf {
         @Test
-        fun `lokalt eller i dev genereres pdf fra begge pdfgen-appene`() = runTest {
+        fun `genererer pdf fra pdfgenrs`() = runTest {
             val transport = FakeHttpTransport()
-            transport.leggIKøPdf()
             transport.leggIKøPdf()
 
             val resp = klient(transport).genererMeldekortPdf(ObjectMother.meldekort()).getOrFail()
 
-            resp.first.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
-            resp.second!!.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
-            transport.mottatteKall.map { it.uri.toString() }.toSet() shouldBe setOf(
-                "http://pdfgen/api/v1/genpdf/tpts/meldekort",
-                "http://pdfgenrs/api/v1/genpdf/tpts/meldekort",
-            )
-        }
-
-        @Test
-        fun `i prod genereres pdf kun fra pdfgen`() = runTest {
-            val transport = FakeHttpTransport()
-            transport.leggIKøPdf()
-
-            val resp = klient(transport, isLocalOrDev = false).genererMeldekortPdf(ObjectMother.meldekort()).getOrFail()
-
-            resp.first.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
-            resp.second shouldBe null
-            transport.mottatteKall.single().uri.toString() shouldBe "http://pdfgen/api/v1/genpdf/tpts/meldekort"
+            resp.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
+            transport.mottatteKall.single().uri.toString() shouldBe "http://pdfgenrs/api/v1/genpdf/tpts/meldekort"
         }
 
         @Test
@@ -60,7 +41,7 @@ class PdfgenClientTest {
             val transport = FakeHttpTransport()
             transport.leggIKøStatus(404, body = "ikke funnet")
 
-            val feil = klient(transport, isLocalOrDev = false).genererMeldekortPdf(ObjectMother.meldekort())
+            val feil = klient(transport).genererMeldekortPdf(ObjectMother.meldekort())
                 .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
                 .value
 
@@ -75,12 +56,12 @@ class PdfgenClientTest {
             val transport = FakeHttpTransport()
             transport.leggIKøPdf()
 
-            val resp = klient(transport, isLocalOrDev = false)
+            val resp = klient(transport)
                 .genererKorrigertMeldekortPdf(ObjectMother.meldekort(korrigering = true, locale = "en"))
                 .getOrFail()
 
-            resp.first.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
-            transport.mottatteKall.single().uri.toString() shouldBe "http://pdfgen/api/v1/genpdf/tpts/meldekort-korrigert-en"
+            resp.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
+            transport.mottatteKall.single().uri.toString() shouldBe "http://pdfgenrs/api/v1/genpdf/tpts/meldekort-korrigert-en"
         }
 
         @Test
@@ -88,7 +69,7 @@ class PdfgenClientTest {
             val transport = FakeHttpTransport()
             transport.leggIKøStatus(404, body = "ikke funnet")
 
-            val feil = klient(transport, isLocalOrDev = false)
+            val feil = klient(transport)
                 .genererKorrigertMeldekortPdf(ObjectMother.meldekort(korrigering = true))
                 .shouldBeInstanceOf<arrow.core.Either.Left<HttpKlientError>>()
                 .value
