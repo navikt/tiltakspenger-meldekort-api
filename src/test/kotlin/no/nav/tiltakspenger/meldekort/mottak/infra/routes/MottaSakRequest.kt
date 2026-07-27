@@ -1,18 +1,11 @@
 package no.nav.tiltakspenger.meldekort.mottak.infra.routes
 
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.URLProtocol
-import io.ktor.http.path
-import io.ktor.http.withCharset
 import io.ktor.server.testing.ApplicationTestBuilder
-import io.ktor.server.util.url
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.HttpMethod
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
@@ -37,9 +30,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
     kanSendeInnHelgForMeldekort: Boolean = false,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForSystembruker(),
-    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
-    forventetBody: String? = "Sak lagret",
-    forventetContentType: ContentType? = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+    forventet: ForventetRespons? = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
 ): Sak {
     return mottaSakRequest(
         tac = tac,
@@ -53,9 +44,7 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
         ),
         runJobs = runJobs,
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = forventet,
     )
 }
 
@@ -68,26 +57,16 @@ suspend fun ApplicationTestBuilder.mottaSakRequest(
     requestDto: SakTilMeldekortApiDTO,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForSystembruker(),
-    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
-    forventetBody: String? = "Sak lagret",
-    forventetContentType: ContentType? = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+    forventet: ForventetRespons? = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
 ): Sak {
     defaultRequestWithAssertions(
-        method = HttpMethod.Post,
-        uri = url {
-            protocol = URLProtocol.HTTPS
-            path("/saksbehandling/sak")
-        },
+        method = HttpMethod.POST,
+        uri = "/saksbehandling/sak",
         jwt = jwt,
-        forventet = ForventetRespons(
-            status = forventetStatus,
-            body = forventetBody.tilForventetBody(),
-            contentType = forventetContentType,
-        ),
-    ) {
-        setBody(serialize(requestDto))
-    }
-    if (runJobs && forventetStatus == HttpStatusCode.OK) {
+        forventet = forventet,
+        body = serialize(requestDto),
+    )
+    if (runJobs && forventet?.status == 200) {
         KjørJobberForTester.kjørVarsler(tac)
     }
     return tac.sakRepo.hent(SakId.fromString(requestDto.sakId))!!

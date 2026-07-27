@@ -1,9 +1,5 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra.routes
 
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.TestApplicationContext
@@ -12,6 +8,7 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.HttpMethod
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetBody
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
@@ -58,17 +55,16 @@ class SendInnMeldekortRouteTest {
             val fnr = tac.nesteFnr()
 
             defaultRequestWithAssertions(
-                method = HttpMethod.Post,
+                method = HttpMethod.POST,
                 uri = "/brukerfrontend/send-inn",
                 jwt = JwtGenerator().createJwtForUser(fnr = fnr.verdi),
                 forventet = ForventetRespons(
-                    status = HttpStatusCode.BadRequest,
+                    status = 400,
                     body = ForventetBody.Eksakt("""{"melding":"Vi klarte ikke å lese inn meldekortet du sendte. Prøv igjen.","kode":"ugyldig_meldekort_innsending"}"""),
-                    contentType = ContentType.Application.Json,
+                    contentType = "application/json",
                 ),
-            ) {
-                setBody("dette er ikke gyldig json")
-            }
+                body = "dette er ikke gyldig json",
+            )
         }
     }
 
@@ -81,8 +77,7 @@ class SendInnMeldekortRouteTest {
                 tac = tac,
                 meldekortId = MeldekortId.random(),
                 fnr = fnr,
-                forventetStatus = HttpStatusCode.NotFound,
-                forventetBody = """{"melding":"Vi fant ikke meldekortet du prøver å sende inn.","kode":"fant_ikke_meldekort"}""",
+                forventet = ForventetRespons.eksakt(404, """{"melding":"Vi fant ikke meldekortet du prøver å sende inn.","kode":"fant_ikke_meldekort"}""", "application/json"),
             )
         }
     }
@@ -100,8 +95,7 @@ class SendInnMeldekortRouteTest {
                 tac = tac,
                 meldekortId = meldekort.id,
                 fnr = fnr,
-                forventetStatus = HttpStatusCode.Conflict,
-                forventetBody = """{"melding":"Dette meldekortet er allerede sendt inn.","kode":"meldekort_allerede_mottatt"}""",
+                forventet = ForventetRespons.eksakt(409, """{"melding":"Dette meldekortet er allerede sendt inn.","kode":"meldekort_allerede_mottatt"}""", "application/json"),
             )
         }
     }
@@ -128,8 +122,7 @@ class SendInnMeldekortRouteTest {
                 tac = tac,
                 meldekortId = meldekort.id,
                 fnr = fnr,
-                forventetStatus = HttpStatusCode.Conflict,
-                forventetBody = """{"melding":"Dette meldekortet er ikke lenger gyldig fordi det har kommet en nyere versjon av meldeperioden. Gå tilbake til oversikten og send inn det nyeste meldekortet.","kode":"meldekortets_meldeperiode_er_erstattet"}""",
+                forventet = ForventetRespons.eksakt(409, """{"melding":"Dette meldekortet er ikke lenger gyldig fordi det har kommet en nyere versjon av meldeperioden. Gå tilbake til oversikten og send inn det nyeste meldekortet.","kode":"meldekortets_meldeperiode_er_erstattet"}""", "application/json"),
             )
         }
     }
@@ -151,8 +144,7 @@ class SendInnMeldekortRouteTest {
                 tac = tac,
                 meldekortId = meldekort.id,
                 fnr = fnr,
-                forventetStatus = HttpStatusCode.Conflict,
-                forventetBody = """{"melding":"Dette meldekortet er ikke lenger gyldig fordi det har kommet en nyere versjon av meldeperioden. Gå tilbake til oversikten og send inn det nyeste meldekortet.","kode":"meldekort_deaktivert"}""",
+                forventet = ForventetRespons.eksakt(409, """{"melding":"Dette meldekortet er ikke lenger gyldig fordi det har kommet en nyere versjon av meldeperioden. Gå tilbake til oversikten og send inn det nyeste meldekortet.","kode":"meldekort_deaktivert"}""", "application/json"),
             )
         }
     }
@@ -173,8 +165,7 @@ class SendInnMeldekortRouteTest {
                 tac = tac,
                 meldekortId = meldekort.id,
                 fnr = fnr,
-                forventetStatus = HttpStatusCode.Conflict,
-                forventetBody = """{"melding":"Dette meldekortet er ikke klart til innsending ennå. Prøv igjen senere.","kode":"meldekort_ikke_klart_til_innsending"}""",
+                forventet = ForventetRespons.eksakt(409, """{"melding":"Dette meldekortet er ikke klart til innsending ennå. Prøv igjen senere.","kode":"meldekort_ikke_klart_til_innsending"}""", "application/json"),
             )
         }
     }
@@ -194,8 +185,7 @@ class SendInnMeldekortRouteTest {
                 tac = tac,
                 meldekortId = meldekort.id,
                 fnr = fnr,
-                forventetStatus = HttpStatusCode.InternalServerError,
-                forventetBody = """{"melding":"Det oppstod en feil med meldekortet ditt. Ta kontakt med oss hvis problemet vedvarer.","kode":"fant_ikke_meldeperiode"}""",
+                forventet = ForventetRespons.eksakt(500, """{"melding":"Det oppstod en feil med meldekortet ditt. Ta kontakt med oss hvis problemet vedvarer.","kode":"fant_ikke_meldeperiode"}""", "application/json"),
             )
         }
     }
@@ -213,8 +203,7 @@ class SendInnMeldekortRouteTest {
                 tac = tac,
                 meldekortId = meldekort.id,
                 fnr = fnr,
-                forventetStatus = HttpStatusCode.InternalServerError,
-                forventetBody = """{"melding":"Det oppstod en uventet feil ved innsending av meldekortet. Prøv igjen senere.","kode":"uventet_feil_ved_lagring"}""",
+                forventet = ForventetRespons.eksakt(500, """{"melding":"Det oppstod en uventet feil ved innsending av meldekortet. Prøv igjen senere.","kode":"uventet_feil_ved_lagring"}""", "application/json"),
             )
         }
     }
@@ -223,8 +212,7 @@ class SendInnMeldekortRouteTest {
         tac: TestApplicationContext,
         meldekortId: MeldekortId,
         fnr: Fnr,
-        forventetStatus: HttpStatusCode,
-        forventetBody: String,
+        forventet: ForventetRespons,
     ) {
         sendInnMeldekortRequest(
             tac = tac,
@@ -232,9 +220,7 @@ class SendInnMeldekortRouteTest {
             fnr = fnr,
             jwt = JwtGenerator().createJwtForUser(fnr = fnr.verdi),
             runJobs = false,
-            forventetStatus = forventetStatus,
-            forventetBody = forventetBody,
-            forventetContentType = ContentType.Application.Json,
+            forventet = forventet,
         )
     }
 }

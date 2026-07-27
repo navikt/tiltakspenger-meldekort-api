@@ -1,11 +1,7 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering
 
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.withCharset
 import io.ktor.server.testing.ApplicationTestBuilder
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.HttpMethod
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
@@ -20,22 +16,16 @@ suspend fun ApplicationTestBuilder.kanMeldekortKorrigeresRequest(
     meldekortId: String,
     fnr: String,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
-    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
-    forventetBody: String? = null,
-    forventetContentType: ContentType? = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+    forventet: ForventetRespons? = ForventetRespons(200, contentType = "text/plain; charset=UTF-8"),
 ): KanKorrigereMeldekortDto? {
     val response = defaultRequestWithAssertions(
-        method = HttpMethod.Get,
+        method = HttpMethod.GET,
         uri = "/brukerfrontend/$meldekortId/kan-korrigeres",
         jwt = jwt,
-        forventet = ForventetRespons(
-            status = forventetStatus,
-            body = forventetBody.tilForventetBody(),
-            contentType = forventetContentType,
-        ),
+        forventet = forventet,
     )
-    return if (response.status == HttpStatusCode.OK) {
-        deserialize<KanKorrigereMeldekortDto>(response.bodyAsText())
+    return if (response.statusCode == 200) {
+        deserialize<KanKorrigereMeldekortDto>(response.body)
     } else {
         null
     }

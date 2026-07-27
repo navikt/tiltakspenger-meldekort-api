@@ -1,8 +1,8 @@
 package no.nav.tiltakspenger.meldekort.microfrontend.infra.routes
 
-import io.ktor.http.HttpStatusCode
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContextAndPostgres
@@ -64,8 +64,7 @@ class MicrofrontendRouteTest {
         withTestApplicationContext { _ ->
             microfrontendKortInfoRequest(
                 fnr = "12345678901",
-                forventetStatus = HttpStatusCode.InternalServerError,
-                forventetContentType = null,
+                forventet = ForventetRespons(500),
             )
         }
     }

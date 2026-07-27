@@ -3,20 +3,13 @@ package no.nav.tiltakspenger.meldekort.mottak.infra.routes
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.URLProtocol
-import io.ktor.http.path
-import io.ktor.http.withCharset
-import io.ktor.server.util.url
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.HttpMethod
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetBody
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
@@ -62,7 +55,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             ).apply {
                 val sak = tac.sakRepo.hent(id)
 
@@ -88,7 +81,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             ).apply {
                 val sak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
 
@@ -116,7 +109,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             ).apply {
                 val sak = tac.sakRepo.hent(id)
 
@@ -140,15 +133,13 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             )
 
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto,
-                forventetStatus = HttpStatusCode.OK,
-                forventetBody = "Saken var allerede lagret med samme data",
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Saken var allerede lagret med samme data", "text/plain; charset=UTF-8"),
             )
             tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!.tilMottattSak() shouldBe sakDto.tilMottattSak()
         }
@@ -183,13 +174,13 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto1,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             )
 
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto2,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             ).apply {
                 val sak = tac.sakRepo.hent(SakId.fromString(sakDto2.sakId))!!
 
@@ -228,15 +219,13 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto1,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             )
 
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto2,
-                forventetStatus = HttpStatusCode.Conflict,
-                forventetBody = "Meldeperiode var allerede lagret med andre data",
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(409, "Meldeperiode var allerede lagret med andre data", "text/plain; charset=UTF-8"),
             )
 
             val meldeperiode = tac.meldeperiodeRepo.hentForId(MeldeperiodeId.fromString(førsteMeldeperiode.id))!!
@@ -267,13 +256,13 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto1,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             )
 
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto2,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             ).apply {
                 val (førsteMeldekort, andreMeldekort) =
                     tac.meldekortRepo.hentMeldekortForKjedeId(
@@ -311,7 +300,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto1,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             ).apply {
                 val meldekort = tac.meldekortRepo.hentMeldekortForKjedeId(
                     MeldeperiodeKjedeId(meldeperiode.kjedeId),
@@ -339,7 +328,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto2,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             ).apply {
                 val meldekortFraKjede = tac.meldekortRepo.hentMeldekortForKjedeId(
                     MeldeperiodeKjedeId(meldeperiode.kjedeId),
@@ -367,7 +356,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             val sak = mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             )
             val opprinneligMeldekort = tac.hentMeldekortService.hentNesteMeldekortForUtfylling(sak.fnr)!!
 
@@ -385,7 +374,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDtoOppdater,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             ).apply {
                 tac.hentMeldekortService.hentNesteMeldekortForUtfylling(sak.fnr).shouldBeNull()
 
@@ -403,20 +392,16 @@ class MottakFraSaksbehandlingEndToEndTest {
     fun `Skal returnere 400 ved ugyldig JSON-body`() = runTest {
         withTestApplicationContext { _ ->
             defaultRequestWithAssertions(
-                method = HttpMethod.Post,
-                uri = url {
-                    protocol = URLProtocol.HTTPS
-                    path("/saksbehandling/sak")
-                },
+                method = HttpMethod.POST,
+                uri = "/saksbehandling/sak",
                 jwt = JwtGenerator().createJwtForSystembruker(),
                 forventet = ForventetRespons(
-                    status = HttpStatusCode.BadRequest,
+                    status = 400,
                     body = ForventetBody.Eksakt("Feil ved parsing av sak fra saksbehandling-api"),
-                    contentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                    contentType = "text/plain; charset=UTF-8",
                 ),
-            ) {
-                setBody("{ ikke gyldig json")
-            }
+                body = "{ ikke gyldig json",
+            )
         }
     }
 
@@ -426,20 +411,16 @@ class MottakFraSaksbehandlingEndToEndTest {
             // SakId.fromString på ugyldig id kaster IllegalArgumentException → 400 (klientfeil), ikke 500. Slik unngår avsender unødvendige retries og alarmer.
             val ugyldigDto = ObjectMother.sakDTO(sakId = "ikke-en-gyldig-sakid")
             defaultRequestWithAssertions(
-                method = HttpMethod.Post,
-                uri = url {
-                    protocol = URLProtocol.HTTPS
-                    path("/saksbehandling/sak")
-                },
+                method = HttpMethod.POST,
+                uri = "/saksbehandling/sak",
                 jwt = JwtGenerator().createJwtForSystembruker(),
                 forventet = ForventetRespons(
-                    status = HttpStatusCode.BadRequest,
+                    status = 400,
                     body = ForventetBody.Eksakt("Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ikke-en-gyldig-sakid. Antall meldeperioder: 0. Antall meldekortvedtak: 0."),
-                    contentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                    contentType = "text/plain; charset=UTF-8",
                 ),
-            ) {
-                setBody(serialize(ugyldigDto))
-            }
+                body = serialize(ugyldigDto),
+            )
         }
     }
 
@@ -454,20 +435,16 @@ class MottakFraSaksbehandlingEndToEndTest {
             )
 
             defaultRequestWithAssertions(
-                method = HttpMethod.Post,
-                uri = url {
-                    protocol = URLProtocol.HTTPS
-                    path("/saksbehandling/sak")
-                },
+                method = HttpMethod.POST,
+                uri = "/saksbehandling/sak",
                 jwt = JwtGenerator().createJwtForSystembruker(),
                 forventet = ForventetRespons(
-                    status = HttpStatusCode.BadRequest,
+                    status = 400,
                     body = ForventetBody.Eksakt("Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ${ugyldigSakDto.sakId}. Antall meldeperioder: 2. Antall meldekortvedtak: 0."),
-                    contentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                    contentType = "text/plain; charset=UTF-8",
                 ),
-            ) {
-                setBody(serialize(ugyldigSakDto))
-            }
+                body = serialize(ugyldigSakDto),
+            )
 
             tac.sakRepo.hent(SakId.fromString(ugyldigSakDto.sakId)) shouldBe null
         }
@@ -486,7 +463,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = sakDto,
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
             )
 
             // Ny meldeperiode-id, men uendret kjedeId/versjon → kolliderer på unique_kjede_id_versjon ved insert.
@@ -497,9 +474,7 @@ class MottakFraSaksbehandlingEndToEndTest {
             mottaSakRequest(
                 tac = tac,
                 requestDto = kolliderende,
-                forventetStatus = HttpStatusCode.InternalServerError,
-                forventetBody = "Lagring av sak feilet",
-                forventetContentType = ContentType.Text.Plain.withCharset(Charsets.UTF_8),
+                forventet = ForventetRespons.eksakt(500, "Lagring av sak feilet", "text/plain; charset=UTF-8"),
             )
 
             // Saken skal fortsatt bare ha den opprinnelige meldeperioden (transaksjonen rullet tilbake).

@@ -2,13 +2,13 @@ package no.nav.tiltakspenger.meldekort.meldekort.infra.routes
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.lagreMeldeperiode
 import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
@@ -261,9 +261,7 @@ class MeldekortBrukerRouteTest {
             hentBrukerMedSakRequest(
                 fnr = fnr.verdi,
                 jwt = null,
-                forventetStatus = HttpStatusCode.Unauthorized,
-                forventetBody = "",
-                forventetContentType = null,
+                forventet = ForventetRespons.tom(401),
             )
         }
     }
@@ -292,7 +290,10 @@ class MeldekortBrukerRouteTest {
             tac.lagreMeldeperiode(innsendtMeldekort.meldeperiode)
             tac.meldekortRepo.lagre(innsendtMeldekort)
 
-            this.hentAlleInnsendteMeldekortRequest(fnr = fnr.verdi, forventetBody = null)!!.shouldBeAlleMeldekortJson(
+            this.hentAlleInnsendteMeldekortRequest(
+                fnr = fnr.verdi,
+                forventet = ForventetRespons(200, contentType = "application/json"),
+            )!!.shouldBeAlleMeldekortJson(
                 forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
                 meldekortMedSisteMeldeperiode = listOf(
                     MeldekortMedSisteMeldeperiodeDTO(
@@ -373,7 +374,10 @@ class MeldekortBrukerRouteTest {
 
             val korrigertMeldekort = responseBody!!
 
-            this.hentAlleInnsendteMeldekortRequest(fnr = fnr.verdi, forventetBody = null)!!.shouldBeAlleMeldekortJson(
+            this.hentAlleInnsendteMeldekortRequest(
+                fnr = fnr.verdi,
+                forventet = ForventetRespons(200, contentType = "application/json"),
+            )!!.shouldBeAlleMeldekortJson(
                 forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
                 meldekortMedSisteMeldeperiode = listOf(
                     MeldekortMedSisteMeldeperiodeDTO(
@@ -486,11 +490,13 @@ class MeldekortBrukerRouteTest {
                 requestDto = dagerUtenEndring,
                 locale = "nb",
                 fnr = fnr.verdi,
-                forventetStatus = HttpStatusCode.BadRequest,
-                forventetBody = """{"melding":"Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.","kode":"kan_ikke_korrigere_uten_endring"}""",
+                forventet = ForventetRespons.eksakt(400, """{"melding":"Korrigeringen av meldekortet har ingen endringer - Må endre status på minst en dag.","kode":"kan_ikke_korrigere_uten_endring"}""", "application/json"),
             )
 
-            this.hentAlleInnsendteMeldekortRequest(fnr = fnr.verdi, forventetBody = null)!!.shouldBeAlleMeldekortJson(
+            this.hentAlleInnsendteMeldekortRequest(
+                fnr = fnr.verdi,
+                forventet = ForventetRespons(200, contentType = "application/json"),
+            )!!.shouldBeAlleMeldekortJson(
                 forrigeMeldekort = innsendtMeldekort.tilMeldekortTilBrukerDTO(tac.clock),
                 meldekortMedSisteMeldeperiode = listOf(
                     MeldekortMedSisteMeldeperiodeDTO(

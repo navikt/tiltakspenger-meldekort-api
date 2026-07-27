@@ -1,14 +1,11 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra.routes
 
 import io.kotest.matchers.shouldNotBe
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.HttpMethod
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
@@ -31,9 +28,7 @@ suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
     locale: String? = null,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
-    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
-    forventetBody: String? = "",
-    forventetContentType: ContentType? = null,
+    forventet: ForventetRespons? = ForventetRespons.tom(200),
 ): Pair<Sak, BrukersMeldekort>? {
     val bruker = hentBrukerMedSakRequest(fnr, jwt)!!
     val nesteMeldekort = bruker.nesteMeldekort!!
@@ -58,9 +53,7 @@ suspend fun ApplicationTestBuilder.sendInnNesteMeldekort(
         fnr = Fnr.fromString(fnr),
         runJobs = runJobs,
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = forventet,
     )
 }
 
@@ -76,9 +69,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(
     fnr: String,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
-    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
-    forventetBody: String? = "",
-    forventetContentType: ContentType? = null,
+    forventet: ForventetRespons? = ForventetRespons.tom(200),
 ): Pair<Sak, BrukersMeldekort>? {
     val bruker = hentBrukerMedSakRequest(fnr, jwt)!!
     val nesteMeldekort = bruker.nesteMeldekort
@@ -96,9 +87,7 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortViaBruker(
         fnr = Fnr.fromString(fnr),
         runJobs = runJobs,
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = forventet,
     )
 }
 
@@ -112,23 +101,16 @@ suspend fun ApplicationTestBuilder.sendInnMeldekortRequest(
     fnr: Fnr,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr.toString()),
-    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
-    forventetBody: String? = "",
-    forventetContentType: ContentType? = null,
+    forventet: ForventetRespons? = ForventetRespons.tom(200),
 ): Pair<Sak, BrukersMeldekort>? {
     val response = defaultRequestWithAssertions(
-        method = HttpMethod.Post,
+        method = HttpMethod.POST,
         uri = "/brukerfrontend/send-inn",
         jwt = jwt,
-        forventet = ForventetRespons(
-            status = forventetStatus,
-            body = forventetBody.tilForventetBody(),
-            contentType = forventetContentType,
-        ),
-    ) {
-        setBody(serialize(requestDto))
-    }
-    if (response.status != HttpStatusCode.OK) return null
+        forventet = forventet,
+        body = serialize(requestDto),
+    )
+    if (response.statusCode != 200) return null
     if (runJobs) {
         KjørJobberForTester.kjørVarsler(tac)
     }

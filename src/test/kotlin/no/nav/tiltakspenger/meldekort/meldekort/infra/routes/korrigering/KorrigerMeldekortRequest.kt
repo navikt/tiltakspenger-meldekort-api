@@ -1,12 +1,8 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra.routes.korrigering
 
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.TestApplicationContext
+import no.nav.tiltakspenger.libs.httpklient.infra.kall.HttpMethod
 import no.nav.tiltakspenger.libs.json.deserialize
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
@@ -29,9 +25,7 @@ suspend fun ApplicationTestBuilder.korrigerMeldekortRequest(
     fnr: String,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
-    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
-    forventetBody: String? = null,
-    forventetContentType: ContentType? = ContentType.Application.Json,
+    forventet: ForventetRespons? = ForventetRespons(200, contentType = "application/json"),
 ): MeldekortTilBrukerDTO? {
     return korrigerMeldekortRequest(
         tac = tac,
@@ -41,9 +35,7 @@ suspend fun ApplicationTestBuilder.korrigerMeldekortRequest(
         fnr = fnr,
         runJobs = runJobs,
         jwt = jwt,
-        forventetStatus = forventetStatus,
-        forventetBody = forventetBody,
-        forventetContentType = forventetContentType,
+        forventet = forventet,
     )
 }
 
@@ -60,27 +52,20 @@ suspend fun ApplicationTestBuilder.korrigerMeldekortRequest(
     fnr: String,
     runJobs: Boolean = true,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
-    forventetStatus: HttpStatusCode = HttpStatusCode.OK,
-    forventetBody: String? = null,
-    forventetContentType: ContentType? = ContentType.Application.Json,
+    forventet: ForventetRespons? = ForventetRespons(200, contentType = "application/json"),
 ): MeldekortTilBrukerDTO? {
     val response = defaultRequestWithAssertions(
-        method = HttpMethod.Patch,
+        method = HttpMethod.PATCH,
         uri = "/brukerfrontend/$meldekortId/korriger?locale=$locale",
         jwt = jwt,
-        forventet = ForventetRespons(
-            status = forventetStatus,
-            body = forventetBody.tilForventetBody(),
-            contentType = forventetContentType,
-        ),
-    ) {
-        setBody(requestBody)
-    }
-    return if (response.status == HttpStatusCode.OK) {
+        forventet = forventet,
+        body = requestBody,
+    )
+    return if (response.statusCode == 200) {
         if (runJobs) {
             KjørJobberForTester.kjørVarsler(tac)
         }
-        deserialize<MeldekortTilBrukerDTO>(response.bodyAsText())
+        deserialize<MeldekortTilBrukerDTO>(response.body)
     } else {
         null
     }

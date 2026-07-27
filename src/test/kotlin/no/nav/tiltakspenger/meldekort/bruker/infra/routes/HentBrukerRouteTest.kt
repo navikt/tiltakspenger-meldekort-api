@@ -1,9 +1,9 @@
 package no.nav.tiltakspenger.meldekort.bruker.infra.routes
 
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortDagStatusDTO
@@ -151,9 +151,7 @@ class HentBrukerRouteTest {
             hentBrukerMedSakRequest(
                 fnr = sak.fnr.verdi,
                 jwt = null,
-                forventetStatus = HttpStatusCode.Unauthorized,
-                forventetBody = "",
-                forventetContentType = null,
+                forventet = ForventetRespons.tom(401),
             )
         }
     }

@@ -1,11 +1,11 @@
 package no.nav.tiltakspenger.meldekort.landingsside.infra.routes
 
 import io.kotest.matchers.shouldBe
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.desember
 import no.nav.tiltakspenger.libs.dato.januar
+import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.infra.Configuration
@@ -27,9 +27,7 @@ class LandingssideStatusRouteTest {
 
             landingssideStatusRequest(
                 fnr = fnr.verdi,
-                forventetStatus = HttpStatusCode.NotFound,
-                forventetBody = "",
-                forventetContentType = null,
+                forventet = ForventetRespons.tom(404),
             )
         }
     }
@@ -276,9 +274,7 @@ class LandingssideStatusRouteTest {
 
             landingssideStatusRequest(
                 fnr = fnr.verdi,
-                forventetStatus = HttpStatusCode.NotFound,
-                forventetBody = "",
-                forventetContentType = null,
+                forventet = ForventetRespons.tom(404),
             )
         }
     }
@@ -482,9 +478,7 @@ class LandingssideStatusRouteTest {
 
             landingssideStatusRequest(
                 fnr = fnr.verdi,
-                forventetStatus = HttpStatusCode.NotFound,
-                forventetBody = "",
-                forventetContentType = null,
+                forventet = ForventetRespons.tom(404),
             )
         }
     }
