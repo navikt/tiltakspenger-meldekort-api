@@ -1,8 +1,8 @@
 package no.nav.tiltakspenger.meldekort.infra
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.kafka.Producer
-import no.nav.tiltakspenger.libs.kafka.config.KafkaConfigImpl
+import no.nav.tiltakspenger.libs.kafka.infra.KafkaConfig
+import no.nav.tiltakspenger.libs.kafka.infra.Producer
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.libs.logging.infra.KotlinLoggingSikkerlogg
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
@@ -87,7 +87,7 @@ open class ApplicationContext(val clock: Clock) {
 
     open val varselClient: VarselClient by lazy {
         TmsVarselClientImpl(
-            kafkaProducer = Producer(KafkaConfigImpl()),
+            kafkaProducer = Producer(producerConfig = KafkaConfig.fraNaisEnv().producerConfig()),
             topicName = Configuration.varselHendelseTopic,
             meldekortFrontendUrl = Configuration.meldekortFrontendUrl,
         )
@@ -96,7 +96,7 @@ open class ApplicationContext(val clock: Clock) {
     open val tmsMikrofrontendClient: TmsMikrofrontendClient by lazy {
         TmsMikrofrontendKafkaProducer(
             topicName = Configuration.microfrontendTopic,
-            produserMelding = Producer<String, String>(KafkaConfigImpl())::produce,
+            produserMelding = Producer<String, String>(producerConfig = KafkaConfig.fraNaisEnv().producerConfig())::produce,
         )
     }
 

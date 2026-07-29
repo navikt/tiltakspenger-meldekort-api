@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.varsler.infra
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.kafka.Producer
+import no.nav.tiltakspenger.libs.kafka.infra.Producer
 import no.nav.tiltakspenger.libs.tid.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.varsler.VarselClient

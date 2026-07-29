@@ -8,7 +8,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.kafka.Producer
+import no.nav.tiltakspenger.libs.kafka.infra.Producer
 import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import no.nav.tiltakspenger.meldekort.varsler.infra.TmsVarselClientImpl
 import no.nav.tms.varsel.builder.BuilderEnvironment
