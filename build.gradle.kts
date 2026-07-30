@@ -6,6 +6,8 @@ val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
 val ktorVersion = "3.4.3"
 val mockkVersion = "1.14.11"
+val jackson2Version = "2.22.1"
+val lz4Version = "1.11.1"
 val felleslibVersion = "0.0.20260730072901"
 val kotestVersion = "6.2.3"
 val kotlinxCoroutinesVersion = "1.11.0"
@@ -59,6 +61,22 @@ dependencies {
     // duplikate baseklasser (ByteToMessageDecoder m.fl.), som med `-cp lib/*` lastes i feil
     // rekkefølge og brekker HTTP-pipelinen.
     implementation(platform("io.netty:netty-bom:4.2.16.Final"))
+
+    // Vår egen kode er på jackson3 (tools.jackson), men jackson 2 kommer inn transitivt via
+    // tms-varsel/tms-mikrofrontend-selector og com.auth0-bibliotekene, som drar med seg
+    // jackson-bom 2.21.3. Den har bl.a. to PolymorphicTypeValidator-omgåelser
+    // (GHSA-rmj7-2vxq-3g9f, GHSA-j3rv-43j4-c7qm) og flere @JsonView/@JsonIgnore-bypass.
+    // Vi styrer versjonen selv i stedet for å vente på at oppstrøms bumper - samme
+    // versjon som `jackson2` i tiltakspenger-libs sin versjonskatalog.
+    implementation(platform("com.fasterxml.jackson:jackson-bom:$jackson2Version"))
+
+    constraints {
+        // kafka-clients (via libs:kafka) drar inn lz4-java 1.10.2, der de native XXHash-
+        // implementasjonene kan krasje JVM-en på ugyldige byte-intervaller (GHSA-xx22-p4ch-683r).
+        // Transitiv-only, derfor constraint og ikke en deklarert avhengighet.
+        implementation("at.yawk.lz4:lz4-java:$lz4Version")
+    }
+
     implementation("ch.qos.logback:logback-classic:1.5.38")
     implementation("net.logstash.logback:logstash-logback-encoder:9.0")
     implementation("org.jetbrains:annotations:26.1.0")
