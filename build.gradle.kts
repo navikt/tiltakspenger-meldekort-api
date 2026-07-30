@@ -156,30 +156,33 @@ spotless {
     }
 }
 
+val klasserMedDekningskrav =
+    listOf(
+        "no.nav.tiltakspenger.meldekort.**.*PostgresRepo*",
+        "no.nav.tiltakspenger.meldekort.arena.**",
+        "no.nav.tiltakspenger.meldekort.journalføring.infra.DokarkivClientImpl",
+        "no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenClientImpl",
+        "no.nav.tiltakspenger.meldekort.bruker.**",
+        "no.nav.tiltakspenger.meldekort.landingsside.**",
+        "no.nav.tiltakspenger.meldekort.meldekortvedtak.**",
+        "no.nav.tiltakspenger.meldekort.microfrontend.**",
+        "no.nav.tiltakspenger.meldekort.mottak.**",
+        "no.nav.tiltakspenger.meldekort.sak.**",
+    )
+
 kover {
+    currentProject {
+        instrumentation {
+            // Instrumenter kun klassene dekningsgaten måler.
+            includedClasses.addAll(klasserMedDekningskrav)
+        }
+    }
     reports {
         total {
             filters {
                 includes {
-                    classes(
-                        "no.nav.tiltakspenger.meldekort.**.*PostgresRepo*",
-                        "no.nav.tiltakspenger.meldekort.arena.**",
-                        "no.nav.tiltakspenger.meldekort.journalføring.infra.DokarkivClientImpl",
-                        "no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenClientImpl",
-                        "no.nav.tiltakspenger.meldekort.bruker.**",
-                        "no.nav.tiltakspenger.meldekort.landingsside.**",
-                        "no.nav.tiltakspenger.meldekort.meldekortvedtak.**",
-                        "no.nav.tiltakspenger.meldekort.microfrontend.**",
-                        "no.nav.tiltakspenger.meldekort.mottak.**",
-                        "no.nav.tiltakspenger.meldekort.sak.**",
-                    )
+                    classes(klasserMedDekningskrav)
                 }
-            }
-            html {
-                onCheck = true
-            }
-            xml {
-                onCheck = true
             }
             verify {
                 onCheck = true
