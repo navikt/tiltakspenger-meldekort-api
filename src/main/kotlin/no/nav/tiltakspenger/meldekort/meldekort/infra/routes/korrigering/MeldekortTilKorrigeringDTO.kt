@@ -35,7 +35,9 @@ fun Meldeperiode.tilKorrigeringDTO(
     kanSendeInnHelg: Boolean,
     clock: Clock,
 ): MeldekortTilKorrigeringDTO {
-    requireNotNull(forrigeMeldekort.mottatt)
+    requireNotNull(forrigeMeldekort.mottatt) {
+        "Kan ikke korrigere meldekort ${forrigeMeldekort.id} for kjede $kjedeId - meldekortet er ikke mottatt"
+    }
 
     val oppdaterteDager = forrigeMeldekort.dager.map { meldekortDag ->
         MeldekortDag(

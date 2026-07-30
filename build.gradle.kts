@@ -170,13 +170,9 @@ val klasserMedDekningskrav =
         "no.nav.tiltakspenger.meldekort.sak.**",
     )
 
+// Ikke scope instrumenteringen (currentProject.instrumentation.includedClasses): linjer fra målte klasser
+// som inlines inn i ikke-instrumenterte kallere mister dekning (verifisert 2026-07-30: 99,786 % med scoping, 100 % uten).
 kover {
-    currentProject {
-        instrumentation {
-            // Instrumenter kun klassene dekningsgaten måler.
-            includedClasses.addAll(klasserMedDekningskrav)
-        }
-    }
     reports {
         total {
             filters {
