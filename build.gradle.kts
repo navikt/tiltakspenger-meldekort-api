@@ -170,9 +170,14 @@ val klasserMedDekningskrav =
         "no.nav.tiltakspenger.meldekort.sak.**",
     )
 
-// Ikke scope instrumenteringen (currentProject.instrumentation.includedClasses): linjer fra målte klasser
-// som inlines inn i ikke-instrumenterte kallere mister dekning (verifisert 2026-07-30: 99,786 % med scoping, 100 % uten).
 kover {
+    currentProject {
+        instrumentation {
+            // Instrumenter kun klassene dekningsgaten måler.
+            // `*`-suffikset er påkrevd: eksakte klassenavn matcher ikke nøstede klasser og lambdaer (f.eks. DokarkivClientImpl$DokarkivResponse), som ellers mister dekning.
+            includedClasses.addAll(klasserMedDekningskrav.map { "$it*" })
+        }
+    }
     reports {
         total {
             filters {
