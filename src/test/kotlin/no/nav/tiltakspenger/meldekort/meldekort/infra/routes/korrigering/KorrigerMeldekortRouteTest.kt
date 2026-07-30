@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
-import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.periode.til
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDagStatus
