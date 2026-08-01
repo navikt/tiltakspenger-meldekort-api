@@ -9,8 +9,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-internal val VARSEL_ÅPNER: LocalTime = LocalTime.of(9, 0)
-internal val VARSEL_STENGER: LocalTime = LocalTime.of(17, 0)
+val VARSEL_ÅPNER: LocalTime = LocalTime.of(9, 0)
+val VARSEL_STENGER: LocalTime = LocalTime.of(17, 0)
 private val EKSTERN_VARSLING_ANTATT_SENDT_SLINGRINGSMONN: Duration = Duration.ofMinutes(15)
 
 /**
@@ -394,7 +394,7 @@ fun List<Varsel>.finnTidspunktForEksternVarsling(
  * Returnerer det neste tidspunktet som er innenfor det eksterne varselvinduet (virkedag 09:00-17:00).
  * Dersom [this] allerede er innenfor vinduet, returneres [this].
  */
-internal fun LocalDateTime.nesteGyldigeEksternVarseltidspunkt(): LocalDateTime {
+fun LocalDateTime.nesteGyldigeEksternVarseltidspunkt(): LocalDateTime {
     val dato = toLocalDate()
     val klokkeslett = toLocalTime()
 
@@ -407,7 +407,7 @@ internal fun LocalDateTime.nesteGyldigeEksternVarseltidspunkt(): LocalDateTime {
 }
 
 /** Neste virkedag etter [this] kl. 09:00. */
-internal fun LocalDate.nesteVirkedagKlNi(): LocalDateTime {
+fun LocalDate.nesteVirkedagKlNi(): LocalDateTime {
     return generateSequence(plusDays(1)) { it.plusDays(1) }
         .first { !it.erHelg() }
         .atTime(VARSEL_ÅPNER)

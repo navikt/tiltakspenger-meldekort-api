@@ -5,7 +5,7 @@ import no.nav.tiltakspenger.meldekort.infra.Configuration
 import no.nav.tiltakspenger.meldekort.landingsside.infra.routes.LandingssideStatusResponsDTO.LandingssideMeldekortDTO
 import java.time.LocalDateTime
 
-internal fun LandingssideStatusResponsDTO.shouldBe(
+fun LandingssideStatusResponsDTO.shouldBe(
     harInnsendteMeldekort: Boolean = false,
     meldekortTilUtfylling: List<LocalDateTime> = emptyList(),
     redirectUrl: String = Configuration.meldekortFrontendUrl,

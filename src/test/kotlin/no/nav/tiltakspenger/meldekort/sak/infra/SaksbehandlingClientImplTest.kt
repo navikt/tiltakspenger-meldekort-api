@@ -21,7 +21,7 @@ import java.io.IOException
  *  - Non-200-responser returnerer [HttpKlientError.UventetStatus] som [arrow.core.Either.Left].
  *  - Transportfeil (f.eks. ingen tilkobling) gir [HttpKlientError.IngenRespons] som [arrow.core.Either.Left].
  */
-internal class SaksbehandlingClientImplTest {
+class SaksbehandlingClientImplTest {
 
     private val baseUrl = "http://saksbehandling-api"
 

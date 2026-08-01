@@ -13,7 +13,7 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import java.time.Clock
 import java.time.LocalDateTime
 
-internal fun vurderVarselForSak(
+fun vurderVarselForSak(
     sakId: SakId,
     saksnummer: String,
     fnr: Fnr,

@@ -29,7 +29,7 @@ fun Routing.landingssideModule(applicationContext: ApplicationContext) {
     }
 }
 
-internal fun Route.fellesLandingssideRoutes(
+fun Route.fellesLandingssideRoutes(
     fellesLandingssideService: FellesLandingssideService,
 ) {
     // Serverer status for meldekort for en bruker

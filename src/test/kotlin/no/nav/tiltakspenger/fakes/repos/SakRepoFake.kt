@@ -23,7 +23,7 @@ class SakRepoFake(
     private val data = Atomic(mutableMapOf<SakId, Sak>())
 
     /** Eksponert for [BrukerSakRepoFake] slik at fakes deler underliggende state. */
-    internal fun alleSaker(): Collection<Sak> = data.get().values
+    fun alleSaker(): Collection<Sak> = data.get().values
 
     /**
      * Skrivesiden eies av mottak ([no.nav.tiltakspenger.meldekort.mottak.MottakRepo]), kalles via [no.nav.tiltakspenger.fakes.repos.MottakRepoFake].

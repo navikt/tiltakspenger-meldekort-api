@@ -6,4 +6,4 @@ data class LandingssideMeldekort(
     val kanSendesFra: LocalDateTime,
 )
 
-internal fun List<LandingssideMeldekort>.sortert(): List<LandingssideMeldekort> = sortedBy { it.kanSendesFra }
+fun List<LandingssideMeldekort>.sortert(): List<LandingssideMeldekort> = sortedBy { it.kanSendesFra }

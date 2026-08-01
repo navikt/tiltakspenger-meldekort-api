@@ -21,7 +21,7 @@ import no.nav.tiltakspenger.meldekort.mottak.infra.tilMottattSak
  *
  * Request DTO: [SakTilMeldekortApiDTO]
  */
-internal fun Route.mottakFraSaksbehandlingRoute(
+fun Route.mottakFraSaksbehandlingRoute(
     mottakFraSaksbehandlingService: MottakFraSaksbehandlingService,
 ) {
     val logger = KotlinLogging.logger {}

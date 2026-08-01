@@ -24,7 +24,7 @@ import java.time.LocalDate
  *  - Feilstatus på /historiskemeldekort gir `null` (brukeren finnes ikke).
  *  - Transportfeil gir [HttpKlientError.IngenRespons].
  */
-internal class ArenaMeldekortHttpClientTest {
+class ArenaMeldekortHttpClientTest {
     private val fnr = Fnr.fromString("12345678910")
 
     private val baseUrl = "http://meldekortservice"

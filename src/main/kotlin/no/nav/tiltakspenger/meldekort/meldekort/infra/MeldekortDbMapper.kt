@@ -12,7 +12,7 @@ import no.nav.tiltakspenger.meldekort.meldeperiode.infra.MeldeperiodePostgresRep
  * Felles rad-mapper for `meldekort_bruker`.
  * Deles av postgres-repoene i meldekort-, sending- og journalføring-domenet slik at de slipper å duplisere mapping-logikken.
  */
-internal fun brukersMeldekortFromRow(
+fun brukersMeldekortFromRow(
     row: Row,
     session: Session,
 ): BrukersMeldekort {

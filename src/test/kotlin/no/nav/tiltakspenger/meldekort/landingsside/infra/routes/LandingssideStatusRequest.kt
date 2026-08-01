@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 /**
  * Route: [no.nav.tiltakspenger.meldekort.landingsside.infra.routes.fellesLandingssideRoutes]
  */
-internal suspend fun ApplicationTestBuilder.landingssideStatusRequest(
+suspend fun ApplicationTestBuilder.landingssideStatusRequest(
     fnr: String,
     jwt: String? = JwtGenerator().createJwtForUser(fnr = fnr),
     forventet: ForventetRespons? = ForventetRespons(200, contentType = "application/json"),
@@ -29,7 +29,7 @@ internal suspend fun ApplicationTestBuilder.landingssideStatusRequest(
     }
 }
 
-internal data class LandingssideStatusResponsDTO(
+data class LandingssideStatusResponsDTO(
     val harInnsendteMeldekort: Boolean,
     val meldekortTilUtfylling: List<LandingssideMeldekortDTO>,
     val redirectUrl: String,

@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 private val EN_TIME: Duration = Duration.ofHours(1)
 private val TI_MINUTTER: Duration = Duration.ofMinutes(10)
 
-internal sealed interface BeholderPågåendeVarselÅrsak : VurderVarselUtfall {
+sealed interface BeholderPågåendeVarselÅrsak : VurderVarselUtfall {
     data object PlanlagtAktiveringErNærNokEllerLikSkalAktiveres : BeholderPågåendeVarselÅrsak
 
     data object PlanlagtAktiveringErIkkeTidligNokTilÅErstatteSkalAktiveres : BeholderPågåendeVarselÅrsak
@@ -19,7 +19,7 @@ internal sealed interface BeholderPågåendeVarselÅrsak : VurderVarselUtfall {
     data object PlanlagtAktiveringErInnenforEnTimeAktivtVarsel : BeholderPågåendeVarselÅrsak
 }
 
-internal data class PlanlagtAktivering(
+data class PlanlagtAktivering(
     val skalAktiveresTidspunkt: LocalDateTime,
     val skalAktiveresEksterntTidspunkt: LocalDateTime,
     val begrunnelse: String,
