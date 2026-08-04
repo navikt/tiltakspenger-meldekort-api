@@ -7,9 +7,13 @@ import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientMetadata
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientTidsstempler
+import no.nav.tiltakspenger.libs.httpklient.Tidsgrenser
+import no.nav.tiltakspenger.libs.httpklient.UriSynlighet
 import no.nav.tiltakspenger.libs.httpklient.infra.kall.AuthTokenProvider
+import java.net.URI
 import java.time.Instant
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 // TODO jah: Dette er ikke noe som er unikt for meldekort-api.
 //  Flytt til libs, og bytt til å bruke det.
@@ -20,6 +24,10 @@ val testTokenProvider = object : AuthTokenProvider {
 
 /** Minimal metadata til feiltyper i tester som ikke bryr seg om HTTP-detaljene. */
 fun tomHttpKlientMetadata(statusCode: Int? = 200) = HttpKlientMetadata(
+    method = "POST",
+    uri = URI.create("https://example.test/endepunkt"),
+    uriSynlighet = UriSynlighet.VanligLogg,
+    tidsgrenser = Tidsgrenser(svar = 30.seconds, oppkobling = 10.seconds),
     rawRequestString = "{}",
     rawResponseString = "{}",
     requestHeaders = emptyMap(),
