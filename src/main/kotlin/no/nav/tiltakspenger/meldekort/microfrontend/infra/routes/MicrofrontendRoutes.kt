@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.microfrontend.infra.routes
 
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -13,8 +13,6 @@ import io.ktor.server.routing.route
 import no.nav.tiltakspenger.libs.texas.IdentityProvider
 import no.nav.tiltakspenger.libs.texas.fnr
 import no.nav.tiltakspenger.meldekort.microfrontend.HentMeldekortInfoForMicrofrontendService
-
-private val log = KotlinLogging.logger { }
 
 /**
  * Endepunkter som kalles fra brukers meldekort-microfrontend.
@@ -44,11 +42,13 @@ private val log = KotlinLogging.logger { }
  */
 fun Routing.microfrontendModule(
     hentMeldekortInfoForMicrofrontendService: HentMeldekortInfoForMicrofrontendService,
+    log: KLogger,
 ) {
     authenticate(IdentityProvider.TOKENX.value) {
         route("/din-side/microfrontend") {
             microfrontendRoutes(
                 hentMeldekortInfoForMicrofrontendService = hentMeldekortInfoForMicrofrontendService,
+                log = log,
             )
         }
     }
@@ -59,6 +59,7 @@ fun Routing.microfrontendModule(
  */
 fun Route.microfrontendRoutes(
     hentMeldekortInfoForMicrofrontendService: HentMeldekortInfoForMicrofrontendService,
+    log: KLogger,
 ) {
     get("/meldekort-kort-info") {
         hentMeldekortInfoForMicrofrontendService.hentInformasjonOmMeldekortForMicrofrontend(call.fnr()).fold(

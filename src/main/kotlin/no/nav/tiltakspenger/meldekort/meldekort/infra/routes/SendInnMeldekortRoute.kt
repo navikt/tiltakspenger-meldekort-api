@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.meldekort.infra.routes
 
 import arrow.core.Either
 import arrow.core.getOrElse
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
@@ -17,13 +17,13 @@ import no.nav.tiltakspenger.meldekort.meldekort.LagreMeldekortFraBrukerService
 import no.nav.tiltakspenger.meldekort.meldekort.Loggnivå
 import no.nav.tiltakspenger.meldekort.meldekort.infra.MeldekortFraBrukerDTO
 
-private val logger = KotlinLogging.logger {}
-
 /**
  * Request DTO: [MeldekortFraBrukerDTO]
  */
 fun Route.sendInnMeldekortRoute(
     meldekortService: LagreMeldekortFraBrukerService,
+    logger: KLogger,
+    sikkerlogg: Sikkerlogg,
 ) {
     post("send-inn") {
         val lagreFraBrukerKommando = Either.catch {
@@ -32,7 +32,7 @@ fun Route.sendInnMeldekortRoute(
         }.getOrElse {
             with("Feil ved parsing av innsendt meldekort fra bruker") {
                 logger.error { "$this. Se sikkerlogg for detaljer." }
-                Sikkerlogg.error(it) { "$this - ${it.message}" }
+                sikkerlogg.error(it) { "$this - ${it.message}" }
             }
             call.respond(
                 status = HttpStatusCode.BadRequest,
@@ -46,7 +46,7 @@ fun Route.sendInnMeldekortRoute(
 
         meldekortService.lagreMeldekortFraBruker(kommando = lagreFraBrukerKommando)
             .onLeft { feil ->
-                feil.logg()
+                feil.logg(logger, sikkerlogg)
                 val (status, errorJson) = feil.toErrorJson()
                 call.respond(status = status, message = errorJson)
             }.onRight {
@@ -58,13 +58,13 @@ fun Route.sendInnMeldekortRoute(
 /**
  * Logger feilen i tråd med dens egen tolkning: [KunneIkkeLagreMeldekortFraBruker.loggnivå] avgjør nivået i vanlig logg, mens en eventuell [KunneIkkeLagreMeldekortFraBruker.throwable] (som kan inneholde personopplysninger) kun går til sikkerlogg, med en referanse fra vanlig logg.
  */
-private fun KunneIkkeLagreMeldekortFraBruker.logg() {
+private fun KunneIkkeLagreMeldekortFraBruker.logg(logger: KLogger, sikkerlogg: Sikkerlogg) {
     val vanligLoggMelding = if (throwable != null) "$loggMelding Se sikkerlogg for detaljer." else loggMelding
     when (loggnivå) {
         Loggnivå.WARN -> logger.warn { vanligLoggMelding }
         Loggnivå.ERROR -> logger.error { vanligLoggMelding }
     }
-    throwable?.let { Sikkerlogg.error(it) { "$loggMelding - ${it.message}" } }
+    throwable?.let { sikkerlogg.error(it) { "$loggMelding - ${it.message}" } }
 }
 
 /**

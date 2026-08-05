@@ -27,7 +27,11 @@ fun Routing.meldekortModule(applicationContext: ApplicationContext) {
             hentInnsendteMeldekortRoute(hentMeldekortService, brukerService, clock)
             hentMeldekortForKjedeRoute(hentMeldekortService, clock)
             hentMeldekortRoute(hentMeldekortService, clock)
-            sendInnMeldekortRoute(lagreMeldekortFraBrukerService)
+            sendInnMeldekortRoute(
+                meldekortService = lagreMeldekortFraBrukerService,
+                logger = applicationContext.sendInnMeldekortRouteLogger,
+                sikkerlogg = applicationContext.sendInnMeldekortRouteSikkerlogg,
+            )
             korrigeringRoutes(korrigerMeldekortService, clock)
         }
     }

@@ -3,16 +3,15 @@ package no.nav.tiltakspenger.meldekort.microfrontend
 import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.separateEither
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 
 class AktiverMicrofrontendJob(
     private val microfrontendRepo: MicrofrontendRepo,
     private val tmsMikrofrontendClient: TmsMikrofrontendClient,
+    private val log: KLogger,
 ) {
-    private val log = KotlinLogging.logger { }
-
     fun aktiverMicrofrontendForBrukere(): MicrofrontendJobbResultat {
         return microfrontendRepo.hentSakerHvorMicrofrontendSkalAktiveres().fold(
             ifLeft = { feil ->

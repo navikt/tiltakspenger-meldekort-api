@@ -14,6 +14,8 @@ import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
+import no.nav.tiltakspenger.meldekort.microfrontend.AktiverMicrofrontendJob
+import no.nav.tiltakspenger.meldekort.microfrontend.InaktiverMicrofrontendJob
 import no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService
 import java.time.Clock
 
@@ -46,6 +48,25 @@ sealed class TestApplicationContext(
 
     val mottakRouteSikkerloggfanger = Sikkerloggfanger()
     override val mottakFraSaksbehandlingRouteSikkerlogg: Sikkerlogg = mottakRouteSikkerloggfanger
+
+    /**
+     * Microfrontend-jobbene svelger hentefeil og logger dem, så logglinja er det eneste sporet av at feilhåndteringen kjørte.
+     * [no.nav.tiltakspenger.fakes.repos.MicrofrontendRepoFake] returnerer `DatabaseFeil` med vilje for å treffe nettopp den grenen.
+     */
+    val sendInnMeldekortLoggfanger = Loggfanger("no.nav.tiltakspenger.meldekort.meldekort.infra.routes.SendInnMeldekortRouteKt")
+    override val sendInnMeldekortRouteLogger: KLogger = sendInnMeldekortLoggfanger
+
+    val sendInnMeldekortSikkerloggfanger = Sikkerloggfanger()
+    override val sendInnMeldekortRouteSikkerlogg: Sikkerlogg = sendInnMeldekortSikkerloggfanger
+
+    val microfrontendRoutesLoggfanger = Loggfanger("no.nav.tiltakspenger.meldekort.microfrontend.infra.routes.MicrofrontendRoutesKt")
+    override val microfrontendRoutesLogger: KLogger = microfrontendRoutesLoggfanger
+
+    val aktiverMicrofrontendLoggfanger = Loggfanger(AktiverMicrofrontendJob::class.java.name)
+    override val aktiverMicrofrontendJobLogger: KLogger = aktiverMicrofrontendLoggfanger
+
+    val inaktiverMicrofrontendLoggfanger = Loggfanger(InaktiverMicrofrontendJob::class.java.name)
+    override val inaktiverMicrofrontendJobLogger: KLogger = inaktiverMicrofrontendLoggfanger
 
     override val varselClient = TmsVarselClientFake()
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()

@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.varsler
 
 import arrow.core.Either
 import arrow.core.getOrElse
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.jobb.JobbResultat
@@ -14,8 +14,8 @@ class AktiverVarslerService(
     private val varselClient: VarselClient,
     private val sessionFactory: SessionFactory,
     private val clock: Clock,
+    private val log: KLogger,
 ) {
-    private val log = KotlinLogging.logger { }
 
     /** Returnerer [JobbResultat.IngenArbeid] når ingen saker hadde varsler som skulle aktiveres, slik at jobben kan melde fra om den hadde arbeid. */
     fun aktiverVarsler(): JobbResultat {

@@ -67,7 +67,10 @@ fun Application.ktorSetup(
         mottakModule(applicationContext)
         meldekortModule(applicationContext)
         brukerModule(applicationContext)
-        microfrontendModule(applicationContext.hentMeldekortInfoForMicrofrontendService)
+        microfrontendModule(
+            hentMeldekortInfoForMicrofrontendService = applicationContext.hentMeldekortInfoForMicrofrontendService,
+            log = applicationContext.microfrontendRoutesLogger,
+        )
         landingssideModule(applicationContext)
 
         additionalRoutes?.invoke(this)

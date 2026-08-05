@@ -266,6 +266,8 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
+    open val aktiverVarslerServiceLogger: KLogger = KotlinLogging.logger(AktiverVarslerService::class.java.name)
+
     open val aktiverVarslerService: AktiverVarslerService by lazy {
         AktiverVarslerService(
             varselRepo = varselRepo,
@@ -273,6 +275,7 @@ open class ApplicationContext(val clock: Clock) {
             varselClient = varselClient,
             sessionFactory = sessionFactory,
             clock = clock,
+            log = aktiverVarslerServiceLogger,
         )
     }
 
@@ -380,17 +383,31 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
+    open val sendInnMeldekortRouteLogger: KLogger =
+        KotlinLogging.logger("no.nav.tiltakspenger.meldekort.meldekort.infra.routes.SendInnMeldekortRouteKt")
+
+    open val sendInnMeldekortRouteSikkerlogg: Sikkerlogg by lazy { sikkerlogg }
+
+    open val microfrontendRoutesLogger: KLogger =
+        KotlinLogging.logger("no.nav.tiltakspenger.meldekort.microfrontend.infra.routes.MicrofrontendRoutesKt")
+
+    open val aktiverMicrofrontendJobLogger: KLogger = KotlinLogging.logger(AktiverMicrofrontendJob::class.java.name)
+
     open val aktiverMicrofrontendJob: AktiverMicrofrontendJob by lazy {
         AktiverMicrofrontendJob(
             microfrontendRepo = microfrontendRepo,
             tmsMikrofrontendClient = tmsMikrofrontendClient,
+            log = aktiverMicrofrontendJobLogger,
         )
     }
+
+    open val inaktiverMicrofrontendJobLogger: KLogger = KotlinLogging.logger(InaktiverMicrofrontendJob::class.java.name)
 
     open val inaktiverMicrofrontendJob: InaktiverMicrofrontendJob by lazy {
         InaktiverMicrofrontendJob(
             microfrontendRepo = microfrontendRepo,
             tmsMikrofrontendClient = tmsMikrofrontendClient,
+            log = inaktiverMicrofrontendJobLogger,
         )
     }
 }

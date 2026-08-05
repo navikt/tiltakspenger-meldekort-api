@@ -1,11 +1,13 @@
 package no.nav.tiltakspenger.meldekort.varsler.infra.routes
 
+import io.github.oshai.kotlinlogging.Level
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import no.nav.tiltakspenger.Loggfanger
 import no.nav.tiltakspenger.lagreMeldekortvedtak
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
@@ -690,12 +692,14 @@ class VarselPostgresEndToEndTest {
                 varselSomSkalInaktiveres = opprinneligVarsel,
                 skalInaktiveresTidspunkt = nå(klokke),
             )
+            val loggfanger = Loggfanger(AktiverVarslerService::class.java.name)
             val aktiverVarslerService = AktiverVarslerService(
                 varselRepo = varselRepoMedKonkurrerendeVurdering,
                 sakVarselRepo = tac.sakVarselRepo,
                 varselClient = tac.varselClient,
                 sessionFactory = tac.sessionFactory,
                 clock = klokke,
+                log = loggfanger,
             )
 
             aktiverVarslerService.aktiverVarsler()
@@ -704,6 +708,12 @@ class VarselPostgresEndToEndTest {
             lagretVarsel.shouldBeInstanceOf<Varsel.SkalInaktiveres>()
             lagretVarsel.varselId shouldBe opprinneligVarsel.varselId
             tac.varselClient.snapshotVarselhendelser().sendteVarsler shouldHaveSize 0
+
+            // Jobben svelger konflikten per sak og går videre; logglinja er det eneste sporet av at den optimistiske låsen slo til.
+            loggfanger.linjerPå(Level.ERROR).single().also {
+                it.melding shouldContain "Denne vil bli prøvd på nytt."
+                it.årsakskjede() shouldContain "Optimistisk lås slo til for varsel"
+            }
         }
     }
 

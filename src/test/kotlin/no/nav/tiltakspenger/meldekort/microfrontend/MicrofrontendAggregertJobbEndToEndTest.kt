@@ -2,9 +2,12 @@ package no.nav.tiltakspenger.meldekort.microfrontend
 
 import arrow.core.Either
 import arrow.core.left
+import io.github.oshai.kotlinlogging.Level
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.ktor.server.testing.ApplicationTestBuilder
+import no.nav.tiltakspenger.Loggfanger
 import no.nav.tiltakspenger.TestApplicationContextMedPostgres
 import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -126,16 +129,29 @@ class MicrofrontendAggregertJobbEndToEndTest {
 
         @Test
         fun `aktivering gir henteFeil-resultat dersom henting av saker feiler`() {
-            val job = AktiverMicrofrontendJob(FeilendeMicrofrontendRepo, TmsMikrofrontendClientFake())
+            val loggfanger = Loggfanger(AktiverMicrofrontendJob::class.java.name)
+            val job = AktiverMicrofrontendJob(FeilendeMicrofrontendRepo, TmsMikrofrontendClientFake(), loggfanger)
 
             job.aktiverMicrofrontendForBrukere() shouldBe MicrofrontendJobbResultat.henteFeil
+
+            // Jobben svelger feilen med vilje, så logglinja er det eneste som skiller «håndtert» fra «forsvant».
+            loggfanger.linjerPå(Level.ERROR).single().also {
+                it.melding shouldContain "Prøver igjen ved neste jobbkjøring."
+                it.årsakskjede() shouldContain "simulert databasefeil"
+            }
         }
 
         @Test
         fun `inaktivering gir henteFeil-resultat dersom henting av saker feiler`() {
-            val job = InaktiverMicrofrontendJob(FeilendeMicrofrontendRepo, TmsMikrofrontendClientFake())
+            val loggfanger = Loggfanger(InaktiverMicrofrontendJob::class.java.name)
+            val job = InaktiverMicrofrontendJob(FeilendeMicrofrontendRepo, TmsMikrofrontendClientFake(), loggfanger)
 
             job.inaktiverMicrofrontendForBrukere() shouldBe MicrofrontendJobbResultat.henteFeil
+
+            loggfanger.linjerPå(Level.ERROR).single().also {
+                it.melding shouldContain "Prøver igjen ved neste jobbkjøring."
+                it.årsakskjede() shouldContain "simulert databasefeil"
+            }
         }
     }
 
