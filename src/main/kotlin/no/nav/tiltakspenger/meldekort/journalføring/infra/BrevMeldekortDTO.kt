@@ -31,7 +31,7 @@ private data class BrevMeldekortDTO(
     val uke1: Int,
     val uke2: Int,
     val dager: List<BrevMeldekortDagDTO>,
-    val saksnummer: String? = null,
+    val saksnummer: String,
     val mottatt: String?,
 )
 
