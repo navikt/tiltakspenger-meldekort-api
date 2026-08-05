@@ -6,7 +6,7 @@ import org.flywaydb.core.Flyway
 import javax.sql.DataSource
 
 private fun flyway(dataSource: DataSource): Flyway =
-    when (Configuration.applicationProfile()) {
+    when (Configuration.profile) {
         Profile.LOCAL -> localFlyway(dataSource)
         else -> gcpFlyway(dataSource)
     }

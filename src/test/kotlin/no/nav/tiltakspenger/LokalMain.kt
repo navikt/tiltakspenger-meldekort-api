@@ -18,14 +18,14 @@ import kotlin.system.exitProcess
  * Postgres startes for deg hvis den ikke allerede kjører — se [startLokalPostgres].
  */
 fun main() {
-    System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
+    System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile)
 
     val log = KotlinLogging.logger {}
     log.info { "Starter lokal server" }
     val clock = Clock.system(zoneIdOslo)
 
     val postgres = LokalPostgresConfig.fraJdbcUrl(
-        jdbcUrl = Configuration.database(),
+        jdbcUrl = Configuration.dbJdbcUrl,
         composeTjeneste = "postgresMeldekort",
     ).flatMap { config ->
         startLokalPostgres(config = config, clock = clock)

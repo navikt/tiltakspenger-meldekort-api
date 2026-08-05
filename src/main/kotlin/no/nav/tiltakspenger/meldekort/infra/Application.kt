@@ -5,13 +5,12 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Bakgrunnsprosessoppsett
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.startApp
 import no.nav.tiltakspenger.libs.tid.zoneIdOslo
-import no.nav.tiltakspenger.meldekort.infra.Configuration.httpPort
 import no.nav.tiltakspenger.meldekort.infra.routes.CALL_ID_MDC_KEY
 import no.nav.tiltakspenger.meldekort.infra.routes.ktorSetup
 import java.time.Clock
 
 fun main() {
-    System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile())
+    System.setProperty("logback.configurationFile", Configuration.logbackConfigurationFile)
 
     val log = KotlinLogging.logger {}
 
@@ -20,7 +19,7 @@ fun main() {
 
 fun start(
     log: KLogger,
-    port: Int = httpPort(),
+    port: Int = Configuration.httpPort,
     host: String = "0.0.0.0",
     isNais: Boolean = Configuration.isNais(),
     applicationContext: ApplicationContext = ApplicationContext(
@@ -39,7 +38,7 @@ fun start(
         isNais = isNais,
         oppsett = Bakgrunnsprosessoppsett(
             mdcCallIdKey = CALL_ID_MDC_KEY,
-            electorPath = Configuration::electorPath,
+            electorPath = { Configuration.electorPath },
             tasks = jobber(applicationContext),
             kafkaConsumers = kafkaConsumers(isNais = isNais, applicationContext = applicationContext),
             clock = applicationContext.clock,

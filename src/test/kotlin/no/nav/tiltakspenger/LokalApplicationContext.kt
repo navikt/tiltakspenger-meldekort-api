@@ -9,14 +9,18 @@ import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
 import no.nav.tiltakspenger.generators.JournalpostIdGeneratorRandom
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortClient
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
-import no.nav.tiltakspenger.meldekort.infra.Configuration
 import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
 import no.nav.tiltakspenger.meldekort.varsler.VarselClient
 import java.time.Clock
 
 class LokalApplicationContext(clock: Clock) : ApplicationContext(clock) {
+    private val brukFakeTexasClient: Boolean =
+        System.getenv("BRUK_FAKE_AUTH")?.toBooleanStrictOrNull() ?: true
+    private val brukFakeSaksbehandlingClient: Boolean =
+        System.getenv("BRUK_FAKE_SAKSBEHANDLING")?.toBooleanStrictOrNull() ?: false
+
     override val texasClient =
-        if (Configuration.brukFakeTexasClientLokalt) TexasClientFakeLokal() else super.texasClient
+        if (brukFakeTexasClient) TexasClientFakeLokal() else super.texasClient
 
     override val varselClient: VarselClient = TmsVarselClientFake()
 
@@ -25,7 +29,7 @@ class LokalApplicationContext(clock: Clock) : ApplicationContext(clock) {
     override val dokarkivClient = DokarkivClientFake(JournalpostIdGeneratorRandom())
 
     override val saksbehandlingClient: SaksbehandlingClient =
-        if (Configuration.brukFakeSaksbehandlingClient) SaksbehandlingClientFake() else super.saksbehandlingClient
+        if (brukFakeSaksbehandlingClient) SaksbehandlingClientFake() else super.saksbehandlingClient
 
     override val arenaMeldekortClient: ArenaMeldekortClient = ArenaMeldekortClientFake()
 }

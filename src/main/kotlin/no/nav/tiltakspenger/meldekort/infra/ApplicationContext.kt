@@ -72,16 +72,16 @@ import java.time.Clock
 open class ApplicationContext(val clock: Clock) {
     private val log = KotlinLogging.logger {}
 
-    open val jdbcUrl by lazy { Configuration.database() }
+    open val jdbcUrl by lazy { Configuration.dbJdbcUrl }
     open val dataSource by lazy { DataSourceSetup.createDatasource(jdbcUrl) }
     open val sessionCounter by lazy { SessionCounter(log) }
     open val sessionFactory: SessionFactory by lazy { PostgresSessionFactory(dataSource, sessionCounter) }
 
     open val texasClient: TexasClient by lazy {
         TexasHttpClient(
-            introspectionUrl = Configuration.naisTokenIntrospectionEndpoint,
-            tokenUrl = Configuration.naisTokenEndpoint,
-            tokenExchangeUrl = Configuration.naisTokenExchangeEndpoint,
+            introspectionUrl = Configuration.tokenIntrospectionEndpoint,
+            tokenUrl = Configuration.tokenEndpoint,
+            tokenExchangeUrl = Configuration.tokenExchangeEndpoint,
             clock = clock,
         )
     }
