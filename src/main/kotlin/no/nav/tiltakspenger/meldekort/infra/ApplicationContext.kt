@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.infra
 
+import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.kafka.infra.KafkaConfig
 import no.nav.tiltakspenger.libs.kafka.infra.Producer
@@ -332,6 +333,13 @@ open class ApplicationContext(val clock: Clock) {
         )
     }
 
+    /**
+     * Loggeren til [MottakFraSaksbehandlingService] settes her, og med eksplisitt navn: `KotlinLogging.logger {}` ville avledet navnet fra denne klassen og dermed endret loggernavnet i Loki.
+     * Tester overstyrer den med en fanger for å asserte på hva som logges.
+     */
+    open val mottakFraSaksbehandlingLogger: KLogger =
+        KotlinLogging.logger(MottakFraSaksbehandlingService::class.java.name)
+
     open val mottakFraSaksbehandlingService by lazy {
         MottakFraSaksbehandlingService(
             sakRepo = sakRepo,
@@ -340,6 +348,7 @@ open class ApplicationContext(val clock: Clock) {
             sakVarselRepo = sakVarselRepo,
             mottakRepo = mottakRepo,
             sessionFactory = sessionFactory,
+            logger = mottakFraSaksbehandlingLogger,
         )
     }
 

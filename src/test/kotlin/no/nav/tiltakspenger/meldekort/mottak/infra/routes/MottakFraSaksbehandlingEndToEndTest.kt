@@ -1,9 +1,13 @@
 package no.nav.tiltakspenger.meldekort.mottak.infra.routes
 
+import io.github.oshai.kotlinlogging.Level
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
+import io.ktor.server.testing.ApplicationTestBuilder
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
@@ -16,6 +20,7 @@ import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons
 import no.nav.tiltakspenger.libs.ktor.test.common.defaultRequestWithAssertions
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
+import no.nav.tiltakspenger.libs.meldekort.SakTilMeldekortApiDTO
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.infra.routes.JwtGenerator
 import no.nav.tiltakspenger.meldekort.infra.routes.withTestApplicationContext
@@ -451,35 +456,80 @@ class MottakFraSaksbehandlingEndToEndTest {
     }
 
     /**
-     * Treffer den defensive `LagringFeilet`-grenen (HTTP 500) via en genuin databasefeil mot ekte Postgres: en ny meldeperiode-id med samme `(sak_id, kjede_id, versjon)` som en allerede lagret meldeperiode bryter `unique_kjede_id_versjon` (se V7-migreringen).
-     * Lagringen skjer i én transaksjon, så hele forsøket skal rulles tilbake.
+     * Treffer den defensive `LagringFeilet`-grenen (HTTP 500) via en genuin databasefeil mot ekte Postgres: en ny meldeperiode-id med samme `(sak_id, kjede_id, opprettet)` som en allerede lagret meldeperiode bryter `unique_kjede_id_opprettet` (se V7-migreringen).
+     * `versjon` bumpes, slik at det kun er denne constrainten som brytes.
+     *
+     * Vi asserter på loggeren i tillegg til HTTP-svaret: uten det ville testen ikke merket om det var en helt annen databasefeil som ga 500-en.
+     * Se søsterstesten under for `unique_kjede_id_versjon`.
      */
     @Test
-    fun `Skal returnere 500 og rulle tilbake når lagring bryter databasekonstraint`() {
+    fun `Skal returnere 500 og rulle tilbake når lagring bryter unique_kjede_id_opprettet`() {
         withTestApplicationContextAndPostgres { tac ->
             val meldeperiode = ObjectMother.meldeperiodeDto(periode = førstePeriode, opprettet = nå(tac.clock))
-            val sakDto = ObjectMother.sakDTO(meldeperioder = listOf(meldeperiode))
 
-            mottaSakRequest(
+            kolliderMedLagretMeldeperiode(
                 tac = tac,
-                requestDto = sakDto,
-                forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
+                meldeperiode = meldeperiode,
+                kolliderende = meldeperiode.copy(
+                    id = MeldeperiodeId.random().toString(),
+                    versjon = meldeperiode.versjon + 1,
+                ),
+                forventetConstraint = "unique_kjede_id_opprettet",
             )
-
-            // Ny meldeperiode-id, men uendret kjedeId/versjon → kolliderer på unique_kjede_id_versjon ved insert.
-            val kolliderende = sakDto.copy(
-                meldeperioder = listOf(meldeperiode.copy(id = MeldeperiodeId.random().toString())),
-            )
-
-            mottaSakRequest(
-                tac = tac,
-                requestDto = kolliderende,
-                forventet = ForventetRespons.eksakt(500, "Lagring av sak feilet", "text/plain; charset=UTF-8"),
-            )
-
-            // Saken skal fortsatt bare ha den opprinnelige meldeperioden (transaksjonen rullet tilbake).
-            val lagretSak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
-            lagretSak.meldeperioder.map { it.id.toString() } shouldBe listOf(meldeperiode.id)
         }
+    }
+
+    /**
+     * Som testen over, men her holdes `versjon` fast og `opprettet` flyttes, slik at det kun er `unique_kjede_id_versjon` som brytes.
+     */
+    @Test
+    fun `Skal returnere 500 og rulle tilbake når lagring bryter unique_kjede_id_versjon`() {
+        withTestApplicationContextAndPostgres { tac ->
+            val meldeperiode = ObjectMother.meldeperiodeDto(periode = førstePeriode, opprettet = nå(tac.clock))
+
+            kolliderMedLagretMeldeperiode(
+                tac = tac,
+                meldeperiode = meldeperiode,
+                kolliderende = meldeperiode.copy(
+                    id = MeldeperiodeId.random().toString(),
+                    opprettet = meldeperiode.opprettet.plusSeconds(1),
+                ),
+                forventetConstraint = "unique_kjede_id_versjon",
+            )
+        }
+    }
+
+    /**
+     * Lagrer [meldeperiode], sender så inn [kolliderende] på samme sak og verifiserer at forsøket gir HTTP 500, at [forventetConstraint] er det som faktisk brøt, og at hele transaksjonen ble rullet tilbake.
+     */
+    private suspend fun ApplicationTestBuilder.kolliderMedLagretMeldeperiode(
+        tac: TestApplicationContext,
+        meldeperiode: SakTilMeldekortApiDTO.MeldeperiodeDTO,
+        kolliderende: SakTilMeldekortApiDTO.MeldeperiodeDTO,
+        forventetConstraint: String,
+    ) {
+        val sakDto = ObjectMother.sakDTO(meldeperioder = listOf(meldeperiode))
+
+        mottaSakRequest(
+            tac = tac,
+            requestDto = sakDto,
+            forventet = ForventetRespons.eksakt(200, "Sak lagret", "text/plain; charset=UTF-8"),
+        )
+
+        mottaSakRequest(
+            tac = tac,
+            requestDto = sakDto.copy(meldeperioder = listOf(kolliderende)),
+            forventet = ForventetRespons.eksakt(500, "Lagring av sak feilet", "text/plain; charset=UTF-8"),
+        )
+
+        tac.mottakLoggfanger.linjerPå(Level.ERROR).single().also {
+            it.melding shouldContain "Feil under lagring av sak eller meldeperioder for ${sakDto.sakId}"
+            it.årsakskjede() shouldContain "Feil under lagring av meldeperiode ${kolliderende.id}"
+            it.årsakskjede() shouldContain forventetConstraint
+        }
+
+        // Saken skal fortsatt bare ha den opprinnelige meldeperioden (transaksjonen rullet tilbake).
+        val lagretSak = tac.sakRepo.hent(SakId.fromString(sakDto.sakId))!!
+        lagretSak.meldeperioder.map { it.id.toString() } shouldBe listOf(meldeperiode.id)
     }
 }

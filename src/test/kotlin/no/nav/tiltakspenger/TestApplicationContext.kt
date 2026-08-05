@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger
 
+import io.github.oshai.kotlinlogging.KLogger
 import no.nav.tiltakspenger.fakes.clients.ArenaMeldekortClientFake
 import no.nav.tiltakspenger.fakes.clients.DokarkivClientFake
 import no.nav.tiltakspenger.fakes.clients.SaksbehandlingClientFake
@@ -12,6 +13,7 @@ import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
+import no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService
 import java.time.Clock
 
 /**
@@ -27,6 +29,12 @@ sealed class TestApplicationContext(
 ) : ApplicationContext(clock) {
     /** Fungerer bare for tester som bruker [TikkendeKlokke] som clock */
     val tikkendeKlokke: TikkendeKlokke by lazy { clock as TikkendeKlokke }
+
+    /**
+     * Egen fanger per testkontekst, slik at tester kan asserte på logglinjene fra [no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService] uten å dele tilstand med andre tester.
+     */
+    val mottakLoggfanger = Loggfanger(MottakFraSaksbehandlingService::class.java.name)
+    override val mottakFraSaksbehandlingLogger: KLogger = mottakLoggfanger
 
     override val varselClient = TmsVarselClientFake()
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()

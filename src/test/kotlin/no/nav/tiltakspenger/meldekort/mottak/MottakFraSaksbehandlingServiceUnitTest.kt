@@ -5,6 +5,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
+import no.nav.tiltakspenger.Loggfanger
 import no.nav.tiltakspenger.libs.common.VedtakId
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
@@ -88,6 +89,7 @@ class MottakFraSaksbehandlingServiceUnitTest {
             sakVarselRepo = mockk(relaxed = true),
             mottakRepo = mottakRepo,
             sessionFactory = mockedSessionFactory(),
+            logger = Loggfanger("MottakFraSaksbehandlingServiceUnitTest"),
         )
 
         val sak = ObjectMother.sak(meldeperioder = emptyList())
@@ -114,6 +116,7 @@ class MottakFraSaksbehandlingServiceUnitTest {
             sakVarselRepo = mockk(relaxed = true),
             mottakRepo = mottakRepo,
             sessionFactory = mockedSessionFactory(),
+            logger = Loggfanger("MottakFraSaksbehandlingServiceUnitTest"),
         )
 
         val meldeperiode = ObjectMother.meldeperiode(opprettet = nå(fixedClock))

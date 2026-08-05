@@ -3,7 +3,7 @@ package no.nav.tiltakspenger.meldekort.mottak
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
@@ -14,6 +14,11 @@ import no.nav.tiltakspenger.meldekort.meldeperiode.MeldeperiodeRepo
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
 
+/**
+ * [logger] injiseres bevisst uten default-verdi.
+ * Pakken ligger under 100 %-dekningsgaten i Kover, og et default-argument ville gitt en syntetisk `$default`-bro som står udekket så snart testene sender inn sin egen logger.
+ * Prod-loggeren settes i [no.nav.tiltakspenger.meldekort.infra.ApplicationContext] med eksplisitt navn, slik at loggernavnet i Loki fortsatt er denne klassen.
+ */
 class MottakFraSaksbehandlingService(
     private val sakRepo: SakRepo,
     private val meldeperiodeRepo: MeldeperiodeRepo,
@@ -21,8 +26,8 @@ class MottakFraSaksbehandlingService(
     private val sakVarselRepo: SakVarselRepo,
     private val mottakRepo: MottakRepo,
     private val sessionFactory: SessionFactory,
+    private val logger: KLogger,
 ) {
-    private val logger = KotlinLogging.logger {}
 
     fun lagre(mottattSak: MottattSak): Either<FeilVedMottakAvSak, Unit> {
         val sakId = mottattSak.id
