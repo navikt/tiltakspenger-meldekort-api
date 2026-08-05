@@ -321,6 +321,7 @@ open class ApplicationContext(val clock: Clock) {
         ArenaMeldekortStatusService(
             arenaMeldekortClient = arenaMeldekortClient,
             sakRepo = sakRepo,
+            logger = KotlinLogging.logger(ArenaMeldekortStatusService::class.java.name),
             sikkerlogg = sikkerlogg,
         )
     }

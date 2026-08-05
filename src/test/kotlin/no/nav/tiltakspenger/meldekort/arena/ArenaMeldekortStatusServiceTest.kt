@@ -1,7 +1,12 @@
 package no.nav.tiltakspenger.meldekort.arena
 
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.Level
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.Loggfanger
 import no.nav.tiltakspenger.fakes.clients.ArenaMeldekortClientFake
 import no.nav.tiltakspenger.fakes.repos.SakRepoFake
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -10,6 +15,7 @@ import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
+import no.nav.tiltakspenger.meldekort.jobb.JobbResultat
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
 import no.nav.tiltakspenger.objectmothers.ObjectMother
@@ -21,7 +27,8 @@ class ArenaMeldekortStatusServiceTest {
     private fun service(
         client: ArenaMeldekortClientFake,
         sakRepo: SakRepo = SakRepoFake(),
-    ) = ArenaMeldekortStatusService(arenaMeldekortClient = client, sakRepo = sakRepo)
+        logger: KLogger = Loggfanger(ArenaMeldekortStatusService::class.java.name),
+    ) = ArenaMeldekortStatusService(arenaMeldekortClient = client, sakRepo = sakRepo, logger = logger)
 
     private fun oversiktMed(erTiltakspengerMeldekort: Boolean) = ObjectMother.arenaMeldekortOversikt(
         meldekortListe = listOf(ObjectMother.arenaMeldekort(periode = periode, erTiltakspengerMeldekort = erTiltakspengerMeldekort)),
@@ -114,9 +121,17 @@ class ArenaMeldekortStatusServiceTest {
         val client = ArenaMeldekortClientFake().apply {
             leggTilMeldekort(sak.fnr, oversiktMed(erTiltakspengerMeldekort = true))
         }
+        val loggfanger = Loggfanger(ArenaMeldekortStatusService::class.java.name)
 
-        // Skal ikke kaste.
-        service(client, kastendeRepo).oppdaterArenaMeldekortStatusForSaker()
+        // Jobben skal ikke kaste, men fullføre og melde fra om at den utførte arbeid.
+        service(client, kastendeRepo, loggfanger).oppdaterArenaMeldekortStatusForSaker() shouldBe JobbResultat.UtførteArbeid
+
+        // At feilen ble svelget *og logget* er hele poenget med testen, så den påstanden må sjekkes.
+        loggfanger.linjerPå(Level.WARN).single().also {
+            it.melding shouldContain "Feil under oppdatering av Arena-meldekortstatus for sak ${sak.id}"
+            it.årsakskjede() shouldContain "oppdatering feilet"
+        }
+        loggfanger.linjerPå(Level.ERROR).shouldBeEmpty()
     }
 
     @Test
@@ -125,9 +140,15 @@ class ArenaMeldekortStatusServiceTest {
             override fun hentSakerUtenArenaStatus(sessionContext: SessionContext?): List<Sak> =
                 throw RuntimeException("henting feilet")
         }
+        val loggfanger = Loggfanger(ArenaMeldekortStatusService::class.java.name)
 
-        // Skal ikke kaste.
-        service(ArenaMeldekortClientFake(), kastendeRepo).oppdaterArenaMeldekortStatusForSaker()
+        // Jobben skal ikke kaste, men rapportere at den feilet.
+        service(ArenaMeldekortClientFake(), kastendeRepo, loggfanger).oppdaterArenaMeldekortStatusForSaker() shouldBe JobbResultat.Feilet
+
+        loggfanger.linjerPå(Level.ERROR).single().also {
+            it.melding shouldContain "Ukjent feil skjedde under oppdatering av Arena-meldekortstatus for saker"
+            it.årsakskjede() shouldContain "henting feilet"
+        }
     }
 
     @Test

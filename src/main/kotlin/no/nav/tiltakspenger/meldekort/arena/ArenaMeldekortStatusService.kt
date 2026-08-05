@@ -2,19 +2,23 @@ package no.nav.tiltakspenger.meldekort.arena
 
 import arrow.core.Either
 import arrow.core.getOrElse
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.httpklient.loggFeil
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.jobb.JobbResultat
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
 
+/**
+ * [logger] injiseres uten default-verdi, jf. samme begrunnelse som i [no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService].
+ * Feilhåndteringen her svelger med vilje, så logglinja er det eneste observerbare sporet av at noe gikk galt — og dermed noe testene må kunne asserte på.
+ */
 class ArenaMeldekortStatusService(
     private val arenaMeldekortClient: ArenaMeldekortClient,
     private val sakRepo: SakRepo,
+    private val logger: KLogger,
     private val sikkerlogg: Sikkerlogg = Sikkerlogg,
 ) {
-    private val logger = KotlinLogging.logger {}
 
     suspend fun hentArenaMeldekortStatus(fnr: Fnr): ArenaMeldekortStatus {
         arenaMeldekortClient.hentMeldekort(fnr).onLeft {
