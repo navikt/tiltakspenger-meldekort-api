@@ -86,7 +86,7 @@ object Configuration {
                 "KAFKA_KEYSTORE_PATH" to "",
                 "KAFKA_CREDSTORE_PASSWORD" to "",
                 "MELDEKORT_FRONTEND_URL" to "http://localhost:2223/tiltakspenger/meldekort",
-                "PDFGENRS_URL" to "http://host.docker.internal:8083",
+                "PDFGENRS_URL" to "http://host.docker.internal:8084",
                 "ARENA_MELDEKORTSERVICE_URL" to "http://host.docker.internal:8091",
                 "ARENA_MELDEKORTSERVICE_AUDIENCE" to "meldekortservice",
                 "BRUK_FAKE_AUTH" to System.getenv("BRUK_FAKE_AUTH"),
