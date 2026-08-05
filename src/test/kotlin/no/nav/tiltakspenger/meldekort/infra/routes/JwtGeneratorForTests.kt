@@ -5,13 +5,13 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.Saksbehandler
+import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.json.objectMapper
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
-import java.time.Clock
 import java.time.Instant
 import java.util.Base64
 import java.util.UUID
@@ -56,10 +56,9 @@ data class JwtGenerator(
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
         groups: List<String>? = listOf("ROLE_SAKSBEHANDLER"),
         saksbehandler: Saksbehandler? = null,
-        // TODO jah: Fiks alle brukene av Clock.systemUTC() i tester.
-        expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
-        issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
-        notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
+        expiresAt: Instant = Instant.now(fixedClock).plusSeconds(1800),
+        issuedAt: Instant = Instant.now(fixedClock).minusSeconds(5),
+        notBefore: Instant = Instant.now(fixedClock).minusSeconds(5),
     ): String {
         val algorithm = Algorithm.RSA256(null, privateKey)
         return JWT.create()
@@ -90,10 +89,9 @@ data class JwtGenerator(
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
         roles: List<String>? = listOf("TEST_ROLLE_1", "TEST_ROLLE_2"),
         oid: String? = subject,
-        // TODO jah: Fiks alle brukene av Clock.systemUTC() i tester.
-        expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
-        issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
-        notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
+        expiresAt: Instant = Instant.now(fixedClock).plusSeconds(1800),
+        issuedAt: Instant = Instant.now(fixedClock).minusSeconds(5),
+        notBefore: Instant = Instant.now(fixedClock).minusSeconds(5),
     ): String {
         val algorithm = Algorithm.RSA256(null, privateKey)
         return JWT.create()
@@ -122,10 +120,9 @@ data class JwtGenerator(
         azp: String? = "744e4092-4215-4e02-87df-a61aaf1b95b5",
         fnr: String = Fnr.random().verdi,
         audience: String = "c7adbfbb-1b1e-41f6-9b7a-af9627c04998",
-        // TODO jah: Fiks alle brukene av Clock.systemUTC() i tester.
-        expiresAt: Instant = Instant.now(Clock.systemUTC()).plusSeconds(1800),
-        issuedAt: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
-        notBefore: Instant = Instant.now(Clock.systemUTC()).minusSeconds(5),
+        expiresAt: Instant = Instant.now(fixedClock).plusSeconds(1800),
+        issuedAt: Instant = Instant.now(fixedClock).minusSeconds(5),
+        notBefore: Instant = Instant.now(fixedClock).minusSeconds(5),
     ): String {
         val algorithm = Algorithm.RSA256(null, privateKey)
         return JWT.create()

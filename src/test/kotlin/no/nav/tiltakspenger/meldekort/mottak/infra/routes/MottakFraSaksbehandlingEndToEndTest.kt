@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.server.testing.ApplicationTestBuilder
 import kotlinx.coroutines.test.runTest
+import no.nav.tiltakspenger.Sikkerloggfanger
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.lagreSak
 import no.nav.tiltakspenger.libs.common.Fnr
@@ -395,7 +396,7 @@ class MottakFraSaksbehandlingEndToEndTest {
 
     @Test
     fun `Skal returnere 400 ved ugyldig JSON-body`() = runTest {
-        withTestApplicationContext { _ ->
+        withTestApplicationContext { tac ->
             defaultRequestWithAssertions(
                 method = HttpMethod.POST,
                 uri = "/saksbehandling/sak",
@@ -407,12 +408,19 @@ class MottakFraSaksbehandlingEndToEndTest {
                 ),
                 body = "{ ikke gyldig json",
             )
+
+            // Vanlig logg skal stå uten detaljer; parsefeilen med rå body hører kun hjemme i sikkerloggen.
+            tac.mottakRouteLoggfanger.linjerPå(Level.ERROR).single().melding shouldBe "Feil ved parsing av sak fra saksbehandling-api"
+            tac.mottakRouteSikkerloggfanger.linjerPå(Sikkerloggfanger.Nivå.ERROR).single().also {
+                it.melding shouldBe "Feil ved parsing av sak fra saksbehandling-api"
+                it.årsakskjede() shouldContain "was expecting double-quote to start property name"
+            }
         }
     }
 
     @Test
     fun `Skal returnere 400 dersom DTO ikke kan parses til en gyldig sakId`() = runTest {
-        withTestApplicationContext { _ ->
+        withTestApplicationContext { tac ->
             // SakId.fromString på ugyldig id kaster IllegalArgumentException → 400 (klientfeil), ikke 500. Slik unngår avsender unødvendige retries og alarmer.
             val ugyldigDto = ObjectMother.sakDTO(sakId = "ikke-en-gyldig-sakid")
             defaultRequestWithAssertions(
@@ -426,6 +434,16 @@ class MottakFraSaksbehandlingEndToEndTest {
                 ),
                 body = serialize(ugyldigDto),
             )
+
+            // Vanlig logg peker til sikkerloggen og bærer ingen stacktrace; det er delingen som er kontrakten her.
+            tac.mottakRouteLoggfanger.linjerPå(Level.WARN).single().also {
+                it.melding shouldContain "Se meldekort-api sin sikkerlogg (GCP) for detaljer."
+                it.feil.shouldBeNull()
+            }
+            tac.mottakRouteSikkerloggfanger.linjerPå(Sikkerloggfanger.Nivå.WARN).single().also {
+                it.melding shouldContain "sakId: ikke-en-gyldig-sakid"
+                it.årsakskjede() shouldContain "Prefix må starte med sak"
+            }
         }
     }
 
@@ -452,6 +470,8 @@ class MottakFraSaksbehandlingEndToEndTest {
             )
 
             tac.sakRepo.hent(SakId.fromString(ugyldigSakDto.sakId)) shouldBe null
+            tac.mottakRouteSikkerloggfanger.linjerPå(Sikkerloggfanger.Nivå.WARN).single()
+                .årsakskjede() shouldContain "Meldeperioder må være sortert etter periode og versjon"
         }
     }
 

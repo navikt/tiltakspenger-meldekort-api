@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.libs.konsist.EnSetningPerLinje
 import no.nav.tiltakspenger.libs.konsist.InfraImport
 import no.nav.tiltakspenger.libs.konsist.IngenAndreHttpKlienter
 import no.nav.tiltakspenger.libs.konsist.IngenClockDefault
+import no.nav.tiltakspenger.libs.konsist.IngenClockSystem
 import no.nav.tiltakspenger.libs.konsist.IngenInternalModifier
 import no.nav.tiltakspenger.libs.konsist.IngenJUnit4
 import no.nav.tiltakspenger.libs.konsist.IngenJackson2
@@ -64,6 +65,19 @@ class FellesArkitekturKonsistTest {
     @Test
     fun `Clock-parametre har ikke default-verdi i produksjonskode`() {
         IngenClockDefault.assert(Konsist.scopeFromProduction())
+    }
+
+    /**
+     * Systemklokka hentes kun der applikasjonen settes sammen: `Application.kt` i prod og `LokalMain.kt` for lokal kjøring.
+     * Alle andre steder tar imot `Clock` som parameter, og tester bruker `fixedClock`/`TikkendeKlokke`.
+     * Scope er hele prosjektet, ikke bare produksjonskoden — det var nettopp testkoden som hadde brudd her.
+     */
+    @Test
+    fun `henter aldri systemklokka utenfor composition root`() {
+        IngenClockSystem.assert(
+            Konsist.scopeFromProject(),
+            unntatteFilstier = setOf("meldekort/infra/Application.kt", "tiltakspenger/LokalMain.kt"),
+        )
     }
 
     /**

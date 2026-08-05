@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.mottak.infra.routes
 
 import arrow.core.Either
 import arrow.core.getOrElse
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
@@ -23,9 +23,9 @@ import no.nav.tiltakspenger.meldekort.mottak.infra.tilMottattSak
  */
 fun Route.mottakFraSaksbehandlingRoute(
     mottakFraSaksbehandlingService: MottakFraSaksbehandlingService,
+    logger: KLogger,
+    sikkerlogg: Sikkerlogg,
 ) {
-    val logger = KotlinLogging.logger {}
-
     // Tar i mot saker fra saksbehandling-api
     post("/sak") {
         val sakDTO = Either.catch {
@@ -33,7 +33,7 @@ fun Route.mottakFraSaksbehandlingRoute(
         }.getOrElse {
             with("Feil ved parsing av sak fra saksbehandling-api") {
                 logger.error { this }
-                Sikkerlogg.error(it) { this }
+                sikkerlogg.error(it) { this }
                 call.respond(message = this, status = HttpStatusCode.BadRequest)
             }
             return@post
@@ -44,7 +44,7 @@ fun Route.mottakFraSaksbehandlingRoute(
         }.getOrElse {
             with("Feil ved mapping av sak-DTO til domenemodell under mottak av sak fra saksbehandling-api. sakId: ${sakDTO.sakId}. Antall meldeperioder: ${sakDTO.meldeperioder.size}. Antall meldekortvedtak: ${sakDTO.meldekortvedtak.size}.") {
                 logger.warn { "$this. Se meldekort-api sin sikkerlogg (GCP) for detaljer." }
-                Sikkerlogg.warn(it) { this }
+                sikkerlogg.warn(it) { this }
                 call.respond(message = this, status = HttpStatusCode.BadRequest)
             }
             return@post

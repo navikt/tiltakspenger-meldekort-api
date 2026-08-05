@@ -7,7 +7,7 @@ import no.nav.tiltakspenger.libs.texas.client.TexasIntrospectionResponse
 import java.time.Clock
 import java.time.Instant
 
-class TexasClientFakeLokal : TexasClient {
+class TexasClientFakeLokal(private val clock: Clock) : TexasClient {
     override suspend fun introspectToken(
         token: String,
         identityProvider: IdentityProvider,
@@ -35,8 +35,7 @@ class TexasClientFakeLokal : TexasClient {
 
     private fun accessToken(): AccessToken = AccessToken(
         token = "asdf",
-        // TODO jah: Fiks alle brukene av Clock.systemUTC() i tester.
-        expiresAt = Instant.now(Clock.systemUTC()).plusSeconds(3600),
+        expiresAt = Instant.now(clock).plusSeconds(3600),
     )
 
     /**

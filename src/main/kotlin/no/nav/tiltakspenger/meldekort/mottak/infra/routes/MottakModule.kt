@@ -14,6 +14,8 @@ fun Routing.mottakModule(applicationContext: ApplicationContext) {
         route("/saksbehandling") {
             mottakFraSaksbehandlingRoute(
                 mottakFraSaksbehandlingService = applicationContext.mottakFraSaksbehandlingService,
+                logger = applicationContext.mottakFraSaksbehandlingRouteLogger,
+                sikkerlogg = applicationContext.mottakFraSaksbehandlingRouteSikkerlogg,
             )
         }
     }

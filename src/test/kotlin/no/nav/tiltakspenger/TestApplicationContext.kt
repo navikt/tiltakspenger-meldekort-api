@@ -12,6 +12,7 @@ import no.nav.tiltakspenger.generators.JournalpostIdGeneratorSerial
 import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
+import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext
 import no.nav.tiltakspenger.meldekort.mottak.MottakFraSaksbehandlingService
 import java.time.Clock
@@ -35,6 +36,16 @@ sealed class TestApplicationContext(
      */
     val mottakLoggfanger = Loggfanger(MottakFraSaksbehandlingService::class.java.name)
     override val mottakFraSaksbehandlingLogger: KLogger = mottakLoggfanger
+
+    /**
+     * Fangere for mottaksrutas feilsti, som splitter feil i en peker i vanlig logg og detaljene i sikkerlogg.
+     * Kun denne rutas sikkerlogg fanges — den delte [sikkerlogg] står urørt, så resten av appens sikkerlogglinjer er fortsatt synlige under testkjøring.
+     */
+    val mottakRouteLoggfanger = Loggfanger("no.nav.tiltakspenger.meldekort.mottak.infra.routes.MottakFraSaksbehandlingRouteKt")
+    override val mottakFraSaksbehandlingRouteLogger: KLogger = mottakRouteLoggfanger
+
+    val mottakRouteSikkerloggfanger = Sikkerloggfanger()
+    override val mottakFraSaksbehandlingRouteSikkerlogg: Sikkerlogg = mottakRouteSikkerloggfanger
 
     override val varselClient = TmsVarselClientFake()
     override val tmsMikrofrontendClient = TmsMikrofrontendClientFake()

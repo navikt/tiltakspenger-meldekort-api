@@ -341,6 +341,15 @@ open class ApplicationContext(val clock: Clock) {
     open val mottakFraSaksbehandlingLogger: KLogger =
         KotlinLogging.logger(MottakFraSaksbehandlingService::class.java.name)
 
+    /**
+     * Logger og sikkerlogg for [no.nav.tiltakspenger.meldekort.mottak.infra.routes.mottakFraSaksbehandlingRoute], som splitter feil i en peker i vanlig logg og detaljene i sikkerlogg.
+     * De er egne verdier — ikke den delte [sikkerlogg] — slik at testene kan fange nettopp denne rutas linjer uten å dempe sikkerloggen for resten av appen.
+     */
+    open val mottakFraSaksbehandlingRouteLogger: KLogger =
+        KotlinLogging.logger("no.nav.tiltakspenger.meldekort.mottak.infra.routes.MottakFraSaksbehandlingRouteKt")
+
+    open val mottakFraSaksbehandlingRouteSikkerlogg: Sikkerlogg by lazy { sikkerlogg }
+
     open val mottakFraSaksbehandlingService by lazy {
         MottakFraSaksbehandlingService(
             sakRepo = sakRepo,

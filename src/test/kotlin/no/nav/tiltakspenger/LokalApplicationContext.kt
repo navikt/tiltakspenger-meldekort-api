@@ -20,7 +20,7 @@ class LokalApplicationContext(clock: Clock) : ApplicationContext(clock) {
         System.getenv("BRUK_FAKE_SAKSBEHANDLING")?.toBooleanStrictOrNull() ?: false
 
     override val texasClient =
-        if (brukFakeTexasClient) TexasClientFakeLokal() else super.texasClient
+        if (brukFakeTexasClient) TexasClientFakeLokal(clock) else super.texasClient
 
     override val varselClient: VarselClient = TmsVarselClientFake()
 
