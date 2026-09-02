@@ -7,10 +7,9 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.kafka.infra.Producer
 import no.nav.tiltakspenger.meldekort.varsler.VarselId
-import no.nav.tiltakspenger.meldekort.varsler.infra.TmsVarselClientImpl
 import no.nav.tms.varsel.builder.BuilderEnvironment
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -20,7 +19,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class TmsVarselClientImplTest {
-    private val fnr = Fnr.fromString("12345678911")
+    private val fnrGenerator = FnrGenerator()
+    private val fnr = fnrGenerator.generer()
     private val zoneId = ZoneId.of("Europe/Oslo")
 
     @BeforeEach

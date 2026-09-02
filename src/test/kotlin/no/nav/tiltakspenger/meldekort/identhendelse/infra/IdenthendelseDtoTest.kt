@@ -1,24 +1,27 @@
 package no.nav.tiltakspenger.meldekort.identhendelse.infra
 
 import io.kotest.matchers.shouldBe
-import no.nav.tiltakspenger.libs.common.Fnr
-import no.nav.tiltakspenger.libs.common.random
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.json.serialize
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class IdenthendelseDtoTest {
+    private val fnrGenerator = FnrGenerator()
+
     @Test
     fun `serialiserer og deserialiserer identhendelse dto`() {
+        val gammeltFnr = fnrGenerator.generer().verdi
+        val nyttFnr = fnrGenerator.generer().verdi
         val identhendelseDto = IdenthendelseDto(
-            gammeltFnr = "12345678910",
-            nyttFnr = "10987654321",
+            gammeltFnr = gammeltFnr,
+            nyttFnr = nyttFnr,
         )
         val forventetJson = """
             {
-              "gammeltFnr": "12345678910",
-              "nyttFnr": "10987654321"
+              "gammeltFnr": "$gammeltFnr",
+              "nyttFnr": "$nyttFnr"
             }
         """.trimIndent()
 
@@ -31,8 +34,8 @@ class IdenthendelseDtoTest {
     @Test
     fun `mapper dto til domene`() {
         val id = UUID.randomUUID()
-        val gammeltFnr = Fnr.random()
-        val nyttFnr = Fnr.random()
+        val gammeltFnr = fnrGenerator.generer()
+        val nyttFnr = fnrGenerator.generer()
         val identhendelseDto = IdenthendelseDto(
             gammeltFnr = gammeltFnr.verdi,
             nyttFnr = nyttFnr.verdi,

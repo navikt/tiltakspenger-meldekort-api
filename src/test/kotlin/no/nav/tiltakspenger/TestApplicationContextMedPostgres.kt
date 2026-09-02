@@ -1,10 +1,10 @@
 package no.nav.tiltakspenger
 
 import no.nav.tiltakspenger.fakes.clients.TexasClientFakeTest
-import no.nav.tiltakspenger.generators.FnrGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGeneratorSerial
 import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
 import java.time.Clock
 

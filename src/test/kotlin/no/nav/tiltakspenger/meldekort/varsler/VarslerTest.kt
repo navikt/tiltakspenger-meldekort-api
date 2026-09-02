@@ -5,13 +5,12 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.dato.januar
-import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.Clock
@@ -19,9 +18,10 @@ import java.time.LocalDateTime
 
 class VarslerTest {
 
+    private val fnrGenerator = FnrGenerator()
     private val sakId = SakId.random()
     private val saksnummer = "SAK-123"
-    private val fnr = Fnr.fromString("12345678911")
+    private val fnr = fnrGenerator.generer()
 
     /** Mandag kl 10 */
     private val mandagKl10 = 6.januar(2025).atHour(10)

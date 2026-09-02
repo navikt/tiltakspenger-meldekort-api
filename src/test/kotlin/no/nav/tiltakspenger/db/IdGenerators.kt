@@ -1,9 +1,9 @@
 package no.nav.tiltakspenger.db
 
-import no.nav.tiltakspenger.generators.FnrGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGeneratorSerial
 import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 
 /**
  * Samler id-/nummergeneratorer som må deles på tvers av tester som kjører mot samme test-db.

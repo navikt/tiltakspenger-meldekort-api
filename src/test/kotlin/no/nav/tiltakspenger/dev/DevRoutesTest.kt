@@ -39,7 +39,7 @@ class DevRoutesTest {
     @Test
     fun `oppretter sak med 2 meldeperioder bakover og 2 fremover som default`() = runTest {
         withDevApp { tac ->
-            val fnr = "12345678910"
+            val fnr = tac.nesteFnr().verdi
             val sakId = SakId.random().toString()
             val saksnummer = "SAK-1"
 
@@ -75,7 +75,7 @@ class DevRoutesTest {
     @Test
     fun `respekterer overrides for fnr og antall perioder`() = runTest {
         withDevApp { tac ->
-            val fnr = "12345678910"
+            val fnr = tac.nesteFnr().verdi
             val sakId = SakId.random().toString()
             val saksnummer = "SAK-1"
 

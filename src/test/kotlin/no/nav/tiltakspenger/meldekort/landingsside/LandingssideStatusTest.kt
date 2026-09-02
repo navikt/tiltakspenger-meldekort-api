@@ -3,19 +3,21 @@ package no.nav.tiltakspenger.meldekort.landingsside
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.throwable.shouldHaveMessage
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class LandingssideStatusTest {
+    private val fnrGenerator = FnrGenerator()
+    private val fnr = fnrGenerator.generer()
 
     @Test
     fun `kombinerer sak og arena-status og sorterer meldekort`() {
         val tidligst = LandingssideMeldekort(LocalDateTime.parse("2025-01-17T15:00:00"))
         val sist = LandingssideMeldekort(LocalDateTime.parse("2025-01-31T15:00:00"))
         val sak = LandingssideSak(
-            fnr = Fnr.fromString("12345678910"),
+            fnr = fnr,
             arenaMeldekortStatus = ArenaMeldekortStatus.HAR_MELDEKORT,
             harInnsendteMeldekort = false,
             meldekortTilUtfylling = listOf(sist),
@@ -67,7 +69,7 @@ class LandingssideStatusTest {
 
         shouldThrow<IllegalArgumentException> {
             LandingssideSak(
-                fnr = Fnr.fromString("12345678910"),
+                fnr = fnr,
                 arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
                 harInnsendteMeldekort = false,
                 meldekortTilUtfylling = listOf(sist, tidligst),

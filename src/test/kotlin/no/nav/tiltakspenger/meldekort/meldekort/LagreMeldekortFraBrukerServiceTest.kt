@@ -254,7 +254,7 @@ class LagreMeldekortFraBrukerServiceTest {
                     opprettet = nå(tac.clock),
                 ),
             )
-            val lagreKommando = lagMeldekortFraBrukerKommando(meldekort, fnr = Fnr.fromString("11111111111"))
+            val lagreKommando = lagMeldekortFraBrukerKommando(meldekort, fnr = tac.nesteFnr())
 
             lagreMeldekortFraBrukerService.lagreMeldekortFraBruker(lagreKommando) shouldBe
                 KunneIkkeLagreMeldekortFraBruker.FantIkkeMeldekort(meldekort.id).left()

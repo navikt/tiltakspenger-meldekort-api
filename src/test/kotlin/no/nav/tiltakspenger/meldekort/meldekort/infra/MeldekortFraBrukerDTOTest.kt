@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra
 
 import io.kotest.matchers.shouldBe
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.json.serialize
@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class MeldekortFraBrukerDTOTest {
+    private val fnrGenerator = FnrGenerator()
+
     @Test
     fun `serialiserer og deserialiserer meldekort fra bruker request`() {
         val meldekortId = MeldekortId.random().toString()
@@ -53,7 +55,7 @@ class MeldekortFraBrukerDTOTest {
 
     @Test
     fun `mapper request dto til domene kommando`() {
-        val fnr = Fnr.fromString("12345678910")
+        val fnr = fnrGenerator.generer()
         val meldekortId = MeldekortId.random()
         val meldekortFraBrukerDTO = MeldekortFraBrukerDTO(
             id = meldekortId.toString(),

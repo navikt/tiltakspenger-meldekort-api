@@ -4,7 +4,7 @@ import arrow.core.right
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.test.runTest
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
 import no.nav.tiltakspenger.libs.httpklient.infra.transport.FakeHttpTransport
@@ -25,7 +25,8 @@ import java.time.LocalDate
  *  - Transportfeil gir [HttpKlientError.IngenRespons].
  */
 class ArenaMeldekortHttpClientTest {
-    private val fnr = Fnr.fromString("12345678910")
+    private val fnrGenerator = FnrGenerator()
+    private val fnr = fnrGenerator.generer()
 
     private val baseUrl = "http://meldekortservice"
 

@@ -6,11 +6,11 @@ import no.nav.tiltakspenger.fakes.clients.DokarkivClientFake
 import no.nav.tiltakspenger.fakes.clients.SaksbehandlingClientFake
 import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
 import no.nav.tiltakspenger.fakes.clients.TmsVarselClientFake
-import no.nav.tiltakspenger.generators.FnrGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGenerator
 import no.nav.tiltakspenger.generators.JournalpostIdGeneratorSerial
 import no.nav.tiltakspenger.generators.SaksnummerGeneratorForTest
 import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.infra.ApplicationContext

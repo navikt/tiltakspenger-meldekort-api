@@ -7,7 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
@@ -16,15 +16,15 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.sak.Sak
-import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class VurderVarselForSakTest {
+    private val fnrGenerator = FnrGenerator()
     private val sak = Sak(
         id = SakId.random(),
         saksnummer = "SAK-123",
-        fnr = Fnr.fromString("12345678911"),
+        fnr = fnrGenerator.generer(),
         meldeperioder = emptyList(),
         arenaMeldekortStatus = ArenaMeldekortStatus.UKJENT,
         harSoknadUnderBehandling = false,

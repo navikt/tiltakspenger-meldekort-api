@@ -4,21 +4,21 @@ import arrow.core.left
 import arrow.core.right
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeKjedeId
-import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PlanlagtAktiveringTest {
+    private val fnrGenerator = FnrGenerator()
     private val testdato = 10.januar(2025)
     private val sakId = SakId.random()
-    private val fnr = Fnr.fromString("12345678911")
+    private val fnr = fnrGenerator.generer()
 
     @Test
     fun `lager plan for manglende innsending med kjedens tidspunkt og ekstern varslingstidspunkt fra Varsler`() {

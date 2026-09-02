@@ -3,10 +3,9 @@ package no.nav.tiltakspenger.meldekort.varsler
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.FnrGenerator
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.dato.januar
-import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -14,9 +13,10 @@ import java.time.LocalDateTime
 
 class VarselTest {
 
+    private val fnrGenerator = FnrGenerator()
     private val sakId = SakId.random()
     private val saksnummer = "SAK-123"
-    private val fnr = Fnr.fromString("12345678911")
+    private val fnr = fnrGenerator.generer()
     private val varselId = VarselId.random()
     private val opprettet = 6.januar(2025).atHour(10)
 

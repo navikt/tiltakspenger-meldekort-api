@@ -61,9 +61,9 @@ class MicrofrontendRouteTest {
 
     @Test
     fun `microfrontendKortInfo - svarer 500 når henting av meldekort-info feiler`() {
-        withTestApplicationContext { _ ->
+        withTestApplicationContext { tac ->
             microfrontendKortInfoRequest(
-                fnr = "12345678901",
+                fnr = tac.nesteFnr().verdi,
                 forventet = ForventetRespons(500),
             )
         }
