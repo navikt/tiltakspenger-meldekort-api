@@ -1,6 +1,6 @@
 # AGENTS.md — tiltakspenger-meldekort-api
 
-Dette repoet følger monorepo-konvensjonene i [`../AGENTS.md`](../AGENTS.md) og Kotlin/JVM-backendkonvensjonene i [`../AGENTS-backend.md`](../AGENTS-backend.md).
+Dette repoet følger monorepo-konvensjonene i AGENTS.md og Kotlin/JVM-backendkonvensjonene i AGENTS-backend.md — begge i metarepoet `tiltakspenger` (ligger som `..` når repoet er klonet inn i monorepoet, eller som `../tiltakspenger` når dette repoet er klonet for seg selv).
 Les disse først.
 
 ## Kodekonvensjoner
@@ -34,7 +34,7 @@ Les disse først.
 
 ## Testing
 
-Se de generelle DB-/ende-til-ende-konvensjonene i [`../AGENTS-backend.md`](../AGENTS-backend.md#ende-til-ende-og-databasetester).
+Se de generelle DB-/ende-til-ende-konvensjonene i AGENTS-backend.md i metarepoet `tiltakspenger` (seksjonen «Ende-til-ende og databasetester»).
 Konkrete håndtak i dette repoet:
 
 - **Route-tester med ekte Postgres:** `withTestApplicationContextAndPostgres { tac -> … }` (in-memory-varianten er `withTestApplicationContext`).
