@@ -8,6 +8,7 @@ import no.nav.tiltakspenger.libs.konsist.InfraImport
 import no.nav.tiltakspenger.libs.konsist.IngenAndreHttpKlienter
 import no.nav.tiltakspenger.libs.konsist.IngenClockDefault
 import no.nav.tiltakspenger.libs.konsist.IngenClockSystem
+import no.nav.tiltakspenger.libs.konsist.IngenHardkodedeFnr
 import no.nav.tiltakspenger.libs.konsist.IngenInternalModifier
 import no.nav.tiltakspenger.libs.konsist.IngenJUnit4
 import no.nav.tiltakspenger.libs.konsist.IngenJackson2
@@ -164,6 +165,11 @@ class FellesArkitekturKonsistTest {
     @Test
     fun `ingen bruk av det utgåtte rewriteAudienceTarget-flagget`() {
         IngenRewriteAudienceTarget.assert(Konsist.scopeFromProduction())
+    }
+
+    @Test
+    fun `ingen ellevesifrede tall er hardkodet`() {
+        IngenHardkodedeFnr.assert(repoRot())
     }
 
     /** Enmodul-repo: testens arbeidskatalog er repo-rota. */

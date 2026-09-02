@@ -62,7 +62,7 @@ curl -X POST http://localhost:8083/dev/sak
 
 # Med overrides (alle felter er valgfrie)
 curl -X POST http://localhost:8083/dev/sak -H 'Content-Type: application/json' -d '{
-  "fnr": "12345678910",
+  "fnr": "12845678910",
   "antallMeldeperioderBakover": 2,
   "antallMeldeperioderFremover": 2,
   "harSoknadUnderBehandling": false,
