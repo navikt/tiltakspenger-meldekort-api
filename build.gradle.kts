@@ -8,7 +8,7 @@ val ktorVersion = "3.4.3"
 val mockkVersion = "1.14.11"
 val jackson2Version = "2.22.2"
 val lz4Version = "1.11.2"
-val felleslibVersion = "0.0.20260902171610"
+val felleslibVersion = "0.0.20260904123939"
 val kotestVersion = "6.2.4"
 val kotlinxCoroutinesVersion = "1.11.0"
 val tmsVarselBuilderVersion = "2.2.0"
@@ -26,8 +26,8 @@ plugins {
     application
     kotlin("jvm") version "2.4.10"
     kotlin("plugin.serialization") version "2.4.10"
-    id("com.diffplug.spotless") version "8.8.0"
-    id("com.github.ben-manes.versions") version "0.54.0"
+    id("com.diffplug.spotless") version "8.10.1"
+    id("com.github.ben-manes.versions") version "0.61.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.9"
 }
 
@@ -77,7 +77,7 @@ dependencies {
         implementation("at.yawk.lz4:lz4-java:$lz4Version")
     }
 
-    implementation("ch.qos.logback:logback-classic:1.5.38")
+    implementation("ch.qos.logback:logback-classic:1.6.3")
     implementation("net.logstash.logback:logstash-logback-encoder:9.0")
     implementation("org.jetbrains:annotations:26.1.0")
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
@@ -101,7 +101,7 @@ dependencies {
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMikrofrontendSelectorBuilderVersion")
 
     // DB
-    implementation("org.flywaydb:flyway-database-postgresql:12.10.0")
+    implementation("org.flywaydb:flyway-database-postgresql:13.4.0")
     implementation("com.zaxxer:HikariCP:7.1.0")
     implementation("org.postgresql:postgresql:42.7.13")
     implementation("com.github.seratch:kotliquery:1.9.1")
@@ -124,7 +124,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
 
     // Auth
-    api("com.auth0:java-jwt:4.5.2")
+    api("com.auth0:java-jwt:4.6.0")
     api("com.auth0:jwks-rsa:0.24.1")
 
     // Test
