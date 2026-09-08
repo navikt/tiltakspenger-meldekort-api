@@ -3,6 +3,7 @@ package no.nav.tiltakspenger.meldekort.infra
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Bakgrunnsprosessoppsett
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.Jobboppsett
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.startApp
 import no.nav.tiltakspenger.libs.tid.zoneIdOslo
 import no.nav.tiltakspenger.meldekort.infra.routes.CALL_ID_MDC_KEY
@@ -37,11 +38,13 @@ fun start(
         host = host,
         isNais = isNais,
         oppsett = Bakgrunnsprosessoppsett(
-            mdcCallIdKey = CALL_ID_MDC_KEY,
-            electorPath = { Configuration.electorPath },
-            tasks = jobber(applicationContext),
+            jobber = Jobboppsett(
+                mdcCallIdKey = CALL_ID_MDC_KEY,
+                electorPath = { Configuration.electorPath },
+                clock = applicationContext.clock,
+                tasks = jobber(applicationContext),
+            ),
             kafkaConsumers = kafkaConsumers(isNais = isNais, applicationContext = applicationContext),
-            clock = applicationContext.clock,
         ),
     ) { readiness ->
         ktorSetup(applicationContext = applicationContext, readiness = readiness, additionalRoutes = additionalRoutes)

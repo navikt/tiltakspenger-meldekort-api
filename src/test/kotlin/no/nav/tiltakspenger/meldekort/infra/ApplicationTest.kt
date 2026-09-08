@@ -11,6 +11,7 @@ import io.ktor.server.application.ServerReady
 import io.ktor.server.testing.testApplication
 import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Bakgrunnsprosessoppsett
+import no.nav.tiltakspenger.libs.ktor.common.oppstart.Jobboppsett
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Readiness
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.konfigurerOppstart
 import no.nav.tiltakspenger.meldekort.infra.routes.CALL_ID_MDC_KEY
@@ -41,11 +42,13 @@ class ApplicationTest {
                 isNais = false,
                 readiness = readiness,
                 oppsett = Bakgrunnsprosessoppsett(
-                    mdcCallIdKey = CALL_ID_MDC_KEY,
-                    electorPath = { "test-elector-path" },
-                    tasks = jobber(context),
+                    jobber = Jobboppsett(
+                        mdcCallIdKey = CALL_ID_MDC_KEY,
+                        electorPath = { "test-elector-path" },
+                        clock = context.clock,
+                        tasks = jobber(context),
+                    ),
                     kafkaConsumers = kafkaConsumers(isNais = false, applicationContext = context),
-                    clock = context.clock,
                 ),
             )
         }
