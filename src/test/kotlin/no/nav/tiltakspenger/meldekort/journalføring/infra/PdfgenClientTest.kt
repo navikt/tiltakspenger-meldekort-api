@@ -1,10 +1,14 @@
 package no.nav.tiltakspenger.meldekort.journalføring.infra
 
+import com.marcinziolo.kotlin.wiremock.equalTo
+import com.marcinziolo.kotlin.wiremock.post
+import com.marcinziolo.kotlin.wiremock.returns
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.getOrFail
+import no.nav.tiltakspenger.libs.common.withWireMockServer
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
 import no.nav.tiltakspenger.libs.httpklient.infra.transport.FakeHttpTransport
 import no.nav.tiltakspenger.meldekort.journalføring.PdfA
@@ -25,6 +29,32 @@ class PdfgenClientTest {
 
     @Nested
     inner class GenererMeldekortPdf {
+        @Test
+        fun `genererer pdf over ekte transport mot wiremock`() {
+            // Uten `transport` bruker klienten `JavaHttpTransport`, så denne testen dekker produksjonsoppsettet ende til ende.
+            // Ellers ble den linja bare nådd når journalføringsjobben rakk å kjøre under `ApplicationTest`, og dekningsgaten ble avhengig av timing.
+            withWireMockServer { wiremock ->
+                wiremock.post {
+                    url equalTo "/$PDFGEN_PATH/meldekort"
+                } returns {
+                    statusCode = 200
+                    header = "Content-Type" to "application/pdf"
+                    body = String(pdfContent)
+                }
+
+                runTest {
+                    val klient = PdfgenClientImpl(
+                        baseUrl = wiremock.baseUrl(),
+                        clock = fixedClock,
+                    )
+
+                    val resp = klient.genererMeldekortPdf(ObjectMother.meldekort()).getOrFail()
+
+                    resp.pdf.toBase64() shouldBe PdfA(pdfContent).toBase64()
+                }
+            }
+        }
+
         @Test
         fun `genererer pdf fra pdfgenrs`() = runTest {
             val transport = FakeHttpTransport()
