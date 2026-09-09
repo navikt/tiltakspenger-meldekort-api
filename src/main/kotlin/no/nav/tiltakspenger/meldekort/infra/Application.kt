@@ -2,6 +2,8 @@ package no.nav.tiltakspenger.meldekort.infra
 
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Bakgrunnsprosessoppsett
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Jobboppsett
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.startApp
@@ -18,6 +20,13 @@ fun main() {
     start(log = log)
 }
 
+/**
+ * Komposisjonsroten.
+ * Her konstrueres registeret alle appens målinger føres i: Ktor-metrikkene, jobbmålingene og meldingsleser-målingene.
+ * Det er det samme registeret `/metrics` skraper, så sender vi inn et annet register ett av stedene, forsvinner seriene stille.
+ * Registeret er appens eget og bindes ikke til Prometheus sitt globale register, siden ingenting i dette repoet registrerer målinger der.
+ * Tester lager sitt eget register, fordi et prosessnavn bare kan registreres én gang per register.
+ */
 fun start(
     log: KLogger,
     port: Int = Configuration.httpPort,
@@ -25,6 +34,7 @@ fun start(
     isNais: Boolean = Configuration.isNais(),
     applicationContext: ApplicationContext = ApplicationContext(
         clock = Clock.system(zoneIdOslo),
+        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
     ),
     additionalRoutes: (io.ktor.server.routing.Routing.() -> Unit)? = null,
 ) {
@@ -42,6 +52,7 @@ fun start(
                 mdcCallIdKey = CALL_ID_MDC_KEY,
                 electorPath = { Configuration.electorPath },
                 clock = applicationContext.clock,
+                meterRegistry = applicationContext.meterRegistry,
                 tasks = jobber(applicationContext),
             ),
             kafkaConsumers = kafkaConsumers(isNais = isNais, applicationContext = applicationContext),

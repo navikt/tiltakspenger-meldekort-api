@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.infra
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -46,6 +47,7 @@ class ApplicationTest {
                         mdcCallIdKey = CALL_ID_MDC_KEY,
                         electorPath = { "test-elector-path" },
                         clock = context.clock,
+                        meterRegistry = context.meterRegistry,
                         tasks = jobber(context),
                     ),
                     kafkaConsumers = kafkaConsumers(isNais = false, applicationContext = context),
@@ -71,5 +73,65 @@ class ApplicationTest {
             status shouldBe HttpStatusCode.ServiceUnavailable
             bodyAsText() shouldBe "NOT READY"
         }
+    }
+
+    /**
+     * Verifiserer at registeret jobbene og consumeren skriver målingene sine til, er det samme registeret `/metrics` skraper.
+     * Det er hele poenget med at [ApplicationContext] eier registeret: sender vi inn et annet register i [Jobboppsett] eller i consumeren, forsvinner seriene stille, og varselreglene «Jobb har stoppet» og «Meldingsleser har stoppet» får aldri data.
+     *
+     * Consumeren konstrueres, men startes ikke.
+     * Meldingsleser-målingene registreres i konstruktøren til [no.nav.tiltakspenger.libs.kafka.infra.ManagedKafkaConsumer], mens `run()` ville krevd en ekte Kafka-broker.
+     * Jobbmålingene registreres når skedulereren starter, altså ved [ServerReady].
+     */
+    @Test
+    fun `jobbene og consumeren fører målingene sine i registeret metrics skraper`() = testApplication {
+        val context = TestApplicationContextMedInMemoryDb()
+        val readiness = Readiness()
+        lateinit var app: Application
+        application {
+            app = this
+            ktorSetup(applicationContext = context, readiness = readiness)
+            konfigurerOppstart(
+                log = log,
+                isNais = false,
+                readiness = readiness,
+                oppsett = Bakgrunnsprosessoppsett(
+                    jobber = Jobboppsett(
+                        mdcCallIdKey = CALL_ID_MDC_KEY,
+                        electorPath = { "test-elector-path" },
+                        clock = context.clock,
+                        meterRegistry = context.meterRegistry,
+                        tasks = jobber(context),
+                    ),
+                    // Consumerne startes ikke her; det ville krevd en ekte broker.
+                    kafkaConsumers = kafkaConsumers(isNais = false, applicationContext = context),
+                ),
+            )
+        }
+
+        // `application { }` er lat i testoppsettet, så appen må startes eksplisitt før `app` er satt.
+        startApplication()
+
+        // Konstruerer consumeren uten å starte den, slik at meldingsleser-målingene registreres på kontekstens register.
+        context.identhendelseConsumer
+
+        app.monitor.raise(ServerReady, app.environment)
+
+        client.get("/metrics").apply {
+            status shouldBe HttpStatusCode.OK
+            val metrikker = bodyAsText()
+            metrikker shouldContain
+                """tpts_bakgrunnsprosess_intervall_sekunder{prosess="send-meldekort-jobb",type="jobb"}"""
+            metrikker shouldContain
+                """tpts_bakgrunnsprosess_sist_vellykket_tidspunkt_sekunder{prosess="send-meldekort-jobb",type="jobb"}"""
+            metrikker shouldContain
+                """tpts_bakgrunnsprosess_intervall_sekunder{prosess="tpts.identhendelse-v1",type="meldingsleser"}"""
+            metrikker shouldContain
+                """tpts_bakgrunnsprosess_sist_vellykket_tidspunkt_sekunder{prosess="tpts.identhendelse-v1",type="meldingsleser"}"""
+            // Ktor-metrikkene ligger i det samme registeret, som bevis på at det er Ktor-oppsettets register vi skraper.
+            metrikker shouldContain "ktor_http_server_requests"
+        }
+
+        app.monitor.raise(ApplicationStopping, app)
     }
 }

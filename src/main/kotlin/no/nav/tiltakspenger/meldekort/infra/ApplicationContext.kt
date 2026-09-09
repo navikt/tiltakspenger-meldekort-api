@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.infra
 
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.tiltakspenger.libs.kafka.infra.KafkaConfig
 import no.nav.tiltakspenger.libs.kafka.infra.Producer
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
@@ -69,7 +70,15 @@ import no.nav.tiltakspenger.meldekort.varsler.infra.VarselMeldekortPostgresRepo
 import no.nav.tiltakspenger.meldekort.varsler.infra.VarselPostgresRepo
 import java.time.Clock
 
-open class ApplicationContext(val clock: Clock) {
+open class ApplicationContext(
+    val clock: Clock,
+    /**
+     * Registeret Ktor, de skedulerte jobbene og Kafka-consumeren fører målingene sine i, og som `/metrics` skraper.
+     * Det kommer inn fra komposisjonsroten slik at appen har nøyaktig ett register, og slik at målingene havner i det registeret som faktisk blir skrapet.
+     * Testene sender inn sitt eget register, siden et prosessnavn bare kan registreres én gang per register.
+     */
+    val meterRegistry: PrometheusMeterRegistry,
+) {
     private val log = KotlinLogging.logger {}
 
     open val jdbcUrl by lazy { Configuration.dbJdbcUrl }
@@ -306,6 +315,8 @@ open class ApplicationContext(val clock: Clock) {
         IdenthendelseConsumer(
             identhendelseService = identhendelseService,
             topic = Configuration.identhendelseTopic,
+            clock = clock,
+            meterRegistry = meterRegistry,
         )
     }
 

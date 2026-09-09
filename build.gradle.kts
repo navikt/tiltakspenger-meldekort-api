@@ -5,10 +5,11 @@ import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
 val ktorVersion = "3.4.3"
+val micrometerVersion = "1.17.1"
 val mockkVersion = "1.14.11"
 val jackson2Version = "2.22.2"
 val lz4Version = "1.11.2"
-val felleslibVersion = "0.0.20260908081919"
+val felleslibVersion = "0.0.20260908114306"
 val kotestVersion = "6.2.4"
 val kotlinxCoroutinesVersion = "1.11.0"
 val tmsVarselBuilderVersion = "2.2.0"
@@ -121,8 +122,10 @@ dependencies {
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
     implementation("io.ktor:ktor-server-default-headers-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-host-common:$ktorVersion")
+    implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.micrometer:micrometer-registry-prometheus:$micrometerVersion")
 
     implementation("io.ktor:ktor-utils:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")

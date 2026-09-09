@@ -2,18 +2,23 @@ package no.nav.tiltakspenger.meldekort.infra.routes
 
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson3.JacksonConverter
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.authentication
+import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.header
 import io.ktor.server.request.path
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.tiltakspenger.libs.json.objectMapper
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Readiness
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.healthRoutes
@@ -57,6 +62,7 @@ fun Application.ktorSetup(
                 !call.request.path().startsWith("/metrics")
         }
     }
+    metrics(applicationContext.meterRegistry)
     jacksonSerialization()
 
     setupAuthentication(applicationContext.texasClient)
@@ -74,6 +80,25 @@ fun Application.ktorSetup(
         landingssideModule(applicationContext)
 
         additionalRoutes?.invoke(this)
+    }
+}
+
+/**
+ * Kobler Ktor-metrikkene og `/metrics` til registeret appen allerede eier.
+ * Registeret kommer inn som parameter i stedet for å konstrueres her, slik at de skedulerte jobbene og Kafka-consumeren fører målingene sine i nøyaktig det registeret som skrapes.
+ * Konstruksjonen hører hjemme i komposisjonsroten, se `start()` i `Application.kt`.
+ */
+fun Application.metrics(meterRegistry: PrometheusMeterRegistry) {
+    install(MicrometerMetrics) {
+        registry = meterRegistry
+    }
+    routing {
+        get("/metrics") {
+            call.respondText(
+                text = meterRegistry.scrape(),
+                status = HttpStatusCode.OK,
+            )
+        }
     }
 }
 

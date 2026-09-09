@@ -1,5 +1,7 @@
 package no.nav.tiltakspenger
 
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.tiltakspenger.fakes.clients.ArenaMeldekortClientFake
 import no.nav.tiltakspenger.fakes.clients.DokarkivClientFake
 import no.nav.tiltakspenger.fakes.clients.SaksbehandlingClientFake
@@ -13,7 +15,15 @@ import no.nav.tiltakspenger.meldekort.sak.SaksbehandlingClient
 import no.nav.tiltakspenger.meldekort.varsler.VarselClient
 import java.time.Clock
 
-class LokalApplicationContext(clock: Clock) : ApplicationContext(clock) {
+/**
+ * Komposisjonsroten for lokal kjøring, se `LokalMain`.
+ * Registeret konstrueres her av samme grunn som i `start()`: alle appens målinger skal føres i det ene registeret `/metrics` skraper.
+ */
+class LokalApplicationContext(clock: Clock) :
+    ApplicationContext(
+        clock = clock,
+        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+    ) {
     private val brukFakeTexasClient: Boolean =
         System.getenv("BRUK_FAKE_AUTH")?.toBooleanStrictOrNull() ?: true
     private val brukFakeSaksbehandlingClient: Boolean =

@@ -1,6 +1,8 @@
 package no.nav.tiltakspenger
 
 import io.github.oshai.kotlinlogging.KLogger
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.tiltakspenger.fakes.clients.ArenaMeldekortClientFake
 import no.nav.tiltakspenger.fakes.clients.DokarkivClientFake
 import no.nav.tiltakspenger.fakes.clients.SaksbehandlingClientFake
@@ -29,7 +31,12 @@ sealed class TestApplicationContext(
     val saksnummergenerator: SaksnummerGeneratorForTest = SaksnummerGeneratorForTest(),
     val fnrGenerator: FnrGenerator = FnrGenerator(),
     journalpostIdGenerator: JournalpostIdGenerator = JournalpostIdGeneratorSerial(),
-) : ApplicationContext(clock) {
+    /**
+     * Eget register per testkontekst.
+     * Et prosessnavn kan bare registreres én gang per register, så to kontekster som delte register ville kollidert på den første jobben eller consumeren med samme navn.
+     */
+    meterRegistry: PrometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+) : ApplicationContext(clock = clock, meterRegistry = meterRegistry) {
     /** Fungerer bare for tester som bruker [TikkendeKlokke] som clock */
     val tikkendeKlokke: TikkendeKlokke by lazy { clock as TikkendeKlokke }
 
