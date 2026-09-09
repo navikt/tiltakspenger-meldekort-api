@@ -24,8 +24,9 @@ fun isNonStable(version: String): Boolean {
 
 plugins {
     application
-    kotlin("jvm") version "2.4.10"
-    kotlin("plugin.serialization") version "2.4.10"
+    // 2.4.10 deserialiserer build cache-oppføringer usikkert, som gir kodekjøring fra en forgiftet cache (CVE-2026-53914); fikset fra 2.4.20.
+    kotlin("jvm") version "2.4.20"
+    kotlin("plugin.serialization") version "2.4.20"
     id("com.diffplug.spotless") version "8.10.1"
     id("com.github.ben-manes.versions") version "0.61.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.9"
@@ -71,6 +72,9 @@ dependencies {
     implementation(platform("com.fasterxml.jackson:jackson-bom:$jackson2Version"))
 
     constraints {
+        // Konsist 0.17.3 setter opp kompilatormiljøet sitt mot kotlin-compiler-embeddable 2.0.21 og krasjer med 2.4.20
+        // («Extensions storage is not registered»), som kotlin-bom ellers løfter den til. Låst til Konsists egen versjon, som i libs.
+        testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable") { version { strictly("2.0.21") } }
         // kafka-clients (via libs:kafka) drar inn lz4-java 1.10.2, der de native XXHash-
         // implementasjonene kan krasje JVM-en på ugyldige byte-intervaller (GHSA-xx22-p4ch-683r).
         // Transitiv-only, derfor constraint og ikke en deklarert avhengighet.
