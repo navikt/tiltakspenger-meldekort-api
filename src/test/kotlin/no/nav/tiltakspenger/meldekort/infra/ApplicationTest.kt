@@ -11,11 +11,8 @@ import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.application.ServerReady
 import io.ktor.server.testing.testApplication
 import no.nav.tiltakspenger.TestApplicationContextMedInMemoryDb
-import no.nav.tiltakspenger.libs.ktor.common.oppstart.Bakgrunnsprosessoppsett
-import no.nav.tiltakspenger.libs.ktor.common.oppstart.Jobboppsett
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.Readiness
 import no.nav.tiltakspenger.libs.ktor.common.oppstart.konfigurerOppstart
-import no.nav.tiltakspenger.meldekort.infra.routes.CALL_ID_MDC_KEY
 import no.nav.tiltakspenger.meldekort.infra.routes.ktorSetup
 import org.junit.jupiter.api.Test
 
@@ -42,16 +39,8 @@ class ApplicationTest {
                 log = log,
                 isNais = false,
                 readiness = readiness,
-                oppsett = Bakgrunnsprosessoppsett(
-                    jobber = Jobboppsett(
-                        mdcCallIdKey = CALL_ID_MDC_KEY,
-                        electorPath = { "test-elector-path" },
-                        clock = context.clock,
-                        meterRegistry = context.meterRegistry,
-                        tasks = jobber(context),
-                    ),
-                    kafkaConsumers = kafkaConsumers(isNais = false, applicationContext = context),
-                ),
+                // isNais = false gir lokal leader election, så electorPath leses aldri, og tom consumer-liste.
+                oppsett = bakgrunnsprosessoppsett(applicationContext = context, isNais = false),
             )
         }
 
@@ -77,7 +66,8 @@ class ApplicationTest {
 
     /**
      * Verifiserer at registeret jobbene og consumeren skriver målingene sine til, er det samme registeret `/metrics` skraper.
-     * Det er hele poenget med at [ApplicationContext] eier registeret: sender vi inn et annet register i [Jobboppsett] eller i consumeren, forsvinner seriene stille, og varselreglene «Jobb har stoppet» og «Meldingsleser har stoppet» får aldri data.
+     * Det er hele poenget med at [ApplicationContext] eier registeret: sender vi inn et annet register i `Jobboppsett` eller i consumeren, forsvinner seriene stille, og varselreglene «Jobb har stoppet» og «Meldingsleser har stoppet» får aldri data.
+     * Oppsettet er det samme som [start] bruker, siden begge bygger det med [bakgrunnsprosessoppsett], så en feil i parameteroverføringen i komposisjonsroten fanges også her.
      *
      * Consumeren konstrueres, men startes ikke.
      * Meldingsleser-målingene registreres i konstruktøren til [no.nav.tiltakspenger.libs.kafka.infra.ManagedKafkaConsumer], mens `run()` ville krevd en ekte Kafka-broker.
@@ -95,17 +85,9 @@ class ApplicationTest {
                 log = log,
                 isNais = false,
                 readiness = readiness,
-                oppsett = Bakgrunnsprosessoppsett(
-                    jobber = Jobboppsett(
-                        mdcCallIdKey = CALL_ID_MDC_KEY,
-                        electorPath = { "test-elector-path" },
-                        clock = context.clock,
-                        meterRegistry = context.meterRegistry,
-                        tasks = jobber(context),
-                    ),
-                    // Consumerne startes ikke her; det ville krevd en ekte broker.
-                    kafkaConsumers = kafkaConsumers(isNais = false, applicationContext = context),
-                ),
+                // isNais = false gir lokal leader election, så electorPath leses aldri, og tom consumer-liste.
+                // Consumerne startes ikke her; det ville krevd en ekte broker.
+                oppsett = bakgrunnsprosessoppsett(applicationContext = context, isNais = false),
             )
         }
 

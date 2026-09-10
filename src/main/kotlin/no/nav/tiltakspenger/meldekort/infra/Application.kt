@@ -46,17 +46,24 @@ fun start(
         port = port,
         host = host,
         isNais = isNais,
-        oppsett = Bakgrunnsprosessoppsett(
-            jobber = Jobboppsett(
-                mdcCallIdKey = CALL_ID_MDC_KEY,
-                electorPath = { Configuration.electorPath },
-                clock = applicationContext.clock,
-                meterRegistry = applicationContext.meterRegistry,
-                tasks = jobber(applicationContext),
-            ),
-            kafkaConsumers = kafkaConsumers(isNais = isNais, applicationContext = applicationContext),
-        ),
+        oppsett = bakgrunnsprosessoppsett(applicationContext = applicationContext, isNais = isNais),
     ) { readiness ->
         ktorSetup(applicationContext = applicationContext, readiness = readiness, additionalRoutes = additionalRoutes)
     }
 }
+
+/**
+ * Bakgrunnsprosessene appen kjører: de skedulerte jobbene fra [jobber] og Kafka-consumerne fra [kafkaConsumers].
+ * Funksjonen ligger i komposisjonsroten fordi lista er komposisjonsrotens: det er her det avgjøres hva appen faktisk starter.
+ * Wiring-testen kaller den for å starte de samme jobbene som produksjon, slik at målingene den sjekker er de ekte.
+ */
+fun bakgrunnsprosessoppsett(applicationContext: ApplicationContext, isNais: Boolean): Bakgrunnsprosessoppsett = Bakgrunnsprosessoppsett(
+    jobber = Jobboppsett(
+        mdcCallIdKey = CALL_ID_MDC_KEY,
+        electorPath = { Configuration.electorPath },
+        clock = applicationContext.clock,
+        meterRegistry = applicationContext.meterRegistry,
+        tasks = jobber(applicationContext),
+    ),
+    kafkaConsumers = kafkaConsumers(isNais = isNais, applicationContext = applicationContext),
+)
