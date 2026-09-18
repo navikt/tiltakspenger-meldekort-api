@@ -188,7 +188,7 @@ val klasserMedDekningskrav =
         "no.nav.tiltakspenger.meldekort.**.*PostgresRepo*",
         "no.nav.tiltakspenger.meldekort.arena.**",
         "no.nav.tiltakspenger.meldekort.journalføring.infra.DokarkivClientImpl",
-        "no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenClientImpl",
+        "no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenrsClientImpl",
         "no.nav.tiltakspenger.meldekort.bruker.**",
         "no.nav.tiltakspenger.meldekort.landingsside.**",
         "no.nav.tiltakspenger.meldekort.meldekortvedtak.**",

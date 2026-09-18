@@ -13,7 +13,7 @@ import no.nav.tiltakspenger.libs.httpklient.infra.transport.JavaHttpTransport
 import no.nav.tiltakspenger.meldekort.infra.Configuration
 import no.nav.tiltakspenger.meldekort.journalføring.PdfA
 import no.nav.tiltakspenger.meldekort.journalføring.PdfOgJson
-import no.nav.tiltakspenger.meldekort.journalføring.PdfgenClient
+import no.nav.tiltakspenger.meldekort.journalføring.PdfgenrsClient
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 import java.net.URI
 import java.time.Clock
@@ -22,7 +22,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-const val PDFGEN_PATH = "api/v1/genpdf/tpts"
+const val PDFGENRS_PATH = "api/v1/genpdf/tpts"
 
 /**
  * Konverterer domene til JSON som sendes til pdfgenrs for å generere PDF.
@@ -38,13 +38,13 @@ const val PDFGEN_PATH = "api/v1/genpdf/tpts"
  *
  * @param transport Transporten som gjør nettverkskallet; default er produksjonstransporten, tester sender inn `FakeHttpTransport` slik at hele den reelle pipelinen kjører.
  */
-class PdfgenClientImpl(
+class PdfgenrsClientImpl(
     private val baseUrl: String = Configuration.pdfgenrsUrl,
     clock: Clock,
     connectTimeout: Duration = 5.seconds,
     timeout: Duration = 10.seconds,
     transport: HttpTransport = JavaHttpTransport(connectTimeout = connectTimeout),
-) : PdfgenClient {
+) : PdfgenrsClient {
     private val httpKlient: HttpKlient = HttpKlient(
         clock = clock,
         config = HttpKlientConfig(
@@ -71,13 +71,13 @@ class PdfgenClientImpl(
         path: String,
     ): Either<HttpKlientError, PdfOgJson> {
         val språksuffiks = if (meldekort.locale == "en") "-en" else ""
-        val uri = URI.create("$baseUrl/$PDFGEN_PATH/$path$språksuffiks")
+        val uri = URI.create("$baseUrl/$PDFGENRS_PATH/$path$språksuffiks")
         val jsonPayload = meldekort.toDTO()
 
-        return pdfgenRequest(uri = uri, jsonPayload = jsonPayload)
+        return pdfgenrsRequest(uri = uri, jsonPayload = jsonPayload)
     }
 
-    private suspend fun pdfgenRequest(
+    private suspend fun pdfgenrsRequest(
         uri: URI,
         jsonPayload: String,
     ): Either<HttpKlientError, PdfOgJson> {

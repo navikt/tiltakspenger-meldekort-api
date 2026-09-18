@@ -4,7 +4,7 @@ import arrow.core.Either
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
 
-interface PdfgenClient {
+interface PdfgenrsClient {
     suspend fun genererMeldekortPdf(
         meldekort: BrukersMeldekort,
     ): Either<HttpKlientError, PdfOgJson>

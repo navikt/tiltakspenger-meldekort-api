@@ -15,12 +15,12 @@ import no.nav.tiltakspenger.meldekort.utils.toNorskUkedagOgDatoUtenÅr
 import no.nav.tiltakspenger.meldekort.utils.toNorskUkenummer
 
 /**
- * Serialiserer et [BrukersMeldekort] til JSON-en som sendes til tiltakspenger-pdfgen for å generere brevet (PDF).
+ * Serialiserer et [BrukersMeldekort] til JSON-en som sendes til tiltakspenger-pdfgenrs for å generere brevet (PDF).
  *
  * Dette er den eneste offentlige inngangen til brev-DTO-ene.
  * Selve DTO-ene er private slik at de ikke lekker ut av denne fila, og slik at koblingen mot domenet (`BrukersMeldekort`/`MeldekortDag`/`MeldekortDagStatus`) holdes innenfor mappingen her.
  *
- * Datoer formateres her fordi vi ikke bruker tid på å opprette hjelpemetoder i pdfgen-core per nå.
+ * Datoer og ukenummer formateres her fordi malene i pdfgenrs ikke har hjelpere for norsk ukedag og ukenummer.
  */
 fun BrukersMeldekort.toDTO(): String = serialize(this.toBrevMeldekortDTO())
 

@@ -25,10 +25,10 @@ import no.nav.tiltakspenger.meldekort.infra.db.DataSourceSetup
 import no.nav.tiltakspenger.meldekort.journalføring.DokarkivClient
 import no.nav.tiltakspenger.meldekort.journalføring.JournalførMeldekortService
 import no.nav.tiltakspenger.meldekort.journalføring.JournalføringRepo
-import no.nav.tiltakspenger.meldekort.journalføring.PdfgenClient
+import no.nav.tiltakspenger.meldekort.journalføring.PdfgenrsClient
 import no.nav.tiltakspenger.meldekort.journalføring.infra.DokarkivClientImpl
 import no.nav.tiltakspenger.meldekort.journalføring.infra.JournalføringPostgresRepo
-import no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenClientImpl
+import no.nav.tiltakspenger.meldekort.journalføring.infra.PdfgenrsClientImpl
 import no.nav.tiltakspenger.meldekort.landingsside.FellesLandingssideService
 import no.nav.tiltakspenger.meldekort.landingsside.LandingssideRepo
 import no.nav.tiltakspenger.meldekort.landingsside.infra.repo.LandingssidePostgresRepo
@@ -258,7 +258,7 @@ open class ApplicationContext(
     open val journalførMeldekortService: JournalførMeldekortService by lazy {
         JournalførMeldekortService(
             journalføringRepo = journalføringRepo,
-            pdfgenClient = pdfgenClient,
+            pdfgenrsClient = pdfgenrsClient,
             dokarkivClient = dokarkivClient,
             clock = clock,
             sikkerlogg = sikkerlogg,
@@ -299,8 +299,8 @@ open class ApplicationContext(
         )
     }
 
-    open val pdfgenClient: PdfgenClient by lazy {
-        PdfgenClientImpl(
+    open val pdfgenrsClient: PdfgenrsClient by lazy {
+        PdfgenrsClientImpl(
             clock = clock,
         )
     }

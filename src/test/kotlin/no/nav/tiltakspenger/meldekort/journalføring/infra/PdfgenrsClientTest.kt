@@ -16,10 +16,10 @@ import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class PdfgenClientTest {
-    private val pdfContent = "dette er innholdet i pdf vi får tilbake fra pdfGen".toByteArray()
+class PdfgenrsClientTest {
+    private val pdfContent = "dette er innholdet i pdf vi får tilbake fra pdfgenrs".toByteArray()
 
-    private fun klient(transport: FakeHttpTransport) = PdfgenClientImpl(
+    private fun klient(transport: FakeHttpTransport) = PdfgenrsClientImpl(
         baseUrl = "http://pdfgenrs",
         clock = fixedClock,
         transport = transport,
@@ -35,7 +35,7 @@ class PdfgenClientTest {
             // Ellers ble den linja bare nådd når journalføringsjobben rakk å kjøre under `ApplicationTest`, og dekningsgaten ble avhengig av timing.
             withWireMockServer { wiremock ->
                 wiremock.post {
-                    url equalTo "/$PDFGEN_PATH/meldekort"
+                    url equalTo "/$PDFGENRS_PATH/meldekort"
                 } returns {
                     statusCode = 200
                     header = "Content-Type" to "application/pdf"
@@ -43,7 +43,7 @@ class PdfgenClientTest {
                 }
 
                 runTest {
-                    val klient = PdfgenClientImpl(
+                    val klient = PdfgenrsClientImpl(
                         baseUrl = wiremock.baseUrl(),
                         clock = fixedClock,
                     )

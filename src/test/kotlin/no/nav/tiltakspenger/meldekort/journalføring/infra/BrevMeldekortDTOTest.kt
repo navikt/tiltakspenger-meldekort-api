@@ -16,9 +16,9 @@ import java.time.LocalDateTime
 import java.time.temporal.TemporalAdjusters
 
 /**
- * Tester formatene veldig eksplisitt da disse ender opp direkte i brevet til bruker og vi har valgt å gjøre formateringen her og ikke i tiltakspenger-pdfgen.
+ * Tester formatene veldig eksplisitt da disse ender opp direkte i brevet til bruker og vi har valgt å gjøre formateringen her og ikke i tiltakspenger-pdfgenrs.
  *
- * DTO-ene er private i produksjonskoden, så vi asserter mot den serialiserte JSON-en (det som faktisk sendes til pdfgen) i stedet for mot DTO-typene.
+ * DTO-ene er private i produksjonskoden, så vi asserter mot den serialiserte JSON-en (det som faktisk sendes til pdfgenrs) i stedet for mot DTO-typene.
  * Forventede verdier er hardkodede strings, ikke utledet fra domenet.
  *
  * Obs! Asserts går mot hardkodede verdier i tilfelle formatet blir oppdatert i tiltakspenger-libs.

@@ -145,7 +145,7 @@ Domenepakken til en feature skal inneholde kode som uttrykker forretningsbegrepe
 
 - Domenemodeller og verdityper, for eksempel `Meldekort`, `MeldekortDag`, `Meldeperiode`, `Sak`, `Varsel`.
 - Domeneoperasjoner og tjenester, for eksempel `HentMeldekortService`, `LagreMeldekortFraBrukerService`, `KorrigerMeldekortService`, `SendMeldekortService`, `LagreFraSaksbehandlingService`, `VurderVarselService`.
-- Porter/interfaces som domenet trenger for å snakke med omverdenen, for eksempel `MeldekortRepo`, `SakRepo`, `VarselRepo`, `VarselClient`, `PdfgenClient`.
+- Porter/interfaces som domenet trenger for å snakke med omverdenen, for eksempel `MeldekortRepo`, `SakRepo`, `VarselRepo`, `VarselClient`, `PdfgenrsClient`.
 - Kommandoer og domeneutfall, for eksempel `KorrigerMeldekortCommand` og `VurderVarselUtfall`.
 
 Domenet skal i minst mulig grad kjenne til transport, database, Ktor, Kafka, HTTP, JSON eller konkrete klientbiblioteker.
@@ -193,9 +193,9 @@ Eksempler:
 - Port i domenet: `meldekort/sak/SaksbehandlingClient.kt`
 - HTTP-adapter: `meldekort/sak/infra/SaksbehandlingClientImpl.kt`
 - Ekstern DTO: `meldekort/sak/infra/SaksbehandlingMeldekortDTO.kt`
-- Dokarkiv-adapter: `meldekort/journalfring/infra/DokarkivClientImpl.kt`
-- Dokarkiv request-format: `meldekort/journalfring/infra/JournalpostRequest.kt`
-- Pdfgen-adapter: `meldekort/journalfring/infra/PdfgenClientImpl.kt`
+- Dokarkiv-adapter: `meldekort/journalføring/infra/DokarkivClientImpl.kt`
+- Dokarkiv request-format: `meldekort/journalføring/infra/JournalpostRequest.kt`
+- Pdfgenrs-adapter: `meldekort/journalføring/infra/PdfgenrsClientImpl.kt`
 - Arena-adapter: `meldekort/arena/infra/ArenaMeldekortHttpClient.kt`
 
 Domenet bør kun forholde seg til porten og domenemodeller.

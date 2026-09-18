@@ -12,7 +12,7 @@ import java.time.Clock
 
 class JournalførMeldekortService(
     private val journalføringRepo: JournalføringRepo,
-    private val pdfgenClient: PdfgenClient,
+    private val pdfgenrsClient: PdfgenrsClient,
     private val dokarkivClient: DokarkivClient,
     private val clock: Clock,
     private val sikkerlogg: Sikkerlogg = Sikkerlogg,
@@ -30,13 +30,13 @@ class JournalførMeldekortService(
                 Either.catch {
                     val kontekst = "Saksnummer: $saksnummer, sakId: ${meldekort.sakId}, meldekortId: ${meldekort.id}"
                     val pdfOgJson = if (meldekort.korrigering) {
-                        pdfgenClient.genererKorrigertMeldekortPdf(meldekort = meldekort)
+                        pdfgenrsClient.genererKorrigertMeldekortPdf(meldekort = meldekort)
                             .getOrElse {
                                 it.loggFeil(log, "generering av korrigert meldekort-pdf", kontekst, sikkerlogg)
                                 return@forEach
                             }
                     } else {
-                        pdfgenClient.genererMeldekortPdf(meldekort = meldekort)
+                        pdfgenrsClient.genererMeldekortPdf(meldekort = meldekort)
                             .getOrElse {
                                 it.loggFeil(log, "generering av meldekort-pdf", kontekst, sikkerlogg)
                                 return@forEach
