@@ -4,7 +4,7 @@ import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 
 val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
-val ktorVersion = "3.4.3"
+val ktorVersion = "3.5.2"
 val micrometerVersion = "1.17.1"
 val mockkVersion = "1.14.11"
 val jackson2Version = "2.22.2"
