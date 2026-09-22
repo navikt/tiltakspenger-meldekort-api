@@ -29,7 +29,7 @@ plugins {
     kotlin("jvm") version "2.4.20"
     kotlin("plugin.serialization") version "2.4.20"
     id("com.diffplug.spotless") version "8.10.1"
-    id("io.github.ben-manes.versions") version "0.61.0"
+    id("io.github.ben-manes.versions") version "0.63.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.9"
 }
 
