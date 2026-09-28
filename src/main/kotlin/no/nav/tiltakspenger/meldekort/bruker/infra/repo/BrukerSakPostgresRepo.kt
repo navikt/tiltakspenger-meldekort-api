@@ -35,7 +35,7 @@ class BrukerSakPostgresRepo(
                     "fnr" to fnr.verdi,
                 ).map { row ->
                     SakForBruker(
-                        fnr = Fnr.Companion.fromString(row.string("fnr")),
+                        fnr = Fnr.fromString(row.string("fnr")),
                         arenaMeldekortStatus = row.string("arena_meldekort_status").tilArenaMeldekortStatus(),
                         harSoknadUnderBehandling = row.boolean("har_soknad_under_behandling"),
                         kanSendeInnHelgForMeldekort = row.boolean("kan_sende_inn_helg_for_meldekort"),
