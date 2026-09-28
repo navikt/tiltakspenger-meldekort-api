@@ -9,7 +9,7 @@ val micrometerVersion = "1.17.1"
 val mockkVersion = "1.14.11"
 val jackson2Version = "2.22.2"
 val lz4Version = "1.11.2"
-val felleslibVersion = "0.0.20260910084632"
+val felleslibVersion = "0.0.20260925103121"
 val kotestVersion = "6.2.4"
 val kotlinxCoroutinesVersion = "1.11.0"
 val tmsVarselBuilderVersion = "2.2.0"
@@ -88,19 +88,19 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
 
     // Felles libs
-    implementation("com.github.navikt.tiltakspenger-libs:common:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:jobber:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:json:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:kafka:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:logging:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:meldekort:${felleslibVersion}")
-    implementation("com.github.navikt.tiltakspenger-libs:meldekort-dtos:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:periodisering:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:persistering-infrastruktur:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:persistering-domene:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:texas:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:httpklient-infrastruktur:$felleslibVersion")
-    implementation("com.github.navikt.tiltakspenger-libs:ktor-common:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:common:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:jobber:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:json:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:kafka:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:logging:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:meldekort:${felleslibVersion}")
+    implementation("no.nav.tiltakspenger.libs:meldekort-dtos:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:periodisering:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:persistering-infrastruktur:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:persistering-domene:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:texas:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:httpklient-infrastruktur:$felleslibVersion")
+    implementation("no.nav.tiltakspenger.libs:ktor-common:$felleslibVersion")
 
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilderVersion")
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMikrofrontendSelectorBuilderVersion")
@@ -146,7 +146,7 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-json:$kotestVersion")
     testImplementation("io.kotest:kotest-extensions:$kotestVersion")
     // Delte arkitekturregler; drar inn konsist transitivt (api-avhengighet).
-    testImplementation("com.github.navikt.tiltakspenger-libs:konsist-regler:$felleslibVersion")
+    testImplementation("no.nav.tiltakspenger.libs:konsist-regler:$felleslibVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinxCoroutinesVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$kotlinxCoroutinesVersion")
 
@@ -159,11 +159,11 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-postgresql:$testContainersVersion")
 
     // Starter lokal postgres for LokalMain; hører hjemme i test-sourcesettet sammen med den.
-    testImplementation("com.github.navikt.tiltakspenger-libs:lokal-oppstart:$felleslibVersion")
-    testImplementation("com.github.navikt.tiltakspenger-libs:test-common:$felleslibVersion")
-    testImplementation(testFixtures("com.github.navikt.tiltakspenger-libs:httpklient-infrastruktur:$felleslibVersion"))
-    testImplementation("com.github.navikt.tiltakspenger-libs:ktor-test-common:$felleslibVersion")
-    testImplementation("com.github.navikt.tiltakspenger-libs:persistering-test-common:$felleslibVersion")
+    testImplementation("no.nav.tiltakspenger.libs:lokal-oppstart:$felleslibVersion")
+    testImplementation("no.nav.tiltakspenger.libs:test-common:$felleslibVersion")
+    testImplementation(testFixtures("no.nav.tiltakspenger.libs:httpklient-infrastruktur:$felleslibVersion"))
+    testImplementation("no.nav.tiltakspenger.libs:ktor-test-common:$felleslibVersion")
+    testImplementation("no.nav.tiltakspenger.libs:persistering-test-common:$felleslibVersion")
 
 }
 
