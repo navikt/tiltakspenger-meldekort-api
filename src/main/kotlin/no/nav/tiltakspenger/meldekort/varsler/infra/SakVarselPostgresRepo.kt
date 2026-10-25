@@ -8,6 +8,7 @@ import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
 import no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil
 import no.nav.tiltakspenger.meldekort.varsler.SakForVarselvurdering
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
+import java.time.Instant
 import java.time.LocalDateTime
 
 class SakVarselPostgresRepo(
@@ -58,7 +59,7 @@ class SakVarselPostgresRepo(
                         sakId = SakId.fromString(row.string("id")),
                         saksnummer = row.string("saksnummer"),
                         fnr = Fnr.fromString(row.string("fnr")),
-                        sistFlaggetTidspunkt = row.localDateTimeOrNull("sist_flagget_tidspunkt"),
+                        sistFlaggetTidspunkt = row.instantOrNull("sist_flagget_tidspunkt"),
                     )
                 }.asList,
             )
@@ -68,13 +69,14 @@ class SakVarselPostgresRepo(
     override fun markerVarselVurdert(
         sakId: SakId,
         vurdertTidspunkt: LocalDateTime,
-        sistFlaggetTidspunktVedLesing: LocalDateTime?,
+        sistFlaggetTidspunktVedLesing: Instant?,
         sessionContext: SessionContext?,
     ) {
         sessionFactory.withSession(sessionContext) { session ->
             val antallOppdatert = session.run(
                 sqlQuery(
                     // Optimistisk lås: oppdater kun hvis sist_flagget_tidspunkt ikke har endret seg siden jobben leste saken.
+                    // Tidspunktet leses og bindes som Instant (ikke LocalDateTime) slik at sammenligningen mot TIMESTAMPTZ ikke blir tvetydig når klokka stilles tilbake ved overgang fra sommertid til normaltid.
                     // IS NOT DISTINCT FROM håndterer NULL korrekt (NULL IS NOT DISTINCT FROM NULL = true).
                     // Hvis tidspunktet er endret har en konkurrerende transaksjon flagget saken på nytt (typisk mottak av nytt meldekort).
                     // Vi kaster OptimistiskLåsFeil slik at varseljobbens transaksjon rulles tilbake, og saken plukkes opp på nytt i neste kjøring med oppdatert datagrunnlag.

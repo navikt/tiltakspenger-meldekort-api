@@ -18,8 +18,10 @@ import no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil
 import no.nav.tiltakspenger.meldekort.sak.Sak
 import no.nav.tiltakspenger.objectmothers.ObjectMother
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.TimeZone
 
 class SakVarselPostgresRepoTest {
     @Test
@@ -130,6 +132,55 @@ class SakVarselPostgresRepoTest {
             // Flagget forblir true slik at saken plukkes opp på nytt.
             helper.sakVarselPostgresRepo.hentSakerSomSkalVurdereVarsel()
                 .map { it.sakId } shouldContainExactly listOf(sak.id)
+        }
+    }
+
+    @Test
+    fun `markerVarselVurdert matcher sist_flagget_tidspunkt i den doble timen ved overgang fra sommertid til normaltid`() {
+        val opprinneligTidssone = TimeZone.getDefault()
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"))
+        try {
+            withMigratedDb { helper ->
+                // 02:30 norsk tid forekommer to ganger 25. oktober 2026: først som 00:30Z (sommertid) og så som 01:30Z (normaltid).
+                listOf(
+                    Instant.parse("2026-10-25T00:30:00.123456Z"),
+                    Instant.parse("2026-10-25T01:30:00.123456Z"),
+                ).forEach { sistFlagget ->
+                    val sak = sakMedMeldeperiode()
+                    lagreSak(helper, sak)
+                    settSistFlaggetTidspunkt(helper, sak.id, sistFlagget)
+
+                    val lest = helper.sakVarselPostgresRepo.hentSakerSomSkalVurdereVarsel()
+                        .single { it.sakId == sak.id }
+                    lest.sistFlaggetTidspunkt shouldBe sistFlagget
+
+                    helper.sakVarselPostgresRepo.markerVarselVurdert(
+                        sakId = sak.id,
+                        vurdertTidspunkt = nå(fixedClock),
+                        sistFlaggetTidspunktVedLesing = lest.sistFlaggetTidspunkt,
+                    )
+                    hentSakVarselstatus(helper, sak.id).skalVurdereVarsel shouldBe false
+                }
+            }
+        } finally {
+            TimeZone.setDefault(opprinneligTidssone)
+        }
+    }
+
+    private fun settSistFlaggetTidspunkt(helper: TestDataHelper, sakId: SakId, tidspunkt: Instant) {
+        helper.sessionFactory.withSession(null) { session ->
+            session.run(
+                sqlQuery(
+                    """
+                    update sak
+                    set skal_vurdere_varsel = true,
+                        sist_flagget_tidspunkt = :tidspunkt::timestamptz
+                    where id = :id
+                    """.trimIndent(),
+                    "id" to sakId.toString(),
+                    "tidspunkt" to tidspunkt.toString(),
+                ).asUpdate,
+            )
         }
     }
 

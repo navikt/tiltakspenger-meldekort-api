@@ -2,7 +2,7 @@ package no.nav.tiltakspenger.meldekort.varsler
 
 import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
-import java.time.LocalDateTime
+import java.time.Instant
 
 /**
  * En sak som står i kø for varselvurdering.
@@ -12,11 +12,12 @@ import java.time.LocalDateTime
  * Per-sak-arbeidet (kjeder som mangler innsending) gjøres i [no.nav.tiltakspenger.meldekort.varsler.VarselMeldekortRepo.hentFørsteKjedeSomManglerInnsending].
  *
  * [sistFlaggetTidspunkt] brukes som optimistisk lås: når jobben fullfører og kaller [no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo.markerVarselVurdert], oppdateres flagget KUN dersom [sistFlaggetTidspunkt] er uendret.
+ * Tidspunktet er et [Instant] (ikke LocalDateTime) slik at sammenligningen mot TIMESTAMPTZ-kolonnen ikke påvirkes av overgang mellom sommer- og normaltid.
  * Hvis det har kommet en ny hendelse (f.eks. meldekort-innsending) som har kalt [no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo.flaggForVarselvurdering] underveis, vil tidspunktet ha endret seg og markeringen feiler – saken blir da plukket opp i neste jobbkjøring og vurdert på nytt.
  */
 data class SakForVarselvurdering(
     val sakId: SakId,
     val saksnummer: String,
     val fnr: Fnr,
-    val sistFlaggetTidspunkt: LocalDateTime?,
+    val sistFlaggetTidspunkt: Instant?,
 )

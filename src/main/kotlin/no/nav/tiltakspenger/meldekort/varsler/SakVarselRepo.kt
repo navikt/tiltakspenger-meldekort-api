@@ -2,6 +2,7 @@ package no.nav.tiltakspenger.meldekort.varsler
 
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
+import java.time.Instant
 import java.time.LocalDateTime
 
 interface SakVarselRepo {
@@ -27,7 +28,7 @@ interface SakVarselRepo {
     fun markerVarselVurdert(
         sakId: SakId,
         vurdertTidspunkt: LocalDateTime,
-        sistFlaggetTidspunktVedLesing: LocalDateTime?,
+        sistFlaggetTidspunktVedLesing: Instant?,
         sessionContext: SessionContext? = null,
     )
 }

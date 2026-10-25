@@ -11,19 +11,20 @@ import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDateTime
 
 fun vurderVarselForSak(
     sakId: SakId,
     saksnummer: String,
     fnr: Fnr,
-    sistFlaggetTidspunktVedLesing: LocalDateTime? = null,
+    sistFlaggetTidspunktVedLesing: Instant? = null,
     clock: Clock,
     sessionFactory: SessionFactory,
     hentVarsler: () -> Varsler,
     hentFørsteKjedeSomManglerInnsending: () -> KjedeSomManglerInnsending?,
     lagreVarsel: (Varsel, SessionContext) -> Unit,
-    markerVarselVurdert: (LocalDateTime, LocalDateTime?, SessionContext) -> Unit,
+    markerVarselVurdert: (LocalDateTime, Instant?, SessionContext) -> Unit,
     logger: KLogger = KotlinLogging.logger {},
 ): Either<VurderVarselUtfall, Unit> {
     val vurderingstidspunkt = nå(clock)

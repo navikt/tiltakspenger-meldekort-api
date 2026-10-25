@@ -7,13 +7,14 @@ import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil
 import no.nav.tiltakspenger.meldekort.varsler.SakForVarselvurdering
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicLong
 
 class SakVarselRepoFake(
     private val sakRepoFake: SakRepoFake,
 ) : SakVarselRepo {
-    private val flaggedForVurdering = Atomic(mutableMapOf<SakId, LocalDateTime>())
+    private val flaggedForVurdering = Atomic(mutableMapOf<SakId, Instant>())
     private val vurdertTidspunkt = Atomic(mutableMapOf<SakId, LocalDateTime>())
 
     // Monotonisk stigende tellerbasert tidspunkt for å etterligne clock_timestamp()s egenskap om alltid-nye verdier – slik at den optimistiske låsen kan testes uten å være avhengig av reell wallclock-presisjon.
@@ -45,7 +46,7 @@ class SakVarselRepoFake(
     override fun markerVarselVurdert(
         sakId: SakId,
         vurdertTidspunkt: LocalDateTime,
-        sistFlaggetTidspunktVedLesing: LocalDateTime?,
+        sistFlaggetTidspunktVedLesing: Instant?,
         sessionContext: SessionContext?,
     ) {
         val nåværende = flaggedForVurdering.get()[sakId]
@@ -58,10 +59,10 @@ class SakVarselRepoFake(
         this.vurdertTidspunkt.get()[sakId] = vurdertTidspunkt
     }
 
-    private fun nesteTidspunkt(): LocalDateTime {
+    private fun nesteTidspunkt(): Instant {
         // Bruk tellerbasert "tidspunkt" for å garantere unike verdier.
-        // Vi pakker en AtomicLong inn i et LocalDateTime via nanos-feltet, slik at to raske kall alltid får ulike verdier (i motsetning til nå() som kan gi samme verdi).
+        // Vi pakker en AtomicLong inn i et Instant via nanos-feltet, slik at to raske kall alltid får ulike verdier (i motsetning til nå() som kan gi samme verdi).
         val n = teller.incrementAndGet()
-        return LocalDateTime.of(1970, 1, 1, 0, 0).plusNanos(n)
+        return Instant.EPOCH.plusNanos(n)
     }
 }
