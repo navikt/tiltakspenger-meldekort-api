@@ -255,6 +255,8 @@ tasks {
         useJUnitPlatform()
         // https://phauer.com/2018/best-practices-unit-testing-kotlin/
         systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
+        // Samme tidssone som i NAIS (TZ i Dockerfile), slik at tester fanger feil ved overgang mellom sommertid og normaltid.
+        systemProperty("user.timezone", "Europe/Oslo")
         // https://github.com/mockito/mockito/issues/3037#issuecomment-1588199599
         jvmArgs("-XX:+EnableDynamicAgentLoading")
         jvmArgs("-ea")

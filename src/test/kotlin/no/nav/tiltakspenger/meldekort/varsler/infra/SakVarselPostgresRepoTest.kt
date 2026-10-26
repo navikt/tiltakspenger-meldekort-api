@@ -1,5 +1,6 @@
 package no.nav.tiltakspenger.meldekort.varsler.infra
 
+import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.TimeZone
+import java.time.ZoneId
 
 class SakVarselPostgresRepoTest {
     @Test
@@ -137,33 +138,32 @@ class SakVarselPostgresRepoTest {
 
     @Test
     fun `markerVarselVurdert matcher sist_flagget_tidspunkt i den doble timen ved overgang fra sommertid til normaltid`() {
-        val opprinneligTidssone = TimeZone.getDefault()
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Oslo"))
-        try {
-            withMigratedDb { helper ->
-                // 02:30 norsk tid forekommer to ganger 25. oktober 2026: først som 00:30Z (sommertid) og så som 01:30Z (normaltid).
-                listOf(
-                    Instant.parse("2026-10-25T00:30:00.123456Z"),
-                    Instant.parse("2026-10-25T01:30:00.123456Z"),
-                ).forEach { sistFlagget ->
-                    val sak = sakMedMeldeperiode()
-                    lagreSak(helper, sak)
-                    settSistFlaggetTidspunkt(helper, sak.id, sistFlagget)
+        // Feilen oppstår bare når JVM-en kjører i en tidssone med sommertid, slik den gjør i NAIS.
+        // Testoppgaven i build.gradle.kts setter user.timezone, så vi slipper å endre tidssonen globalt mens testene kjører.
+        withClue("Testen krever at JVM-en kjører med Europe/Oslo, jf. user.timezone i build.gradle.kts") {
+            ZoneId.systemDefault() shouldBe ZoneId.of("Europe/Oslo")
+        }
+        withMigratedDb { helper ->
+            // 02:30 norsk tid forekommer to ganger 25. oktober 2026: først som 00:30Z (sommertid) og så som 01:30Z (normaltid).
+            listOf(
+                Instant.parse("2026-10-25T00:30:00.123456Z"),
+                Instant.parse("2026-10-25T01:30:00.123456Z"),
+            ).forEach { sistFlagget ->
+                val sak = sakMedMeldeperiode()
+                lagreSak(helper, sak)
+                settSistFlaggetTidspunkt(helper, sak.id, sistFlagget)
 
-                    val lest = helper.sakVarselPostgresRepo.hentSakerSomSkalVurdereVarsel()
-                        .single { it.sakId == sak.id }
-                    lest.sistFlaggetTidspunkt shouldBe sistFlagget
+                val lest = helper.sakVarselPostgresRepo.hentSakerSomSkalVurdereVarsel()
+                    .single { it.sakId == sak.id }
+                lest.sistFlaggetTidspunkt shouldBe sistFlagget
 
-                    helper.sakVarselPostgresRepo.markerVarselVurdert(
-                        sakId = sak.id,
-                        vurdertTidspunkt = nå(fixedClock),
-                        sistFlaggetTidspunktVedLesing = lest.sistFlaggetTidspunkt,
-                    )
-                    hentSakVarselstatus(helper, sak.id).skalVurdereVarsel shouldBe false
-                }
+                helper.sakVarselPostgresRepo.markerVarselVurdert(
+                    sakId = sak.id,
+                    vurdertTidspunkt = nå(fixedClock),
+                    sistFlaggetTidspunktVedLesing = lest.sistFlaggetTidspunkt,
+                )
+                hentSakVarselstatus(helper, sak.id).skalVurdereVarsel shouldBe false
             }
-        } finally {
-            TimeZone.setDefault(opprinneligTidssone)
         }
     }
 
