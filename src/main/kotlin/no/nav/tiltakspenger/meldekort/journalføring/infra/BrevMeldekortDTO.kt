@@ -26,13 +26,20 @@ fun BrukersMeldekort.toDTO(): String = serialize(this.toBrevMeldekortDTO())
 
 private data class BrevMeldekortDTO(
     val id: String,
+    /** Overgang: pdfgenrs leser `personalia`, og vi fjerner feltet når pdfgenrs ikke lenger leser det. */
     val fnr: String,
+    val personalia: BrevPersonaliaDTO,
     val periode: PeriodeDTO,
     val uke1: Int,
     val uke2: Int,
     val dager: List<BrevMeldekortDagDTO>,
     val saksnummer: String,
     val mottatt: String?,
+)
+
+/** Samme form som personinfoen saksbehandling-api sender til brevene; meldekort-api har ikke navnet. */
+private data class BrevPersonaliaDTO(
+    val ident: String,
 )
 
 private data class BrevMeldekortDagDTO(
@@ -58,6 +65,7 @@ private fun BrukersMeldekort.toBrevMeldekortDTO(): BrevMeldekortDTO {
     return BrevMeldekortDTO(
         id = this.id.toString(),
         fnr = this.fnr.verdi,
+        personalia = BrevPersonaliaDTO(ident = this.fnr.verdi),
         periode = if (engelsk) {
             PeriodeDTO(this.periode.fraOgMed.toEngelskDato(), this.periode.tilOgMed.toEngelskDato())
         } else {

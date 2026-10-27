@@ -38,6 +38,11 @@ class BrevMeldekortDTOTest {
         }
 
         @Test
+        fun `personalia har fødselsnummeret som ident`() {
+            brevMeldekortDTO["personalia"]["ident"].asString() shouldBe meldekort.fnr.verdi
+        }
+
+        @Test
         fun `uker formateres til norsk ukenummer`() {
             brevMeldekortDTO["uke1"].asString() shouldBe "2"
             brevMeldekortDTO["uke2"].asString() shouldBe "3"
