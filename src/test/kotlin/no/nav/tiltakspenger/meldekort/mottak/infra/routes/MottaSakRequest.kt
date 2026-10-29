@@ -2,9 +2,9 @@ package no.nav.tiltakspenger.meldekort.mottak.infra.routes
 
 import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.TestApplicationContext
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.httpklient.infra.kall.HttpMethod
 import no.nav.tiltakspenger.libs.json.serialize
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetRespons

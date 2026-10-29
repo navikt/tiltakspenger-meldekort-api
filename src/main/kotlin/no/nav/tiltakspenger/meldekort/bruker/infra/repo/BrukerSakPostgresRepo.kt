@@ -1,9 +1,9 @@
 package no.nav.tiltakspenger.meldekort.bruker.infra.repo
 
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.libs.persistering.infra.PostgresSessionFactory
+import no.nav.tiltakspenger.libs.persistering.infra.sqlQuery
 import no.nav.tiltakspenger.meldekort.arena.infra.tilArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.bruker.BrukerSakRepo
 import no.nav.tiltakspenger.meldekort.bruker.SakForBruker

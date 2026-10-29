@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.meldekort
 
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 
 /**
  * Command-delen av CQRS for meldekort.

@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.microfrontend
 
 import arrow.core.Either
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 
 class HentMeldekortInfoForMicrofrontendService(
     private val microfrontendRepo: MicrofrontendRepo,

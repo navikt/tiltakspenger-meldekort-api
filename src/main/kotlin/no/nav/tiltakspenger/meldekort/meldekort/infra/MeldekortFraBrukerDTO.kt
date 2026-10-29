@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.meldekort.infra
 
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.meldekort.meldekort.LagreMeldekortFraBrukerKommando
 import no.nav.tiltakspenger.meldekort.meldekort.MeldekortDag
 import java.time.LocalDate

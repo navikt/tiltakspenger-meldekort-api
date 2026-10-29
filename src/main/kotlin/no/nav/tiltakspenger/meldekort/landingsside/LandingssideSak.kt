@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.landingsside
 
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 
 data class LandingssideSak(

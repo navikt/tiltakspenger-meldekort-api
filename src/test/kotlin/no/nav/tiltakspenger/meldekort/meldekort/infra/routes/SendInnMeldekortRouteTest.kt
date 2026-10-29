@@ -4,9 +4,9 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.lagreMeldeperiode
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.httpklient.infra.kall.HttpMethod
 import no.nav.tiltakspenger.libs.ktor.test.common.ForventetBody

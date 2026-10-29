@@ -3,7 +3,7 @@ package no.nav.tiltakspenger.meldekort.journalføring.infra
 import kotliquery.queryOf
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
+import no.nav.tiltakspenger.libs.persistering.infra.PostgresSessionFactory
 import no.nav.tiltakspenger.meldekort.journalføring.JournalføringRepo
 import no.nav.tiltakspenger.meldekort.journalføring.JournalpostId
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort

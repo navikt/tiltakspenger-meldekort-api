@@ -2,8 +2,8 @@ package no.nav.tiltakspenger.meldekort.microfrontend.infra.kafka
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.common.random
 import org.junit.jupiter.api.Test
 

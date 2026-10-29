@@ -4,12 +4,12 @@ import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 
 val mainClassFile = "no.nav.tiltakspenger.meldekort.infra.ApplicationKt"
 
-val ktorVersion = "3.5.2"
+val ktorVersion = "3.6.0"
 val micrometerVersion = "1.17.1"
 val mockkVersion = "1.14.11"
-val jackson2Version = "2.22.2"
-val lz4Version = "1.11.2"
-val felleslibVersion = "0.0.20260925103121"
+val jackson2Version = "2.22.4"
+val lz4Version = "1.12.0"
+val felleslibVersion = "0.0.20261029085422"
 val kotestVersion = "6.2.4"
 val kotlinxCoroutinesVersion = "1.11.0"
 val tmsVarselBuilderVersion = "2.2.0"
@@ -73,9 +73,6 @@ dependencies {
     implementation(platform("com.fasterxml.jackson:jackson-bom:$jackson2Version"))
 
     constraints {
-        // Konsist 0.17.3 setter opp kompilatormiljøet sitt mot kotlin-compiler-embeddable 2.0.21 og krasjer med 2.4.20
-        // («Extensions storage is not registered»), som kotlin-bom ellers løfter den til. Låst til Konsists egen versjon, som i libs.
-        testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable") { version { strictly("2.0.21") } }
         // kafka-clients (via libs:kafka) drar inn lz4-java 1.10.2, der de native XXHash-
         // implementasjonene kan krasje JVM-en på ugyldige byte-intervaller (GHSA-xx22-p4ch-683r).
         // Transitiv-only, derfor constraint og ikke en deklarert avhengighet.

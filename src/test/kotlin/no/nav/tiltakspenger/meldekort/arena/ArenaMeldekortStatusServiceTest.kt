@@ -9,8 +9,8 @@ import kotlinx.coroutines.test.runTest
 import no.nav.tiltakspenger.Loggfanger
 import no.nav.tiltakspenger.fakes.clients.ArenaMeldekortClientFake
 import no.nav.tiltakspenger.fakes.repos.SakRepoFake
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.periode.Periode

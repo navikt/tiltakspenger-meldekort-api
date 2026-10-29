@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.fakes.repos
 
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
 import no.nav.tiltakspenger.meldekort.landingsside.LandingssideMeldekort
 import no.nav.tiltakspenger.meldekort.landingsside.LandingssideRepo

@@ -10,9 +10,9 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.tiltakspenger.Loggfanger
 import no.nav.tiltakspenger.TestApplicationContextMedPostgres
 import no.nav.tiltakspenger.fakes.clients.TmsMikrofrontendClientFake
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.getOrFail
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.dato.april
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext

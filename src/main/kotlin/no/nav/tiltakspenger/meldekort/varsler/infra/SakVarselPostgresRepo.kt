@@ -1,10 +1,10 @@
 package no.nav.tiltakspenger.meldekort.varsler.infra
 
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.libs.persistering.infra.PostgresSessionFactory
+import no.nav.tiltakspenger.libs.persistering.infra.sqlQuery
 import no.nav.tiltakspenger.meldekort.infra.db.OptimistiskLåsFeil
 import no.nav.tiltakspenger.meldekort.varsler.SakForVarselvurdering
 import no.nav.tiltakspenger.meldekort.varsler.SakVarselRepo

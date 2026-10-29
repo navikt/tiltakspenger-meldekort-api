@@ -4,10 +4,10 @@ import io.kotest.matchers.shouldBe
 import no.nav.tiltakspenger.db.withMigratedDb
 import no.nav.tiltakspenger.lagreMeldekortvedtak
 import no.nav.tiltakspenger.lagreMeldeperiode
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.fixedClockAt
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.dato.januar
 import no.nav.tiltakspenger.libs.dato.mars
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId

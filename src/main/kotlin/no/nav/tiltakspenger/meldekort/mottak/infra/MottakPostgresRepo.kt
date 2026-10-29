@@ -3,8 +3,8 @@ package no.nav.tiltakspenger.meldekort.mottak.infra
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.TransactionalSession
 import no.nav.tiltakspenger.libs.persistering.domene.TransactionContext
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.libs.persistering.infra.PostgresSessionFactory
+import no.nav.tiltakspenger.libs.persistering.infra.sqlQuery
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatus
 import no.nav.tiltakspenger.meldekort.arena.infra.tilDb
 import no.nav.tiltakspenger.meldekort.meldekortvedtak.Meldekortvedtak

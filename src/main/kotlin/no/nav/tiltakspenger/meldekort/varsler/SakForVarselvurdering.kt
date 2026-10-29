@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.varsler
 
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import java.time.Instant
 
 /**

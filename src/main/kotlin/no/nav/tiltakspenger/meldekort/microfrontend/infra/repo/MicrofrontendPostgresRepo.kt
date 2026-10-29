@@ -2,12 +2,12 @@ package no.nav.tiltakspenger.meldekort.microfrontend.infra.repo
 
 import arrow.core.Either
 import kotliquery.Row
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.persistering.domene.SessionContext
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.sqlQuery
+import no.nav.tiltakspenger.libs.persistering.infra.PostgresSessionFactory
+import no.nav.tiltakspenger.libs.persistering.infra.sqlQuery
 import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendFeil
 import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendMeldekortInfo
 import no.nav.tiltakspenger.meldekort.microfrontend.MicrofrontendRepo

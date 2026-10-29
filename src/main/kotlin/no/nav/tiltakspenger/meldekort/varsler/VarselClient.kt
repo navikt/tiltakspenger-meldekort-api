@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.varsler
 
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.meldekort.varsler.VarselId
 import java.time.LocalDateTime
 

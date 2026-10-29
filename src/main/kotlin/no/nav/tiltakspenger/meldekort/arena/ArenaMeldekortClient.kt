@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.meldekort.arena
 
 import arrow.core.Either
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.httpklient.HttpKlientError
 
 interface ArenaMeldekortClient {

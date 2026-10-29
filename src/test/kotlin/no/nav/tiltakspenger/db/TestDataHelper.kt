@@ -2,8 +2,8 @@ package no.nav.tiltakspenger.db
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.TikkendeKlokke
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.PostgresSessionFactory
-import no.nav.tiltakspenger.libs.persistering.infrastruktur.SessionCounter
+import no.nav.tiltakspenger.libs.persistering.infra.PostgresSessionFactory
+import no.nav.tiltakspenger.libs.persistering.infra.SessionCounter
 import no.nav.tiltakspenger.meldekort.bruker.infra.repo.BrukerSakPostgresRepo
 import no.nav.tiltakspenger.meldekort.journalføring.infra.JournalføringPostgresRepo
 import no.nav.tiltakspenger.meldekort.landingsside.infra.repo.LandingssidePostgresRepo

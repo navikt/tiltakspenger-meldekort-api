@@ -1,7 +1,7 @@
 package no.nav.tiltakspenger.fakes.clients
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.meldekort.varsler.SendtVarselMetadata
 import no.nav.tiltakspenger.meldekort.varsler.VarselClient
 import no.nav.tiltakspenger.meldekort.varsler.VarselId

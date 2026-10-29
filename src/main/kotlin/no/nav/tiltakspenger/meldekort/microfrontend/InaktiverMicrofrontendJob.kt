@@ -4,8 +4,8 @@ import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.separateEither
 import io.github.oshai.kotlinlogging.KLogger
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 
 class InaktiverMicrofrontendJob(
     private val microfrontendRepo: MicrofrontendRepo,

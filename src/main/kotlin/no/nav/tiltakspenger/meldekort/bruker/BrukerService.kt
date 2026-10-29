@@ -1,6 +1,6 @@
 package no.nav.tiltakspenger.meldekort.bruker
 
-import no.nav.tiltakspenger.libs.common.Fnr
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortStatusService
 import no.nav.tiltakspenger.meldekort.meldekort.HentMeldekortService
 

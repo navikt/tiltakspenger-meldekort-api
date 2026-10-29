@@ -3,11 +3,11 @@ package no.nav.tiltakspenger.objectmothers
 import no.nav.tiltakspenger.TestApplicationContext
 import no.nav.tiltakspenger.lagreMeldeperiode
 import no.nav.tiltakspenger.lagreSak
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.common.random
 import no.nav.tiltakspenger.libs.periode.Periode
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort

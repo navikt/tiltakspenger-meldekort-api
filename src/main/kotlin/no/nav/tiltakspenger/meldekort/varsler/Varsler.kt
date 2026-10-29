@@ -3,9 +3,9 @@ package no.nav.tiltakspenger.meldekort.varsler
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.SakId
 import no.nav.tiltakspenger.libs.common.nå
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.common.singleOrNullOrThrow
 import no.nav.tiltakspenger.meldekort.varsler.Varsel.Inaktivert
 import no.nav.tiltakspenger.meldekort.varsler.Varsel.SkalAktiveres

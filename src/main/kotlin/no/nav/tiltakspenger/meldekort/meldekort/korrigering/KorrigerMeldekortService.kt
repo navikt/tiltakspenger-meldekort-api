@@ -2,8 +2,8 @@ package no.nav.tiltakspenger.meldekort.meldekort.korrigering
 
 import arrow.core.Either
 import arrow.core.left
-import no.nav.tiltakspenger.libs.common.Fnr
 import no.nav.tiltakspenger.libs.common.MeldekortId
+import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.persistering.domene.SessionFactory
 import no.nav.tiltakspenger.meldekort.bruker.BrukerSakRepo
 import no.nav.tiltakspenger.meldekort.meldekort.BrukersMeldekort
