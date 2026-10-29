@@ -26,8 +26,6 @@ fun BrukersMeldekort.toDTO(): String = serialize(this.toBrevMeldekortDTO())
 
 private data class BrevMeldekortDTO(
     val id: String,
-    /** Overgang: pdfgenrs leser `personalia`, og vi fjerner feltet når pdfgenrs ikke lenger leser det. */
-    val fnr: String,
     val personalia: BrevPersonaliaDTO,
     val periode: PeriodeDTO,
     val uke1: Int,
@@ -64,7 +62,6 @@ private fun BrukersMeldekort.toBrevMeldekortDTO(): BrevMeldekortDTO {
     val engelsk = this.locale == "en"
     return BrevMeldekortDTO(
         id = this.id.toString(),
-        fnr = this.fnr.verdi,
         personalia = BrevPersonaliaDTO(ident = this.fnr.verdi),
         periode = if (engelsk) {
             PeriodeDTO(this.periode.fraOgMed.toEngelskDato(), this.periode.tilOgMed.toEngelskDato())
