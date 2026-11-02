@@ -23,6 +23,18 @@ fun isNonStable(version: String): Boolean {
     return isStable.not()
 }
 
+// Låser sårbare avhengigheter som pluginene drar inn på buildscript-classpathen.
+// Ingenting av det havner i imaget.
+buildscript {
+    dependencies {
+        constraints {
+            // Kover drar inn freemarker 2.3.32 med path traversal (CVE-2026-84939); fikset i 2.3.35.
+            // Låsen fjernes når Kover drar freemarker 2.3.35 eller nyere.
+            add("classpath", "org.freemarker:freemarker:2.3.35")
+        }
+    }
+}
+
 plugins {
     application
     // 2.4.10 deserialiserer build cache-oppføringer usikkert, som gir kodekjøring fra en forgiftet cache (CVE-2026-53914); fikset fra 2.4.20.
@@ -77,6 +89,11 @@ dependencies {
         // implementasjonene kan krasje JVM-en på ugyldige byte-intervaller (GHSA-xx22-p4ch-683r).
         // Transitiv-only, derfor constraint og ikke en deklarert avhengighet.
         implementation("at.yawk.lz4:lz4-java:$lz4Version")
+        // kafka-clients 4.4.0 (via libs:kafka) drar inn snappy-java 1.1.10.7 med bufferoverflyt og tjenestenekt (CVE-2026-93451, CVE-2026-108106, CVE-2026-116590); fikset i 1.1.10.9.
+        implementation("org.xerial.snappy:snappy-java:1.1.10.12")
+        // `com.auth0:jwks-rsa` drar inn Guava 33.6.0, som allokerer ubegrenset minne ved Java-deserialisering (CVE-2026-102554); fikset i 33.7.2.
+        // Samme versjon som plattform-BOM-en i tiltakspenger-libs styrer for flåten.
+        implementation("com.google.guava:guava:33.7.2-jre")
     }
 
     implementation("ch.qos.logback:logback-classic:1.6.3")
