@@ -17,3 +17,5 @@ accessPolicyInbound:
     - meldekort-frontend-q1
     - meldekort-frontend-q2
 naisEnv: dev
+# Slipper inn token-generatorene i nais, så vi kan teste mot API-ene i dev. Skal aldri inn i prod.yml.
+tokengeneratorer: true

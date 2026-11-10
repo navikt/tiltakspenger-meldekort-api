@@ -87,9 +87,12 @@ spec:
         - application: tiltakspenger-meldekort
         - application: tiltakspenger-meldekort-microfrontend
         - application: tiltakspenger-saksbehandling-api
+      {{#if tokengeneratorer}}
         - application: tokenx-token-generator
           namespace: nais
-          cluster: dev-gcp
+        - application: azure-token-generator
+          namespace: nais
+      {{/if}}
         - application: meldekort-landingsside
           namespace: meldekort
       {{#each accessPolicyInbound.arenaMeldekortFrontend}}
