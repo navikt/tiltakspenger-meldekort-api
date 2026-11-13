@@ -38,8 +38,13 @@ class ArenaMeldekortStatusServiceTest {
     fun `feil ved henting av aktive meldekort gir UKJENT`() = runTest {
         val fnr = Fnr.random()
         val client = ArenaMeldekortClientFake().apply { leggTilMeldekortFeil(fnr) }
+        val loggfanger = Loggfanger(ArenaMeldekortStatusService::class.java.name)
 
-        service(client).hentArenaMeldekortStatus(fnr) shouldBe ArenaMeldekortStatus.UKJENT
+        service(client, logger = loggfanger).hentArenaMeldekortStatus(fnr) shouldBe ArenaMeldekortStatus.UKJENT
+
+        // Feil mot Arena skal ikke trigge ERROR-alarmer.
+        loggfanger.linjerPå(Level.WARN).single().melding shouldContain "Feil ved henting av meldekort fra Arena (meldekortservice)"
+        loggfanger.linjerPå(Level.ERROR).shouldBeEmpty()
     }
 
     @Test
@@ -64,8 +69,12 @@ class ArenaMeldekortStatusServiceTest {
             leggTilMeldekort(fnr, oversiktMed(erTiltakspengerMeldekort = false))
             leggTilHistoriskMeldekortFeil(fnr)
         }
+        val loggfanger = Loggfanger(ArenaMeldekortStatusService::class.java.name)
 
-        service(client).hentArenaMeldekortStatus(fnr) shouldBe ArenaMeldekortStatus.UKJENT
+        service(client, logger = loggfanger).hentArenaMeldekortStatus(fnr) shouldBe ArenaMeldekortStatus.UKJENT
+
+        loggfanger.linjerPå(Level.WARN).single().melding shouldContain "Feil ved henting av historiske meldekort fra Arena (meldekortservice)"
+        loggfanger.linjerPå(Level.ERROR).shouldBeEmpty()
     }
 
     @Test

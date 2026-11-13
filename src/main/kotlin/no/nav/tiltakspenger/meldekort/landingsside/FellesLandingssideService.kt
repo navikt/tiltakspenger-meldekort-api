@@ -3,10 +3,10 @@ package no.nav.tiltakspenger.meldekort.landingsside
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
-import no.nav.tiltakspenger.libs.httpklient.loggFeil
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekort
 import no.nav.tiltakspenger.meldekort.arena.ArenaMeldekortClient
+import no.nav.tiltakspenger.meldekort.arena.loggArenaFeil
 
 /**
  * Aggregatet som kombinerer landingsside-saken med status fra arena.
@@ -40,7 +40,7 @@ class FellesLandingssideService(
 
     private suspend fun hentStatusFraArena(fnr: Fnr): LandingssideArenaStatus? {
         val arenaMeldekort = arenaMeldekortClient.hentMeldekort(fnr).getOrElse {
-            it.loggFeil(logger, "henting av meldekort fra Arena (meldekortservice) til landingssiden", "Bruker-oppslag; fnr ligger i request i sikkerlogg", sikkerlogg)
+            it.loggArenaFeil(logger, "henting av meldekort fra Arena (meldekortservice) til landingssiden", "Bruker-oppslag; fnr ligger i request i sikkerlogg", sikkerlogg)
             null
         } ?: return null
 
