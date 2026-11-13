@@ -4,7 +4,6 @@ import arrow.core.Either
 import arrow.core.getOrElse
 import io.github.oshai.kotlinlogging.KLogger
 import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
-import no.nav.tiltakspenger.libs.httpklient.loggFeil
 import no.nav.tiltakspenger.libs.logging.Sikkerlogg
 import no.nav.tiltakspenger.meldekort.jobb.JobbResultat
 import no.nav.tiltakspenger.meldekort.sak.SakRepo
@@ -22,7 +21,7 @@ class ArenaMeldekortStatusService(
 
     suspend fun hentArenaMeldekortStatus(fnr: Fnr): ArenaMeldekortStatus {
         arenaMeldekortClient.hentMeldekort(fnr).onLeft {
-            it.loggFeil(logger, "henting av meldekort fra Arena (meldekortservice)", "Bruker-oppslag; fnr ligger i request i sikkerlogg", sikkerlogg)
+            it.loggArenaFeil(logger, "henting av meldekort fra Arena (meldekortservice)", "Bruker-oppslag; fnr ligger i request i sikkerlogg", sikkerlogg)
             return ArenaMeldekortStatus.UKJENT
         }.onRight {
             if (it == null) {
@@ -33,7 +32,7 @@ class ArenaMeldekortStatusService(
         }
 
         val historiskeMeldekort = arenaMeldekortClient.hentHistoriskeMeldekort(fnr).getOrElse {
-            it.loggFeil(logger, "henting av historiske meldekort fra Arena (meldekortservice)", "Bruker-oppslag; fnr ligger i request i sikkerlogg", sikkerlogg)
+            it.loggArenaFeil(logger, "henting av historiske meldekort fra Arena (meldekortservice)", "Bruker-oppslag; fnr ligger i request i sikkerlogg", sikkerlogg)
             return ArenaMeldekortStatus.UKJENT
         }
 
