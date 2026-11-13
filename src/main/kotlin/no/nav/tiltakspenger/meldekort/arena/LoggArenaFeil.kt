@@ -14,7 +14,7 @@ import no.nav.tiltakspenger.libs.logging.Sikkerlogg
  * Som [no.nav.tiltakspenger.libs.httpklient.loggFeil], men logger på WARN i stedet for ERROR.
  * Feil mot Arena (meldekortservice) håndteres ved at statusen blir ukjent, og er ikke noe vi kan eller trenger å følge opp.
  */
-internal fun HttpKlientError.loggArenaFeil(
+fun HttpKlientError.loggArenaFeil(
     logger: KLogger,
     operasjon: String,
     kontekst: String,
