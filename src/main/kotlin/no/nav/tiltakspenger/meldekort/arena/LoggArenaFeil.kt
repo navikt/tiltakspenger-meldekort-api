@@ -18,7 +18,7 @@ fun HttpKlientError.loggArenaFeil(
     logger: KLogger,
     operasjon: String,
     kontekst: String,
-    sikkerlogg: Sikkerlogg = Sikkerlogg,
+    sikkerlogg: Sikkerlogg,
 ) {
     val throwable = throwableOrNull()
     val status = metadata.statusCode?.let { "status: $it, " } ?: ""
