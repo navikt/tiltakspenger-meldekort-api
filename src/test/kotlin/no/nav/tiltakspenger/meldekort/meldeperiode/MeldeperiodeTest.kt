@@ -7,6 +7,7 @@ import no.nav.tiltakspenger.libs.common.fixedClock
 import no.nav.tiltakspenger.libs.common.nå
 import no.nav.tiltakspenger.libs.common.personopplysning.Fnr
 import no.nav.tiltakspenger.libs.common.random
+import no.nav.tiltakspenger.libs.dato.desember
 import no.nav.tiltakspenger.libs.dato.november
 import no.nav.tiltakspenger.libs.meldekort.MeldeperiodeId
 import no.nav.tiltakspenger.libs.periode.Periode
@@ -92,6 +93,49 @@ class MeldeperiodeTest {
             shouldThrow<IllegalArgumentException> {
                 periode.kanFyllesUtFraOgMed()
             }
+        }
+    }
+
+    @Nested
+    inner class SisteMeldeperiodeFørJul {
+        @Test
+        fun `jul 2026 - meldeperioden 7-20 desember kan fylles ut fra onsdag 16 desember`() {
+            Periode(7.desember(2026), 20.desember(2026)).kanFyllesUtFraOgMed() shouldBe 16.desember(2026).atTime(15, 0)
+        }
+
+        @Test
+        fun `jul 2025 - meldeperioden 8-21 desember kan fylles ut fra onsdag 17 desember`() {
+            Periode(8.desember(2025), 21.desember(2025)).kanFyllesUtFraOgMed() shouldBe 17.desember(2025).atTime(15, 0)
+        }
+
+        @Test
+        fun `slutter 11 desember - kan fylles ut fra siste onsdag`() {
+            Periode(28.november(2033), 11.desember(2033)).kanFyllesUtFraOgMed() shouldBe 7.desember(2033).atTime(15, 0)
+        }
+
+        @Test
+        fun `slutter 22 desember - siste onsdag er etter 17 desember, så kan fylles ut fra tirsdag 17 desember`() {
+            Periode(9.desember(2030), 22.desember(2030)).kanFyllesUtFraOgMed() shouldBe 17.desember(2030).atTime(15, 0)
+        }
+
+        @Test
+        fun `slutter 23 desember - siste onsdag er etter 17 desember, så kan fylles ut fra mandag 17 desember`() {
+            Periode(10.desember(2035), 23.desember(2035)).kanFyllesUtFraOgMed() shouldBe 17.desember(2035).atTime(15, 0)
+        }
+
+        @Test
+        fun `slutter på julaften - 17 desember er søndag, så kan fylles ut fra fredag 15 desember`() {
+            Periode(11.desember(2034), 24.desember(2034)).kanFyllesUtFraOgMed() shouldBe 15.desember(2034).atTime(15, 0)
+        }
+
+        @Test
+        fun `slutter 10 desember - er ikke siste meldeperiode før jul og kan fylles ut fra fredag`() {
+            Periode(27.november(2034), 10.desember(2034)).kanFyllesUtFraOgMed() shouldBe 8.desember(2034).atTime(15, 0)
+        }
+
+        @Test
+        fun `slutter 25 desember - er ikke før jul og kan fylles ut fra fredag`() {
+            Periode(12.desember(2033), 25.desember(2033)).kanFyllesUtFraOgMed() shouldBe 23.desember(2033).atTime(15, 0)
         }
     }
 }

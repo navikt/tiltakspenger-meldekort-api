@@ -9,6 +9,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.Month
 import java.time.temporal.TemporalAdjusters
 
 /**
@@ -72,13 +73,44 @@ data class Meldeperiode(
             }
         }
 
+        /**
+         * Meldekortet kan normalt fylles ut fra siste fredag i meldeperioden kl. 15.
+         * Siste meldekort før jul kan fylles ut fra siste onsdag i meldeperioden kl. 15, slik at bruker får pengene før jul.
+         * Er siste onsdag mindre enn 7 dager før julaften, kan det i stedet fylles ut fra siste hverdag som er minst 7 dager før julaften.
+         * Se også migreringen V44, som oppdaterte meldeperioder som var mottatt før denne regelen ble innført.
+         */
         fun Periode.kanFyllesUtFraOgMed(): LocalDateTime {
-            return this.tilOgMed.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY))
-                .atTime(TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR).also {
-                    if (!this.inneholder(it.toLocalDate())) {
-                        throw IllegalArgumentException("$it er utenfor perioden $this")
-                    }
+            val dato = if (this.erSisteMeldeperiodeFørJul()) {
+                minOf(
+                    this.tilOgMed.with(TemporalAdjusters.previousOrSame(DayOfWeek.WEDNESDAY)),
+                    sisteHverdagMinst7DagerFørJulaften(this.tilOgMed.year),
+                )
+            } else {
+                this.tilOgMed.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY))
+            }
+            return dato.atTime(TIDSPUNKT_BRUKER_KAN_FYLLE_UT_MELDEPERIODE_FOR).also {
+                if (!this.inneholder(it.toLocalDate())) {
+                    throw IllegalArgumentException("$it er utenfor perioden $this")
                 }
+            }
+        }
+
+        /**
+         * Siste meldeperiode før jul er meldeperioden som slutter i løpet av de 14 siste dagene til og med julaften (11.–24. desember).
+         * Siden meldeperiodene er 14 dager lange og følger etter hverandre, er det nøyaktig én slik meldeperiode hvert år.
+         */
+        private fun Periode.erSisteMeldeperiodeFørJul(): Boolean {
+            val julaften = LocalDate.of(this.tilOgMed.year, Month.DECEMBER, 24)
+            return this.tilOgMed > julaften.minusDays(14) && this.tilOgMed <= julaften
+        }
+
+        private fun sisteHverdagMinst7DagerFørJulaften(år: Int): LocalDate {
+            val dato = LocalDate.of(år, Month.DECEMBER, 17)
+            return when (dato.dayOfWeek) {
+                DayOfWeek.SATURDAY -> dato.minusDays(1)
+                DayOfWeek.SUNDAY -> dato.minusDays(2)
+                else -> dato
+            }
         }
     }
 }
